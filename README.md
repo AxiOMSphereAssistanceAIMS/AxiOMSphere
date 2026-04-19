@@ -137,6 +137,8 @@ Our agents are natively grounded in:
 | **ISO 9001 §7.5** | Control of documented information |
 | **ISO 45001** | Occupational health and safety management |
 | **API RP 505** | Fire protection for refineries |
+| **ISO 55001:2014** | Asset management — Management systems — Requirements|
+| **ISO 55002:2018** | Asset management — Management systems — Guidelines for the application of ISO 55001|
 
 ---
 
