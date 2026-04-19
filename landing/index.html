@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIMS Platform — Industrial AI Document Automation</title>
+  <meta name="description" content="Multi-agent AI platform for ISO-compliant industrial documentation. From engineering request to production-ready document in under 10 minutes." />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --border: #1e1e2e;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --green: #10b981;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --card: #161624;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent); }
+    nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; margin-left: 1.5rem; }
+    nav a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent); color: #fff !important;
+      padding: 0.45rem 1.1rem; border-radius: 6px; font-weight: 600;
+      margin-left: 1.5rem !important;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%,
+        rgba(124,58,237,0.18) 0%, transparent 70%);
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.4);
+      color: #c4b5fd; font-size: 0.78rem; font-weight: 600;
+      padding: 0.3rem 0.8rem; border-radius: 999px;
+      margin-bottom: 1.5rem; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800; letter-spacing: -0.03em;
+      line-height: 1.15;
+      max-width: 800px; margin: 0 auto 1.2rem;
+    }
+    h1 em { font-style: normal; color: var(--accent); }
+    .hero-sub {
+      color: var(--muted); font-size: 1.15rem;
+      max-width: 580px; margin: 0 auto 2.5rem;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.6rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; text-decoration: none;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .hero-stat {
+      margin-top: 3.5rem;
+      display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-n { font-size: 2rem; font-weight: 800; color: var(--accent2); }
+    .stat-l { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
+
+    /* PIPELINE */
+    .section { padding: 5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+    h2 {
+      font-size: 2rem; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 0.5rem;
+    }
+    .section-sub { color: var(--muted); margin-bottom: 3rem; }
+
+    .pipeline {
+      display: flex; align-items: stretch; gap: 0; flex-wrap: nowrap;
+      overflow-x: auto; padding-bottom: 1rem;
+    }
+    .pipe-step {
+      flex: 1; min-width: 160px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem 1.2rem;
+      position: relative;
+      text-align: center;
+    }
+    .pipe-step + .pipe-step { margin-left: 2.5rem; }
+    .pipe-step + .pipe-step::before {
+      content: "→";
+      position: absolute; left: -1.7rem; top: 50%; transform: translateY(-50%);
+      color: var(--accent); font-size: 1.3rem; font-weight: 700;
+    }
+    .pipe-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .pipe-step h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .pipe-model { font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-bottom: 0.3rem; }
+    .pipe-desc { font-size: 0.75rem; color: var(--muted); }
+    .pipe-time { margin-top: 0.6rem; font-size: 0.7rem; background: rgba(124,58,237,0.12); color: #c4b5fd; padding: 0.15rem 0.5rem; border-radius: 4px; display: inline-block; }
+
+    /* CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .card-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+    .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .card p { font-size: 0.875rem; color: var(--muted); }
+
+    /* STANDARDS */
+    .standards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .std {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--green);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+    }
+    .std-code { font-size: 0.78rem; font-weight: 700; color: var(--green); margin-bottom: 0.3rem; }
+    .std-name { font-size: 0.85rem; color: var(--muted); }
+
+    /* CODE */
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem 1.8rem;
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+    .code-block .c { color: #6b7280; }
+    .code-block .k { color: #c084fc; }
+    .code-block .s { color: #86efac; }
+    .code-block .f { color: #93c5fd; }
+    .code-block .n { color: #fde68a; }
+    .code-block .cm { color: #10b981; font-style: italic; }
+
+    /* PHASES */
+    .phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .phase {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .phase-num {
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+    .phase h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .phase p { font-size: 0.85rem; color: var(--muted); }
+    .phase ul { list-style: none; margin-top: 0.8rem; }
+    .phase ul li { font-size: 0.85rem; color: var(--muted); padding: 0.2rem 0; }
+    .phase ul li::before { content: "→ "; color: var(--accent); }
+
+    /* CTA */
+    .cta-section {
+      background: linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(6,182,212,0.08) 100%);
+      border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 20px;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin: 2rem 0;
+    }
+    .cta-section h2 { margin-bottom: 0.7rem; }
+    .cta-section p { color: var(--muted); margin-bottom: 2rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    /* DIVIDER */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    @media (max-width: 640px) {
+      .pipeline { flex-direction: column; }
+      .pipe-step + .pipe-step { margin-left: 0; margin-top: 2rem; }
+      .pipe-step + .pipe-step::before { content: "↓"; left: 50%; top: -1.5rem; transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><span>AIMS</span> Platform</div>
+  <div>
+    <a href="#pipeline">How it works</a>
+    <a href="#standards">Standards</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="https://github.com/aims-platform/AIMS-Agent-Orchestrator" target="_blank">GitHub</a>
+    <a href="#contact" class="nav-cta">Get in touch</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">🚀 Dual-pipeline · AI-powered · ISO-aligned</div>
+  <h1>Industrial documentation,<br><em>automated by AI agents</em></h1>
+  <p class="hero-sub">
+    From a plain-language engineering request to a production-ready,
+    ISO-compliant document — in under 10 minutes.
+  </p>
+  <div class="hero-btns">
+    <a href="https://t.me/your_bot" class="btn btn-primary">🤖 Try the Bot</a>
+    <a href="https://github.com/aims-platform/AIMS-Agent-Orchestrator" class="btn btn-secondary">⭐ GitHub</a>
+    <a href="#demo" class="btn btn-secondary">📺 Watch Demo</a>
+  </div>
+  <div class="hero-stat">
+    <div class="stat">
+      <div class="stat-n">&lt;10 min</div>
+      <div class="stat-l">Request → ISO Document</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">≥80%</div>
+      <div class="stat-l">ISO Compliance Score</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">6</div>
+      <div class="stat-l">International Standards</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">3</div>
+      <div class="stat-l">AI Models in Pipeline</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PIPELINE -->
+<section class="section" id="pipeline">
+  <h2>The Dual-Model Pipeline</h2>
+  <p class="section-sub">Every document passes through three AI stages — draft, format, verify. Automatically.</p>
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div class="pipe-icon">🧠</div>
+      <h3>Draft</h3>
+      <div class="pipe-model">deepseek-r1:70b</div>
+      <div class="pipe-desc">Structural reasoning, ISO-aware outline, section scaffold</div>
+      <div class="pipe-time">~5 min</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-icon">✍️</div>
+      <h3>Format</h3>
+      <div class="pipe-model">qwen2.5:72b</div>
+      <div class="pipe-desc">Professional formatting, tables, cross-references, .docx output</div>
+      <div class="pipe-time">~3 min</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-icon">🔍</div>
+      <h3>Score</h3>
+      <div class="pipe-model">Gemini Flash/Pro</div>
+      <div class="pipe-desc">ISO compliance scoring 0–100%, gap identification</div>
+      <div class="pipe-time">~15 sec</div>
+    </div>
+    <div class="pipe-step">
+      <div class="pipe-icon">🔄</div>
+      <h3>Revise</h3>
+      <div class="pipe-model">qwen2.5:72b</div>
+      <div class="pipe-desc">Targeted revision using Gemini feedback. Retry until ≥80%</div>
+      <div class="pipe-time">~2 min</div>
+    </div>
+    <div class="pipe-step" style="border-color: var(--green);">
+      <div class="pipe-icon">✅</div>
+      <h3>Deliver</h3>
+      <div class="pipe-model">Telegram / API</div>
+      <div class="pipe-desc">Approved .docx delivered to engineer for sign-off</div>
+      <div class="pipe-time">instant</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- USE CASES -->
+<section class="section" id="usecases">
+  <h2>What It Produces</h2>
+  <p class="section-sub">Real industrial documents, not generic templates.</p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🦺</div>
+      <h3>Job Safety Analysis (JSA)</h3>
+      <p>Hazard identification table, controls hierarchy, permit conditions. ISO 45001 compliant.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚨</div>
+      <h3>Emergency Response Procedure</h3>
+      <p>Trigger criteria, evacuation zones, muster points, all-clear conditions. API RP 505.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Management of Change (MOC)</h3>
+      <p>MOC form, approval matrix with sign-off levels, PSSR checklist. ISO 45001 §8.1.3.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📁</div>
+      <h3>Project Charter</h3>
+      <p>Scope, stakeholders, milestones, resource plan. ISO 21502:2020 structure.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📖</div>
+      <h3>Technical Manual</h3>
+      <p>User documentation structure, warnings, procedures. IEC/IEEE 82079-1:2019.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏗️</div>
+      <h3>Asset Integrity Report</h3>
+      <p>Inspection findings, risk register, maintenance recommendations. ISO 55001 aligned.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- CODE -->
+<section class="section" id="code">
+  <h2>Simple to Integrate</h2>
+  <p class="section-sub">One function call. Full dual-pipeline. ISO-compliant output.</p>
+  <div class="code-block">
+<span class="k">from</span> <span class="f">doc_agent</span> <span class="k">import</span> <span class="n">DocAgent</span>, <span class="n">DocGenerationRequest</span><br><br>
+<span class="n">agent</span> = <span class="n">DocAgent</span>()<br><br>
+<span class="n">path</span>, <span class="n">preview</span>, <span class="n">score</span>, <span class="n">feedback</span> = <span class="n">agent</span>.<span class="f">generate</span>(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">DocGenerationRequest</span>(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">user_request</span>=<span class="s">"Create a JSA for confined space entry at an underground mine. "</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"Reference ISO 45001. Include hazard table and controls hierarchy."</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">dual_pipeline</span>=<span class="k">True</span>,  <span class="c"># R1-70B → Qwen-72B → Gemini quality gate</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;)<br>
+)<br><br>
+<span class="f">print</span>(<span class="s">f"Document: </span><span class="n">{path}</span><span class="s">"</span>)  &nbsp;&nbsp;&nbsp;<span class="cm"># → JSA_confined_space_entry.docx</span><br>
+<span class="f">print</span>(<span class="s">f"ISO score: </span><span class="n">{score:.0%}</span><span class="s">"</span>)  &nbsp;<span class="cm"># → 84%</span><br>
+<span class="f">print</span>(<span class="s">f"Feedback: </span><span class="n">{feedback}</span><span class="s">"</span>)  &nbsp;<span class="cm"># → Covers all required JSA sections.</span>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- STANDARDS -->
+<section class="section" id="standards">
+  <h2>Standards Coverage</h2>
+  <p class="section-sub">Built-in, not bolted on. Every document is scored against real ISO/IEC clauses.</p>
+  <div class="standards-grid">
+    <div class="std">
+      <div class="std-code">ISO 21502:2020</div>
+      <div class="std-name">Project management guidance</div>
+    </div>
+    <div class="std">
+      <div class="std-code">ISO 21500:2021</div>
+      <div class="std-name">Project, programme & portfolio concepts</div>
+    </div>
+    <div class="std">
+      <div class="std-code">IEC/IEEE 82079-1:2019</div>
+      <div class="std-name">Preparation of information for use</div>
+    </div>
+    <div class="std">
+      <div class="std-code">ISO 9001 §7.5</div>
+      <div class="std-name">Control of documented information</div>
+    </div>
+    <div class="std">
+      <div class="std-code">ISO 45001</div>
+      <div class="std-name">Occupational health & safety management</div>
+    </div>
+    <div class="std">
+      <div class="std-code">API RP 505</div>
+      <div class="std-name">Fire protection for refineries</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PHASES / BOT FACTORY -->
+<section class="section" id="roadmap">
+  <h2>From Hook to Bot Factory</h2>
+  <p class="section-sub">Three phases: individual engineer → agent mesh → enterprise platform.</p>
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-num">Phase 1 · Now</div>
+      <h3>🪝 The Hook — Engineer Assistant</h3>
+      <p>A specialized AI bot that turns natural-language requests into ISO-compliant documents.</p>
+      <ul>
+        <li>Dual-model pipeline (R1 + Qwen)</li>
+        <li>Gemini quality gate</li>
+        <li>Telegram delivery</li>
+        <li>Continuous fine-tuning loop</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-num">Phase 2 · 2026</div>
+      <h3>🕸️ Agent Mesh — Multi-Discipline</h3>
+      <p>Interconnected specialized agents share one knowledge base.</p>
+      <ul>
+        <li>Budget Agent</li>
+        <li>Risk &amp; Safety Agent</li>
+        <li>Technical Standards Agent</li>
+        <li>Registry &amp; OCR Agent</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <div class="phase-num">Phase 3 · 2027</div>
+      <h3>🏭 Bot Factory — Enterprise Platform</h3>
+      <p>Corporate-grade orchestrator with on-premise deployment and API gateway.</p>
+      <ul>
+        <li>Single Source of Truth</li>
+        <li>On-premise / cloud hybrid</li>
+        <li>Enterprise security &amp; audit trail</li>
+        <li>Custom agent deployment</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- CTA -->
+<section class="section" id="contact">
+  <div class="cta-section">
+    <h2>Build the future of industrial AI</h2>
+    <p>We're applying to Google for Startups, Microsoft Founders Hub, and NVIDIA Inception.<br>
+       Partners, investors, and early enterprise users — we'd love to talk.</p>
+    <div class="hero-btns">
+      <a href="mailto:nasty.monk779@gmail.com" class="btn btn-primary">📬 Get in Touch</a>
+      <a href="https://github.com/aims-platform/AIMS-Agent-Orchestrator" class="btn btn-secondary" target="_blank">⭐ Star on GitHub</a>
+      <a href="#" class="btn btn-secondary">📝 Join Waitlist</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    <strong>AIMS Platform</strong> · Built by
+    <a href="mailto:nasty.monk779@gmail.com">Evgeny Shokk</a> ·
+    <a href="https://github.com/aims-platform/AIMS-Agent-Orchestrator" target="_blank">GitHub</a> ·
+    <a href="LICENSE">Apache-2.0</a>
+  </p>
+  <p style="margin-top:0.5rem; font-size:0.78rem; opacity:0.6;">
+    Powered by deepseek-r1 · Qwen2.5 · Google Gemini · python-telegram-bot · python-docx · Ollama
+  </p>
+</footer>
+
+</body>
+</html>
