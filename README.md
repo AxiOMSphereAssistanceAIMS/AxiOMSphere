@@ -14,7 +14,7 @@
 
 ## One-liner
 
-A **multi-agent orchestration platform** for Asset Integrity Management (AIMS) in energy and heavy industry: document registry, ISO-aligned documentation control, AI-driven planning, and a **single source of truth** across all project disciplines.
+An **industrial multi-agent platform** for the launch of production projects, based on the Asset Integrity Management System (AIMS) approach (ISO 55001, ISO 55002), enables optimization of resources and timelines for pilot project deployment. The platform is designed for extension across all project lifecycle stages — from FEED through decommissioning — with further scalability to support full-cycle AIMS implementation.
 
 ---
 
