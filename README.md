@@ -8,7 +8,7 @@
 
 > **Turning raw engineering requests into ISO-compliant documents in under 10 minutes — fully automated, fully auditable.**
 
-[🌐 Website](#) · [📺 Demo Video](#demo) · [📬 Contact](#contact) · [📋 Apply for Credits](#grant-applications)
+[🌐 Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/) · [📺 Demo Video](#demo) · [📬 Contact](#contact) · [📋 Apply for Credits](#grant-applications)
 
 ---
 
@@ -252,7 +252,7 @@ We are seeking cloud credits / startup program support from:
 
 **Coming soon:** 60-second screen recording — engineer types a natural-language request → DocAgent dual pipeline → ISO-compliant `.docx` delivered to Telegram in under 10 minutes.
 
-[📺 Watch Demo](#) · [🖼 Architecture Diagram](docs/ARCHITECTURE.md)
+[📺 Watch Demo](#) · [🖼 Architecture Diagram](docs/ARCHITECTURE.md) · [🌐 Landing Page](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/)
 
 ---
 
@@ -261,8 +261,8 @@ We are seeking cloud credits / startup program support from:
 **Evgeny Shokk** — Founder, AIMS Platform
 
 - 📧 nasty.monk779@gmail.com
-- 🌐 [Website](#)
-- 💼 [LinkedIn](#)
+- 🌐 [Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/)
+- 💼 [LinkedIn](https://linkedin.com/in/evgeny-shokk)
 
 ---
 
