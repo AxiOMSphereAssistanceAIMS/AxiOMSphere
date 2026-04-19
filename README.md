@@ -262,7 +262,7 @@ We are seeking cloud credits / startup program support from:
 
 - 📧 nasty.monk779@gmail.com
 - 🌐 [Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/)
-- 💼 [LinkedIn](https://linkedin.com/in/evgeny-shokk)
+- 💼 [LinkedIn](https://www.linkedin.com/in/evgeny-shokk-54781716)
 
 ---
 
