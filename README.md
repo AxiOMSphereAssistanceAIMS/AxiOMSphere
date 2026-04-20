@@ -210,8 +210,8 @@ flowchart TD
     GATE1 -->|"✅ Pass"| NEXT1
 
     subgraph NEXT1["🔜 NEXT DEPLOY — Phase 3"]
-        N1["🧠 SysLogicArh\n─────────────────\nBuild: AIMS sync engine\nInterface mapping logic\nTest: Cross-dept doc coherence\nTest: SAMP alignment verification\nTest: Dept ↔ Dept conflict detection\nTune: qwen2.5-72B on AIMS corpus\nTarget: 0 logic conflicts in 100 docs"]
-        N2["🔐 SysPolic\n─────────────────\nBuild: Rights & permissions engine\nMoC registration module\nTest: Access control enforcement\nTest: Document ownership tracking\nTest: Change approval workflow\nTune: Policy rule base fine-tuning\nTarget: 100% MoC compliance · 0 breaches"]
+        N1["🧠 SysLogicArh\n─────────────────\nBuild: AIMS sync engine\nInterface mapping logic\nTest: Cross-dept doc coherence\nTest: SAMP alignment verification\nTest: Dept ↔ Dept conflict detection\nTfine-tuning: Qwen2.5-72B with crosscheck DeepSeel-R1:70B on AIMS corpus\nTarget: 0 logic conflicts in 100 docs"]
+        N2["🔐 SysPolic\n─────────────────\nBuild: Rights & permissions engine\nMoC registration module\nTest: Access control enforcement\nTest: Document ownership tracking\nTest: Change approval workflow\nTfine-tuning: Qwen2.5-72B with crosscheck DeepSeel-R1:70B\Policy rule base fine-tuning\nTarget: 100% MoC compliance · 0 breaches"]
     end
 
     NEXT1 --> GATE2{{"🔒 Gate 2\nSysLogicArh coherence ≥ 95%?\nSysPolic 0 access breaches?\nMoC workflow validated?"}}
@@ -262,7 +262,10 @@ flowchart TD
     style TUNE fill:#1b0033,stroke:#ce93d8,color:#f3e5f5
 ```
 
+
 ### Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
+
+![GFMAM Asset Management Landscape](docs/axiompshere_roadmap_2028_final.svg)
 
 ```mermaid
 gantt
