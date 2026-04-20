@@ -17,7 +17,7 @@ The name **AxiOMSphere** is a strategic integration of our core technological pi
 
 ## One-liner
 
-An **industrial multi-agent platform** for the launch of production projects, based on the Asset Integrity Management System (AIMS) approach (ISO 55001, ISO 55002), enables optimization of resources and timelines for pilot project deployment. The platform is designed for extension across all project lifecycle stages — from FEED through decommissioning — with further scalability to support full-cycle AIMS implementation.
+An **industrial multi-agent platform** for the launch of production projects, based on the **Asset Integrity Management System (AIMS)** approach (ISO 55001, ISO 55002), enables optimization of resources and timelines for pilot project deployment. The platform is designed for extension across all project lifecycle stages — from FEED through decommissioning — with further scalability to support full-cycle AIMS implementation.
 
 ---
 ## 🗺️ AIMS Process Framework — GFMAM Asset Management Landscape
@@ -73,7 +73,7 @@ flowchart TD
 
 ## The Problem
 
-At the project justification stage, there is a critical need for empirical data, guiding documentation, and foundational decisions that will shape the project's development. These early choices can ultimately determine either the failure or the economic success of the enterprise.
+At the industrial (plant/facility/EP oilfield) project justification stage, there is a critical need for empirical data, guiding documentation, and foundational decisions that will shape the project's development. These early choices can ultimately determine either the failure or the economic success of the enterprise.
 
 In practice, organizations often proceed with launching low-budget pilot versions of projects. However, limited resources frequently result in poor-quality documentation and suboptimal outcomes. While project execution methodologies have long been established, success largely depends on how consistently and accurately teams follow clear procedural steps to build an integrated project management system.
 
