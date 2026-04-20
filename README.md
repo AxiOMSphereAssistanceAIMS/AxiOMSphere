@@ -45,9 +45,13 @@ Despite the existence of fully standardized processes, there is still no interac
 ​**Operational Logic of the Standard**
 ​The implementation of the standard follows this sequence:
 ​**Defining the Scope:** The process begins by establishing the "field of variation" (the operational scope).
+
 ​**Strategic Alignment:** I define the Asset Management System (AIMS) philosophy, articulate project goals with stakeholders, and delineate investment areas.
+
 ​**Functional Distribution:** Functional descriptions are assigned to departmental agents, and departmental provision documents are generated to codify these roles.
+
 ​**System Integration:** Functionality is linked via an Interface Manager Agent. Specialized "Engineer Agents" are assigned to each department to generate supporting documentation for every function.
+
 ​**Dynamic Management:** The entire ecosystem is supported by an Interface/Manager Agent whose primary task is to orchestrate functional interactions. Any modification of these interactions automatically updates the documentation for all subordinate functions.
 
 ```mermaid
