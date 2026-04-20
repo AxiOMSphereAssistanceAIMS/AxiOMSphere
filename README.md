@@ -345,6 +345,8 @@ graph TD
     L2_1[Organizational Structure Agent]
     L2_2[Financial & Investment Agent]
     L2_3[Legal & Compliance Agent]
+    classDef phase1 fill:#69b7ff,stroke:#333,stroke-width:2px,color:#000;
+    class L2_1,L2_2,L2_3 phase1;
 
     L1 --> L2_1 & L2_2 & L2_3
 
@@ -357,15 +359,9 @@ graph TD
     L3_1[Functional Doc Prep Agent: SAMP]
     L3_2[Functional Doc Prep Agent: Budget]
     L3_3[Functional Doc Prep Agent: Policy]
-
-    L2_1 --> L3_1
-    L2_2 --> L3_2
-    L2_3 --> L3_3
-
-    subgraph "Phase 2: Functional Document Preparation"
-        L3_1
-        L3_2
-        L3_3
+    classDef phase1 fill:#69b7ff,stroke:#333,stroke-width:2px,color:#000;
+    class L3_1,L3_2,L3_3 phase1;
+     L3_3
     end
 
     L4["<b>Interface Manager Agent</b><br/>Integrity Control & Synchronization"]
