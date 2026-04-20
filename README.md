@@ -15,33 +15,8 @@ The name **AxiOMSphere** is a strategic integration of our core technological pi
 The project evolves through a hierarchical deployment of specialized agents, ensuring that operational execution always follows strategic integrity.
 
 ```mermaid
-graph TD
-    Start((START)) --> L1["<b>Level 1: AIMS Governance</b><br/>Project Leadership & Axiom Strategy<br/>(ISO 55001 Policy & Context)"]
 
-    L1 --> L2["<b>Level 2: Organizational Admins</b><br/>Role Mapping & Governance Agents<br/>(ISO 55001 Leadership & Support)"]
-
-    L2 --> L3["<b>Level 3: Functional Architects</b><br/>Document Preparation Agents<br/>(SAMP, Technical Specs, Legal Registers)"]
-
-    L3 --> L4["<b>Level 4: AxiOMSphere Integrity Hub</b><br/>Interface Manager Agent<br/>(MOC, Sync & Data Standards)"]
-
-    L4 --> L5_A["<b>Level 5a: Reliability Agents</b><br/>Maintenance & Inspection"]
-    L4 --> L5_B["<b>Level 5b: Operational Agents</b><br/>SOPs & Execution Control"]
-    L4 --> L5_C["<b>Level 5c: Safety & HR Agents</b><br/>HSE & Competence Management"]
-
-    L5_A & L5_B & L5_C --> L6["<b>Level 6: Analytics & Dashboards</b><br/>Project Health Statistics & KPIs"]
-
-    %% Visual Styles for GitHub
-    style L1 fill:#f9f,stroke:#333,stroke-width:2px
-    style L4 fill:#69f,stroke:#333,stroke-width:3px
-    style L6 fill:#00ff00,stroke:#333,stroke-width:2px
-### Industrial Project Lifecycle Automation · ISO-Aligned · On-Premise Ready
-
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python)](https://python.org)
-[![Standards](https://img.shields.io/badge/ISO-21502%20%7C%2082079%20%7C%209001-green)](#standards)
-[![DocAgent](https://img.shields.io/badge/DocAgent-Dual_Pipeline-purple)](#doc-generation-pipeline)
-
-> **Turning raw engineering requests into ISO-compliant documents in under 10 minutes — fully automated, fully auditable.**
+ 
 
 [🌐 Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/) · [📺 Demo Video](#demo) · [📬 Contact](#contact) · [📋 Apply for Credits](#grant-applications)
 
