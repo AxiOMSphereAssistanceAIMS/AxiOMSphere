@@ -114,7 +114,9 @@ The project evolves through a hierarchical deployment of specialized agents, ens
 
 ```mermaid
 flowchart TD
-    HEADER["🏭 AxiOMSphere Facility — Agent Type Registry\ Axi bot\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAxiOMSphere · Asset Integrity Management · Operations & Maintenance · Sphere"]
+    HEADER["🏭 AxiOMSphere Facility — Agent Type Registry\ Axi
+
+bot\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAxiOMSphere · Asset Integrity Management · Operations & Maintenance · Sphere"]
 
     HEADER --> T1 & T2 & T3 & T4 & T5 & T6 & T7
 
