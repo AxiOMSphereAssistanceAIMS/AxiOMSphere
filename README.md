@@ -120,7 +120,7 @@ bot\n━━━━━━━━━━━━━━━━━━━━━━━━━
 
     HEADER --> T1 & T2 & T3 & T4 & T5 & T6 & T7
 
-    T1["📄 DocAgent\n━━━━━━━━━━━━━━━━━\nDocAgetn Bot\n─────────────────\nCorporate document generation\nfor AIMS launch & operations\nPipeline: R1-70B → Qwen-72B\n→ Cloud AI LLM ISO scoring ≥ 80%\n─────────────────\n⚡ Parallel per department\n✅ Production"]
+    T1["📄 DocAgent\n━━━━━━━━━━━━━━━━━\nDoci Bot\n─────────────────\nCorporate document generation\nfor AIMS launch & operations\nPipeline: R1-70B → Qwen-72B\n→ Cloud AI LLM ISO scoring ≥ 80%\n─────────────────\n⚡ Parallel per department\n✅ Production"]
 
     T2["🗄️ DBAgent\n━━━━━━━━━━━━━━━━━\nOmi Bot\n─────────────────\nDocument archive · OCR pipeline\nRAG semantic memory layer\nSingle Source of Truth\naims_registry.db\n─────────────────\n🔄 Always active\n✅ Production + Extend"]
 
@@ -278,7 +278,7 @@ flowchart LR
 
 ---
 
-## Project Escalation
+## Industrial Project Escalation
 
 ```mermaid
 graph TD
