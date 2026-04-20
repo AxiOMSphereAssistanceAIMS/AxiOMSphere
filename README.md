@@ -187,15 +187,119 @@ flowchart TD
     style DONE fill:#003300,stroke:#66bb6a,color:#e8f5e9
 ```
 
+### Diagram 3A — Agent Build, Test & Tuning Sequence (Flowchart):
+
+```mermaid
+flowchart TD
+    START(["🏭 AxiOMSphere Factory\nAgent Build · Test · Tune Program"])
+
+    subgraph PROD["✅ PRODUCTION — Already Built & Testing"]
+        P1["📄 Axi Bot · DocAgent\n─────────────────\nBuild: R1-70B → Qwen-72B → Gemini pipeline\nTest: ISO compliance score ≥ 80%\nTune: qwen2.5-14B · 6 cycles done ✅\nNext: qwen2.5-72B tuning 🔄\nTarget: score ≥ 0.85 · latency < 10 min"]
+        P2["🗄️ Omi Bot · DBAgent\n─────────────────\nBuild: OCR pipeline + aims_registry.db\nTest: Document registration accuracy\nTest: RAG semantic search precision\nTune: Embedding model nomic/BGE\nTarget: retrieval precision ≥ 90%"]
+        P3["📊 Argus Bot · SysDog\n─────────────────\nBuild: DevOps monitor + queue scheduler\nTest: KPI collection · Alert triggers\nTest: Training loop gold/DPO pairs\nTune: Failure detection thresholds\nTarget: uptime ≥ 99.5% · MTTR < 5 min"]
+        P4["📄 DocAgent · standalone\n─────────────────\nBuild: Independent doc generation module\nTest: Multi-format output · DOCX quality\nTest: ISO clause mapping accuracy\nTune: Prompt templates per doc type\nTarget: ISO score ≥ 0.80 on all doc types"]
+    end
+
+    START --> PROD
+
+    PROD --> GATE1{{"🔒 Gate 1\nProduction agents stable?\nScore targets met?\nArgus monitoring active?"}}
+
+    GATE1 -->|"❌ Fail"| FIX1["🔧 Failure Analysis Loop\n─────────────────\nSysDog collects failure logs\nRCA — Root Cause Analysis\nGenerate fix scripts\nRetune model · Retest\nUpdate gold_pairs.jsonl"]
+    FIX1 --> GATE1
+
+    GATE1 -->|"✅ Pass"| NEXT1
+
+    subgraph NEXT1["🔜 NEXT DEPLOY — Phase 3"]
+        N1["🧠 SysLogicArh\n─────────────────\nBuild: AIMS sync engine\nInterface mapping logic\nTest: Cross-dept doc coherence\nTest: SAMP alignment verification\nTest: Dept ↔ Dept conflict detection\nTune: qwen2.5-72B on AIMS corpus\nTarget: 0 logic conflicts in 100 docs"]
+        N2["🔐 SysPolic\n─────────────────\nBuild: Rights & permissions engine\nMoC registration module\nTest: Access control enforcement\nTest: Document ownership tracking\nTest: Change approval workflow\nTune: Policy rule base fine-tuning\nTarget: 100% MoC compliance · 0 breaches"]
+    end
+
+    NEXT1 --> GATE2{{"🔒 Gate 2\nSysLogicArh coherence ≥ 95%?\nSysPolic 0 access breaches?\nMoC workflow validated?"}}
+
+    GATE2 -->|"❌ Fail"| FIX2["🔧 Failure Analysis Loop\n─────────────────\nLog conflict patterns\nRCA on policy violations\nRetune logic rules\nRetest full workflow"]
+    FIX2 --> GATE2
+
+    GATE2 -->|"✅ Pass"| NEXT2
+
+    subgraph NEXT2["🔜 NEXT DEPLOY — Phase 4"]
+        N3["🔧 SysMR\n─────────────────\nBuild: Script execution engine\nScheduled maintenance runner\nTest: Script safety validation\nTest: Rollback on failure\nTest: SysPolic approval gate\nTest: Scheduled task accuracy\nTune: R1-70B on repair corpus\nTarget: 0 unauthorized changes\n100% rollback success on fail"]
+        N4["🔍 SysRAG\n─────────────────\nBuild: Vector index over aims_registry\nSemantic search API for agents\nTest: Retrieval relevance score\nTest: Inter-agent query response\nTest: Context window optimization\nTune: nomic-embed · BGE models\nTarget: relevance ≥ 0.90\nlatency < 2 sec per query"]
+    end
+
+    GATE2 --> NEXT2
+
+    NEXT2 --> GATE3{{"🔒 Gate 3\nSysMR 0 unauthorized changes?\nSysRAG relevance ≥ 0.90?\nAll 7 agents integrated?\nOrchestrator routing stable?"}}
+
+    GATE3 -->|"❌ Fail"| FIX3["🔧 Failure Analysis Loop\n─────────────────\nFull system integration test\nEnd-to-end doc generation test\nRCA on integration failures\nTune all models · Retest"]
+    FIX3 --> GATE3
+
+    GATE3 -->|"✅ Pass"| DONE
+
+    subgraph TUNE["🔄 Continuous Tuning Loop — All Stages"]
+        T1["qwen2.5-14B\n6 cycles done ✅\nBaseline established"]
+        T2["qwen2.5-72B\nIn progress 🔄\nTarget: score ≥ 0.85"]
+        T3["deepseek-r1:70b\nNext after 72B\nTarget: draft quality +15%"]
+        T4["Gemini Flash/Pro\nISO scoring gate\nTarget: 0.0–1.0 calibrated"]
+        T1 --> T2 --> T3
+        T3 -.->|"scoring"| T4
+    end
+
+    TUNE -.->|"feeds improvement"| FIX1 & FIX2 & FIX3
+
+    DONE(["✅ AxiOMSphere FULLY OPERATIONAL\n7 Agents · ISO 55001 Compliant\nCorporate Bot Factory Ready"])
+
+    style START fill:#0d1117,stroke:#58a6ff,color:#e6edf3
+    style DONE fill:#003300,stroke:#66bb6a,color:#e8f5e9
+    style GATE1 fill:#1c1a00,stroke:#ffca28,color:#fff9c4
+    style GATE2 fill:#1c1a00,stroke:#ffca28,color:#fff9c4
+    style GATE3 fill:#1c1a00,stroke:#ffca28,color:#fff9c4
+    style FIX1 fill:#1c0000,stroke:#ef5350,color:#ffcdd2
+    style FIX2 fill:#1c0000,stroke:#ef5350,color:#ffcdd2
+    style FIX3 fill:#1c0000,stroke:#ef5350,color:#ffcdd2
+    style PROD fill:#003300,stroke:#66bb6a,color:#c8e6c9
+    style NEXT1 fill:#0a1628,stroke:#4fc3f7,color:#b3e5fc
+    style NEXT2 fill:#1a0a2e,stroke:#9c6df4,color:#e9d5ff
+    style TUNE fill:#1b0033,stroke:#ce93d8,color:#f3e5f5
+```
+
+### Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
+
+```mermaid
+gantt
+    title AxiOMSphere — Agent Build · Test · Tune Roadmap
+    dateFormat  YYYY-MM
+    section ✅ Phase 1 · Foundation Agents
+    Axi Bot · DocAgent build & test         :done, a1, 2025-10, 4M
+    Omi Bot · DBAgent OCR pipeline          :done, a2, 2025-11, 3M
+    Argus Bot · SysDog monitor              :done, a3, 2026-01, 2M
+    DocAgent standalone module              :done, a4, 2026-02, 2M
+    section 🔄 Phase 2 · Model Tuning
+    qwen2.5-14B · 6 tuning cycles          :done, b1, 2025-12, 4M
+    qwen2.5-72B · tuning in progress       :active, b2, 2026-04, 3M
+    Gemini scoring gate calibration         :active, b3, 2026-03, 2M
+    deepseek-r1:70b · draft quality tune   :b4, 2026-07, 3M
+    section 🔜 Phase 3 · Logic & Policy Agents
+    SysLogicArh · build                    :c1, 2026-07, 2M
+    SysLogicArh · test & tune              :c2, 2026-09, 2M
+    SysPolic · build                       :c3, 2026-08, 2M
+    SysPolic · test & tune                 :c4, 2026-10, 2M
+    Gate 2 · integration validation        :milestone, c5, 2026-11, 0M
+    section 🔜 Phase 4 · Execution Agents
+    SysMR · build & safety validation      :d1, 2026-11, 2M
+    SysRAG · vector index build            :d2, 2026-11, 2M
+    SysMR + SysRAG · integration test      :d3, 2026-12, 2M
+    Gate 3 · full system validation        :milestone, d4, 2027-02, 0M
+    section 🏭 Phase 5 · Enterprise Launch
+    7-agent orchestration test             :e1, 2027-02, 2M
+    On-premise enterprise deployment       :e2, 2027-03, 3M
+    ISO 55001 certification audit          :e3, 2027-05, 2M
+    Corporate Bot Factory launch           :milestone, e4, 2027-06, 0M
+```
 
 
 
 ---
 
-### Diagram 3 — Agent Deployment Matrix: AxiOMSphere × Plant Project Lifecycle
-
-> Which agent types are active at each stage. Agents combine and run in parallel within each stage.
-> SysLogicArh acts as Interface Manager — active across all stages simultaneously.
 
 ```mermaid
 flowchart LR
