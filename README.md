@@ -54,10 +54,6 @@ Despite the existence of fully standardized processes, there is still no interac
 
 ​**Dynamic Management:** The entire ecosystem is supported by an Interface/Manager Agent whose primary task is to orchestrate functional interactions. Any modification of these interactions automatically updates the documentation for all subordinate functions.
 
-graph TD
-    %% Шаг 1: Точка входа
-    Step1(<b>ШАГ 1: CONCEPT & THE HOOK</b><br/>Создание 'Бота-помощника' для инженеров<br/>База: ISO 21502 + ISO 55001)
-
 ```mermaid
     graph TD
     %% Define Nodes with clean text
