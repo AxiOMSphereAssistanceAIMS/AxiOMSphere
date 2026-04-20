@@ -334,8 +334,6 @@ flowchart LR
     C --- C1["7-agent pass >= 95%\n0 critical policy breaches"]
     D --- D1["UAT signed\nMTTR <= 30m\nAudit closed"]
 ```
-
-
 ## Industrial Project Escalation
 
 ```mermaid
@@ -345,8 +343,6 @@ graph TD
     L2_1[Organizational Structure Agent]
     L2_2[Financial & Investment Agent]
     L2_3[Legal & Compliance Agent]
-    classDef phase1 fill:#69b7ff,stroke:#333,stroke-width:2px,color:#000;
-    class L2_1,L2_2,L2_3 phase1;
 
     L1 --> L2_1 & L2_2 & L2_3
 
@@ -359,9 +355,15 @@ graph TD
     L3_1[Functional Doc Prep Agent: SAMP]
     L3_2[Functional Doc Prep Agent: Budget]
     L3_3[Functional Doc Prep Agent: Policy]
-    classDef phase1 fill:#69b7ff,stroke:#333,stroke-width:2px,color:#000;
-    class L3_1,L3_2,L3_3 phase1;
-     L3_3
+
+    L2_1 --> L3_1
+    L2_2 --> L3_2
+    L2_3 --> L3_3
+
+    subgraph "Phase 2: Functional Document Preparation"
+        L3_1
+        L3_2
+        L3_3
     end
 
     L4["<b>Interface Manager Agent</b><br/>Integrity Control & Synchronization"]
@@ -385,12 +387,14 @@ graph TD
     L5_1 & L5_2 & L5_3 --> L6
     L6 -.->|Feedback Loop| L1
 
+    classDef phase1 fill:#69b7ff,stroke:#333,stroke-width:2px,color:#000;
+    class L2_1,L2_2,L2_3 phase1;
+    class L3_1,L3_2,L3_3 phase1;
+
     style L1 fill:#f9f,stroke:#333,stroke-width:2px
     style L4 fill:#69f,stroke:#333,stroke-width:3px
     style L6 fill:#00ff00,stroke:#333,stroke-width:2px
 ```
-
----
 
 ## Document Generation Agent Structure
 
@@ -404,26 +408,13 @@ graph TD
         D -->|No| F[Qwen revises with recommendations]
         F --> D
     end
-
-    subgraph "Phase 2 — Multi-Agent Orchestration"
-        E --> G{AIMS Orchestrator}
-        G --> H["📊 Financial Department Orchestration Agent"]
-        G --> I["⚠️ Risk & Safety Agent"]
-        G --> J["📋 Technical Standards Agent"]
-        G --> K["📁 Registry & OCR Agent"]
-    end
-
-    subgraph "Phase 3 — Enterprise Hub: Bot Factory"
-        H & I & J & K --> L[("Single Source of Truth\naims_registry.db")]
-        L --> M["🔍 Backend Reliability Agents\nArgus Monitor"]
-        M --> N["🏢 On-Premise / Cloud\nCorporate Solution"]
-    end
+    E --> L["Master Document Registration\nin aims_registry.db"]
 
     style B fill:#c084fc,stroke:#7e22ce,stroke-width:2px,color:#fff
     style E fill:#4ade80,stroke:#166534,stroke-width:2px
     style L fill:#60a5fa,stroke:#1d4ed8,stroke-width:2px
-    style N fill:#34d399,stroke:#065f46,stroke-width:3px
 ```
+
 
 ---
 
