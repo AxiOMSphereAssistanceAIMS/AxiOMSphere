@@ -24,7 +24,7 @@ An **industrial multi-agent platform** for the launch of production projects, ba
 
 The AxiOMSphere agent factory is structured around the **GFMAM Asset Management Landscape** — 8 subject areas forming the complete ISO 55001-aligned process framework. Each AxiOMSphere agent type maps directly to one or more of these subject areas.
 
-![GFMAM Asset Management Landscape](docs_photo_2026-04-20_13-53-36.jpg)
+![GFMAM Asset Management Landscape](docs/photo_2026-04-20_13-53-36.jpg)
 
 > *Global Forum on Maintenance and Asset Management (GFMAM) — aligned with ISO 55001:2024*
 
