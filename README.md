@@ -4,10 +4,10 @@
 ## 🧩 Project Nomenclature
 The name **AxiOMSphere** is a strategic integration of our core technological pillars:
 
-* [cite_start]**Axiom**: Representing the foundational, self-evident precision of international standards (ISO 55001/55002)[cite: 203].
-* [cite_start]**AIMS**: **A**sset **I**ntegrity **M**anagement **S**ystem — the central intelligence core[cite: 1].
-* [cite_start]**O&M**: **O**peration & **M**aintenance — focusing on the high-value phase of the industrial lifecycle[cite: 101, 112].
-* [cite_start]**Sphere**: A unified, 360-degree multi-agent ecosystem ensuring a "Single Source of Truth"[cite: 215].
+* **Axiom**: Representing the foundational, self-evident precision of international standards. 
+* **AIMS**: **A**sset **I**ntegrity **M**anagement **S**ystem — the central intelligence core. 
+* **O&M**: **O**peration & **M**aintenance — focusing on the high-value phase of the industrial lifecycle. 
+* **Sphere**: A unified, 360-degree multi-agent ecosystem ensuring a "Single Source of Truth".
 
 ---
 
