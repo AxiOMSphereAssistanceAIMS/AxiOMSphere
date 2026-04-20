@@ -72,23 +72,23 @@ The project evolves through a hierarchical deployment of specialized agents, ens
 
 ```mermaid
 flowchart TD
-    HEADER["🏭 AxiOMSphere Facility — Agent Type Registry\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAxiOMSphere · Asset Integrity Management · Operations & Maintenance · Sphere"]
+    HEADER["🏭 AxiOMSphere Facility — Agent Type Registry\ Axi bot\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAxiOMSphere · Asset Integrity Management · Operations & Maintenance · Sphere"]
 
     HEADER --> T1 & T2 & T3 & T4 & T5 & T6 & T7
 
-    T1["📄 DocAgent\n━━━━━━━━━━━━━━━━━\nAxi Bot\n─────────────────\nCorporate document generation\nfor AIMS launch & operations\nPipeline: R1-70B → Qwen-72B\n→ Cloud AI LLM ISO scoring ≥ 80%\n─────────────────\n⚡ Parallel per department\n✅ Production"]
+    T1["📄 DocAgent\n━━━━━━━━━━━━━━━━━\nDocAgetn Bot\n─────────────────\nCorporate document generation\nfor AIMS launch & operations\nPipeline: R1-70B → Qwen-72B\n→ Cloud AI LLM ISO scoring ≥ 80%\n─────────────────\n⚡ Parallel per department\n✅ Production"]
 
     T2["🗄️ DBAgent\n━━━━━━━━━━━━━━━━━\nOmi Bot\n─────────────────\nDocument archive · OCR pipeline\nRAG semantic memory layer\nSingle Source of Truth\naims_registry.db\n─────────────────\n🔄 Always active\n✅ Production + Extend"]
 
     T3["📊 SysDog\n━━━━━━━━━━━━━━━━━\nArgus Bot\n─────────────────\nKPI collection & monitoring\nScheduler · Queue orchestration\nCyclic maintenance plans\nFailure analysis · Model tuning\nTraining loop supervision\n─────────────────\n🔄 Continuous\n✅ Production"]
 
-    T4["🧠 SysLogicArh\n━━━━━━━━━━━━━━━━━\Logi Bot\n─────────────────\nLogic & synchronization\nCross-dept AIMS alignment\nFunctional interface mapping\nSAMP adherence verification\nDept ↔ Dept coherence\n─────────────────\n⚡ Parallel per process\n🔜 Next deploy"]
+    T4["🧠 SysLogicArh\n━━━━━━━━━━━━━━━━━\nLogi Bot\n─────────────────\nLogic & synchronization\nCross-dept AIMS alignment\nFunctional interface mapping\nSAMP adherence verification\nDept ↔ Dept coherence\n─────────────────\n⚡ Parallel per process\n🔜 Next deploy"]
 
-    T5["🔐 SysPolic\n━━━━━━━━━━━━━━━━━\Poli bot\n─────────────────\nAccess rights & permissions\nDocument ownership registry\nMoC control & registration\nSecurity policy enforcement\nModification gate keeper\n─────────────────\n🔒 Blocking gate\n🔜 Next deploy"]
+    T5["🔐 SysPolic\n━━━━━━━━━━━━━━━━━\nPoli bot\n─────────────────\nAccess rights & permissions\nDocument ownership registry\nMoC control & registration\nSecurity policy enforcement\nModification gate keeper\n─────────────────\n🔒 Blocking gate\n🔜 Next deploy"]
 
-    T6["🔧 SysMR\n━━━━━━━━━━━━━━━━━\Many Bot\n─────────────────\nReceives ready repair scripts\nfrom SysDog analysis\nExecutes code fixes & patches\nSystem file modifications\nScheduled maintenance tasks\nRequires SysPolic approval\n─────────────────\n⚡ Scheduled / on-demand\n🔜 Next deploy"]
+    T6["🔧 SysMR\n━━━━━━━━━━━━━━━━━\nMainy Bot\n─────────────────\nReceives ready repair scripts\nfrom SysDog analysis\nExecutes code fixes & patches\nSystem file modifications\nScheduled maintenance tasks\nRequires SysPolic approval\n─────────────────\n⚡ Scheduled / on-demand\n🔜 Next deploy"]
 
-    T7["🔍 SysRAG\n━━━━━━━━━━━━━━━━━\Knomi bot\n─────────────────\nSemantic search layer\nContext provider for all agents\nVector index over aims_registry\nInter-agent knowledge requests\nEmbedding: nomic / BGE\n─────────────────\n🔄 Background / on-demand\n🔜 Integrate into DBAgent"]
+    T7["🔍 SysRAG\n━━━━━━━━━━━━━━━━━\nKnomi bot\n─────────────────\nSemantic search layer\nContext provider for all agents\nVector index over aims_registry\nInter-agent knowledge requests\nEmbedding: nomic / BGE\n─────────────────\n🔄 Background / on-demand\n🔜 Integrate into DBAgent"]
 
     style HEADER fill:#0d1117,stroke:#58a6ff,color:#e6edf3
 ```
