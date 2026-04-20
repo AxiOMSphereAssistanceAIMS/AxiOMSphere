@@ -264,7 +264,7 @@ flowchart TD
 
 
 ### Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
-# AxiOMSphere / AIMS — Master Deployment Roadmap 
+### AxiOMSphere / AIMS — Master Deployment Roadmap 
 
 ```mermaid
 gantt
@@ -300,7 +300,7 @@ gantt
     Corporate Bot Factory launch                              :milestone, gD, after p4d, 0M
 ```
 
-## Gate KPI Criteria (add under the chart in README)
+### Gate KPI Criteria (add under the chart in README)
 
 - **Gate A — Foundation ready**
   - OCR/register->sync success rate >= 98% for 30 days.
@@ -322,7 +322,7 @@ gantt
   - MTTR for platform incidents <= 30 minutes in pilot.
   - Audit nonconformities closed or formally accepted.
 
-## Gate Flow (for pitch deck)
+### Gate Flow (for pitch deck)
 
 ```mermaid
 flowchart LR
@@ -386,10 +386,6 @@ gantt
     On-premise enterprise deployment   :a10, 2026-12, 4M
     Corporate Bot Factory launch       :a11, 2027-03, 3M
 ```
-
-
----
-
 
 ```mermaid
 flowchart LR
@@ -478,7 +474,6 @@ flowchart LR
     ORCH -.->|"always active"| TEJ & FEED & DD & EPC & PO & OM & DECOM
 ```
 
----
 
 ## Industrial Project Escalation
 
