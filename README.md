@@ -194,7 +194,7 @@ flowchart TD
     START(["🏭 AxiOMSphere Factory\nAgent Build · Test · Tune Program"])
 
     subgraph PROD["✅ PRODUCTION — Already Built & Testing"]
-        P1["📄 Axi Bot · DocAgent\n─────────────────\nBuild: R1-70B → Qwen-72B → Gemini pipeline\nTest: ISO compliance score ≥ 80%\nTune: qwen2.5-14B · 6 cycles done ✅\nNext: qwen2.5-72B tuning 🔄\nTarget: score ≥ 0.85 · latency < 10 min"]
+        P1["📄 Axi Bot · DocAgent\n─────────────────\nBuild: R1-70B → Qwen-72B → Cloud API LLM pipeline\nTest: ISO compliance score ≥ 80%\nTune: qwen2.5-14B · 6 cycles done ✅\nNext: qwen2.5-72B tuning 🔄\nTarget: score ≥ 0.85 · latency < 10 min"]
         P2["🗄️ Omi Bot · DBAgent\n─────────────────\nBuild: OCR pipeline + aims_registry.db\nTest: Document registration accuracy\nTest: RAG semantic search precision\nTune: Embedding model nomic/BGE\nTarget: retrieval precision ≥ 90%"]
         P3["📊 Argus Bot · SysDog\n─────────────────\nBuild: DevOps monitor + queue scheduler\nTest: KPI collection · Alert triggers\nTest: Training loop gold/DPO pairs\nTune: Failure detection thresholds\nTarget: uptime ≥ 99.5% · MTTR < 5 min"]
         P4["📄 DocAgent · standalone\n─────────────────\nBuild: Independent doc generation module\nTest: Multi-format output · DOCX quality\nTest: ISO clause mapping accuracy\nTune: Prompt templates per doc type\nTarget: ISO score ≥ 0.80 on all doc types"]
