@@ -47,7 +47,7 @@ flowchart TD
 
     DEC --> DONE([✅ Project Closed])
 
-    IMP -.->|"PDCA loop\nPlan-Do-Check-Act"| OM
+    IMP -.->|PDCA loop| OM
 
     style START fill:#4ade80,stroke:#166534,color:#000
     style DONE  fill:#4ade80,stroke:#166534,color:#000
