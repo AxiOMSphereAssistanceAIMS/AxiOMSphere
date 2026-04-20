@@ -54,30 +54,69 @@ Despite the existence of fully standardized processes, there is still no interac
 
 ​**Dynamic Management:** The entire ecosystem is supported by an Interface/Manager Agent whose primary task is to orchestrate functional interactions. Any modification of these interactions automatically updates the documentation for all subordinate functions.
 
+Project Escalation
 ```mermaid
-    graph TD
-    %% Define Nodes with clean text
-    Step1["Step 1: CONCEPT & THE HOOK - AI Assistant (ISO 21502/55001)"]
-    Step2["Step 2: TRACTION & DATA - Community Feedback & Real Use-Cases"]
-    Step3["Step 3: MULTI-AGENT MESH - Interface Manager & Doc Sync"]
-    Step4["Step 4: ENTERPRISE FACTORY - On-Premise Corporate Integration"]
+graph TD
+    Start((START)) --> L1[<b>Level 1: Project Leadership & Strategy</b><br/>Project Manager Agent / Strategic Alignment]
+    
+    L2_1[Organizational Structure Agent]
+    L2_2[Financial & Investment Agent]
+    L2_3[Legal & Compliance Agent]
 
-    %% Define Connections
-    Step1 -->|User Acquisition| Step2
-    Step2 -->|Architecture Design| Step3
-    Step3 -->|Enterprise Sales| Step4
+    L1 --> L2_1 & L2_2 & L2_3
 
-    %% Apply Styles
-    style Step1 fill:#f9f,stroke:#333,stroke-width:2px
-    style Step4 fill:#00ff00,stroke:#333,stroke-width:4px
+    subgraph "Phase 1: Project Setup"
+        L2_1
+        L2_2
+        L2_3
+    end
+
+    L3_1[Functional Doc Prep Agent: SAMP]
+    L3_2[Functional Doc Prep Agent: Budget]
+    L3_3[Functional Doc Prep Agent: Policy]
+
+    L2_1 --> L3_1
+    L2_2 --> L3_2
+    L2_3 --> L3_3
+
+    subgraph "Phase 2: Functional Document Preparation"
+        L3_1
+        L3_2
+        L3_3
+    end
+
+    L4[<b>Interface Manager Agent</b><br/>Integrity Control & Synchronization]
+    
+    L3_1 & L3_2 & L3_3 --> L4
+
+    L5_1[Asset Integrity & Reliability Agent]
+    L5_2[Operational Excellence Agent]
+    L5_3[HSE & HR Safety Agent]
+
+    L4 --> L5_1 --> L5_2 --> L5_3
+
+    subgraph "Phase 3: Execution & Operations"
+        L5_1
+        L5_2
+        L5_3
+    end
+
+    L6[<b>Dashboard & Analytics Agent</b><br/>Statistics, KPIs & Project Health]
+
+    L5_1 & L5_2 & L5_3 --> L6
+    L6 -.->|Feedback Loop| L1
+
+    style L1 fill:#f9f,stroke:#333,stroke-width:2px
+    style L4 fill:#69f,stroke:#333,stroke-width:3px
+    style L6 fill:#00ff00,stroke:#333,stroke-width:2px
 ```
-
+Document Generation Agent structure
 ```mermaid
 graph TD
     subgraph "Phase 1 — The Hook: Engineer Assistant"
         A[Individual Engineer] -->|Natural language request| B(AI Document Assistant\nAxi Bot)
-        B -->|Dual pipeline: R1-70B → Qwen-72B| C[Structured Document Draft]
-        C -->|Gemini Quality Gate\nISO 45001 · ISO 21502 · IEC 82079| D{Score ≥ 80%?}
+        B -->|Dual pipeline, Logic: R1-70B → Qwen-72B| C[Structured Document Draft]
+        C -->|Cloud Quality Gate\nISO 45001 · ISO 21502 · IEC 82079| D{Score ≥ 80%?}
         D -->|Yes| E[✅ Approved Document .docx]
         D -->|No| F[Qwen revises with recommendations]
         F --> D
@@ -85,8 +124,8 @@ graph TD
 
     subgraph "Phase 2 — Multi-Agent Orchestration"
         E --> G{AIMS Orchestrator}
-        G --> H[📊 Budget Agent]
-        G --> I[⚠️ Risk & Safety Agent]
+        G --> H[📊 Financial Department Orchestration Agent]
+        G --> I[⚠️  Agent]
         G --> J[📋 Technical Standards Agent]
         G --> K[📁 Registry & OCR Agent]
     end
