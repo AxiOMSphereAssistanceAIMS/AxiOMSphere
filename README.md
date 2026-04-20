@@ -265,7 +265,6 @@ flowchart TD
 
 ### Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
 
-![GFMAM Asset Management Landscape](docs/axiompshere_roadmap_2028_final.svg)
 
 ```mermaid
 gantt
@@ -298,7 +297,26 @@ gantt
     ISO 55001 certification audit          :e3, 2027-05, 2M
     Corporate Bot Factory launch           :milestone, e4, 2027-06, 0M
 ```
-
+```mermaid
+gantt
+    title AIMS Platform — Phased Delivery
+    dateFormat  YYYY-MM
+    section Phase 1 · Foundation
+    Doc registry + OCR pipeline        :done, a1, 2025-10, 6M
+    Axi + Omi bots in production       :done, a2, 2026-01, 3M
+    section Phase 2 · Intelligence
+    Dual pipeline R1→Qwen→Gemini       :done, a3, 2026-03, 2M
+    Fine-tuning loop gold+DPO          :active, a4, 2026-04, 3M
+    section Phase 3 · Agent Mesh
+    SysLogicArh — Logic & sync agent   :a5, 2026-07, 3M
+    SysPolic — Policy & rights agent   :a6, 2026-08, 2M
+    SysMR — Maintenance & repair agent :a7, 2026-09, 3M
+    SysRAG — Semantic memory layer     :a8, 2026-10, 2M
+    section Phase 4 · Enterprise
+    HTTP/API gateway                   :a9, 2026-11, 2M
+    On-premise enterprise deployment   :a10, 2026-12, 4M
+    Corporate Bot Factory launch       :a11, 2027-03, 3M
+```
 
 
 ---
@@ -647,27 +665,8 @@ print(f"Feedback: {feedback}")
 ---
 
 ## Roadmap
+![GFMAM Asset Management Landscape](docs/axiompshere_roadmap_2028_final.svg)
 
-```mermaid
-gantt
-    title AIMS Platform — Phased Delivery
-    dateFormat  YYYY-MM
-    section Phase 1 · Foundation
-    Doc registry + OCR pipeline        :done, a1, 2025-10, 6M
-    Axi + Omi bots in production       :done, a2, 2026-01, 3M
-    section Phase 2 · Intelligence
-    Dual pipeline R1→Qwen→Gemini       :done, a3, 2026-03, 2M
-    Fine-tuning loop gold+DPO          :active, a4, 2026-04, 3M
-    section Phase 3 · Agent Mesh
-    SysLogicArh — Logic & sync agent   :a5, 2026-07, 3M
-    SysPolic — Policy & rights agent   :a6, 2026-08, 2M
-    SysMR — Maintenance & repair agent :a7, 2026-09, 3M
-    SysRAG — Semantic memory layer     :a8, 2026-10, 2M
-    section Phase 4 · Enterprise
-    HTTP/API gateway                   :a9, 2026-11, 2M
-    On-premise enterprise deployment   :a10, 2026-12, 4M
-    Corporate Bot Factory launch       :a11, 2027-03, 3M
-```
 
 ---
 
