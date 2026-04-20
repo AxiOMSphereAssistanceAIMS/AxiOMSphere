@@ -263,41 +263,40 @@ flowchart TD
 ```
 
 
-### Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
+## Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
 ### AxiOMSphere / AIMS — Master Deployment Roadmap 
 
 ```mermaid
 gantt
     title AxiOMSphere - Master Agent Deployment Roadmap
     dateFormat  YYYY-MM-DD
-    axisFormat  %Y-%m
 
     section Phase 1 - Foundation
-    DocAgent + DBAgent: registry and OCR baseline             :done, p1a, 2025-10-01, 120d
-    Axi + Omi production hardening                            :done, p1b, 2026-02-01, 60d
-    SysDog monitoring baseline (KPI + alerts)                :done, p1c, 2026-04-01, 30d
-    Gate A - Foundation ready                                 :milestone, gA, 2026-05-01, 1d
+    DocAgent and DBAgent registry OCR baseline                :done, p1a, 2025-10-01, 2026-01-31
+    Axi and Omi production hardening                          :done, p1b, 2026-02-01, 2026-03-31
+    SysDog monitoring KPI and alerts                          :done, p1c, 2026-04-01, 2026-04-30
+    Gate A Foundation ready                                   :done, gA, 2026-05-01, 2026-05-02
 
     section Phase 2 - Intelligence
-    Dual pipeline (R1 -> Qwen -> Gemini scoring)              :done, p2a, 2026-03-01, 60d
-    Fine-tuning loop (gold set + DPO, 6 cycles)              :active, p2b, 2026-04-01, 90d
-    72B quality calibration + evaluator alignment             :active, p2c, 2026-07-01, 60d
-    Gate B - Model quality and safety                         :milestone, gB, 2026-09-01, 1d
+    Dual pipeline R1 to Qwen to Gemini scoring                :done, p2a, 2026-03-01, 2026-04-30
+    Fine tuning loop gold set and DPO                         :active, p2b, 2026-04-01, 2026-06-30
+    Model quality calibration and evaluator alignment         :active, p2c, 2026-07-01, 2026-08-31
+    Gate B Model quality and safety                           :active, gB, 2026-09-01, 2026-09-02
 
     section Phase 3 - Agent Mesh
-    SysLogicArch build (cross-agent logic and sync)           :p3a, 2026-07-01, 60d
-    SysPolicy build (rights, ownership, approval matrix)      :p3b, 2026-08-01, 60d
-    SysMR build (maintenance and repair guardrails)           :p3c, 2026-09-01, 60d
-    SysRAG build (semantic memory and retrieval layer)        :p3d, 2026-10-01, 60d
-    Mesh integration test (7-agent orchestration)             :p3e, 2026-12-01, 60d
-    Gate C - Multi-agent integration validated                :milestone, gC, 2027-02-01, 1d
+    SysLogicArch cross agent logic and sync build             :p3a, 2026-07-01, 2026-08-31
+    SysPolicy rights ownership approval build                 :p3b, 2026-08-01, 2026-09-30
+    SysMR maintenance and repair guardrails build             :p3c, 2026-09-01, 2026-10-31
+    SysRAG semantic memory and retrieval build                :p3d, 2026-10-01, 2026-11-30
+    Mesh integration test seven agent orchestration           :p3e, 2026-12-01, 2027-01-31
+    Gate C Multi agent integration validated                  :gC, 2027-02-01, 2027-02-02
 
     section Phase 4 - Enterprise Delivery
-    HTTP/API gateway and auth controls                        :p4a, 2026-11-01, 60d
-    On-prem enterprise deployment                             :p4b, 2027-02-01, 120d
-    ISO 55001 pre-audit and corrective actions                :p4c, 2027-06-01, 30d
-    ISO 55001 certification audit                             :p4d, 2027-07-01, 30d
-    Corporate Bot Factory launch                              :milestone, gD, 2027-08-01, 1d
+    HTTP API gateway and auth controls                        :p4a, 2026-11-01, 2026-12-31
+    On prem enterprise deployment                             :p4b, 2027-02-01, 2027-05-31
+    ISO 55001 pre audit and corrective actions                :p4c, 2027-06-01, 2027-06-30
+    ISO 55001 certification audit                             :p4d, 2027-07-01, 2027-07-31
+    Corporate Bot Factory launch                              :gD, 2027-08-01, 2027-08-02
 ```
 
 ### Gate KPI Criteria (add under the chart in README)
@@ -334,144 +333,6 @@ flowchart LR
     B --- B1["Relevance >= 0.85\nFormat compliance >= 95%"]
     C --- C1["7-agent pass >= 95%\n0 critical policy breaches"]
     D --- D1["UAT signed\nMTTR <= 30m\nAudit closed"]
-```
-```mermaid
-gantt
-    title AxiOMSphere — Agent Build · Test · Tune Roadmap
-    dateFormat  YYYY-MM
-    section ✅ Phase 1 · Foundation Agents
-    Axi Bot · DocAgent build & test         :done, a1, 2025-10, 4M
-    Omi Bot · DBAgent OCR pipeline          :done, a2, 2025-11, 3M
-    Argus Bot · SysDog monitor              :done, a3, 2026-01, 2M
-    DocAgent standalone module              :done, a4, 2026-02, 2M
-    section 🔄 Phase 2 · Model Tuning
-    qwen2.5-14B · 6 tuning cycles          :done, b1, 2025-12, 4M
-    qwen2.5-72B · tuning in progress       :active, b2, 2026-04, 3M
-    Gemini scoring gate calibration         :active, b3, 2026-03, 2M
-    deepseek-r1:70b · draft quality tune   :b4, 2026-07, 3M
-    section 🔜 Phase 3 · Logic & Policy Agents
-    SysLogicArh · build                    :c1, 2026-07, 2M
-    SysLogicArh · test & tune              :c2, 2026-09, 2M
-    SysPolic · build                       :c3, 2026-08, 2M
-    SysPolic · test & tune                 :c4, 2026-10, 2M
-    Gate 2 · integration validation        :milestone, c5, 2026-11, 0M
-    section 🔜 Phase 4 · Execution Agents
-    SysMR · build & safety validation      :d1, 2026-11, 2M
-    SysRAG · vector index build            :d2, 2026-11, 2M
-    SysMR + SysRAG · integration test      :d3, 2026-12, 2M
-    Gate 3 · full system validation        :milestone, d4, 2027-02, 0M
-    section 🏭 Phase 5 · Enterprise Launch
-    7-agent orchestration test             :e1, 2027-02, 2M
-    On-premise enterprise deployment       :e2, 2027-03, 3M
-    ISO 55001 certification audit          :e3, 2027-05, 2M
-    Corporate Bot Factory launch           :milestone, e4, 2027-06, 0M
-```
-```mermaid
-gantt
-    title AIMS Platform — Phased Delivery
-    dateFormat  YYYY-MM
-    section Phase 1 · Foundation
-    Doc registry + OCR pipeline        :done, a1, 2025-10, 6M
-    Axi + Omi bots in production       :done, a2, 2026-01, 3M
-    section Phase 2 · Intelligence
-    Dual pipeline R1→Qwen→Gemini       :done, a3, 2026-03, 2M
-    Fine-tuning loop gold+DPO          :active, a4, 2026-04, 3M
-    section Phase 3 · Agent Mesh
-    SysLogicArh — Logic & sync agent   :a5, 2026-07, 3M
-    SysPolic — Policy & rights agent   :a6, 2026-08, 2M
-    SysMR — Maintenance & repair agent :a7, 2026-09, 3M
-    SysRAG — Semantic memory layer     :a8, 2026-10, 2M
-    section Phase 4 · Enterprise
-    HTTP/API gateway                   :a9, 2026-11, 2M
-    On-premise enterprise deployment   :a10, 2026-12, 4M
-    Corporate Bot Factory launch       :a11, 2027-03, 3M
-```
-
-```mermaid
-flowchart LR
-    subgraph LEGEND["Legend"]
-        L1["🟢 Active / Core"]
-        L2["🟡 Partial / Advisory"]
-        L3["⚫ Not applicable"]
-    end
-
-    subgraph TEJ["Stage 0 · TEJ"]
-        TEJ1["📄 DocAgent\nFeasibility docs\nBusiness case 🟢"]
-        TEJ2["🗄️ DBAgent\nRegistry init\nDoc archive 🟢"]
-        TEJ3["📊 SysDog\nBaseline KPI\ndefinition 🟡"]
-        TEJ4["🧠 SysLogicArh\nScope mapping\nStakeholder logic 🟢"]
-        TEJ5["🔐 SysPolic\nInitial rights\n& ownership 🟢"]
-        TEJ6["🔧 SysMR\n— ⚫"]
-        TEJ7["🔍 SysRAG\nISO knowledge\nbase index 🟢"]
-    end
-
-    subgraph FEED["Stage 1 · FEED"]
-        FEED1["📄 DocAgent\nSAMP · Policy\nObjectives docs 🟢"]
-        FEED2["🗄️ DBAgent\nSAMP storage\nVersion control 🟢"]
-        FEED3["📊 SysDog\nKPI framework\nReporting setup 🟢"]
-        FEED4["🧠 SysLogicArh\nDept alignment\nFunctional sync 🟢"]
-        FEED5["🔐 SysPolic\nMoC framework\nApproval matrix 🟢"]
-        FEED6["🔧 SysMR\n— ⚫"]
-        FEED7["🔍 SysRAG\nContext for\nSAMP drafting 🟢"]
-    end
-
-    subgraph DD["Stage 2 · DD"]
-        DD1["📄 DocAgent\nGap analysis\nCompetency reports 🟢"]
-        DD2["🗄️ DBAgent\nAsset data import\nOCR legacy docs 🟢"]
-        DD3["📊 SysDog\nGap scoring\nMaturity metrics 🟢"]
-        DD4["🧠 SysLogicArh\nProcess mapping\nISO clause match 🟢"]
-        DD5["🔐 SysPolic\nData ownership\nAccess rights 🟢"]
-        DD6["🔧 SysMR\n— ⚫"]
-        DD7["🔍 SysRAG\nLegacy doc\nsemantic search 🟢"]
-    end
-
-    subgraph EPC["Stage 3 · EPC"]
-        EPC1["📄 DocAgent\nTech specs\nQA docs · ITPs 🟢"]
-        EPC2["🗄️ DBAgent\nAsset register\nTagging & OCR 🟢"]
-        EPC3["📊 SysDog\nMilestone tracking\nQuality metrics 🟢"]
-        EPC4["🧠 SysLogicArh\nDesign ↔ Ops\nalignment 🟡"]
-        EPC5["🔐 SysPolic\nDocument control\nChange approval 🟢"]
-        EPC6["🔧 SysMR\nPunch list\nscripts 🟡"]
-        EPC7["🔍 SysRAG\nSpec retrieval\nfor engineers 🟢"]
-    end
-
-    subgraph PO["Stage 4 · Pre-Ops"]
-        PO1["📄 DocAgent\nSOPs · Permits\nSafety procs 🟢"]
-        PO2["🗄️ DBAgent\nAs-built docs\nFinal registry 🟢"]
-        PO3["📊 SysDog\nCommissioning\nqueues 🟢"]
-        PO4["🧠 SysLogicArh\nOps ↔ Maint\ninterface 🟢"]
-        PO5["🔐 SysPolic\nMoC activation\nPermit-to-work 🟢"]
-        PO6["🔧 SysMR\nSystem config\nsetup scripts 🟢"]
-        PO7["🔍 SysRAG\nProcedure lookup\nfor operators 🟢"]
-    end
-
-    subgraph OM["Stage 5 · O&M"]
-        OM1["📄 DocAgent\nMaint plans\nIncident reports 🟢"]
-        OM2["🗄️ DBAgent\nWork orders\nLog archiving 🟢"]
-        OM3["📊 SysDog\nKPI dashboards\nFailure analysis\nModel fine-tuning 🟢"]
-        OM4["🧠 SysLogicArh\nCross-dept sync\nContinuous AIMS 🟢"]
-        OM5["🔐 SysPolic\nOngoing MoC\nAccess mgmt 🟢"]
-        OM6["🔧 SysMR\nPreventive tasks\nRepair scripts\nScheduled patches 🟢"]
-        OM7["🔍 SysRAG\nMaint knowledge\nbase 🟢"]
-    end
-
-    subgraph DECOM["Stage 6 · Decommission"]
-        DECOM1["📄 DocAgent\nDisposal docs\nFinal reports 🟢"]
-        DECOM2["🗄️ DBAgent\nArchive closure\nKnowledge transfer 🟢"]
-        DECOM3["📊 SysDog\nFinal metrics\nLessons learned 🟢"]
-        DECOM4["🧠 SysLogicArh\nHandover logic\nDept wind-down 🟡"]
-        DECOM5["🔐 SysPolic\nFinal rights\ntransfer 🟢"]
-        DECOM6["🔧 SysMR\nShutdown\nscripts 🟢"]
-        DECOM7["🔍 SysRAG\nHistorical\nknowledge export 🟡"]
-    end
-
-    TEJ --> FEED --> DD --> EPC --> PO --> OM --> DECOM
-
-    subgraph ORCH["⚙️ Orchestrator Layer — Active Across ALL Stages"]
-        ORC["🧠 SysLogicArh acts as Interface Manager\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nRoutes tasks · Syncs agents · Auto-updates docs on any change\nValidates readiness gates between stages"]
-    end
-
-    ORCH -.->|"always active"| TEJ & FEED & DD & EPC & PO & OM & DECOM
 ```
 
 
