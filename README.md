@@ -264,8 +264,77 @@ flowchart TD
 
 
 ### Diagram 3B — AxiOMSphere Deployment Roadmap (Gantt): AxiOMSphere
+# AxiOMSphere / AIMS — Master Deployment Roadmap 
 
+```mermaid
+gantt
+    title AxiOMSphere — Master Agent Deployment Roadmap
+    dateFormat  YYYY-MM
+    axisFormat  %Y-%m
 
+    section Phase 1 · Foundation
+    DocAgent + DBAgent: registry and OCR baseline            :done, p1a, 2025-10, 4M
+    Axi + Omi production hardening                           :done, p1b, after p1a, 2M
+    SysDog monitoring baseline (KPI + alerts)                :done, p1c, after p1b, 1M
+    Gate A · Foundation ready                                :milestone, gA, after p1c, 0M
+
+    section Phase 2 · Intelligence
+    Dual reasoning pipeline (R1 -> Qwen -> Gemini scoring)   :done, p2a, 2026-03, 2M
+    Fine-tuning loop (gold set + DPO, 6 cycles)              :active, p2b, 2026-04, 3M
+    72B quality calibration + evaluator alignment            :active, p2c, after p2b, 2M
+    Gate B · Model quality and safety                         :milestone, gB, after p2c, 0M
+
+    section Phase 3 · Agent Mesh
+    SysLogicArch build (cross-agent logic and sync)           :p3a, 2026-07, 2M
+    SysPolicy build (rights, ownership, approval matrix)      :p3b, 2026-08, 2M
+    SysMR build (maintenance and repair guardrails)           :p3c, 2026-09, 2M
+    SysRAG build (semantic memory and retrieval layer)        :p3d, 2026-10, 2M
+    Mesh integration test (7-agent orchestration)             :p3e, after p3d, 2M
+    Gate C · Multi-agent integration validated                :milestone, gC, after p3e, 0M
+
+    section Phase 4 · Enterprise Delivery
+    HTTP/API gateway and auth controls                        :p4a, 2026-11, 2M
+    On-prem enterprise deployment                             :p4b, after gC, 4M
+    ISO 55001 pre-audit and corrective actions                :p4c, after p4b, 1M
+    ISO 55001 certification audit                             :p4d, after p4c, 1M
+    Corporate Bot Factory launch                              :milestone, gD, after p4d, 0M
+```
+
+## Gate KPI Criteria (add under the chart in README)
+
+- **Gate A — Foundation ready**
+  - OCR/register->sync success rate >= 98% for 30 days.
+  - P95 document retrieval latency <= 5s for top workflows.
+  - SysDog alerting active with owner response runbook.
+
+- **Gate B — Model quality and safety**
+  - Retrieval relevance >= 0.85 on validation set.
+  - Structured action format compliance >= 95%.
+  - Hallucination rate in critical document answers <= 3%.
+
+- **Gate C — Multi-agent integration validated**
+  - 7-agent orchestration pass rate >= 95% on scenario suite.
+  - Zero critical access-control violations (SysPolicy).
+  - Cross-agent handoff completion <= 15s P95.
+
+- **Gate D — Enterprise launch readiness**
+  - UAT sign-off by operations + QA + document control leads.
+  - MTTR for platform incidents <= 30 minutes in pilot.
+  - Audit nonconformities closed or formally accepted.
+
+## Gate Flow (for pitch deck)
+
+```mermaid
+flowchart LR
+    A["Gate A\nFoundation ready"] --> B["Gate B\nModel quality and safety"]
+    B --> C["Gate C\nMulti-agent integration validated"]
+    C --> D["Gate D\nEnterprise launch readiness"]
+
+    A --- A1["OCR/sync >= 98%\nRetrieval P95 <= 5s"]
+    B --- B1["Relevance >= 0.85\nFormat compliance >= 95%"]
+    C --- C1["7-agent pass >= 95%\n0 critical policy breaches"]
+    D --- D1["UAT signed\nMTTR <= 30m\nAudit closed"]
+```
 ```mermaid
 gantt
     title AxiOMSphere — Agent Build · Test · Tune Roadmap
