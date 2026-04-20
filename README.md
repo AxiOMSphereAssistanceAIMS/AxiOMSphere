@@ -21,6 +21,48 @@ An **industrial multi-agent platform** for the launch of production projects, ba
 
 ---
 
+## Plant Project Development Sequence
+
+**Diagram 2 — ISO-Aligned Project Lifecycle (AIMS approach)**
+
+```mermaid
+flowchart TD
+    START([▶ Project Initiated])
+
+    START --> TEJ["Stage 0 — TEJ\nTechnical & Economic Justification\nISO 21502 §4.4 · ISO 55001 §6.1"]
+
+    TEJ --> FEED["Stage 1 — FEED\nFront-End Engineering Design\nISO 21502 §7 · IEC 82079-1 §5"]
+
+    FEED --> DD["Stage 2 — Detailed Design\nEngineering scope freeze · Basis of Design\nISO 21502 §8.3 · ISO 9001 §8.3"]
+
+    DD --> EPC["Stage 3 — EPC\nEngineering · Procurement · Construction\nISO 21502 §8 · ISO 45001 §8.1"]
+
+    EPC --> PO["Stage 4 — Pre-Operations\nCommissioning · Handover · Acceptance\nISO 21502 §9 · ISO 55001 §8.1"]
+
+    PO --> OM["Stage 5 — O&M\nOperations & Maintenance\nISO 55001 §8.1 · ISO 55002 §8.1"]
+
+    OM --> IMP["Stage 6 — Improvement\nAudit · Management Review · PDCA\nISO 55001 §10 · ISO 9001 §10.3"]
+
+    IMP --> DEC["Stage 7 — Decommissioning\nSafe Disposal & Project Closure\nISO 55001 §8.1.3"]
+
+    DEC --> DONE([✅ Project Closed])
+
+    IMP -.->|"PDCA loop\nPlan-Do-Check-Act"| OM
+
+    style START fill:#4ade80,stroke:#166534,color:#000
+    style DONE  fill:#4ade80,stroke:#166534,color:#000
+    style TEJ   fill:#60a5fa,stroke:#1d4ed8,color:#000
+    style FEED  fill:#60a5fa,stroke:#1d4ed8,color:#000
+    style DD    fill:#60a5fa,stroke:#1d4ed8,color:#000
+    style EPC   fill:#60a5fa,stroke:#1d4ed8,color:#000
+    style PO    fill:#60a5fa,stroke:#1d4ed8,color:#000
+    style OM    fill:#60a5fa,stroke:#1d4ed8,color:#000
+    style IMP   fill:#c084fc,stroke:#7e22ce,color:#fff
+    style DEC   fill:#94a3b8,stroke:#475569,color:#000
+```
+
+---
+
 ## The Problem
 
 At the project justification stage, there is a critical need for empirical data, guiding documentation, and foundational decisions that will shape the project's development. These early choices can ultimately determine either the failure or the economic success of the enterprise.
