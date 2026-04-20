@@ -57,7 +57,8 @@ Despite the existence of fully standardized processes, there is still no interac
 graph TD
     %% Шаг 1: Точка входа
     Step1(<b>ШАГ 1: CONCEPT & THE HOOK</b><br/>Создание 'Бота-помощника' для инженеров<br/>База: ISO 21502 + ISO 55001)
-    
+
+```mermaid
     %% Шаг 2: Валидация
     Step2(<b>ШАГ 2: TRACTION & DATA</b><br/>Сбор обратной связи от проф. сообщества<br/>Наполнение базы реальными кейсами)
     
@@ -75,6 +76,7 @@ graph TD
     %% Акценты
     style Step1 fill:#f9f,stroke:#333,stroke-width:2px
     style Step4 fill:#00ff00,stroke:#333,stroke-width:4px
+```
 
 ```mermaid
 graph TD
