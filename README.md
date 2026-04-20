@@ -239,7 +239,7 @@ flowchart TD
         T1["qwen2.5-14B\n6 cycles done ✅\nBaseline established"]
         T2["qwen2.5-72B\nIn progress 🔄\nTarget: score ≥ 0.85"]
         T3["deepseek-r1:70b\nNext after 72B\nTarget: draft quality +15%"]
-        T4["Gemini Flash/Pro\nISO scoring gate\nTarget: 0.0–1.0 calibrated"]
+        T4["Cloud API LLM/Pro\nISO scoring gate\nTarget: 0.0–1.0 calibrated"]
         T1 --> T2 --> T3
         T3 -.->|"scoring"| T4
     end
