@@ -20,6 +20,14 @@ The name **AxiOMSphere** is a strategic integration of our core technological pi
 An **industrial multi-agent platform** for the launch of production projects, based on the Asset Integrity Management System (AIMS) approach (ISO 55001, ISO 55002), enables optimization of resources and timelines for pilot project deployment. The platform is designed for extension across all project lifecycle stages — from FEED through decommissioning — with further scalability to support full-cycle AIMS implementation.
 
 ---
+## 🗺️ AIMS Process Framework — GFMAM Asset Management Landscape
+
+The AxiOMSphere agent factory is structured around the **GFMAM Asset Management Landscape** — 8 subject areas forming the complete ISO 55001-aligned process framework. Each AxiOMSphere agent type maps directly to one or more of these subject areas.
+
+![GFMAM Asset Management Landscape](docs/gfmam_landscape.jpg)
+
+> *Global Forum on Maintenance and Asset Management (GFMAM) — aligned with ISO 55001:2024*
+
 
 ## Plant Project Development Sequence
 
@@ -27,7 +35,7 @@ An **industrial multi-agent platform** for the launch of production projects, ba
 
 ```mermaid
 flowchart TD
-    START([▶ Project Initiated])
+    START([▶ Industrial Project Initiated])
 
     START --> TEJ["Stage 0 — TEJ\nTechnical & Economic Justification\nISO 21502 §4.4 · ISO 55001 §6.1"]
 
