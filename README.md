@@ -14,12 +14,6 @@ The name **AxiOMSphere** is a strategic integration of our core technological pi
 ## 🏗 Factory Architecture & Development Roadmap
 The project evolves through a hierarchical deployment of specialized agents, ensuring that operational execution always follows strategic integrity.
 
-```mermaid
-
- 
-
-[🌐 Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/) · [📺 Demo Video](#demo) · [📬 Contact](#contact) · [📋 Apply for Credits](#grant-applications)
-
 ---
 
 ```mermaid
