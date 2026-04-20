@@ -53,7 +53,7 @@ flowchart TD
 
     IMP --> DEC["Stage 7 — Decommissioning\nSafe Disposal & Project Closure\nISO 55001 §8.1.3"]
 
-    DEC --> DONE([✅ Project Closed])
+    DEC --> DONE([✅ Industrial Project Closed])
 
     IMP -.->|PDCA loop| OM
 
