@@ -54,6 +54,28 @@ Despite the existence of fully standardized processes, there is still no interac
 
 ​**Dynamic Management:** The entire ecosystem is supported by an Interface/Manager Agent whose primary task is to orchestrate functional interactions. Any modification of these interactions automatically updates the documentation for all subordinate functions.
 
+graph TD
+    %% Шаг 1: Точка входа
+    Step1(<b>ШАГ 1: CONCEPT & THE HOOK</b><br/>Создание 'Бота-помощника' для инженеров<br/>База: ISO 21502 + ISO 55001)
+    
+    %% Шаг 2: Валидация
+    Step2(<b>ШАГ 2: TRACTION & DATA</b><br/>Сбор обратной связи от проф. сообщества<br/>Наполнение базы реальными кейсами)
+    
+    %% Шаг 3: Технологический стек
+    Step3(<b>ШАГ 3: MULTI-AGENT MESH</b><br/>Связка агентов через Interface Manager<br/>Автоматизация синхронизации документов)
+    
+    %% Шаг 4: Масштабирование
+    Step4(<b>ШАГ 4: ENTERPRISE FACTORY</b><br/>Локальное размещение / On-Premise<br/>Интеграция в контур корпорации)
+
+    %% Связи
+    Step1 -->|Захват внимания| Step2
+    Step2 -->|Формирование архитектуры| Step3
+    Step3 -->|Продажа крупному бизнесу| Step4
+
+    %% Акценты
+    style Step1 fill:#f9f,stroke:#333,stroke-width:2px
+    style Step4 fill:#00ff00,stroke:#333,stroke-width:4px
+
 ```mermaid
 graph TD
     subgraph "Phase 1 — The Hook: Engineer Assistant"
