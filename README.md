@@ -144,71 +144,43 @@ bot\n━━━━━━━━━━━━━━━━━━━━━━━━━
 
 > Sequence verified against ISO 55001 clause structure:
 > §4 Context → §5 Leadership → §6 Planning → §7 Support → §8 Operation → §9 Evaluation → §10 Improvement
-
 ```mermaid
 flowchart TD
     START(["🏗️ PLANT PROJECT START\nGreenfield / New Enterprise"])
 
-    START --> S0
+    S0["📋 Stage 0 · TEJ\nTechnical-Economic Justification\nISO §4.1 Context · §4.2 Stakeholders · §4.3 Scope\n─────────────────────────────────\nFeasibility study & business case\nStakeholder identification & requirements\nDefine AMS scope & field of variation\nInvestment decision & project approval"]
 
-    subgraph S0["📋 Stage 0 — TEJ: Technical-Economic Justification\n(ISO 55001 §4.1 · §4.2 — Organizational Context & Stakeholders)"]
-        direction LR
-        S0A["Feasibility study\n& business case"] --> S0B["Stakeholder identification\n& requirements (ISO §4.2)"] --> S0C["Define AMS scope\n& field of variation (ISO §4.3)"]
-    end
+    S1["🔭 Stage 1 · Pre-FEED\nConceptual Engineering\nISO §5.2 Policy · §6.2 Objectives\n─────────────────────────────────\nConcept selection & screening\nHigh-level cost estimate Class 5\nProject Scope Definition\nAIMS philosophy & objectives alignment\nInitial risk register"]
 
-    S0 --> S1
+    S2["🎯 Stage 2 · FEED\nFront End Engineering Design\nISO §5 Leadership · §6 Planning\n─────────────────────────────────\nBasis of Design (BoD)\nProcess Flow Diagrams (PFD) · P&IDs\nHAZOP · Safety studies\nEquipment list · Datasheet package\nCost estimate Class 3\nProject Execution Plan (PEP)\nSAMP — Strategic Asset Mgmt Plan §6.2\nOrganizational structure · RACI §5.3\nFEED Package → EPC tender basis"]
 
-    subgraph S1["🎯 Stage 1 — FEED: Front-End Engineering & Design\n(ISO 55001 §5 Leadership · §6 Planning)"]
-        direction LR
-        S1A["AIMS Philosophy &\nAsset Mgmt Policy (§5.2)"] --> S1B["SAMP Development\nStrategic Asset Mgmt Plan (§6.2)"] --> S1C["Risk & Opportunity\nFramework (§6.1)"] --> S1D["Organizational structure\nRoles & RACI (§5.3)"]
-    end
+    S3["🔍 Stage 3 · DD\nDetail Design\nISO §7 Support · §6.1 Risk\n─────────────────────────────────\nGap analysis vs ISO 55001 requirements\nAsset inventory & criticality assessment\nCompetency assessment & training plan §7.2\nData standards & ownership §7.5\nContractor qualification & selection\nEPC contract award"]
 
-    S1 --> S2
+    S4["⚙️ Stage 4 · EPC\nEngineering · Procurement · Construction\nISO §8.1 Operational Planning · §8.3 Outsourcing\n─────────────────────────────────\nDetailed engineering · Vendor packages\nProcurement control & supplier qualification\nConstruction · QA/QC · Inspection\nPunch list A & B management\nAsset register build · Tag numbers\nMC Dossier preparation · As-built drawings"]
 
-    subgraph S2["🔍 Stage 2 — DD: Due Diligence\n(ISO 55001 §7 Support · §6.1 Risk)"]
-        direction LR
-        S2A["Asset inventory\n& criticality assessment"] --> S2B["Gap analysis vs\nISO 55001 requirements"] --> S2C["Competency assessment\n& training plan (§7.2)"] --> S2D["Data standards &\nownership (§7.5)"]
-    end
+    S5["🚀 Stage 5 · Commissioning & Startup\nMC → Commissioning → RFSU → PAC → FAC\nISO §8.2 Asset Mgmt Plans · §8.4 Change Mgmt\n─────────────────────────────────\nMC: Mechanical Completion · Punch list A cleared\nCommissioning: Pre-startup audit · System checks\nRFSU: Ready For Start-Up · Performance tests\nPAC: Provisional Acceptance · Final documentation\nFAC: Final Acceptance · Defects correction closure\nSOP development · MoC activation · Permit-to-work\nHandover dossiers Books A–L"]
 
-    S2 --> S3
+    S6["🏭 Stage 6 · Operation & Maintenance\nISO §8 Operation · §9 Evaluation · §10 Improvement\n─────────────────────────────────\nOperational control & monitoring §8.1\nPreventive & predictive maintenance strategies\nRBI · NDT · Risk-based inspection planning\nKPI tracking & performance review §9.1\nIncident investigation · RCA · Lessons learned §10.1\nInternal & external audits · ISO 55001 certification §9.2\nContinuous improvement · SAMP update · PDCA loop"]
 
-    subgraph S3["⚙️ Stage 3 — EPC: Engineering, Procurement & Construction\n(ISO 55001 §8.1 Operational Planning · §8.3 Outsourcing)"]
-        direction LR
-        S3A["Design integrity &\nverification (§8.1)"] --> S3B["Procurement control\n& supplier qualification"] --> S3C["Construction quality\n& documentation control (§7.5)"] --> S3D["Asset register build\n& tagging"]
-    end
+    DONE(["✅ AIMS FULLY OPERATIONAL\nISO 55001 Certified Enterprise"])
 
-    S3 --> S4
+    START --> S0 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> DONE
 
-    subgraph S4["🚀 Stage 4 — PO: Pre-Operations / Commissioning\n(ISO 55001 §8.2 Asset Mgmt Plans · §8.4 Change Mgmt)"]
-        direction LR
-        S4A["Asset management plans\nper asset class (§8.2)"] --> S4B["SOP development\n& approval"] --> S4C["MoC process activation\n(§8.4)"] --> S4D["Pre-startup safety review\n& permit system"]
-    end
+    S6 -.->|"PDCA Loop · Plan → Do → Check → Act"| S2
 
-    S4 --> S5
-
-    subgraph S5["🏭 Stage 5 — O&M: Operations & Maintenance\n(ISO 55001 §8 Operation · §9 Performance Evaluation)"]
-        direction LR
-        S5A["Operational control\n& monitoring (§8.1)"] --> S5B["Preventive & predictive\nmaintenance strategies"] --> S5C["RBI · NDT · Inspection\nplanning (Risk-based)"] --> S5D["KPI tracking &\nperformance review (§9.1)"]
-    end
-
-    S5 --> S6
-
-    subgraph S6["📈 Stage 6 — Continuous Improvement\n(ISO 55001 §9 Evaluation · §10 Improvement)"]
-        direction LR
-        S6A["Internal & external audits\nISO 55001 compliance (§9.2)"] --> S6B["Incident investigation\nRCA & lessons learned (§10.1)"] --> S6C["Management review\n& SAMP update (§9.3)"] --> S6D["ISO 55001 Certification\n& recertification cycle"]
-    end
-
-    S6 --> S7
-
-    subgraph S7["🔚 Stage 7 — Decommissioning\n(ISO 55001 §8.1 · Full lifecycle closure)"]
-        direction LR
-        S7A["Asset disposal\nplanning & execution"] --> S7B["Knowledge transfer\n& archive closure"] --> S7C["Regulatory compliance\n& environmental closeout"]
-    end
-
-    S7 --> DONE(["✅ FULL LIFECYCLE COMPLETE\nISO 55001 Certified AIMS"])
-
-    S6 -.->|"PDCA Loop · Plan → Do → Check → Act"| S1
+    style START fill:#1a1a2e,stroke:#4fc3f7,color:#fff
+    style S0 fill:#0a1628,stroke:#4fc3f7,color:#b3e5fc
+    style S1 fill:#0d2b0d,stroke:#69f0ae,color:#ccff90
+    style S2 fill:#0a2010,stroke:#66bb6a,color:#c8e6c9
+    style S3 fill:#1c1a00,stroke:#ffca28,color:#fff9c4
+    style S4 fill:#1c0e00,stroke:#ffa726,color:#ffe0b2
+    style S5 fill:#1c0000,stroke:#ef5350,color:#ffcdd2
+    style S6 fill:#0d1b33,stroke:#42a5f5,color:#bbdefb
+    style DONE fill:#003300,stroke:#66bb6a,color:#e8f5e9
 ```
+
+
+
 
 ---
 
