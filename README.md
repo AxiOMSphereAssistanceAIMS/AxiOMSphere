@@ -268,36 +268,36 @@ flowchart TD
 
 ```mermaid
 gantt
-    title AxiOMSphere — Master Agent Deployment Roadmap
-    dateFormat  YYYY-MM
+    title AxiOMSphere - Master Agent Deployment Roadmap
+    dateFormat  YYYY-MM-DD
     axisFormat  %Y-%m
 
-    section Phase 1 · Foundation
-    DocAgent + DBAgent: registry and OCR baseline            :done, p1a, 2025-10, 4M
-    Axi + Omi production hardening                           :done, p1b, after p1a, 2M
-    SysDog monitoring baseline (KPI + alerts)                :done, p1c, after p1b, 1M
-    Gate A · Foundation ready                                :milestone, gA, after p1c, 0M
+    section Phase 1 - Foundation
+    DocAgent + DBAgent: registry and OCR baseline             :done, p1a, 2025-10-01, 120d
+    Axi + Omi production hardening                            :done, p1b, 2026-02-01, 60d
+    SysDog monitoring baseline (KPI + alerts)                :done, p1c, 2026-04-01, 30d
+    Gate A - Foundation ready                                 :milestone, gA, 2026-05-01, 1d
 
-    section Phase 2 · Intelligence
-    Dual reasoning pipeline (R1 -> Qwen -> Gemini scoring)   :done, p2a, 2026-03, 2M
-    Fine-tuning loop (gold set + DPO, 6 cycles)              :active, p2b, 2026-04, 3M
-    72B quality calibration + evaluator alignment            :active, p2c, after p2b, 2M
-    Gate B · Model quality and safety                         :milestone, gB, after p2c, 0M
+    section Phase 2 - Intelligence
+    Dual pipeline (R1 -> Qwen -> Gemini scoring)              :done, p2a, 2026-03-01, 60d
+    Fine-tuning loop (gold set + DPO, 6 cycles)              :active, p2b, 2026-04-01, 90d
+    72B quality calibration + evaluator alignment             :active, p2c, 2026-07-01, 60d
+    Gate B - Model quality and safety                         :milestone, gB, 2026-09-01, 1d
 
-    section Phase 3 · Agent Mesh
-    SysLogicArch build (cross-agent logic and sync)           :p3a, 2026-07, 2M
-    SysPolicy build (rights, ownership, approval matrix)      :p3b, 2026-08, 2M
-    SysMR build (maintenance and repair guardrails)           :p3c, 2026-09, 2M
-    SysRAG build (semantic memory and retrieval layer)        :p3d, 2026-10, 2M
-    Mesh integration test (7-agent orchestration)             :p3e, after p3d, 2M
-    Gate C · Multi-agent integration validated                :milestone, gC, after p3e, 0M
+    section Phase 3 - Agent Mesh
+    SysLogicArch build (cross-agent logic and sync)           :p3a, 2026-07-01, 60d
+    SysPolicy build (rights, ownership, approval matrix)      :p3b, 2026-08-01, 60d
+    SysMR build (maintenance and repair guardrails)           :p3c, 2026-09-01, 60d
+    SysRAG build (semantic memory and retrieval layer)        :p3d, 2026-10-01, 60d
+    Mesh integration test (7-agent orchestration)             :p3e, 2026-12-01, 60d
+    Gate C - Multi-agent integration validated                :milestone, gC, 2027-02-01, 1d
 
-    section Phase 4 · Enterprise Delivery
-    HTTP/API gateway and auth controls                        :p4a, 2026-11, 2M
-    On-prem enterprise deployment                             :p4b, after gC, 4M
-    ISO 55001 pre-audit and corrective actions                :p4c, after p4b, 1M
-    ISO 55001 certification audit                             :p4d, after p4c, 1M
-    Corporate Bot Factory launch                              :milestone, gD, after p4d, 0M
+    section Phase 4 - Enterprise Delivery
+    HTTP/API gateway and auth controls                        :p4a, 2026-11-01, 60d
+    On-prem enterprise deployment                             :p4b, 2027-02-01, 120d
+    ISO 55001 pre-audit and corrective actions                :p4c, 2027-06-01, 30d
+    ISO 55001 certification audit                             :p4d, 2027-07-01, 30d
+    Corporate Bot Factory launch                              :milestone, gD, 2027-08-01, 1d
 ```
 
 ### Gate KPI Criteria (add under the chart in README)
