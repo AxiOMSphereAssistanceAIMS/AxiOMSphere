@@ -1,4 +1,4 @@
-# AIMS Multi-Agent Platform
+# Multi-Agent Platform **AxiOMSphere Facility** Axiom - Asset Integrity Management System - Operation Maintenance Sphere Facility)
 ### Industrial Project Lifecycle Automation · ISO-Aligned · On-Premise Ready
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
