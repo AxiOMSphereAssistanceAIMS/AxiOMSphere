@@ -59,21 +59,19 @@ graph TD
     Step1(<b>ШАГ 1: CONCEPT & THE HOOK</b><br/>Создание 'Бота-помощника' для инженеров<br/>База: ISO 21502 + ISO 55001)
 
 ```mermaid
-    %% Шаг 2: Валидация
-    Step2(<b>ШАГ 2: TRACTION & DATA</b><br/>Сбор обратной связи от проф. сообщества<br/>Наполнение базы реальными кейсами)
-    
-    %% Шаг 3: Технологический стек
-    Step3(<b>ШАГ 3: MULTI-AGENT MESH</b><br/>Связка агентов через Interface Manager<br/>Автоматизация синхронизации документов)
-    
-    %% Шаг 4: Масштабирование
-    Step4(<b>ШАГ 4: ENTERPRISE FACTORY</b><br/>Локальное размещение / On-Premise<br/>Интеграция в контур корпорации)
+    graph TD
+    %% Define Nodes with clean text
+    Step1["Step 1: CONCEPT & THE HOOK - AI Assistant (ISO 21502/55001)"]
+    Step2["Step 2: TRACTION & DATA - Community Feedback & Real Use-Cases"]
+    Step3["Step 3: MULTI-AGENT MESH - Interface Manager & Doc Sync"]
+    Step4["Step 4: ENTERPRISE FACTORY - On-Premise Corporate Integration"]
 
-    %% Связи
-    Step1 -->|Захват внимания| Step2
-    Step2 -->|Формирование архитектуры| Step3
-    Step3 -->|Продажа крупному бизнесу| Step4
+    %% Define Connections
+    Step1 -->|User Acquisition| Step2
+    Step2 -->|Architecture Design| Step3
+    Step3 -->|Enterprise Sales| Step4
 
-    %% Акценты
+    %% Apply Styles
     style Step1 fill:#f9f,stroke:#333,stroke-width:2px
     style Step4 fill:#00ff00,stroke:#333,stroke-width:4px
 ```
