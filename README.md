@@ -22,6 +22,7 @@ The project evolves through a hierarchical deployment of specialized agents, ens
 
 ---
 
+```mermaid
 ## One-liner
 
 An **industrial multi-agent platform** for the launch of production projects, based on the Asset Integrity Management System (AIMS) approach (ISO 55001, ISO 55002), enables optimization of resources and timelines for pilot project deployment. The platform is designed for extension across all project lifecycle stages — from FEED through decommissioning — with further scalability to support full-cycle AIMS implementation. 
