@@ -478,6 +478,7 @@ graph TD
     style L1 fill:#f9f,stroke:#333,stroke-width:2px
     style L4 fill:#69f,stroke:#333,stroke-width:3px
     style L6 fill:#f9f,stroke:#333,stroke-width:2px
+    classDef default fill:#40E0D0,stroke:#000,stroke-width:2px,color:#000;
 ```
 
 ---
