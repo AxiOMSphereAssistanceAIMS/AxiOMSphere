@@ -28,7 +28,7 @@ We're currently working in production with live engineers and actively scaling u
 | ISO compliance checked manually, often skipped | Automated scoring 0.0–1.0, rewrite loop until ≥80% |
 | Knowledge locked in PDFs on shared drives | Searchable, versioned, semantically indexed master documents registry |
 | Model training requires a separate team | Every production run generates gold + DPO training pairs automatically |
-| Infra issues noticed when users complain | Argus monitors 24/7, auto-restarts, alerts with one-click fix |
+| Infra issues noticed when users complain | Argus monitors 24/7, auto-restarts, alerts with one-click fix (every one has unic function) |
 
 ---
 
