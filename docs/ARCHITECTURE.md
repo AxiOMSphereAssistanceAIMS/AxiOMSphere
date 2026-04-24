@@ -50,7 +50,8 @@ Gemini Flash     ←── Score against ISO 45001 / 21502 / 82079 / 9001 / API 
 
 | Component | Hardware | Role |
 |-----------|----------|------|
-| Inference | NVIDIA DGX Spark | R1-70B + Qwen-72B via Ollama |
+| Inference | NVIDIA DGX Spark | R1-70B + Qwen-72B + qwen2.5-coder-tools:32b  via Ollama |
+| Wormup support/DB backup/RGB | PC | Qwen2.5-14b  via Ollama |
 | Orchestration | Ubuntu server | Bot processes + Argus scheduler |
 | Quality gate | Google Cloud | Gemini Flash/Pro API |
 | Fallback reasoning | Anthropic Cloud | Claude (Axi complex queries) |
