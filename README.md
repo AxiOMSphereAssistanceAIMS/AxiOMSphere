@@ -299,7 +299,7 @@ gantt
     Corporate Bot Factory launch                              :gD, 2027-08-01, 2027-08-02
 ```
 
-### Gate KPI Criteria (add under the chart in README)
+### Gate KPI Criteria
 
 - **Gate A — Foundation ready**
   - OCR/register->sync success rate >= 98% for 30 days.
@@ -479,6 +479,133 @@ flowchart TB
 
 ---
 
+## GPU Cluster Topology
+
+```mermaid
+graph LR
+    subgraph DGX["DGX Spark  192.168.72.225  —  128 GB VRAM"]
+        DGX_DOCKER["Docker Compose\n(all containers)"]
+        DGX_MODELS["qwen2.5:72b-instruct-q4_K_M  47 GB\ndeepseek-r1:70b  42 GB\nqwen2.5-coder:32b  20 GB"]
+    end
+
+    subgraph PC["PC Andrei  10.77.77.2 (primary)  —  RTX 4070 16 GB"]
+        PC_MODELS["qwen2.5-aims-ft-v7:latest  ~10 GB\nOLLAMA_HOST=0.0.0.0:11434"]
+    end
+
+    DGX <-->|"Direct 10 Gbps cable\n10.77.77.1 ↔ 10.77.77.2"| PC
+    DGX -.->|"LAN fallback 192.168.72.x"| PC
+```
+
+| Node | IP (primary) | IP (fallback) | VRAM | Hosted models |
+|------|-------------|--------------|------|---------------|
+| **DGX Spark** | `192.168.72.225` | — | 128 GB | 72B, 70B, 32B |
+| **PC Andrei** | `10.77.77.2` | `192.168.72.134` | 16 GB | 14B FT only |
+
+**Routing rules** (`ops/ollama_resolve.py`):
+- Small models (`qwen2.5-aims-ft-v*`) → **PC Andrei only** — blocked on DGX via `argus_ollama.py`
+- Heavy models (70B+) → **DGX only** — two 70B+ models never loaded simultaneously
+- `OLLAMA_RESOLVE_TTL_SEC=30` — caches ping results; prevents ~6 s latency when DGX unreachable
+
+---
+
+## Production Bot Fleet — Technical Reference
+
+### Omi — Document Administrator (`@OmiSphere_bot`)
+`ops/omi_telegram/omi_bot.py`
+
+| Capability | Detail |
+|-----------|--------|
+| Document intake | Telegram: PDF, DOCX, images → OCR → registry |
+| Classification | ISO 55001 / P-codes (P00–P07) via FT model |
+| Search | Hybrid: FTS + semantic Qdrant (nomic-embed-text) |
+| Document synthesis | RAG → DocAgent → `.docx` → Telegram |
+| Anonymization | Strips company/person names before storing |
+| Cross-bot handoff | Delegates tasks to Axi |
+| Night self-test | `omi_selftest.py` — verifies pipeline integrity |
+| DB backup | Copies `aims_registry.db` to PC Andrei via sshfs |
+
+**Models:** `qwen2.5-aims-ft-v7` (PC Andrei 14B, routing) + `qwen2.5:72b` (DGX, synthesis)  
+**NLP commands (12):** `status`, `tasks`, `search`, `docs_today`, `registry_sync_status`, `move`, `archive`, `backup_now`, `backup_list`, `nightplan`, `skills`, `selftest`
+
+---
+
+### Axi — Orchestrator & Quality Monitor (`@AXI_bot`)
+`ops/axi_bot.py`
+
+| Capability | Detail |
+|-----------|--------|
+| Web search | Gemini Grounding — real-time web results |
+| Task orchestration | Routes tasks to Omi; monitors Task Registry |
+| Stuck task alerts | Detects tasks >15 min stuck → Telegram alert |
+| Document generation | `/doc` → DocAgent pipeline |
+| OCR after upload | Auto-triggers OCR on file messages |
+| CV processing | `cv_pipeline.py` — match CV to vacancies |
+| ISO classification | GPT-4o-mini analysis of document type |
+| Voice messages | `axi_voice.py` — STT/TTS |
+| Video generation | Veo/Gemini — `skill_gemini_video.py` |
+
+**Models:** Gemini 2.5-flash (primary) + Anthropic Claude (fallback) + Qwen local  
+**NLP commands (3):** `quality_report`, `stuck_tasks`, `analyze`
+
+---
+
+### Argus — Infrastructure Guardian (`@AIMS_argus_bot`)
+`ops/argus/argus_bot.py`
+
+| Capability | Detail |
+|-----------|--------|
+| Container monitoring | Every 30 s — crash / hang / OOM detection |
+| VRAM monitoring | Every 60 s — DGX + PC Andrei Ollama |
+| Task Registry watch | Every 5 min — stuck tasks >15 min |
+| Telegram alerts | Inline buttons: [Restart] / [Diagnose] / [Ignore] |
+| AI diagnostics | `argus_code_agent.py` — Claude/Gemini/local backend |
+| Auto-restart | Max 3× per hour per container |
+| YAML orchestrator | Executes `aims_weekly.yaml` night plan |
+| Keepalive management | On-demand lifecycle: batch-ingest, litellm, ocr, job-filter |
+| Fine-tuning launch | SSH to DGX or local nohup |
+| VRAM policy | Blocks small models on DGX, large on PC Andrei |
+
+**Models:** `qwen2.5-coder:32b` (DGX) + `qwen2.5-aims-ft-v7` (PC Andrei)  
+**NLP commands (18):** `status`, `models`, `installed`, `logs`, `restart`, `rebuild`, `stop`, `up`, `load`, `unload`, `tasks`, `incidents`, `diagnose`, `dgx`, `wake`, `sleep`, `digest`, `plan`
+
+---
+
+## NLP Intent Routing
+
+All 3 bots use `ops/chat_intent_router.py` — a local small Qwen 14B classifier that converts free-text messages into slash commands **before** any LLM fallback:
+
+```mermaid
+flowchart LR
+    MSG["💬 Free-text message"] --> ROUTER["chat_intent_router.py\nLocal FT Qwen 14B\n(PC Andrei)"]
+    ROUTER -->|"(cmd, args)"| CMD["Direct command handler\ncalled with ctx.args"]
+    ROUTER -->|"no match"| LLM["LLM fallback\n(Gemini / Qwen 72B)"]
+    style ROUTER fill:#1a2f4a
+    style CMD fill:#1a4731
+```
+
+---
+
+## Data Pipeline
+
+```mermaid
+flowchart TD
+    A["👤 User sends file via Telegram"] --> B["inbox/income/"]
+    B --> C["OCR Watcher (GPU container)"]
+    C --> D["outbox/ (extracted text)"]
+    D --> E{"Quality Gate\nsimilarity ≥ 90%?"}
+    E -->|"✅ pass"| F["aims_registry.db\n+ Qdrant embedding"]
+    E -->|"❌ fail"| G["inbox/Skipped/"]
+    F --> H["RAG Search (user queries)"]
+    H --> I["DocAgent — Qwen 72B DGX"]
+    I --> J["generated/*.docx → Telegram"]
+
+    style F fill:#1a4731
+    style G fill:#4a1515
+    style I fill:#1a2f4a
+```
+
+---
+
 ## Doc Generation Pipeline
 
 The core AI loop — **R1 → Qwen → Gemini** — runs today on DGX Spark hardware:
@@ -490,9 +617,81 @@ The core AI loop — **R1 → Qwen → Gemini** — runs today on DGX Spark hard
 | **Score** | Gemini Flash/Pro | ISO compliance 0.0–1.0, gap feedback | ~15 sec |
 | **Revise** | qwen2.5:72b | Targeted revision using Gemini feedback | ~2 min |
 
-Output: production `.docx` with ≥80% ISO compliance score. If score < 0.6, pipeline retries automatically.
+**Quality gate:** <60% → reject + retry · ≥60% → accepted · target **98% compliance**  
+**Training loop baked in:** every run produces `gold_pairs.jsonl` (score ≥ 0.8) and `dpo_pairs.jsonl` — no opt-in flags needed.
 
-**Training loop baked in:** every run produces `gold_pairs.jsonl` (score ≥ 0.8) and `standard_dpo_pairs.jsonl` for continuous model fine-tuning.
+---
+
+## Fine-Tuning Pipeline
+
+```mermaid
+flowchart TD
+    DOCS["📄 Domain documents\ninbox/training/"] --> INGEST["00:01 training_ingest_new_docs"]
+    INGEST --> PAIRS["00:30 training_generate_pairs\n72B LLM on DGX (~60–90 min)"]
+    PAIRS --> STATUS["01:00 training_dataset_status"]
+    STATUS --> FT["02:30 ft_prepare_chain_run\n14B → 70B → 72B sequential\n(2 h buffer after pair gen)"]
+    FT --> DEPLOY["05:30 daily_deploy_14b_andrei\nblob-push to PC Andrei Ollama"]
+    DEPLOY --> BOT["✅ qwen2.5-aims-ft-vN:latest\nactive on PC Andrei"]
+
+    style PAIRS fill:#1a2f4a
+    style FT fill:#1a2f4a
+    style BOT fill:#1a4731
+```
+
+**Model versioning:** `vN` or `vNrM` — e.g. `v7`, `v7r1`, `v7r2`, `v8`, `v8r1`
+
+| Version | Base | Status |
+|---------|------|--------|
+| v1–v5 | Qwen2.5:14B | Complete |
+| v6 | Qwen2.5:14B | Complete — `qwen2.5-aims-ft-v6` |
+| **v7, v7r1, v7r2** | Qwen2.5:14B | **Current (PC Andrei)** |
+| v8+ | Qwen2.5:14B | Planned |
+
+---
+
+## Night Schedule (Automated)
+
+Orchestrated by **Argus** via `ops/argus/plans/aims_weekly.yaml`:
+
+```mermaid
+gantt
+    title AIMS Night Pipeline
+    dateFormat HH:mm
+    axisFormat %H:%M
+
+    section Pre-checks
+    pre_docbench_check VRAM unload   : 22:30, 30m
+
+    section DocBench
+    docbench_nightly quality test    : 23:00, 60m
+
+    section Training
+    training_ingest_new_docs         : 00:01, 29m
+    training_generate_pairs 72B      : 00:30, 90m
+    training_dataset_status          : 01:00, 30m
+
+    section Fine-Tuning
+    ft_prepare_chain_run 14B to 72B  : 02:30, 180m
+
+    section Deploy
+    daily_deploy_14b_andrei          : 05:30, 30m
+```
+
+> **GPU conflict fix:** `ft_prepare_chain_run` shifted 01:20 → **02:30** — 2h buffer after `training_generate_pairs` (72B, 60–90 min on DGX GPU).
+
+---
+
+## Model Reference
+
+| Model | Size | Node | Role |
+|-------|------|------|------|
+| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC Andrei | Routing / classification (current FT) |
+| `qwen2.5-aims-ft-v6` | ~10 GB | PC Andrei | Routing / classification (legacy) |
+| `qwen2.5:72b-instruct-q4_K_M` | 47 GB | DGX (cold) | DocAgent synthesis, training pair gen |
+| `deepseek-r1:70b` | 42 GB | DGX (cold) | DocAgent Stage 1 reasoning |
+| `qwen2.5-coder:32b` | 20 GB | DGX (warm) | Argus chat / code / diagnostics |
+
+**VRAM policy:** Two 70B+ models never simultaneously. Small 14B → PC Andrei only. Max safe load: one 70B + 14B ≤ 80 GB.
 
 ---
 
@@ -576,9 +775,111 @@ print(f"Feedback: {feedback}")
 
 ---
 
-## Roadmap
-![GFMAM Asset Management Landscape](docs/axiompshere_roadmap_2028_final.svg)
+## Directory Structure
 
+```
+aims-workspace/
+├── ops/
+│   ├── axi_bot.py                # Axi bot (Telegram)
+│   ├── job_filter_bot.py         # JobLocator bot
+│   ├── doc_agent.py              # DocAgent: document generation
+│   ├── doc_agent_api.py          # FastAPI DocAgent server (:8767)
+│   ├── ollama_resolve.py         # Ollama URL router (DGX ↔ PC)
+│   ├── chat_intent_router.py     # NLP free-text → slash command
+│   ├── omi_quality_gate.py       # OCR quality control
+│   ├── omi_batch_ingest.py       # Batch document ingest
+│   ├── omi_telegram/
+│   │   ├── omi_bot.py
+│   │   ├── omi_agent.py          # LLM + RAG intelligence
+│   │   ├── omi_doc_synthesis.py  # RAG → LLM → DOCX pipeline
+│   │   ├── omi_rag.py            # Qwen-Agent Memory + retrieval
+│   │   ├── omi_storage.py        # StorageManager (SQLite)
+│   │   ├── omi_api.py            # REST API (:8765)
+│   │   └── omi_backup.py         # DB backup
+│   ├── argus/
+│   │   ├── argus_bot.py
+│   │   ├── argus_monitor.py
+│   │   ├── argus_orchestrator.py # YAML plan executor
+│   │   ├── argus_ollama.py       # Per-node model management
+│   │   ├── argus_code_agent.py   # AI diagnostics
+│   │   └── plans/aims_weekly.yaml
+│   └── ft/
+│       ├── configs/              # Training configs (14B, 70B, 72B)
+│       └── output/               # Checkpoints v1–v7
+├── aims_workspace/               # Data (bind-mounted as /data)
+│   ├── inbox/income/             # Incoming docs from Telegram
+│   ├── inbox/.ocr_queue/         # OCR queue
+│   ├── inbox/Skipped/            # Quality-gate rejects
+│   ├── generated/                # Generated .docx files
+│   └── aims_registry.db          # Master document registry
+├── set_andrei_direct_cable_private.ps1  # PC Andrei startup (Windows)
+├── docker-compose.yml
+└── .env
+```
+
+---
+
+## Key Services & Ports
+
+| Service | Container | Port | Notes |
+|---------|-----------|------|-------|
+| DocAgent API | `axiomsphere-doc-agent` | **8767** | FastAPI |
+| Omi REST API | `axiomsphere-omi-api` | 8765 | Internal |
+| Task Registry | `axiomsphere-task-registry` | 8765 (127.0.0.1) | FastAPI |
+| Qdrant | `axiomsphere-qdrant` | **6333** | Vector DB |
+| LiteLLM Proxy | `axiomsphere-litellm` | 4400 | Gemini ×4 keys + Anthropic |
+| Prometheus | `axiomsphere-prometheus` | 9090 | DGX metrics |
+| Grafana | `axiomsphere-grafana` | 3000 | Dashboard |
+| FlareSolverr | `axiomsphere-flaresolverr` | 8191 | Cloudflare bypass |
+
+---
+
+## Deployment
+
+```bash
+# Start all bots (on DGX host)
+docker compose --profile telegram-bots up -d
+
+# Restart individual bot
+docker compose restart argus-bot
+docker compose restart omi-bot
+docker compose restart axi-bot
+```
+
+**PC Andrei — fix Windows network profile (run once as Admin):**
+```powershell
+# Windows puts the 10G direct cable in "Public" on reboot → blocks port 11434
+# This task keeps it "Private" so DGX can reach small Qwen model
+$action  = New-ScheduledTaskAction -Execute "powershell.exe" `
+             -Argument "-NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File E:\aims-workspace\set_andrei_direct_cable_private.ps1"
+$trigger = New-ScheduledTaskTrigger -AtStartup
+Register-ScheduledTask -TaskName "AIMS_SetDirectCablePrivate" `
+  -Action $action -Trigger $trigger -RunLevel Highest -User "SYSTEM" -Force
+```
+
+---
+
+## Change Log — Audit 2026-04-24
+
+| # | Change | Files |
+|---|--------|-------|
+| A | Removed `gpus` from `ocr-watcher` and `omi-register` (CPU-only services) | `docker-compose.yml` |
+| B | Added `pre_docbench_unload.py` + 22:30 step to unload VRAM before DocBench | `ops/scripts/`, `aims_weekly.yaml` |
+| C | `effective_small_qwen_ollama_base_url()` tries PC Andrei first, DGX as fallback | `ops/ollama_resolve.py` |
+| D | `weekly_model_upgrade.py` → blob-deploy for 14B to PC Andrei Ollama | `ops/scripts/` |
+| E | `daily_deploy_14b_to_andrei.py` + `weekly_model_upgrade.py` support `vNrM` versioning | both scripts |
+| F | PC Andrei network profile set to Private; `OLLAMA_HOST=0.0.0.0:11434` | Windows |
+| G | `chat_intent_router.py` — NLP routing module created | `ops/chat_intent_router.py` |
+| H | Intent router wired into all 3 bots (Argus 18 cmds, Omi 12, Axi 3) | all three bots |
+| I | `OLLAMA_RESOLVE_TTL_SEC=30` — resolve cache to avoid 6s DGX timeout | `.env` |
+| J | `QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0` — disables redundant warm-up calls | `.env` |
+| K | FT chain shifted 01:20 → **02:30** — 2h GPU buffer after training pair generation | `aims_weekly.yaml` |
+| L | `set_andrei_direct_cable_private.ps1` — Windows Task Scheduler startup script | new file |
+
+---
+
+## Roadmap
+![AIMS Roadmap](docs/axiompshere_roadmap_2028_final.svg)
 
 ---
 
