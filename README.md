@@ -78,7 +78,7 @@ Input:  "developing a preservation procedure for an Aluminum plant, as requested
 
 Stage 1 — Planning agent      (~30 sec)
   → Identifies: JSA template, applicable OSHA 29 CFR 1910.147 local corporate manuals and procedures based on equipment types
-  → Outlines: scope, hazard identification sections, control hierarchy
+  → Outlines: scope, equipment types identification sections, control hierarchy
 
 Stage 2 — Draft agent: deepseek-r1:70b   (~5 min)
   → Generates structured draft with ISO 10013 / ISO/IEC Directives -aware section headers
@@ -107,8 +107,8 @@ Output: JSA_confined_space_entry.docx → delivered to Telegram
 
 | Task | Document type | Standard | Time |
 |------|--------------|----------|------|
-| Confined space entry at mine | Job Safety Analysis (JSA) | ISO 45001 §8.1.3 | ~10 min |
-| H₂S release at gas facility | Emergency Response Procedure | API RP 505 | ~12 min |
+| AIMS philosophies | Asset Management systems - Guidelines | ISO 55001/55002 | ~10 min |
+| Procedures Equipment types, unites scope, standart requirement | Equipment isolation procedure + requirement matrix | OSHA 29 CFR 1910.147 local corporate manuals and procedures | ~12 min |
 | Pump replacement — change control | Management of Change (MOC) | ISO 45001 §8.1.3 | ~8 min |
 | New asset onboarding | Asset Management Plan | ISO 55001 §8.2 | ~15 min |
 | Project kick-off package | Charter + WBS | ISO 21502 | ~20 min |
