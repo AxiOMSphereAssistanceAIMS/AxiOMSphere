@@ -8,19 +8,22 @@ AIMS runs as a set of Telegram bots backed by local LLM inference (DGX Spark) an
 Telegram Groups
       │
       ├── Axi Bot (external reasoning — Gemini API + Anthropic Claude)
-      │     └── DocAgent HTTP API (localhost:8100)
-      │           ├── deepseek-r1:70b  (Ollama, DGX Spark) — draft
-      │           ├── qwen2.5:72b      (Ollama, DGX Spark) — format + revise
-      │     │     └── Gemini Flash/Pro (cloud)             — ISO score 0–1
+      │     ├── DocAgent HTTP API (localhost:8100)
+      │     │     ├── deepseek-r1:70b  (Ollama, DGX Spark) — draft
+      │     │     ├── qwen2.5:72b      (Ollama, DGX Spark) — format + revise
+      │     │     ├── Gemini Flash/Pro (cloud)             — ISO score 0–1
+      │     │     ├── qwen2.5:72b      (Ollama, DGX Spark) — generation 
+      │     │     │
+      ├─ ── └──Omi Bot (registry + OCR — local Qwen 14B)
+      │       ├── omi_registry.db   (OCR queue + raw extracts)
+      │       └── aims_registry.db  (master document + process store)
       │
-      ├── Omi Bot (registry + OCR — local Qwen 14B)
-      │     ├── omi_registry.db   (OCR queue + raw extracts)
-      │     └── aims_registry.db  (master document + process store)
-      │
-      └── Argus Bot (DevOps orchestrator)
+      └── Argus Bot (DevOps orchestrator) qwen2.5-coder-tools:32b (Ollama, DGX Spark)
             ├── System health monitor (Axi, Omi, R1, Qwen)
             ├── Scheduled plan runner (YAML cron plans)
-            └── Digest sender (nightly summaries)
+            ├── Statistic sender (nightly summaries)
+            ├── Alarm and setpoints (dayly)
+            └── Code modification for integration with new functions and agents (dayly)
 ```
 
 ## Doc Generation Pipeline (Dual Mode)
