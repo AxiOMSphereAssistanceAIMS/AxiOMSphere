@@ -544,7 +544,7 @@ flowchart TD
     DOCS["📄 Domain documents"] --> INGEST["00:01 ingest_new_docs"]
     INGEST --> PAIRS["00:30 generate_pairs\n72B on DGX (~60–90 min)"]
     PAIRS --> FT["02:30 ft_prepare_chain_run\n14B → 70B → 72B\n(2h buffer after pair gen)"]
-    FT --> DEPLOY["05:30 deploy_14b_andrei\nblob-push to PC Andrei Ollama"]
+    FT --> DEPLOY["05:30 deploy_14b_andrei\nblob-push to PC Ollama"]
     DEPLOY --> BOT["✅ qwen2.5-aims-ft-vN:latest\nactive on PC Andrei"]
     style PAIRS fill:#1a2f4a
     style FT fill:#1a2f4a
