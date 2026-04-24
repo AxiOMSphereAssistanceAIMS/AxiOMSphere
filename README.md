@@ -92,7 +92,7 @@ Stage 4 — Compliance gate: Gemini Flash  (~15 sec)
   → Feedback: "Add specific corrections and specification per ....."
 
 Stage 5 — Revision: qwen2.5:72b          (~2 min)
-  → Target correction applied, assessment re-checked (knowledge base and lessons learned)
+  → Target correction applied, assessment re-checked (knowledge base and lessons learned in background)
 
 Output: JSA_confined_space_entry.docx → delivered to Telegram
         ISO compliance: 84%   |   Total time: ~11 min
