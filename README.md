@@ -7,10 +7,10 @@
 
 ## What We Do
 
-AxiOMSphere replaces manual engineering work with coordinated AI agents. Each agent handles one function — document generation, quality control, registry management, infrastructure monitoring — and they operate as a continuous pipeline.
+AxiOMSphere replaces manual project startup engineering work with coordinated AI agents. Each agent handles one function — document generation, quality control, registry management, infrastructure monitoring — and they operate as a continuous pipeline.
 
 **The result:**
-- Engineering documents that take 2–3 days to write are generated in under 10 minutes
+- Business process functions document that takes 2–3 days to write are generated in under 10 minutes as a part of integrated functional system within unified functionl direction in frame of project AIMS philosophy (tottaly 1,5 year work for 1 month), and based already several projects lessens learned material.
 - ISO compliance verified automatically, not by hand
 - Every generation run feeds back into model training — the system improves with every use
 
