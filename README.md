@@ -14,7 +14,7 @@ AxiOMSphere replaces manual project startup engineering work with coordinated AI
 - ISO compliance verified automatically, not by hand
 - Every generation run feeds back into model training — the system improves with every use
 
-We are currently in production with real engineers and actively scaling usage. We expect significant API demand in the next 1–3 months as we expand to additional teams and document types.
+We're currently working in production with live engineers and actively scaling usage. We expect significant demand for the API in the next 1-3 months as the team expands and new types of documentation, tests, and cross-validations are added.
 
 ---
 
