@@ -500,6 +500,7 @@ graph TD
     style B fill:#c084fc,stroke:#7e22ce,stroke-width:2px,color:#fff
     style E fill:#4ade80,stroke:#166534,stroke-width:2px
     style L fill:#60a5fa,stroke:#1d4ed8,stroke-width:2px
+    classDef default fill:#40E0D0,stroke:#000,stroke-width:2px,color:#000;
 ```
 
 ---
