@@ -11,9 +11,9 @@ Telegram Groups
       │     └── DocAgent HTTP API (localhost:8100)
       │           ├── deepseek-r1:70b  (Ollama, DGX Spark) — draft
       │           ├── qwen2.5:72b      (Ollama, DGX Spark) — format + revise
-      │           └── Gemini Flash/Pro (cloud)             — ISO score 0–1
+      │     │     └── Gemini Flash/Pro (cloud)             — ISO score 0–1
       │
-      ├── Omi Bot (registry + OCR — local Qwen 7B)
+      ├── Omi Bot (registry + OCR — local Qwen 14B)
       │     ├── omi_registry.db   (OCR queue + raw extracts)
       │     └── aims_registry.db  (master document + process store)
       │
