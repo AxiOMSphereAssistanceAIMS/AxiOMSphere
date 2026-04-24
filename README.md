@@ -71,9 +71,9 @@ Without sufficient API capacity it is not possible to realistically simulate or 
 
 ```
 Input:  "developing a preservation procedure for an Aluminum plant, as requested. The procedure was being structured as a
-Word document (.docx) with initial sections covering Purpose, Scope, and Definitions, and was designed to incorporate the
-specified subcomponents: Power Plant, Power Distribution (HV/LV), Paste Plant, Anode Baking Plant, Bath Crushing Plants,
-Pot Lines, Fume Treatment Plant, Cast House, Port Facilities, and Utilities.
+        Word document (.docx) with initial sections covering Purpose, Scope, and Definitions, and was designed to incorporate
+        the specified subcomponents: Power Plant, Power Distribution (HV/LV), Paste Plant, Anode Baking Plant, Bath Crushing
+        Plants, Pot Lines, Fume Treatment Plant, Cast House, Port Facilities, and Utilities.
          Reference ISO 55001. The AIMS process database synchronization."
 
 Stage 1 — Planning agent      (~30 sec)
