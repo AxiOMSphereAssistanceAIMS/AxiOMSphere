@@ -70,26 +70,29 @@ Without sufficient API capacity it is not possible to realistically simulate or 
 **Scenario: Automated Safety Document Generation**
 
 ```
-Input:  "Create a Job Safety Analysis for confined space entry.
-         Reference ISO 45001. Include hazard table and permit conditions."
+Input:  "developing a preservation procedure for an Aluminum plant, as requested. The procedure was being structured as a Word document (.docx) with
+  → initial sections covering Purpose, Scope, and Definitions, and was designed to incorporate the specified subcomponents: Power Plant, Power
+  → Distribution (HV/LV), Paste Plant, Anode Baking Plant, Bath Crushing Plants, Pot Lines, Fume Treatment Plant, Cast House, Port Facilities, and
+  → Utilities.
+         Reference ISO 55001. Include hazard table and permit conditions."
 
 Stage 1 — Planning agent      (~30 sec)
-  → Identifies: JSA template, applicable ISO 45001 clauses §8.1.3, §6.1.2
+  → Identifies: JSA template, applicable OSHA 29 CFR 1910.147 local corporate manuals and procedures based on equipment types
   → Outlines: scope, hazard identification sections, control hierarchy
 
 Stage 2 — Draft agent: deepseek-r1:70b   (~5 min)
-  → Generates structured draft with ISO-aware section headers
+  → Generates structured draft with ISO 10013 / ISO/IEC Directives -aware section headers
   → Produces hazard table with risk matrix, elimination → substitution → PPE controls
 
 Stage 3 — Rewrite agent: qwen2.5:72b     (~3 min)
-  → Professional formatting, paragraph cohesion, terminology standardization
+  → Professional formatting, paragraph cohesion, terminology standardization ISO 2145:1978
 
 Stage 4 — Compliance gate: Gemini Flash  (~15 sec)
   → Score: 0.84 / 1.0
-  → Feedback: "Add specific PPE specification per §8.1.3 — currently generic"
+  → Feedback: "Add specific corrections and specification per ....."
 
 Stage 5 — Revision: qwen2.5:72b          (~2 min)
-  → Targeted fix applied, score rechecked
+  → Target correction applied, assessment re-checked (knowledge base and lessons learned)
 
 Output: JSA_confined_space_entry.docx → delivered to Telegram
         ISO compliance: 84%   |   Total time: ~11 min
