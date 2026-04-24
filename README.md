@@ -477,7 +477,7 @@ graph TD
     class L2_1,L2_2,L2_3,L3_1,L3_2,L3_3 phase1;
     style L1 fill:#f9f,stroke:#333,stroke-width:2px
     style L4 fill:#69f,stroke:#333,stroke-width:3px
-    style L6 fill:#00ff00,stroke:#333,stroke-width:2px
+    style L6 fill:#f9f,stroke:#333,stroke-width:2px
 ```
 
 ---
