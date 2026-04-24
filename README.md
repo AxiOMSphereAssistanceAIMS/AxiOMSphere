@@ -9,8 +9,8 @@
 
 AxiOMSphere replaces manual project startup engineering work with coordinated AI agents. Each agent handles one function — document generation, quality control, registry management, infrastructure monitoring — and they operate as a continuous pipeline.
 
-**The result:**
-- Business process functions document that takes 2–3 days to write are generated in under 10 minutes as a part of integrated functional system within unified functionl direction in frame of project AIMS philosophy (tottaly 1,5 year work for 1 month), and based already several projects lessens learned material.
+**The result is 1,5 year for 1 month:**
+-  A document describing a business process, typically written in 2-3 days each by several specialists from different disciplines (recruited for a specific project), can be created in less than 10 minutes within an integrated functional system within a single functional area, in accordance with the AIMS project philosophy (a total of 1.5 years of work in 1 month). Even by non-experts or department heads, it allows for task assignments via chat, voice, or text, from any location. The database is based on several projects, providing valuable experience.
 - ISO compliance verified automatically, not by hand
 - Every generation run feeds back into model training — the system improves with every use
 
