@@ -41,8 +41,9 @@ User request → Planning → Draft (R1-70B) → Rewrite (Qwen-72B) → Score (G
 ```
 
 Unlike a single-prompt application, **one document workflow requires 20–100+ LLM calls**:
-- Reasoning agent: structural outline + ISO clause mapping
-- Rewrite agent: professional formatting pass
+- Complince agent: standart's identification by context (allocation for ISO55001/55002)
+- Reasoning agent: structural outline + ISO clause mapping to standard ISO 9000:2015:
+- Rewrite agent: professional formatting pass ISO 19005-1:2005
 - Quality gate: compliance scoring + gap feedback
 - Revision loop: targeted rewrites until score ≥ 80%
 - Registry agent: classification, embedding, storage
