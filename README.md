@@ -22,7 +22,8 @@ We're currently working in production with live engineers and actively scaling u
 
 | Before AxiOMSphere | With AxiOMSphere |
 |-------------------|-----------------|
-| 2–3 days to write a JSA / MOC / procedure | 5–10 minutes, reviewed and delivered to Telegram |
+| 2–3 days to write a Oeration & Maintenance procedure | 5–10 minutes, reviewed and delivered to Telegram |
+| 20 specialists to write 1000 procedures 1,5 year | 5–10 minutes, task formulation 10 minutes, 1000 documents will be reviewed and delivered to Telegram within 14 days|
 | ISO compliance checked manually, often skipped | Automated scoring 0.0–1.0, rewrite loop until ≥80% |
 | Knowledge locked in PDFs on shared drives | Searchable, versioned, semantically indexed registry |
 | Model training requires a separate team | Every production run generates gold + DPO training pairs automatically |
