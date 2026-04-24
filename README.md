@@ -555,22 +555,22 @@ flowchart TD
 
 ---
 
-## GPU Cluster Topology
+## GPU Cluster Topology for development and test with local database
 
 ```mermaid
 graph LR
-    subgraph DGX["DGX Spark  192.168.72.225  —  128 GB VRAM"]
+    subgraph DGX["DGX Spark router orchestrated IP network (RJ45/WiFi redundant)  —  128 GB VRAM"]
         DGX_MODELS["qwen2.5:72b-instruct-q4_K_M  47 GB\ndeepseek-r1:70b  42 GB\nqwen2.5-coder:32b  20 GB"]
         DGX_DOCKER["Docker Compose — all containers"]
     end
-    subgraph PC["PC Andrei  10.77.77.2  —  RTX 4070 16 GB"]
+    subgraph PC["PC  unified network  —  RTX 4070 16 GB"]
         PC_MODELS["qwen2.5-aims-ft-v7:latest  ~10 GB\nOLLAMA_HOST=0.0.0.0:11434"]
     end
     DGX <-->|"Direct 10 Gbps cable"| PC
-    DGX -.->|"LAN fallback 192.168.72.x"| PC
+    DGX -.->|"LAN fallback router IP"| PC
 ```
 
-**Routing rules:** Small models (14B FT) → PC Andrei only · Two 70B+ models never loaded simultaneously · `OLLAMA_RESOLVE_TTL_SEC=30` prevents 6s latency when DGX unreachable
+**Routing rules:** Small models (14B FT) → PC only · Two 70B+ models never loaded simultaneously · `OLLAMA_RESOLVE_TTL_SEC=30` prevents 6s latency when DGX unreachable
 
 ---
 
@@ -591,7 +591,7 @@ graph LR
 |---------|------|-------|
 | DocAgent API | **8767** | FastAPI, used by Omi + Axi |
 | Qdrant | **6333** | Vector DB — RAG |
-| LiteLLM Proxy | 4400 | Gemini ×4 keys + Anthropic fallback |
+| LiteLLM Proxy | 4400 | Gemini key + Anthropic fallback |
 | Grafana | 3000 | DGX monitoring dashboard |
 | Task Registry | 8765 | FastAPI CRUD, monitored by Argus |
 
@@ -604,13 +604,13 @@ graph LR
 | 00:01 | training_ingest | New documents |
 | 00:30 | training_generate_pairs | 72B, ~60–90 min |
 | **02:30** | ft_prepare_chain_run | Shifted from 01:20 — 2h GPU buffer |
-| 05:30 | daily_deploy_14b | Push to PC Andrei |
+| 05:30 | daily_deploy_14b | Push to PC |
 
 ### Key .env Variables
 
 ```bash
-PC_ANDREY_OLLAMA_URL=http://10.77.77.2:11434        # primary (direct 10G)
-PC_ANDREY_OLLAMA_URL_FALLBACK=http://192.168.72.134:11434
+PC_OLLAMA_URL=http://<unic IP network>:11434        # primary (direct 10Gbps)
+PC_OLLAMA_URL_FALLBACK=http://<router IP>:11434
 OLLAMA_RESOLVE_TTL_SEC=30                            # resolve cache
 QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0                   # no redundant warm-up
 DGX_HEAVY_MODEL=qwen2.5:72b-instruct-q4_K_M
@@ -637,6 +637,7 @@ docker compose restart argus-bot omi-bot axi-bot
 | **ISO 21502:2020** | Project management guidance |
 | **IEC/IEEE 82079-1** | Technical documentation |
 | **API RP 505** | Fire protection for refineries |
+more than international 150 standards, around 1500 master document
 
 *ISO standards serve as credibility anchors and compliance scoring targets — not as the core product message.*
 
@@ -648,9 +649,9 @@ docker compose restart argus-bot omi-bot axi-bot
 |---|--------|--------|
 | A | Removed `gpus` from `ocr-watcher` / `omi-register` (CPU-only) | Freed DGX VRAM for models |
 | B | `pre_docbench_unload.py` + 22:30 step in night schedule | No VRAM collision before DocBench |
-| C | `ollama_resolve.py` tries PC Andrei first, DGX as fallback | Eliminated 6s DGX-timeout latency |
+| C | `ollama_resolve.py` tries PC first, DGX as fallback | Eliminated 6s DGX-timeout latency |
 | D–E | `weekly_model_upgrade.py` + `daily_deploy_14b` support `vNrM` versioning | Clean v7r1, v7r2, v8… deploys |
-| F | PC Andrei: `OLLAMA_HOST=0.0.0.0:11434` (machine env) | Small model reachable from DGX |
+| F | PC: `OLLAMA_HOST=0.0.0.0:11434` (machine env) | Small model reachable from DGX |
 | G | `chat_intent_router.py` — NLP free-text → slash command module | No more missed free-text commands |
 | H | Intent router wired into all 3 bots (Argus 18, Omi 12, Axi 3 cmds) | All bots understand natural language |
 | I | `OLLAMA_RESOLVE_TTL_SEC=30` | Resolve cache — no more 6s delays |
