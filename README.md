@@ -23,7 +23,8 @@ We're currently working in production with live engineers and actively scaling u
 | Before AxiOMSphere | With AxiOMSphere |
 |-------------------|-----------------|
 | 2–3 days to write a Oeration & Maintenance procedure | 5–10 minutes, reviewed and delivered to Telegram |
-| 20 specialists to write 1000 procedures 1,5 year | 5–10 minutes, task formulation 10 minutes, 1000 documents will be reviewed and delivered to Telegram within 14 days|
+| 20 engineers / 2 DCC specialists / 5 department heads / 2 HR specialists to write 1000 procedures for 1.5 years | 5 engineers (hybrid work), 5-10 minutes, problem formulation 10 minutes, 1000 documents will be checked and sent to Telegram and saved in the database with full compliance with the company format and banding within 14 days |
+| Any change in functionality in the vertical distribution chain will require a process of revising the upstream documents of 1000 procedures for 1.5 years | An integrated system capable of independently reviewing and comparing functionality and interface interactions is capable of restoring discrepancies in documents in a matter of hours, even without the process of revising them |
 | ISO compliance checked manually, often skipped | Automated scoring 0.0–1.0, rewrite loop until ≥80% |
 | Knowledge locked in PDFs on shared drives | Searchable, versioned, semantically indexed registry |
 | Model training requires a separate team | Every production run generates gold + DPO training pairs automatically |
