@@ -580,7 +580,7 @@ graph LR
 
 | Model | Size | Node | Role |
 |-------|------|------|------|
-| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC Andrei | Routing / NLP classify (current FT) |
+| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC | Routing / NLP classify (current FT) |
 | `qwen2.5:72b-instruct-q4_K_M` | 47 GB | DGX (cold) | DocAgent rewrite, training pair gen |
 | `deepseek-r1:70b` | 42 GB | DGX (cold) | DocAgent reasoning / draft |
 | `qwen2.5-coder:32b` | 20 GB | DGX (warm) | Argus diagnostics / code |
