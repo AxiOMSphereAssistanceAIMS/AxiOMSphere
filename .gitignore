@@ -1,0 +1,56 @@
+# Databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Sessions / caches
+data/config/scraper_sessions/
+nim-cache/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Large/binary files
+*.zip
+*.tar.gz
+*.gz
+*.docx
+*.pdf
+
+# Node / JS
+node_modules/
+*.js
+
+# Docker rendered config (generated)
+compose.rendered.yml
+
+# Secrets / env
+.env
+*.env
+*.key
+*.pem
+
+# Temp / backup scratch
+backup_test1/
+legacy_new_folder/
+openclaw_state_backup_before_move/
+snapshots/
+backups/
+
+# Runtime workspace (inbox/staging transient; result/ IS versioned)
+aims_workspace/inbox/
+aims_workspace/staging/
+aims_workspace/ocr_cache/
+
+# Misc runtime artefacts
+ngccli_arm64*
+omi_diagnostic_report.json
+openclaw_canvas_index.html
+openclaw_gateway_log.txt
