@@ -158,8 +158,19 @@
       border-radius: 8px;
       padding: 1rem 1.2rem;
     }
+    .std.compliance {
+      border-left-color: var(--accent2);
+    }
     .std-code { font-size: 0.78rem; font-weight: 700; color: var(--green); margin-bottom: 0.3rem; }
+    .std.compliance .std-code { color: var(--accent2); }
     .std-name { font-size: 0.85rem; color: var(--muted); }
+    .std-group-label {
+      grid-column: 1 / -1;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      margin-top: 0.5rem; padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border);
+    }
 
     /* CODE */
     .code-block {
@@ -435,31 +446,45 @@
 <!-- STANDARDS -->
 <section class="section" id="standards">
   <h2>Standards Coverage</h2>
-  <p class="section-sub">Built-in, not bolted on. Every document is scored against real ISO/IEC clauses.</p>
+  <p class="section-sub">Document structure standards applied to every output. Domain compliance scored per task context — 150+ standards in scope.</p>
   <div class="standards-grid">
+    <div class="std-group-label">Document Structure &amp; Format — applied to every document</div>
     <div class="std">
+      <div class="std-code">ISO 10013</div>
+      <div class="std-name">Document structure guidelines</div>
+    </div>
+    <div class="std">
+      <div class="std-code">ISO 2145:1978</div>
+      <div class="std-name">Section numbering in documents</div>
+    </div>
+    <div class="std">
+      <div class="std-code">ISO 9000:2015</div>
+      <div class="std-name">Quality terminology &amp; definitions</div>
+    </div>
+    <div class="std">
+      <div class="std-code">ISO 19005-1:2005</div>
+      <div class="std-name">Long-term document archiving (PDF/A)</div>
+    </div>
+    <div class="std-group-label">Domain Compliance — scored per task, context-dependent</div>
+    <div class="std compliance">
+      <div class="std-code">ISO 55001:2024 / 55002:2018</div>
+      <div class="std-name">Asset management requirements &amp; guidelines</div>
+    </div>
+    <div class="std compliance">
+      <div class="std-code">OSHA 29 CFR 1910.147</div>
+      <div class="std-name">Control of hazardous energy (LOTO)</div>
+    </div>
+    <div class="std compliance">
       <div class="std-code">ISO 21502:2020</div>
       <div class="std-name">Project management guidance</div>
     </div>
-    <div class="std">
-      <div class="std-code">ISO 21500:2021</div>
-      <div class="std-name">Project, programme & portfolio concepts</div>
+    <div class="std compliance">
+      <div class="std-code">IEC/IEEE 82079-1</div>
+      <div class="std-name">Technical documentation preparation</div>
     </div>
-    <div class="std">
-      <div class="std-code">IEC/IEEE 82079-1:2019</div>
-      <div class="std-name">Preparation of information for use</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO 9001 §7.5</div>
-      <div class="std-name">Control of documented information</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO 45001</div>
-      <div class="std-name">Occupational health & safety management</div>
-    </div>
-    <div class="std">
-      <div class="std-code">API RP 505</div>
-      <div class="std-name">Fire protection for refineries</div>
+    <div class="std compliance" style="border-style: dashed;">
+      <div class="std-code">150+ standards</div>
+      <div class="std-name">Applied by context — HSE, O&amp;M, engineering, legal</div>
     </div>
   </div>
 </section>
