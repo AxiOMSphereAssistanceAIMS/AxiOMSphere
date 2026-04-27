@@ -641,10 +641,14 @@ docker compose restart argus-bot omi-bot axi-bot
 |----------|----------|
 | **ISO 55001:2024** | Asset management — requirements (primary schema) |
 | **ISO 55002:2018** | Asset management — implementation guidelines |
-| **ISO 45001** | Occupational health & safety |
+| **IEC/IEEE 82079-1:2019** | Technical documentation |
 | **ISO 21502:2020** | Project management guidance |
-| **IEC/IEEE 82079-1** | Technical documentation |
-| **API RP 505** | Fire protection for refineries |
+| **ISO 10013:2021** | Guidelines for Documented Information |
+| **ISO 2145** |  Numbering of Divisions and Subdivisions |
+| **ISO 9000:2015** | Fundamentals & Vocabulary |
+| **ISO 19005** | Document File Format for Long-Term Preservation |
+| **ISO 15489** | Information and Documentation - Records Management |
+
 more than international 150 standards, around 1500 master document
 
 *ISO standards serve as credibility anchors and compliance scoring targets — not as the core product message.*
