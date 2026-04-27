@@ -58,7 +58,7 @@ Unlike a single-prompt application, **one document workflow requires 20–100+ L
 **What credits enable:**
 1. Validate multi-agent orchestration at production scale
 2. Optimize prompt strategies across model configurations
-3. Benchmark admin 14B / coding 32/ logical 70B / fine formating 72B quality vs. the highest documents tuned cloud model tradeoffs
+3. Benchmark admin 14B / coding 32B/ logical 32B/ fine formating 32B quality vs. the highest documents tuned cloud model tradeoffs
 4. Create production-ready automated pipelines for broader enterprise document processing and localization in professional collection databases. 
 
 Without sufficient API capacity it is not possible to realistically simulate or validate real-world agent workloads at the volume our architecture is designed for.
@@ -162,7 +162,7 @@ flowchart TB
     end
 
     subgraph "Doc Generation Pipeline — Production ✅"
-        R1["axi_omi_sphere\nqwen3:32b-q8_0\nDraft + rewrite · DGX Spark"]
+        Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nDraft + rewrite · DGX Spark"]
         Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nRevision · DGX Spark"]
         Gemini["Gemini Flash/Pro\n+ Anthropic Claude\nISO compliance score · 0.0–1.0"]
     end
@@ -231,7 +231,7 @@ Every production run auto-saves training pairs — no opt-in flag needed:
 - `gold_pairs.jsonl` — document + task pairs scoring ≥ 0.8
 - `dpo_pairs.jsonl` — preference pairs for RLHF
 
-These feed the nightly fine-tuning pipeline (14B → 70B → 72B), so the system improves as it operates.
+These feed the nightly fine-tuning pipeline (14B → 32B → 32B), so the system improves as it operates.
 
 ---
 
@@ -243,7 +243,7 @@ flowchart TD
 
     HEADER --> T1 & T2 & T3 & T4 & T5 & T6 & T7
 
-    T1["📄 DocAgent\nDoci Bot\n─────────────────\nCorporate document generation\nR1-70B → Qwen-72B\n→ Cloud AI ISO scoring ≥ 80%\n⚡ Parallel per department\n✅ Production"]
+    T1["📄 DocAgent\nDoci Bot\n─────────────────\nCorporate document generation\nqQen-32B → Qwen-32B\n→ Cloud AI ISO scoring ≥ 80%\n⚡ Parallel per department\n✅ Production"]
 
     T2["🗄️ DBAgent\nOmi Bot\n─────────────────\nDocument archive · OCR pipeline\nRAG semantic memory\nSingle Source of Truth\naims_registry.db\n🔄 Always active\n✅ Production"]
 
@@ -328,7 +328,7 @@ flowchart TD
     START(["🏭 AxiOMSphere Factory\nAgent Build · Test · Tune"])
 
     subgraph PROD["✅ PRODUCTION — Built & Running"]
-        P1["📄 Axi Bot · DocAgent\nqwen3:32b-q8_0 → Gemini/Claude gate\nqwen2.5-aims-ft-v6: routing ✅\nqwen3:32b: fine-tuning in progress 🔄\nTarget: ISO score ≥ 0.85 · < 10 min"]
+        P1["📄 Axi Bot · DocAgent\nQwen3:32b-q8_0 → Gemini/Claude gate\nqwen2.5-aims-ft-v6: routing ✅\nqwen3:32b: fine-tuning in progress 🔄\nTarget: ISO score ≥ 0.85 · < 10 min"]
         P2["🗄️ Omi Bot · DBAgent\nOCR pipeline + aims_registry.db\nRAG semantic search\nTarget: retrieval precision ≥ 90%"]
         P3["📊 Argus Bot · SysDog\nDevOps monitor + queue scheduler\nTraining loop gold/DPO pairs\nTarget: uptime ≥ 99.5% · MTTR < 5 min"]
     end
@@ -391,7 +391,7 @@ gantt
     Gate A Foundation ready                                   :done, gA, 2026-05-01, 2026-05-02
 
     section Phase 2 - Intelligence
-    Dual pipeline R1 to Qwen to Gemini scoring                :done, p2a, 2026-03-01, 2026-04-30
+    Dual pipeline to Qwen to Gemini scoring                   :done, p2a, 2026-03-01, 2026-04-30
     Fine tuning loop gold set and DPO                         :active, p2b, 2026-04-01, 2026-06-30
     Model quality calibration and evaluator alignment         :active, p2c, 2026-07-01, 2026-08-31
     Gate B Model quality and safety                           :active, gB, 2026-09-01, 2026-09-02
@@ -536,7 +536,7 @@ flowchart TD
     E -->|"✅ pass"| F["aims_registry.db\n+ Qdrant embedding"]
     E -->|"❌ fail"| G["inbox/Skipped/"]
     F --> H["RAG Search"]
-    H --> I["DocAgent — Qwen 72B DGX"]
+    H --> I["DocAgent — Qwen 32B DGX"]
     I --> J["generated/*.docx → Telegram"]
     style F fill:#1a4731
     style G fill:#4a1515
@@ -551,7 +551,7 @@ flowchart TD
 flowchart TD
     DOCS["📄 Domain documents"] --> INGEST["00:01 ingest_new_docs"]
     INGEST --> PAIRS["00:30 generate_pairs\n72B on DGX (~60–90 min)"]
-    PAIRS --> FT["02:30 ft_prepare_chain_run\n14B → 70B → 72B\n(2h buffer after pair gen)"]
+    PAIRS --> FT["02:30 ft_prepare_chain_run\n14B → 32B\n(2h buffer after pair gen)"]
     FT --> DEPLOY["05:30 deploy_14b_andrei\nblob-push to PC Ollama"]
     DEPLOY --> BOT["✅ qwen2.5-aims-ft-vN:latest\nactive on PC Andrei"]
     style PAIRS fill:#1a2f4a
@@ -610,7 +610,7 @@ graph LR
 | 22:30 | VRAM unload | Pre-DocBench cleanup |
 | 23:00 | DocBench nightly | Quality test |
 | 00:01 | training_ingest | New documents |
-| 00:30 | training_generate_pairs | 72B, ~60–90 min |
+| 00:30 | training_generate_pairs | 32B, ~60–90 min |
 | **02:30** | ft_prepare_chain_run | Shifted from 01:20 — 2h GPU buffer |
 | 05:30 | daily_deploy_14b | Push to PC |
 
@@ -621,8 +621,8 @@ PC_OLLAMA_URL=http://<unic IP network>:11434        # primary (direct 10Gbps)
 PC_OLLAMA_URL_FALLBACK=http://<router IP>:11434
 OLLAMA_RESOLVE_TTL_SEC=30                            # resolve cache
 QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0                   # no redundant warm-up
-DGX_HEAVY_MODEL=qwen2.5:72b-instruct-q4_K_M
-DGX_SECOND_HEAVY_MODEL=deepseek-r1:70b
+DGX_HEAVY_MODEL=qwen2.5:32b-instruct-q8_K_M
+DGX_SECOND_HEAVY_MODEL=qwen3:32b
 LITELLM_BASE_URL=http://axiomsphere-litellm:4400
 ```
 
