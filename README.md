@@ -39,7 +39,7 @@ We're currently working in production with live engineers and actively scaling u
 AxiOMSphere is a **high-frequency, multi-agent system** where every user task decomposes into coordinated agent stages:
 
 ```
-User request → Planning → Draft (R1-70B) → Rewrite (Qwen-72B) → Score (Gemini) → Revise → Register → Notify
+User request → Planning → Draft (Qwen3-32B) → Rewrite (Qwen3-32B) → Score (Gemini + Claude) → Revise → Register → Notify
 ```
 
 Unlike a single-prompt application, **one document workflow requires 20–100+ LLM calls**:
@@ -82,18 +82,18 @@ Stage 1 — Planning agent      (~30 sec)
   → Identifies: JSA template, applicable OSHA 29 CFR 1910.147 local corporate manuals and procedures based on equipment types
   → Outlines: scope, equipment types identification sections, control hierarchy
 
-Stage 2 — Draft agent: deepseek-r1:70b   (~5 min)
-  → Generates structured draft with ISO 10013 / ISO/IEC Directives -aware section headers
+Stage 2 — Draft agent: axi_omi_sphere (qwen3:32b-q8_0)   (~3 min)
+  → Generates structured draft with ISO 10013 / ISO/IEC Directives-aware section headers
   → Produces hazard table with risk matrix, elimination → substitution → PPE controls
 
-Stage 3 — Rewrite agent: qwen2.5:72b     (~3 min)
+Stage 3 — Rewrite agent: axi_omi_sphere (qwen3:32b-q8_0)     (~2 min)
   → Professional formatting, paragraph cohesion, terminology standardization ISO 2145:1978
 
-Stage 4 — Compliance gate: Gemini Flash  (~15 sec)
+Stage 4 — Compliance gate: Gemini Flash / Anthropic Claude  (~15 sec)
   → Score: 0.84 / 1.0
   → Feedback: "Add specific corrections and specification per ....."
 
-Stage 5 — Revision: qwen2.5:72b          (~2 min)
+Stage 5 — Revision: axi_omi_sphere (qwen3:32b-q8_0)          (~2 min)
   → Target correction applied, assessment re-checked (knowledge base and lessons learned in background)
 
 Output: JSA_confined_space_entry.docx → delivered to Telegram
@@ -162,9 +162,9 @@ flowchart TB
     end
 
     subgraph "Doc Generation Pipeline — Production ✅"
-        R1["deepseek-r1:70b\nReasoning + draft\nDGX Spark"]
-        Qwen["qwen2.5:72b\nRewrite + revision\nDGX Spark"]
-        Gemini["Gemini Flash/Pro\nISO compliance score\n0.0 – 1.0"]
+        R1["axi_omi_sphere\nqwen3:32b-q8_0\nDraft + rewrite · DGX Spark"]
+        Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nRevision · DGX Spark"]
+        Gemini["Gemini Flash/Pro\n+ Anthropic Claude\nISO compliance score · 0.0–1.0"]
     end
 
     subgraph "Data Layer — Production ✅"
@@ -208,10 +208,10 @@ flowchart TB
 
 | Stage | Model | Role | Time |
 |-------|-------|------|------|
-| **Draft** | deepseek-r1:70b | ISO-aware reasoning, structural outline | ~5 min |
-| **Rewrite** | qwen2.5:72b | Professional formatting, terminology | ~3 min |
-| **Score** | Gemini Flash/Pro | Compliance 0.0–1.0, gap feedback | ~15 sec |
-| **Revise** | qwen2.5:72b | Targeted fix per Gemini feedback | ~2 min |
+| **Draft** | axi_omi_sphere (qwen3:32b-q8_0) | ISO-aware reasoning, structural outline | ~3 min |
+| **Rewrite** | axi_omi_sphere (qwen3:32b-q8_0) | Professional formatting, terminology | ~2 min |
+| **Score** | Gemini Flash/Pro + Anthropic Claude | Compliance 0.0–1.0, gap feedback | ~15 sec |
+| **Revise** | axi_omi_sphere (qwen3:32b-q8_0) | Targeted fix per score feedback | ~2 min |
 
 Quality gate: <60% → reject + retry · ≥60% → accepted · target **98% compliance**
 
@@ -328,7 +328,7 @@ flowchart TD
     START(["🏭 AxiOMSphere Factory\nAgent Build · Test · Tune"])
 
     subgraph PROD["✅ PRODUCTION — Built & Running"]
-        P1["📄 Axi Bot · DocAgent\nR1-70B → Qwen2.5-72B → Cloud gate\nqwen2.5-14B: 7 fine-tune cycles ✅\nqwen2.5-72B: tuning in progress 🔄\nTarget: ISO score ≥ 0.85 · < 10 min"]
+        P1["📄 Axi Bot · DocAgent\nqwen3:32b-q8_0 → Gemini/Claude gate\nqwen2.5-aims-ft-v6: routing ✅\nqwen3:32b: fine-tuning in progress 🔄\nTarget: ISO score ≥ 0.85 · < 10 min"]
         P2["🗄️ Omi Bot · DBAgent\nOCR pipeline + aims_registry.db\nRAG semantic search\nTarget: retrieval precision ≥ 90%"]
         P3["📊 Argus Bot · SysDog\nDevOps monitor + queue scheduler\nTraining loop gold/DPO pairs\nTarget: uptime ≥ 99.5% · MTTR < 5 min"]
     end
@@ -359,9 +359,9 @@ flowchart TD
     GATE3 -->|"✅ Pass"| DONE
 
     subgraph TUNE["🔄 Continuous Tuning"]
-        T1["qwen2.5-14B\n7 cycles ✅ baseline"] --> T2["qwen2.5-72B\nin progress 🔄"]
-        T2 --> T3["deepseek-r1:70b\nnext after 72B"]
-        T3 -.->|"scoring"| T4["Cloud Gate\n0.0–1.0 calibration"]
+        T1["qwen2.5-aims-ft-v6\n6 cycles ✅ routing baseline"] --> T2["qwen2.5-aims-ft-v7\nPC Andrei · active 🔄"]
+        T2 --> T3["qwen3:32b fine-tune\nnext cycle 🔜"]
+        T3 -.->|"scoring"| T4["Gemini / Claude Gate\n0.0–1.0 calibration"]
     end
     TUNE -.-> FIX1 & FIX2
 
@@ -568,8 +568,8 @@ flowchart TD
 ```mermaid
 graph LR
     subgraph DGX["DGX Spark router orchestrated IP network (RJ45/WiFi redundant)  —  128 GB VRAM"]
-        DGX_MODELS["qwen2.5:72b-instruct-q4_K_M  47 GB\ndeepseek-r1:70b  42 GB\nqwen2.5-coder:32b  20 GB"]
-        DGX_DOCKER["Docker Compose — all containers"]
+        DGX_MODELS["qwen3:32b-q8_0 (axi_omi_sphere)  ~34 GB\nqwen2.5-coder:32b  20 GB\nDocker Compose — all containers"]
+        DGX_DOCKER["NIM OCR · LiteLLM · Task Registry\nOmi · Axi · Argus bots"]
     end
     subgraph PC["PC  unified network  —  RTX 4070 16 GB"]
         PC_MODELS["qwen2.5-aims-ft-v7:latest  ~10 GB\nOLLAMA_HOST=0.0.0.0:11434"]
@@ -588,10 +588,10 @@ graph LR
 
 | Model | Size | Node | Role |
 |-------|------|------|------|
-| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC | Routing / NLP classify (current FT) |
-| `qwen2.5:72b-instruct-q4_K_M` | 47 GB | DGX (cold) | DocAgent rewrite, training pair gen |
-| `deepseek-r1:70b` | 42 GB | DGX (cold) | DocAgent reasoning / draft |
-| `qwen2.5-coder:32b` | 20 GB | DGX (warm) | Argus diagnostics / code |
+| `axi_omi_sphere` (qwen3:32b-q8_0) | ~34 GB | DGX (warm) | DocAgent — draft, rewrite, revision |
+| `qwen2.5-coder:32b` | 20 GB | DGX (warm) | Argus diagnostics / code / chat |
+| `qwen2.5-aims-ft-v6` | ~10 GB | DGX | Intent routing — Omi, Axi, Argus |
+| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC Andrei | Small model — routing fallback |
 
 ### Services & Ports
 
@@ -720,4 +720,4 @@ We are seeking cloud credits and startup program support:
 
 [Apache License 2.0](LICENSE)
 
-> Built on open-source: Python · Ollama · deepseek-r1 · Qwen2.5 · Google Gemini · python-telegram-bot · python-docx
+> Built on open-source: Python · Ollama · Qwen3 · Qwen2.5 · Google Gemini · Anthropic Claude · python-telegram-bot · python-docx · NIM OCR
