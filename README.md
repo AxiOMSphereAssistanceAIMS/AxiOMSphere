@@ -102,6 +102,8 @@ Output: JSA_confined_space_entry.docx → delivered to Telegram
 <video src="docs/demo.mp4" controls width="100%"></video>
 
 [🖼 Architecture](docs/ARCHITECTURE.md)
+[📺 Video demo] (docs/demo.mp4)                               
+https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere/blob/main/docs/demo.mp4 
 
 ---
 
