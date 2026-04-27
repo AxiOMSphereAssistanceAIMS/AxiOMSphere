@@ -99,7 +99,9 @@ Output: JSA_confined_space_entry.docx → delivered to Telegram
         Training pair saved → gold_pairs.jsonl (score ≥ 0.8)
 ```
 
-[📺 Video demo coming soon] · [🖼 Architecture](docs/ARCHITECTURE.md)
+<video src="docs/demo.mp4" controls width="100%"></video>
+
+[🖼 Architecture](docs/ARCHITECTURE.md)
 
 ---
 
