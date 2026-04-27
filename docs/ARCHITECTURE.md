@@ -9,10 +9,10 @@ Telegram Groups
       │
       ├── Axi Bot (external reasoning — Gemini API + Anthropic Claude)
       │     ├── DocAgent HTTP API (localhost:8100)
-      │     │     ├── deepseek-r1:70b  (Ollama, DGX Spark) — draft
-      │     │     ├── qwen2.5:72b      (Ollama, DGX Spark) — format + revise
-      │     │     ├── Gemini Flash/Pro (cloud)             — ISO score 0–1
-      │     │     ├── qwen2.5:72b      (Ollama, DGX Spark) — generation 
+      │     │     ├── qwen3:32b  (Ollama, DGX Spark) — draft
+      │     │     ├── qwen3:32b      (Ollama, DGX Spark) — format + revise
+      │     │     ├── Gemini/Anthropic Flash/Pro (cloud) — ISO score 0–1
+      │     │     ├── qwen3:32b      (Ollama, DGX Spark) — generation 
       │     │     │
       ├─ ── └──Omi Bot (registry + OCR — local Qwen 14B)
       │       ├── omi_registry.db   (OCR queue + raw extracts)
@@ -32,17 +32,17 @@ Telegram Groups
 User request (natural language)
       │
       ▼
-deepseek-r1:70b  ←── ISO-aware system prompt
+qwen3:32b  ←── ISO-aware system prompt
       │ ~5 min     (structural reasoning + outline)
       ▼
-qwen2.5:72b      ←── Format to professional .docx structure
+qwen3:32b      ←── Format to professional .docx structure
       │ ~3 min
       ▼
 Gemini Flash     ←── Score against ISO 45001 / 21502 / 82079 / 9001 / API RP 505
       │ ~15 sec    Returns: {"score": 0.0–1.0, "feedback": "..."}
       │
       ├── score ≥ 0.8 → save gold pair → deliver .docx
-      ├── score 0.6–0.8 → qwen2.5:72b revise with feedback → re-score
+      ├── score 0.6–0.8 → qwen3:32b revise with feedback → re-score
       └── score < 0.6  → retry full pipeline
 ```
 
@@ -50,8 +50,8 @@ Gemini Flash     ←── Score against ISO 45001 / 21502 / 82079 / 9001 / API 
 
 | Component | Hardware | Role |
 |-----------|----------|------|
-| Inference | NVIDIA DGX Spark | R1-70B + Qwen-72B + qwen2.5-coder-tools:32b  via Ollama |
-| Wormup support/DB backup/RAG | PC | Qwen2.5-14b  via Ollama |
+| Inference | NVIDIA DGX Spark | Qwen-32B + qwen2.5-coder-tools:32b  via Ollama |
+| Wormup support/DB backup/RAG | PC | Qwen3-14b  via Ollama |
 | Orchestration | Ubuntu server | Bot processes + Argus scheduler |
 | Quality gate | Google Cloud | Gemini Flash/Pro API |
 | Fallback reasoning | Anthropic Cloud | Claude (Axi complex queries) |
