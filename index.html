@@ -224,6 +224,23 @@
     /* DIVIDER */
     .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
+    /* DEMO */
+    .demo-section {
+      padding: 4rem 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .demo-section h2 { margin-bottom: 0.5rem; }
+    .demo-section .section-sub { margin-bottom: 2rem; }
+    .demo-video {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #000;
+      box-shadow: 0 0 60px rgba(124,58,237,0.18);
+    }
+
     @media (max-width: 640px) {
       .pipeline { flex-direction: column; }
       .pipe-step + .pipe-step { margin-left: 0; margin-top: 2rem; }
@@ -275,6 +292,20 @@
       <div class="stat-n">3</div>
       <div class="stat-l">AI Models in Pipeline</div>
     </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- DEMO VIDEO -->
+<section id="demo">
+  <div class="demo-section">
+    <h2>Platform Demo</h2>
+    <p class="section-sub">End-to-end walkthrough: from onboarding to ISO-compliant document generation.</p>
+    <video class="demo-video" controls preload="metadata" poster="">
+      <source src="docs/demo.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
   </div>
 </section>
 
