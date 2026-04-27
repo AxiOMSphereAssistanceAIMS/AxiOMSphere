@@ -1,5 +1,3 @@
-
-
 # AxiOMSphere
 > **Multi-agent AI platform that automates industrial engineering workflows — from document generation to ISO compliance — using coordinated LLM agents running on private infrastructure.**
 
@@ -231,7 +229,7 @@ Every production run auto-saves training pairs — no opt-in flag needed:
 - `gold_pairs.jsonl` — document + task pairs scoring ≥ 0.8
 - `dpo_pairs.jsonl` — preference pairs for RLHF
 
-These feed the nightly fine-tuning pipeline (14B → 32B → 32B), so the system improves as it operates.
+These feed the nightly fine-tuning pipeline (14B → 32B), so the system improves as it operates.
 
 ---
 
@@ -495,7 +493,7 @@ graph TD
 graph TD
     subgraph "Phase 1 — Engineer Assistant"
         A[Individual Engineer] -->|Natural language request| B("AI Document Assistant\nAxi Bot")
-        B -->|"R1-70B → Qwen-72B dual pipeline"| C[Structured Document Draft]
+        B -->|"Qwen-32B dual pipeline"| C[Structured Document Draft]
         C -->|"Cloud Quality Gate\nISO 45001 · ISO 21502 · IEC 82079"| D{"Score ≥ 80%?"}
         D -->|Yes| E["✅ Approved Document .docx"]
         D -->|No| F[Qwen revises with recommendations]
@@ -578,7 +576,7 @@ graph LR
     DGX -.->|"LAN fallback router IP"| PC
 ```
 
-**Routing rules:** Small models (14B FT) → PC only · Two 70B+ models never loaded simultaneously · `OLLAMA_RESOLVE_TTL_SEC=30` prevents 6s latency when DGX unreachable
+**Routing rules:** Small models (14B FT) → PC only · Two 32B+ models never loaded simultaneously · `OLLAMA_RESOLVE_TTL_SEC=30` prevents 6s latency when DGX unreachable
 
 ---
 
