@@ -24,9 +24,9 @@ Axi Bot detects document generation intent and calls `POST /generate` on DocAgen
 }
 ```
 
-### Step 3 — R1-70B drafts the document (~5 min)
+### Step 3 — qwen3-32B drafts the document (~5 min)
 
-deepseek-r1:70b generates a structured JSA with:
+qwen3:32b generates a structured JSA with:
 - Scope and applicability
 - Hazard identification table (confined space specific)
 - Risk controls hierarchy (Elimination → Substitution → Engineering → Admin → PPE)
@@ -36,7 +36,7 @@ deepseek-r1:70b generates a structured JSA with:
 
 ### Step 4 — Qwen-72B formats (~3 min)
 
-qwen2.5:72b converts the draft to professional `.docx` format:
+qwen3:32b converts the draft to professional `.docx` format:
 - Proper headings, tables, numbered sections
 - Document header with revision, date, author placeholders
 - ISO-aligned section numbering
