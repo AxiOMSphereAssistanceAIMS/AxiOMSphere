@@ -101,11 +101,9 @@ Output: JSA_confined_space_entry.docx → delivered to Telegram
         Training pair saved → gold_pairs.jsonl (score ≥ 0.8)
 ```
 
-<video src="docs/demo.mp4" controls width="100%"></video>
 
 [🖼 Architecture](docs/ARCHITECTURE.md)
 [📺 <video src="docs/demo.mp4" controls width="100%"></video>]                            
-# https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere/blob/main/docs/demo.mp4 
 
 https://github.com/user-attachments/assets/84069854-3288-4b8c-96f7-aa70d5362347
 
