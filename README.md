@@ -237,25 +237,54 @@ These feed the nightly fine-tuning pipeline (14B → 32B), so the system improve
 
 ```mermaid
 flowchart TD
-    HEADER["🏭 AxiOMSphere — Agent Type Registry"]
+flowchart TD
+    HEADER["🏭 AxiOMSphere — Agent & Bot Registry<br/>NemoClaw + Claude Code Architecture"]
 
-    HEADER --> T1 & T2 & T3 & T4 & T5 & T6 & T7
+    HEADER --> A0 & A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8
 
-    T1["📄 DocAgent\nDoci Bot\n─────────────────\nCorporate document generation\nqQen-32B → Qwen-32B\n→ Cloud AI ISO scoring ≥ 80%\n⚡ Parallel per department\n✅ Production"]
+    A0["📨 AxiClient<br/>Axi Bot<br/>─────────────────<br/>Thin Telegram client<br/>Receives user documents / commands<br/>Creates tasks in AIMS API / TaskQueue<br/>Returns task_id and final result<br/>❌ No orchestration<br/>❌ No direct model calls<br/>✅ Phase 0A"]
 
-    T2["🗄️ DBAgent\nOmi Bot\n─────────────────\nDocument archive · OCR pipeline\nRAG semantic memory\nSingle Source of Truth\naims_registry.db\n🔄 Always active\n✅ Production"]
+    A1["🧠 LogiOrchestrator<br/>Logi Bot / Claude Code<br/>─────────────────<br/>Main orchestration brain<br/>Claude Code + Nemotron 3 Super 120B<br/>Plans workflows via Tool Registry<br/>Calls agents/tools through NemoClaw sandbox<br/>Coordinates document, repair, learning loops<br/>✅ Phase 0A Critical"]
 
-    T3["📊 SysDog\nArgus Bot\n─────────────────\nKPI collection & monitoring\nScheduler · Queue orchestration\nFailure analysis · Model tuning\nTraining loop supervision\n🔄 Continuous\n✅ Production"]
+    A2["📄 DociAgent<br/>Doci Bot<br/>─────────────────<br/>Document generation and classification<br/>DOCX / XLSX / Markdown processing<br/>Uses router + local models<br/>Escalates low confidence to validation<br/>Stores approved output to Master DB<br/>✅ Phase 0"]
 
-    T4["🧠 SysLogicArh\nLogi Bot\n─────────────────\nLogic & synchronization\nCross-dept AIMS alignment\nFunctional interface mapping\nSAMP adherence verification\n⚡ Parallel per process\n🔜 Next deploy"]
+    A3["🗄️ OmiAgent<br/>Omi Bot<br/>─────────────────<br/>Archive, OCR, registry, SSoT<br/>Document registration and deduplication<br/>aims_registry.db / master_documents.db<br/>Owns document lifecycle records<br/>Always active registry service<br/>✅ Phase 0"]
 
-    T5["🔐 SysPolic\nPoli Bot\n─────────────────\nAccess rights & permissions\nDocument ownership registry\nMoC control & registration\nSecurity policy enforcement\n🔒 Blocking gate\n🔜 Next deploy"]
+    A4["🔍 KnomiAgent<br/>Knomi Bot<br/>─────────────────<br/>Semantic search and knowledge memory<br/>Vector index over standards and registry<br/>Qdrant + embeddings: nomic / BGE<br/>Provides RAG context to all agents<br/>Feeds examples/context to training loop<br/>✅ Phase 1"]
 
-    T6["🔧 SysMR\nMainy Bot\n─────────────────\nReceives repair scripts from SysDog\nExecutes fixes & patches\nScheduled maintenance tasks\nRequires SysPolic approval\n⚡ Scheduled / on-demand\n🔜 Next deploy"]
+    A5["📊 ArgusAgent<br/>Argus Bot<br/>─────────────────<br/>KPI, health, queue and telemetry monitor<br/>Collects latency / VRAM / errors / queue depth<br/>Emits HealthEvents and FailureEvents<br/>Verifies repair outcomes<br/>❌ Does not execute repair<br/>✅ Phase 1"]
 
-    T7["🔍 SysRAG\nKnomi Bot\n─────────────────\nSemantic search for all agents\nVector index over aims_registry\nEmbedding: nomic / BGE\n🔄 Background / on-demand\n🔜 Integrate into DBAgent"]
+    A6["🔐 PoliAgent<br/>Poli Bot<br/>─────────────────<br/>Policy, permissions, MoC and approvals<br/>Owns sandbox access rules<br/>Approves or blocks dangerous actions<br/>Controls document ownership and change gates<br/>Blocking safety gate before repair/deploy<br/>✅ Phase 1-2"]
+
+    A7["🔧 MainyRepairAgent<br/>Mainy Bot<br/>─────────────────<br/>Self-repair execution agent<br/>Runs approved repair actions only<br/>restart_container / switch_model / clear_queue<br/>Executes through NemoClaw / OpenShell sandbox<br/>Requires PoliAgent for restricted actions<br/>✅ Phase 2"]
+
+    A8["🎓 TrainiAgent<br/>Traini Bot<br/>─────────────────<br/>Self-learning and model improvement<br/>Collects training pairs and corrections<br/>Runs FT pipeline, eval, canary and promotion<br/>Uses cloud teacher models for hard cases<br/>Updates router/model versions safely<br/>✅ Phase 3-4"]
+
+    A1 -->|"orchestrates"| A2
+    A1 -->|"orchestrates"| A3
+    A1 -->|"queries"| A4
+    A1 -->|"reads events"| A5
+    A1 -->|"asks approval"| A6
+    A1 -->|"orders repair"| A7
+    A1 -->|"triggers learning"| A8
+
+    A0 -->|"creates task"| A1
+    A2 -->|"registers approved docs"| A3
+    A2 -->|"requests context"| A4
+    A2 -->|"low confidence cases"| A8
+    A5 -->|"health/failure event"| A1
+    A6 -->|"policy decision"| A7
+    A7 -->|"repair outcome"| A5
+    A8 -->|"new model candidate"| A1
+    A8 -->|"training data request"| A4
 
     style HEADER fill:#0d1117,stroke:#58a6ff,color:#e6edf3
+    style A1 fill:#1f2937,stroke:#facc15,color:#f9fafb
+    style A0 fill:#111827,stroke:#38bdf8,color:#f9fafb
+    style A6 fill:#111827,stroke:#fb7185,color:#f9fafb
+    style A7 fill:#111827,stroke:#f97316,color:#f9fafb
+    style A8 fill:#111827,stroke:#22c55e,color:#f9fafb
+
 ```
 
 ---
