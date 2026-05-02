@@ -741,7 +741,7 @@ We are seeking cloud credits and startup program support:
 
 **Evgeny Shokk** — Founder, AIMS Platform
 
-- 📧 Evgeny.shock@gmail.com
+- 📧 hello@axiomsphereai.com
 - 🌐 [Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/)
 - 💼 [LinkedIn](https://www.linkedin.com/in/evgeny-shokk-54781716)
 
