@@ -236,13 +236,13 @@ These feed the nightly fine-tuning pipeline (14B → 32B), so the system improve
 ## Agent Architecture — 7 Types
 
 ```mermaid
-flowchart TD
+
 flowchart TD
     HEADER["🏭 AxiOMSphere — Agent & Bot Registry<br/>NemoClaw + Claude Code Architecture"]
 
     HEADER --> A0 & A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8
 
-    A0["📨 AxiClient<br/>Axi Bot<br/>─────────────────<br/>Thin Telegram client<br/>Receives user documents / commands<br/>Creates tasks in AIMS API / TaskQueue<br/>Returns task_id and final result<br/>❌ No orchestration<br/>❌ No direct model calls<br/>✅ Phase 0A"]
+    A0["📨 AxiClient<br/>Axi Bot<br/>─────────────────<br/>Thin Telegram client<br/>Receives user documents / commands<br/>Creates tasks in AIMS API /  TaskQueue<br/>Returns task_id and final result<br/>❌ No orchestration<br/>❌ No direct model calls<br/>✅ Phase 0A"]
 
     A1["🧠 LogiOrchestrator<br/>Logi Bot / Claude Code<br/>─────────────────<br/>Main orchestration brain<br/>Claude Code + Nemotron 3 Super 120B<br/>Plans workflows via Tool Registry<br/>Calls agents/tools through NemoClaw sandbox<br/>Coordinates document, repair, learning loops<br/>✅ Phase 0A Critical"]
 
