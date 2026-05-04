@@ -1,0 +1,27 @@
+# AIMS Sandbox — Data Processing Libraries
+# Minimal, production-safe set for code execution
+
+# Core data processing
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Excel / spreadsheet handling
+openpyxl>=3.0.0  # read/write .xlsx
+xlrd>=2.0.0  # read .xls (legacy)
+
+# JSON/serialization (stdlib + backports)
+PyYAML>=6.0
+
+# String/text utilities (beyond stdlib)
+python-dateutil>=2.8.2
+
+# Optional: lightweight visualization (no matplotlib/plotly overhead)
+# tabulate>=0.9.0  # pretty-print tables
+
+# Security: ensure requests doesn't reach external network
+# (but allow local/internal APIs through extra_env)
+requests>=2.31.0  # explicitly pinned, but network disabled at container level
+
+# Utilities
+python-dotenv>=1.0.0  # env var loading (safe for sandbox)

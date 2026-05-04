@@ -1,0 +1,149 @@
+# NemoClaw OpenShell — AIMS Sandbox Blueprint
+# Apply: nemoclaw run --blueprint ops/sandbox/blueprint.yaml
+#
+# Role: Claude Code (OpenClaw) = Engineering Repair Tool ONLY.
+#   NemoClaw decides → Claude Code proposes → Poli approves → Mainy executes.
+#   This blueprint enforces the boundary at kernel level.
+#
+# Ports:
+#   8765 — OmiAgent / Task Registry
+#   8767 — DociAgent API
+#   8768 — KnomiAgent API
+#   8770 — ArgusAgent API
+#   6333 — Qdrant (vector DB, KnomiAgent)
+#   11434 — Ollama (Nemotron 120B inference)
+
+version: "1"
+
+# ─── Agent identity ───────────────────────────────────────────────────────────
+agent:
+  name: openclaw-aims
+  role: engineering_repair_tool   # NOT orchestrator — NemoClaw is orchestrator
+  mode: local
+  inference:
+    endpoint: "http://127.0.0.1:11434/v1"
+    model: "nemotron"             # Nemotron 120B via Ollama on DGX Spark
+
+# ─── Sandbox ──────────────────────────────────────────────────────────────────
+sandbox:
+
+  # Network namespace — strict whitelist
+  network:
+    mode: restricted
+    allow_loopback_ports:
+      - 8765    # OmiAgent / Task Registry
+      - 8767    # DociAgent API
+      - 8768    # KnomiAgent API
+      - 8770    # ArgusAgent API
+      - 6333    # Qdrant
+      - 11434   # Ollama — Nemotron 120B
+
+    allow_external:
+      - host: "api.nvcf.nvidia.com"
+        port: 443
+        purpose: "NVIDIA NIM — DeepSeek-R1 671B quality gate (PRIMARY)"
+      - host: "integrate.api.nvidia.com"
+        port: 443
+        purpose: "NVIDIA NIM — Llama-3.1-405B fallback quality gate"
+      - host: "api.anthropic.com"
+        port: 443
+        purpose: "Anthropic Claude API — tertiary fallback only"
+
+    deny_all_other: true
+
+  # Filesystem — Landlock rules
+  filesystem:
+    read:
+      - /home/axi_omi_sphere/aims-workspace   # full workspace read for code analysis
+      - /usr
+      - /lib
+      - /lib64
+      - /proc/self                             # own process info
+      - /tmp
+
+    write:
+      - /home/axi_omi_sphere/aims-workspace/ops/logs
+      - /home/axi_omi_sphere/aims-workspace/aims_workspace/training
+      - /home/axi_omi_sphere/aims-workspace/aims_workspace/output
+      - /tmp
+
+    deny:
+      - /home/axi_omi_sphere/.ssh
+      - /home/axi_omi_sphere/.gnupg
+      - /home/axi_omi_sphere/aims-workspace/.env
+      - /etc/shadow
+      - /etc/sudoers
+      - /etc/crontab
+      - /var/spool/cron
+
+  # Syscall filter — OCI seccomp profile
+  seccomp:
+    profile: seccomp_openclaw.json
+
+  # Resource limits
+  resources:
+    max_memory_mb: 4096
+    max_cpu_percent: 50
+    max_open_files: 512
+    max_processes: 32
+
+# ─── MCP tool registration ────────────────────────────────────────────────────
+# All 7 AIMS agents exposed to Claude Code as MCP tools.
+# Claude Code calls tools → they route through policy gate → agents execute.
+mcp:
+  servers:
+    - name: aims
+      command: python3
+      args:
+        - /home/axi_omi_sphere/aims-workspace/ops/tool_registry_mcp.py
+      env:
+        DOC_AGENT_API_URL: "http://127.0.0.1:8767"
+        OMI_API_URL:       "http://127.0.0.1:8765"
+        TASK_REGISTRY_URL: "http://127.0.0.1:8765"
+        QDRANT_BASE_URL:   "http://127.0.0.1:6333"
+        KNOMI_API_URL:     "http://127.0.0.1:8768"
+        ARGUS_API_URL:     "http://127.0.0.1:8770"
+
+# ─── Claude Code policy (propose-only enforcement) ───────────────────────────
+# These rules make it structurally impossible for Claude Code to self-execute
+# deployments or system changes — all actions go through poli_check + mainy.
+policy:
+  propose_only: true
+
+  require_approval:
+    - type: filesystem_write
+      paths:
+        - "**/*.py"
+        - "**/*.yaml"
+        - "**/*.yml"
+        - "**/*.json"
+        - "**/*.sh"
+    - type: service_action
+      actions: ["restart", "stop", "start", "deploy", "kill"]
+    - type: shell_exec
+      commands: ["*"]    # every shell command requires Poli approval
+
+  deny_always:
+    - type: shell_exec
+      patterns:
+        - "rm -rf"
+        - "dd if="
+        - "mkfs"
+        - "fdisk"
+        - "passwd"
+        - "sudo"
+        - "su "
+        - "chmod 777"
+    - type: network
+      # Claude Code may NOT open arbitrary outbound connections;
+      # only the allow_external list above is reachable.
+      mode: deny_unlisted
+    - type: secret_access
+      patterns:
+        - "*.env"
+        - "auth-profiles.json"
+        - "*.pem"
+        - "*.key"
+        - "*_secret*"
+        - "*password*"
+        - "*token*"

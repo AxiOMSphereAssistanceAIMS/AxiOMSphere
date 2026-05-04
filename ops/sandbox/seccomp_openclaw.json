@@ -1,0 +1,144 @@
+{
+  "comment": "OCI seccomp profile for OpenClaw (Claude Code) in NemoClaw sandbox. Base: Docker default allowlist. Additional blocks: dangerous syscalls that have no place in an engineering repair tool.",
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": [
+    "SCMP_ARCH_X86_64",
+    "SCMP_ARCH_X86",
+    "SCMP_ARCH_X32",
+    "SCMP_ARCH_AARCH64"
+  ],
+  "syscalls": [
+    {
+      "names": [
+        "ptrace",
+        "process_vm_readv",
+        "process_vm_writev"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No cross-process memory inspection/injection"
+    },
+    {
+      "names": [
+        "mount",
+        "umount",
+        "umount2",
+        "pivot_root",
+        "chroot"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No filesystem mounting or root changes"
+    },
+    {
+      "names": [
+        "setns",
+        "unshare"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No namespace manipulation — sandbox must not escape itself"
+    },
+    {
+      "names": [
+        "kexec_load",
+        "kexec_file_load"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No kernel loading"
+    },
+    {
+      "names": [
+        "reboot"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No system reboot"
+    },
+    {
+      "names": [
+        "init_module",
+        "finit_module",
+        "delete_module",
+        "create_module",
+        "query_module"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No kernel module loading/unloading"
+    },
+    {
+      "names": [
+        "sethostname",
+        "setdomainname"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No network identity changes"
+    },
+    {
+      "names": [
+        "keyctl",
+        "add_key",
+        "request_key"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No kernel keyring access — prevents stealing auth tokens"
+    },
+    {
+      "names": [
+        "bpf"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No eBPF program loading — could be used for kernel-level inspection"
+    },
+    {
+      "names": [
+        "perf_event_open"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No performance event monitoring — side-channel risk"
+    },
+    {
+      "names": [
+        "fanotify_init"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No filesystem-wide notification access"
+    },
+    {
+      "names": [
+        "acct"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No process accounting manipulation"
+    },
+    {
+      "names": [
+        "swapoff",
+        "swapon"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No swap management"
+    },
+    {
+      "names": [
+        "settimeofday",
+        "adjtimex",
+        "clock_adjtime",
+        "clock_settime",
+        "clock_settime64"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "No system clock changes"
+    }
+  ]
+}
