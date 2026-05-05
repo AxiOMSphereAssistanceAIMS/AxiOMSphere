@@ -12,9 +12,16 @@ Endpoints:
 from __future__ import annotations
 
 import logging
+import sys
 import threading
 import uuid
+from pathlib import Path
 from typing import Any
+
+# Allow imports from parent ops/ directory
+_ops_dir = Path(__file__).resolve().parents[1]
+if str(_ops_dir) not in sys.path:
+    sys.path.insert(0, str(_ops_dir))
 
 import httpx
 from fastapi import FastAPI, HTTPException

@@ -23,6 +23,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+# Allow imports from parent ops/ directory
+_ops_dir = Path(__file__).resolve().parents[1]
+if str(_ops_dir) not in sys.path:
+    sys.path.insert(0, str(_ops_dir))
+
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 

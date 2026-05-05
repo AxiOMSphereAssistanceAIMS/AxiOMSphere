@@ -10,8 +10,8 @@ import sys
 from pathlib import Path
 
 repo_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(repo_root))
 sys.path.insert(0, str(repo_root / "ops"))
+sys.path.insert(0, str(repo_root))
 
 import pytest
 from ops.factory.decision_engine import STEP_SERVICE_MAP

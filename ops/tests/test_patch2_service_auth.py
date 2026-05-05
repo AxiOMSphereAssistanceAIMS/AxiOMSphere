@@ -15,8 +15,8 @@ import pytest
 from fastapi import HTTPException
 
 repo_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(repo_root))
 sys.path.insert(0, str(repo_root / "ops"))
+sys.path.insert(0, str(repo_root))
 
 from core.service_auth import SERVICE_TOKEN, verify_service_token, service_headers
 
