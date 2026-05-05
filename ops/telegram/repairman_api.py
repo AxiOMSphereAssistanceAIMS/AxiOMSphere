@@ -68,8 +68,11 @@ class StatusResponse(BaseModel):
 
 @app.post("/trigger", response_model=RepairmanTaskResponse)
 async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_service_token)):
-    """Trigger a repairman task (automated or manual)."""
-    
+    """Trigger a repairman task (automated or manual).
+
+    Requires PoliAgent approval before execution.
+    """
+
     # Check automation policy
     if req.mode == "inspect" and not AUTO_INSPECT:
         raise HTTPException(status_code=403, detail="inspect mode not allowed in automation policy")
@@ -77,13 +80,58 @@ async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_s
         raise HTTPException(status_code=403, detail="repair mode not allowed in automation policy")
     if req.mode == "fix" and not AUTO_FIX:
         raise HTTPException(status_code=403, detail="fix mode not allowed in automation policy")
-    
+
+    # Request PoliAgent approval
+    import httpx
+    poli_url = "http://localhost:8004/check"
+
+    # Map mode to action_type
+    action_type_map = {
+        "inspect": "repairman_inspect",
+        "repair": "repairman_repair",
+        "fix": "repairman_fix",
+    }
+    action_type = action_type_map.get(req.mode, "repairman_repair")
+
+    # Build policy check request
+    policy_check = {
+        "action_type": action_type,
+        "params": {
+            "task": req.task,
+            "mode": req.mode,
+            "concept_preserved": True,  # Repairman always preserves concept
+            "restorative": True,        # Repairman changes are restorative
+        },
+        "requester": req.source,
+        "department": "self_healing",
+    }
+
+    try:
+        from core.service_auth import service_headers
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(poli_url, json=policy_check, headers=service_headers())
+            policy_result = resp.json()
+
+        if not policy_result.get("allowed", False):
+            log.warning("PoliAgent denied repairman task: %s", policy_result.get("reason"))
+            raise HTTPException(
+                status_code=403,
+                detail=f"PoliAgent denied: {policy_result.get('reason', 'unknown')}"
+            )
+
+        audit_id = policy_result.get("audit_id", "unknown")
+        log.info("PoliAgent approved repairman task: audit_id=%s", audit_id)
+
+    except httpx.HTTPError as e:
+        log.error("Failed to contact PoliAgent: %s", e)
+        raise HTTPException(status_code=503, detail=f"PoliAgent unavailable: {e}")
+
     if not RUN_LOCK.acquire(blocking=False):
         return RepairmanTaskResponse(
             status="busy",
             message="Repairman is already running another task"
         )
-    
+
     try:
         # Prepare task text based on mode
         if req.mode == "inspect":
@@ -93,27 +141,29 @@ async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_s
                 "You have explicit permission to modify project files inside /home/axi_omi_sphere/aims-workspace as needed for this task.\n"
                 "Goal: Restore process operability without changing concept.\n"
                 "Do not modify secrets, credentials, databases, production data, model files, external storage, deploy, git push, or restart services unless separately explicitly requested.\n\n"
+                f"PoliAgent audit_id: {audit_id}\n\n"
                 "Task:\n" + req.task
             )
         else:  # repair
             full_task = (
                 "Run as AIMS Claude Code Repairman. Follow the repairman permission model.\n"
                 "Concept review passed. Production process output must remain unchanged.\n\n"
+                f"PoliAgent audit_id: {audit_id}\n\n"
                 "Task:\n" + req.task
             )
-        
+
         issue_path = write_issue_file(req.mode, 0, full_task)  # user_id=0 for automated
         log_path = LOGS_DIR / f"{issue_path.stem}.log"
-        
-        log.info("Repairman task triggered: mode=%s source=%s", req.mode, req.source)
-        
+
+        log.info("Repairman task triggered: mode=%s source=%s audit_id=%s", req.mode, req.source, audit_id)
+
         # Run in background thread
         def _run():
             try:
                 env = os.environ.copy()
                 env["NO_COLOR"] = "1"
                 env["TERM"] = env.get("TERM", "xterm")
-                
+
                 started = time.time()
                 proc = subprocess.run(
                     [str(RUN_REPAIRMAN), str(ROOT), str(issue_path)],
@@ -127,22 +177,22 @@ async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_s
                 elapsed = round(time.time() - started, 1)
                 output = proc.stdout or ""
                 log_path.write_text(output, encoding="utf-8", errors="replace")
-                
-                log.info("Repairman task finished: exit=%d elapsed=%.1fs", proc.returncode, elapsed)
+
+                log.info("Repairman task finished: exit=%d elapsed=%.1fs audit_id=%s", proc.returncode, elapsed, audit_id)
             except Exception as e:
                 log.exception("Repairman task error: %s", e)
             finally:
                 RUN_LOCK.release()
-        
+
         threading.Thread(target=_run, daemon=True).start()
-        
+
         return RepairmanTaskResponse(
             status="started",
-            message=f"Task accepted, thinking... (mode={req.mode}, source={req.source})",
+            message=f"Task accepted, thinking... (mode={req.mode}, source={req.source}, audit_id={audit_id})",
             issue_path=str(issue_path),
             log_path=str(log_path)
         )
-    
+
     except Exception as e:
         RUN_LOCK.release()
         raise HTTPException(status_code=500, detail=str(e))

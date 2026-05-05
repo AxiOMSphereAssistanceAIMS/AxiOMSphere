@@ -17,6 +17,9 @@ SAFE_ACTIONS: frozenset[str] = frozenset({
     "reload_config",
     "pause_worker",
     "resume_worker",
+    "repairman_inspect",
+    "repairman_repair",
+    "repairman_fix",
 })
 
 DANGEROUS_ACTIONS: frozenset[str] = frozenset({
@@ -82,6 +85,29 @@ class SysPolic:
                 reason = "switch_model requires 'model' field"
                 log.warning("DENIED: %s", reason)
                 raise PolicyDenied(reason)
+
+        # Repairman action validation
+        if atype in ("repairman_inspect", "repairman_repair", "repairman_fix"):
+            task = action.get("task", "")
+            if not task:
+                reason = f"{atype} requires 'task' field"
+                log.warning("DENIED: %s", reason)
+                raise PolicyDenied(reason)
+
+            # Check concept preservation for repair and fix
+            if atype in ("repairman_repair", "repairman_fix"):
+                concept_preserved = action.get("concept_preserved", False)
+                restorative = action.get("restorative", False)
+
+                if not concept_preserved:
+                    reason = f"{atype} denied: concept must be preserved (concept_preserved=True required)"
+                    log.warning("DENIED: %s", reason)
+                    raise PolicyDenied(reason)
+
+                if not restorative:
+                    reason = f"{atype} denied: changes must be restorative (restorative=True required)"
+                    log.warning("DENIED: %s", reason)
+                    raise PolicyDenied(reason)
 
         if atype not in SAFE_ACTIONS:
             reason = f"action type '{atype}' is not in SAFE_ACTIONS whitelist"
