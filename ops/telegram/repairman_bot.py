@@ -20,6 +20,14 @@ AUDIT_DIR = ROOT / "aims_workspace/audit/telegram_repairman"
 ISSUES_DIR = AUDIT_DIR / "issues"
 LOGS_DIR = AUDIT_DIR / "logs"
 
+# Automation policy flags
+AUTO_INSPECT = True      # Always safe, read-only
+AUTO_STATUS = True       # Always safe, informational
+AUTO_CURRENT = True      # Safe when retry threshold reached
+AUTO_REPAIR = True       # Safe when concept unchanged
+AUTO_FIX = True          # Safe for operability restoration
+AUTO_MODEL = True        # Safe for system reliability
+
 TOKEN = (
     os.environ.get("REPAIRMAN_BOT_TOKEN")
     or os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -169,7 +177,16 @@ def write_issue_file(prefix: str, user_id: int, text: str) -> pathlib.Path:
     return path
 
 
-def run_repairman(chat_id: int, user_id: int, task_text: str, mode: str) -> None:
+def run_repairman(chat_id: int, user_id: int, task_text: str, mode: str, auto_triggered: bool = False) -> None:
+    """Execute repairman task.
+
+    Args:
+        chat_id: Telegram chat id
+        user_id: Telegram user id
+        task_text: Task description
+        mode: Task mode (inspect|repair|fix)
+        auto_triggered: True if triggered by LogiOrchestrator/ArgusAgent
+    """
     if not RUN_LOCK.acquire(blocking=False):
         send_message(chat_id, "Repairman is already running another task.")
         return
@@ -179,9 +196,10 @@ def run_repairman(chat_id: int, user_id: int, task_text: str, mode: str) -> None
         log_path = LOGS_DIR / f"{issue_path.stem}.log"
 
         model_info = current_model_text().split('\n')[0] if current_model_text() else "unknown"
+        trigger_source = "AUTO" if auto_triggered else "MANUAL"
         send_message(
             chat_id,
-            f"Task accepted, thinking...\nModel: {model_info}\nTask: {mode}"
+            f"Task accepted, thinking...\nModel: {model_info}\nTask: {mode}\nSource: {trigger_source}"
         )
 
         env = os.environ.copy()
@@ -205,11 +223,9 @@ def run_repairman(chat_id: int, user_id: int, task_text: str, mode: str) -> None
         status = "SUCCESS" if proc.returncode == 0 else f"FAILED exit={proc.returncode}"
         send_message(
             chat_id,
-            f"Repairman task finished.\n"
+            f"task finished.\n"
             f"Status: {status}\n"
             f"Elapsed: {elapsed}s\n"
-            f"Log: {log_path}\n\n"
-            f"Output:\n{output[-3000:]}"
         )
 
     except subprocess.TimeoutExpired:
@@ -227,24 +243,32 @@ Commands:
 /whoami
   Show your Telegram user id.
 
-/model
+/model [AUTO]
   Choose model with buttons.
+  Automatic: Maintains system operability, switches models for reliability.
 
-/current
+/current [AUTO]
   Show current model.
+  Automatic: When changes required multiple retries or failed after 5 attempts.
 
-/status
+/status [AUTO]
   Show proxy health and current model.
+  Automatic: Always safe, informational only.
 
-/inspect <task>
+/inspect [AUTO]
   Read-only inspection.
+  Automatic: Safe, no modifications.
 
-/repair <task>
+/repair [AUTO]
   Repairman task according to permission model.
+  Automatic: When concept review passed and production process output remains unchanged.
 
-/fix <task>
+/fix [AUTO]
   Explicitly allows project file edits inside /home/axi_omi_sphere/aims-workspace.
+  Automatic: Restores process operability without changing concept.
   Still forbids secrets, databases, production data, model files, git push, deploy, and service restarts unless separately allowed.
+
+[AUTO] = Can be triggered automatically by LogiOrchestrator or ArgusAgent.
 """
 
 

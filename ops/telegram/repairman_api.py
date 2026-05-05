@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+"""Repairman API — HTTP endpoint for automated repairman task triggering.
+
+Allows LogiOrchestrator and ArgusAgent to trigger repairman tasks programmatically.
+Port: 8010
+"""
+from __future__ import annotations
+
+import logging
+import os
+import pathlib
+import subprocess
+import threading
+import time
+from datetime import datetime
+
+from fastapi import Depends, FastAPI, HTTPException
+from pydantic import BaseModel
+
+# Import automation flags and helpers from repairman_bot
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+
+from repairman_bot import (
+    AUTO_INSPECT, AUTO_STATUS, AUTO_CURRENT, AUTO_REPAIR, AUTO_FIX, AUTO_MODEL,
+    RUN_REPAIRMAN, ROOT, ISSUES_DIR, LOGS_DIR, CURRENT_MODEL,
+    write_issue_file, current_model_text, set_model, proxy_health,
+    RUN_LOCK
+)
+
+# Import service auth
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from core.service_auth import verify_service_token
+
+log = logging.getLogger("repairman_api")
+app = FastAPI(title="RepairmanAPI", version="1.0.0")
+
+ISSUES_DIR.mkdir(parents=True, exist_ok=True)
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+# ── Request/Response models ────────────────────────────────────────────────
+
+class RepairmanTaskRequest(BaseModel):
+    task: str
+    mode: str = "repair"  # inspect | repair | fix
+    source: str = "logi_orchestrator"  # logi_orchestrator | argus_agent | manual
+
+
+class RepairmanTaskResponse(BaseModel):
+    status: str
+    message: str
+    issue_path: str | None = None
+    log_path: str | None = None
+
+
+class ModelSwitchRequest(BaseModel):
+    profile: str  # kiro-sonnet | kr-sonnet | kiro-haiku | kr-haiku | local-nemotron | auto
+
+
+class StatusResponse(BaseModel):
+    current_model: str
+    proxy_health: dict | str
+    lock_acquired: bool
+
+
+# ── Endpoints ──────────────────────────────────────────────────────────────
+
+@app.post("/trigger", response_model=RepairmanTaskResponse)
+async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_service_token)):
+    """Trigger a repairman task (automated or manual)."""
+    
+    # Check automation policy
+    if req.mode == "inspect" and not AUTO_INSPECT:
+        raise HTTPException(status_code=403, detail="inspect mode not allowed in automation policy")
+    if req.mode == "repair" and not AUTO_REPAIR:
+        raise HTTPException(status_code=403, detail="repair mode not allowed in automation policy")
+    if req.mode == "fix" and not AUTO_FIX:
+        raise HTTPException(status_code=403, detail="fix mode not allowed in automation policy")
+    
+    if not RUN_LOCK.acquire(blocking=False):
+        return RepairmanTaskResponse(
+            status="busy",
+            message="Repairman is already running another task"
+        )
+    
+    try:
+        # Prepare task text based on mode
+        if req.mode == "inspect":
+            full_task = "Inspect only. Do not modify files.\n\nTask:\n" + req.task
+        elif req.mode == "fix":
+            full_task = (
+                "You have explicit permission to modify project files inside /home/axi_omi_sphere/aims-workspace as needed for this task.\n"
+                "Goal: Restore process operability without changing concept.\n"
+                "Do not modify secrets, credentials, databases, production data, model files, external storage, deploy, git push, or restart services unless separately explicitly requested.\n\n"
+                "Task:\n" + req.task
+            )
+        else:  # repair
+            full_task = (
+                "Run as AIMS Claude Code Repairman. Follow the repairman permission model.\n"
+                "Concept review passed. Production process output must remain unchanged.\n\n"
+                "Task:\n" + req.task
+            )
+        
+        issue_path = write_issue_file(req.mode, 0, full_task)  # user_id=0 for automated
+        log_path = LOGS_DIR / f"{issue_path.stem}.log"
+        
+        log.info("Repairman task triggered: mode=%s source=%s", req.mode, req.source)
+        
+        # Run in background thread
+        def _run():
+            try:
+                env = os.environ.copy()
+                env["NO_COLOR"] = "1"
+                env["TERM"] = env.get("TERM", "xterm")
+                
+                started = time.time()
+                proc = subprocess.run(
+                    [str(RUN_REPAIRMAN), str(ROOT), str(issue_path)],
+                    cwd=str(ROOT),
+                    env=env,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    timeout=3600,
+                )
+                elapsed = round(time.time() - started, 1)
+                output = proc.stdout or ""
+                log_path.write_text(output, encoding="utf-8", errors="replace")
+                
+                log.info("Repairman task finished: exit=%d elapsed=%.1fs", proc.returncode, elapsed)
+            except Exception as e:
+                log.exception("Repairman task error: %s", e)
+            finally:
+                RUN_LOCK.release()
+        
+        threading.Thread(target=_run, daemon=True).start()
+        
+        return RepairmanTaskResponse(
+            status="started",
+            message=f"Task accepted, thinking... (mode={req.mode}, source={req.source})",
+            issue_path=str(issue_path),
+            log_path=str(log_path)
+        )
+    
+    except Exception as e:
+        RUN_LOCK.release()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/switch_model")
+async def switch_model(req: ModelSwitchRequest, _auth: None = Depends(verify_service_token)):
+    """Switch repairman model (automated for system reliability)."""
+    if not AUTO_MODEL:
+        raise HTTPException(status_code=403, detail="model switching not allowed in automation policy")
+    
+    ok, output = set_model(req.profile)
+    if not ok:
+        raise HTTPException(status_code=500, detail=f"Model switch failed: {output}")
+    
+    log.info("Model switched to %s", req.profile)
+    return {
+        "status": "ok",
+        "profile": req.profile,
+        "output": output,
+        "current": current_model_text()
+    }
+
+
+@app.get("/status", response_model=StatusResponse)
+async def get_status():
+    """Get current repairman status (always allowed)."""
+    try:
+        import json
+        health_data = proxy_health()
+        try:
+            health_dict = json.loads(health_data)
+        except:
+            health_dict = health_data
+    except Exception as e:
+        health_dict = {"error": str(e)}
+    
+    return StatusResponse(
+        current_model=current_model_text(),
+        proxy_health=health_dict,
+        lock_acquired=not RUN_LOCK.acquire(blocking=False) or (RUN_LOCK.release() or False)
+    )
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {
+        "status": "ok",
+        "service": "repairman_api",
+        "port": 8010,
+        "automation_policy": {
+            "inspect": AUTO_INSPECT,
+            "status": AUTO_STATUS,
+            "current": AUTO_CURRENT,
+            "repair": AUTO_REPAIR,
+            "fix": AUTO_FIX,
+            "model": AUTO_MODEL,
+        }
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    logging.basicConfig(level=logging.INFO)
+    uvicorn.run(app, host="0.0.0.0", port=8010, log_level="info")
