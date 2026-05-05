@@ -39,6 +39,8 @@ _HERE = Path(__file__).parent.resolve()
 if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
+from core.service_auth import service_headers
+
 log = logging.getLogger("aims.tool_registry")
 
 # ── service addresses (override via env) ──────────────────────────────────
@@ -58,9 +60,9 @@ mcp = FastMCP("AIMS Tool Registry")
 def _http(method: str, url: str, body: dict | None = None, timeout: int = 60) -> dict:
     try:
         if method == "GET":
-            r = requests.get(url, timeout=timeout)
+            r = requests.get(url, headers=service_headers(), timeout=timeout)
         else:
-            r = requests.post(url, json=body or {}, timeout=timeout)
+            r = requests.post(url, json=body or {}, headers=service_headers(), timeout=timeout)
         r.raise_for_status()
         return r.json()
     except requests.exceptions.ConnectionError:

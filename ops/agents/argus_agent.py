@@ -15,8 +15,10 @@ from typing import Any
 
 import httpx
 import uvicorn
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel
+
+from core.service_auth import verify_service_token
 
 log = logging.getLogger("aims.argus_agent")
 logging.basicConfig(
@@ -194,7 +196,7 @@ def get_health() -> HealthResponse:
 
 
 @app.post("/refresh")
-async def force_refresh() -> dict:
+async def force_refresh(_auth: None = Depends(verify_service_token)) -> dict:
     """Trigger an immediate health recalculation (bypass the 60-second interval)."""
     container_statuses = _check_containers()
     ollama_status = await _check_ollama()
