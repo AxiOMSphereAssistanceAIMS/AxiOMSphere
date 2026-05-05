@@ -72,11 +72,13 @@ def _clear_queue(action: dict[str, Any]) -> str:
         import redis
         host = action.get("redis_host", "aims-redis")
         port = int(action.get("redis_port", 6379))
-        queue = action.get("queue", "queue:pending")
+        queues = action.get("queues") or [action.get("queue", "queue:pending"), "queue:processing"]
         r = redis.Redis(host=host, port=port, decode_responses=True)
-        count = r.llen(queue)
-        r.delete(queue)
-        return f"cleared {count} items from {queue}"
+        count = 0
+        for q in queues:
+            count += r.llen(q)
+            r.delete(q)
+        return f"cleared {count} items from {queues}"
     except Exception as e:
         raise RuntimeError(f"redis clear failed: {e}") from e
 

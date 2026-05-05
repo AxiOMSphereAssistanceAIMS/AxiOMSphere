@@ -307,8 +307,9 @@ def poli_check(
                 "reload_config", "pause_worker", "resume_worker"}
         DANGEROUS = {"delete_db", "exec_shell", "wipe_storage",
                      "drop_table", "rm_rf", "push_to_prod"}
-        RESTARTABLE = {"axiomsphere-axi-bot", "axiomsphere-omi-bot", "axiomsphere-argus-bot", "axiomsphere-doc-agent",
-                       "axiomsphere-aims-worker", "axiomsphere-aims-api", "axiomsphere-schedule"}
+        RESTARTABLE = {"axi-bot", "omi-bot", "argus-bot", "logi-bot", "aims-api", "aims-worker",
+                       "aims-orchestrator", "queue-api", "task-registry", "doc-agent", "knomi-agent",
+                       "poli-agent", "mainy-repair-agent", "omi-api", "qdrant", "aims-redis", "schedule"}
 
         if action_type in DANGEROUS:
             return _json({"allowed": False, "reason": f"'{action_type}' is DANGEROUS"})

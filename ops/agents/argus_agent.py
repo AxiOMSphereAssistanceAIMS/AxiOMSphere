@@ -80,13 +80,14 @@ async def _check_ollama() -> str:
 
 
 async def _check_task_queue() -> int:
-    """Return approximate task queue depth (0 if unavailable)."""
+    """Return total task queue depth: pending + processing (0 if unavailable)."""
     try:
         import redis.asyncio as aioredis  # type: ignore
         r = aioredis.Redis(host="aims-redis", port=6379, decode_responses=True)
-        depth = await r.llen("queue:pending")
+        pending = await r.llen("queue:pending")
+        processing = await r.llen("queue:processing")
         await r.aclose()
-        return int(depth)
+        return int(pending + processing)
     except Exception:
         return 0
 

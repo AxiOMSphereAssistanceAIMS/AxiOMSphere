@@ -32,15 +32,15 @@ class Decision:
     save_pair:     bool  = False
 
 
-# Maps pipeline step name → SysPolic-accepted container name for restart_container action.
-# All container names use axiomsphere-* format to match docker-compose.yml.
+# Maps pipeline step name → docker compose service name for restart_container action.
+# Values are service names (e.g. "doc-agent"), not container names ("axiomsphere-doc-agent").
 STEP_SERVICE_MAP: dict[str, str | None] = {
-    "knomi_search":    "axiomsphere-qdrant",
+    "knomi_search":    "knomi-agent",
     "context_filter":  None,            # in-process, no container
-    "doci_compose":    "axiomsphere-doc-agent",
-    "cloud_validate":  "axiomsphere-aims-api",
-    "poli_check":      None,            # host process, no container restart
-    "omi_store":       "axiomsphere-omi-api",
+    "doci_compose":    "doc-agent",
+    "cloud_validate":  "aims-api",
+    "poli_check":      "poli-agent",
+    "omi_store":       "omi-api",
 }
 
 _HTTP_STATUS_RE = re.compile(r"HTTP[^\d]*(\d{3})")

@@ -28,15 +28,25 @@ DANGEROUS_ACTIONS: frozenset[str] = frozenset({
     "push_to_prod",
 })
 
-# containers that may be restarted automatically
+# services that may be restarted automatically (docker compose service names, not container_name)
 RESTARTABLE_CONTAINERS: frozenset[str] = frozenset({
-    "axiomsphere-axi-bot",
-    "axiomsphere-omi-bot",
-    "axiomsphere-argus-bot",
-    "axiomsphere-doc-agent",
-    "axiomsphere-aims-worker",
-    "axiomsphere-aims-api",
-    "axiomsphere-schedule",
+    "axi-bot",
+    "omi-bot",
+    "argus-bot",
+    "logi-bot",
+    "aims-api",
+    "aims-worker",
+    "aims-orchestrator",
+    "queue-api",
+    "task-registry",
+    "doc-agent",
+    "knomi-agent",
+    "poli-agent",
+    "mainy-repair-agent",
+    "omi-api",
+    "qdrant",
+    "aims-redis",
+    "schedule",
 })
 
 
