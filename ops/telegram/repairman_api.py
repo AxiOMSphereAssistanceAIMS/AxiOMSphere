@@ -113,10 +113,50 @@ async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_s
             policy_result = resp.json()
 
         if not policy_result.get("allowed", False):
-            log.warning("PoliAgent denied repairman task: %s", policy_result.get("reason"))
+            reason = policy_result.get("reason", "unknown")
+            log.warning("PoliAgent denied repairman task: %s", reason)
+
+            # Send notification to Telegram if bot token is available
+            try:
+                telegram_token = os.environ.get("REPAIRMAN_BOT_TOKEN")
+                telegram_chat_id = os.environ.get("REPAIRMAN_ADMIN_CHAT_ID")
+
+                if telegram_token and telegram_chat_id:
+                    import json
+                    import urllib.request
+
+                    proposal_message = (
+                        f"🚫 PoliAgent denied automated repair\n\n"
+                        f"Task: {req.task[:200]}\n"
+                        f"Mode: {req.mode}\n"
+                        f"Source: {req.source}\n"
+                        f"Reason: {reason}\n\n"
+                        f"💡 Repairman proposal:\n"
+                        f"This task appears to be restorative and concept-preserving. "
+                        f"If you approve, use:\n"
+                        f"/fix {req.task[:100]}"
+                    )
+
+                    telegram_url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+                    telegram_payload = {
+                        "chat_id": telegram_chat_id,
+                        "text": proposal_message,
+                        "disable_web_page_preview": True,
+                    }
+
+                    req_tg = urllib.request.Request(
+                        telegram_url,
+                        data=json.dumps(telegram_payload).encode("utf-8"),
+                        headers={"Content-Type": "application/json"},
+                    )
+                    with urllib.request.urlopen(req_tg, timeout=10) as resp:
+                        log.info("Telegram notification sent: %d", resp.status)
+            except Exception as tg_error:
+                log.warning("Failed to send Telegram notification: %s", tg_error)
+
             raise HTTPException(
                 status_code=403,
-                detail=f"PoliAgent denied: {policy_result.get('reason', 'unknown')}"
+                detail=f"PoliAgent denied: {reason}"
             )
 
         audit_id = policy_result.get("audit_id", "unknown")
