@@ -1,10 +1,11 @@
-"""LogiOrchestrator — NemoClaw Orchestrator for AIMS Document Factory V2.
+"""PipelineCoordinator — Stateless coordinator for AIMS Document Factory V2.
 
-Orchestrates the 7-step document pipeline and the self-healing loop.
+Coordinates the 7-step document pipeline and the self-healing loop.
 Uses Tool Registry to call all agents. Applies Context Filter before DociAgent.
 
-NOT an LLM itself — routes and coordinates. NemoClaw (Nemotron 120B) is the
-reasoning layer that calls this orchestrator via the Tool Gateway.
+NOT an LLM itself — pure FastAPI service that routes and coordinates.
+NemoClaw (Nemotron 120B) is the reasoning layer that calls this coordinator.
+ConversationalOrchestrator (Qwen3:14b) handles interactive chat workflows.
 """
 from __future__ import annotations
 
@@ -31,13 +32,13 @@ try:
 except ImportError:
     _FACTORY_AVAILABLE = False
 
-log = logging.getLogger("aims.logi_orchestrator")
+log = logging.getLogger("aims.pipeline_coordinator")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s — %(message)s",
 )
 
-app = FastAPI(title="LogiOrchestrator", version="2.0.0")
+app = FastAPI(title="PipelineCoordinator", version="2.0.0")
 
 
 # ── request / response models ──────────────────────────────────────────────────
@@ -73,15 +74,16 @@ class TrainingMetricsRequest(BaseModel):
 
 # ── orchestrator class ─────────────────────────────────────────────────────────
 
-class LogiOrchestrator:
-    """Core V2 orchestrator.
+class PipelineCoordinator:
+    """Core V2 stateless pipeline coordinator.
 
     Coordinates the 7-step document pipeline and the self-healing repair loop.
+    Pure routing logic — no LLM reasoning.
     """
 
     def __init__(self) -> None:
         self.tool_registry = TOOL_REGISTRY
-        log.info("LogiOrchestrator initialised with %d tools", len(self.tool_registry))
+        log.info("PipelineCoordinator initialised with %d tools", len(self.tool_registry))
 
     # ── document pipeline ──────────────────────────────────────────────────────
 
@@ -297,7 +299,7 @@ class LogiOrchestrator:
 
 # ── shared orchestrator instance ───────────────────────────────────────────────
 
-_orchestrator = LogiOrchestrator()
+_coordinator = PipelineCoordinator()
 
 
 # ── FastAPI endpoints ──────────────────────────────────────────────────────────
@@ -306,14 +308,14 @@ _orchestrator = LogiOrchestrator()
 def task_endpoint(req: TaskRequest) -> dict:
     """Run the 7-step document factory pipeline."""
     task = req.model_dump()
-    return _orchestrator.handle_task(task)
+    return _coordinator.handle_task(task)
 
 
 @app.post("/supervised_task")
 def supervised_task_endpoint(req: TaskRequest) -> dict:
     """Run pipeline via SupervisedPipeline factory (with monitor + repair)."""
     if not _FACTORY_AVAILABLE:
-        return _orchestrator.handle_task(req.model_dump())
+        return _coordinator.handle_task(req.model_dump())
     from agents.supervisor_agent import run_supervised_task, SupervisedTaskRequest
     sr = SupervisedTaskRequest(**req.model_dump())
     return run_supervised_task(sr).model_dump()
@@ -322,18 +324,18 @@ def supervised_task_endpoint(req: TaskRequest) -> dict:
 @app.post("/health_event")
 def health_event_endpoint(event: HealthEventRequest) -> dict:
     """Receive a health event from ArgusAgent and dispatch repair if needed."""
-    return _orchestrator.on_health_event(event.model_dump())
+    return _coordinator.on_health_event(event.model_dump())
 
 
 @app.post("/check_training")
 def check_training_endpoint(metrics: TrainingMetricsRequest) -> dict:
     """Check training thresholds and trigger fine-tuning if warranted."""
-    return _orchestrator.check_training_triggers(metrics.model_dump())
+    return _coordinator.check_training_triggers(metrics.model_dump())
 
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "service": "logi_orchestrator", "port": 8000}
+    return {"status": "ok", "service": "pipeline_coordinator", "port": 8000}
 
 
 @app.get("/status")
@@ -345,7 +347,7 @@ def status() -> dict:
 
 if __name__ == "__main__":
     uvicorn.run(
-        "orchestrator:app",
+        "pipeline_coordinator:app",
         host="0.0.0.0",
         port=8000,
         log_level="info",

@@ -57,6 +57,28 @@ PROFILES: dict[str, dict[str, Any]] = {
         "api_key_env": "NVIDIA_API_KEY",
         "supports_tools": False,
     },
+    # Claude Code model profiles
+    "claude-sonnet-4-5": {
+        "provider": "anthropic",
+        "base_url": "https://api.anthropic.com/v1",
+        "model": "claude-sonnet-4-20250514",
+        "api_key_env": "ANTHROPIC_API_KEY",
+        "supports_tools": True,
+    },
+    "claude-sonnet-3-7": {
+        "provider": "anthropic",
+        "base_url": "https://api.anthropic.com/v1",
+        "model": "claude-3-7-sonnet-20250219",
+        "api_key_env": "ANTHROPIC_API_KEY",
+        "supports_tools": True,
+    },
+    "claude-opus-4": {
+        "provider": "anthropic",
+        "base_url": "https://api.anthropic.com/v1",
+        "model": "claude-opus-4-20250514",
+        "api_key_env": "ANTHROPIC_API_KEY",
+        "supports_tools": True,
+    },
 }
 
 # Model fallback chain for rate limit handling
@@ -64,6 +86,14 @@ MODEL_FALLBACK_CHAIN = [
     "local-nemotron",
     "llama405b",
     "minimax-m2",
+]
+
+# Claude Code fallback chain (for Anthropic API models)
+CLAUDE_CODE_FALLBACK_CHAIN = [
+    "claude-sonnet-4-5",
+    "claude-sonnet-3-7",
+    "claude-opus-4",
+    "local-nemotron",  # fallback to local if all Claude models hit rate limits
 ]
 
 # Track rate limit errors per model
@@ -89,15 +119,33 @@ def select_profile(requested_model: str | None) -> tuple[str, dict[str, Any]]:
     }
 
 
-def get_next_model_in_chain(current_model: str) -> str | None:
+def get_fallback_chain_for_model(model_alias: str) -> list[str]:
+    """Get the appropriate fallback chain for a given model.
+
+    Returns CLAUDE_CODE_FALLBACK_CHAIN for Anthropic models,
+    MODEL_FALLBACK_CHAIN for others.
+    """
+    profile = PROFILES.get(model_alias, {})
+    provider = profile.get("provider", "")
+
+    if provider == "anthropic":
+        return CLAUDE_CODE_FALLBACK_CHAIN
+    else:
+        return MODEL_FALLBACK_CHAIN
+
+
+def get_next_model_in_chain(current_model: str, chain: list[str] | None = None) -> str | None:
     """Get the next model in the fallback chain after current_model.
 
     Returns None if current_model is the last in the chain.
     """
+    if chain is None:
+        chain = get_fallback_chain_for_model(current_model)
+
     try:
-        current_idx = MODEL_FALLBACK_CHAIN.index(current_model)
-        if current_idx < len(MODEL_FALLBACK_CHAIN) - 1:
-            return MODEL_FALLBACK_CHAIN[current_idx + 1]
+        current_idx = chain.index(current_model)
+        if current_idx < len(chain) - 1:
+            return chain[current_idx + 1]
     except (ValueError, IndexError):
         pass
     return None
@@ -306,8 +354,9 @@ async def messages(request: Request, authorization: str | None = Header(default=
     model_alias, profile = select_profile(payload.get("model"))
     original_model = model_alias
 
-    # Try current model and fallback chain on rate limit
-    max_attempts = len(MODEL_FALLBACK_CHAIN)
+    # Get appropriate fallback chain for this model
+    fallback_chain = get_fallback_chain_for_model(model_alias)
+    max_attempts = len(fallback_chain)
     attempt = 0
 
     while attempt < max_attempts:
@@ -362,7 +411,7 @@ async def messages(request: Request, authorization: str | None = Header(default=
                 _rate_limit_tracker[model_alias] = _rate_limit_tracker.get(model_alias, 0) + 1
 
                 # Try next model in chain
-                next_model = get_next_model_in_chain(model_alias)
+                next_model = get_next_model_in_chain(model_alias, fallback_chain)
                 if next_model:
                     print(f"Rate limit hit on {model_alias}, switching to {next_model}")
                     model_alias = next_model
@@ -395,7 +444,7 @@ async def messages(request: Request, authorization: str | None = Header(default=
 
         except httpx.TimeoutException:
             # On timeout, try next model
-            next_model = get_next_model_in_chain(model_alias)
+            next_model = get_next_model_in_chain(model_alias, fallback_chain)
             if next_model:
                 print(f"Timeout on {model_alias}, switching to {next_model}")
                 model_alias = next_model
