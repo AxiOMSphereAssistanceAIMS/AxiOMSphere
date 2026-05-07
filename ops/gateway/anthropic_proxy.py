@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -117,6 +118,34 @@ def select_profile(requested_model: str | None) -> tuple[str, dict[str, Any]]:
         "api_key_env": None,
         "supports_tools": True,
     }
+
+
+def get_api_key(api_key_env: str | None) -> str | None:
+    """Get API key from environment, checking .env file if not in process env."""
+    if not api_key_env:
+        return None
+
+    # First check process environment
+    key = os.getenv(api_key_env)
+    if key:
+        return key
+
+    # Fallback: read from .env file
+    env_file = Path(__file__).resolve().parents[2] / ".env"
+    if env_file.exists():
+        try:
+            for line in env_file.read_text().splitlines():
+                line = line.strip()
+                if line.startswith(api_key_env):
+                    # Parse KEY="value" or KEY=value
+                    parts = line.split("=", 1)
+                    if len(parts) == 2:
+                        value = parts[1].strip().strip('"').strip("'")
+                        return value
+        except Exception:
+            pass
+
+    return None
 
 
 def get_fallback_chain_for_model(model_alias: str) -> list[str]:
@@ -366,7 +395,7 @@ async def messages(request: Request, authorization: str | None = Header(default=
 
         headers = {"Content-Type": "application/json"}
         if api_key_env:
-            api_key = os.getenv(api_key_env)
+            api_key = get_api_key(api_key_env)
             if not api_key:
                 raise HTTPException(status_code=500, detail=f"Missing required environment variable: {api_key_env}")
             headers["Authorization"] = f"Bearer {api_key}"

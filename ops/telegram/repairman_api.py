@@ -83,7 +83,7 @@ async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_s
 
     # Request PoliAgent approval
     import httpx
-    poli_url = "http://localhost:8004/check"
+    poli_url = os.getenv("POLI_URL", "http://poli-agent:8004") + "/check"
 
     # Map mode to action_type
     action_type_map = {
@@ -205,6 +205,7 @@ async def trigger_task(req: RepairmanTaskRequest, _auth: None = Depends(verify_s
                 env["TERM"] = env.get("TERM", "xterm")
 
                 started = time.time()
+                log.info("DEBUG: RUN_REPAIRMAN=%s ROOT=%s exists=%s", RUN_REPAIRMAN, ROOT, RUN_REPAIRMAN.exists())
                 proc = subprocess.run(
                     [str(RUN_REPAIRMAN), str(ROOT), str(issue_path)],
                     cwd=str(ROOT),

@@ -12,11 +12,21 @@ import urllib.parse
 import urllib.request
 from datetime import datetime
 
-ROOT = pathlib.Path("/home/axi_omi_sphere/aims-workspace")
-RUN_REPAIRMAN = ROOT / "ops/claude_code/run_repairman.sh"
-USE_MODEL = ROOT / "ops/claude_code/use_model.sh"
-CURRENT_MODEL = ROOT / "ops/claude_code/current_model.env"
-AUDIT_DIR = ROOT / "aims_workspace/audit/telegram_repairman"
+# Detect if running in docker container (check if /ops/claude_code is accessible)
+if pathlib.Path("/ops/claude_code/run_repairman.sh").exists():
+    # Inside container: /ops is mounted, /data is mounted
+    ROOT = pathlib.Path("/ops").parent  # /
+    RUN_REPAIRMAN = pathlib.Path("/ops/claude_code/run_repairman.sh")
+    USE_MODEL = pathlib.Path("/ops/claude_code/use_model.sh")
+    CURRENT_MODEL = pathlib.Path("/ops/claude_code/current_model.env")
+    AUDIT_DIR = pathlib.Path("/data/audit/telegram_repairman")
+else:
+    # Host or dev environment
+    ROOT = pathlib.Path("/home/axi_omi_sphere/aims-workspace")
+    RUN_REPAIRMAN = ROOT / "ops/claude_code/run_repairman.sh"
+    USE_MODEL = ROOT / "ops/claude_code/use_model.sh"
+    CURRENT_MODEL = ROOT / "ops/claude_code/current_model.env"
+    AUDIT_DIR = ROOT / "aims_workspace/audit/telegram_repairman"
 ISSUES_DIR = AUDIT_DIR / "issues"
 LOGS_DIR = AUDIT_DIR / "logs"
 
@@ -28,15 +38,8 @@ AUTO_REPAIR = True       # Safe when concept unchanged
 AUTO_FIX = True          # Safe for operability restoration
 AUTO_MODEL = True        # Safe for system reliability
 
-TOKEN = (
-    os.environ.get("REPAIRMAN_BOT_TOKEN")
-    or os.environ.get("TELEGRAM_BOT_TOKEN")
-    or ""
-).strip()
+TOKEN = os.environ.get("REPAIRMAN_BOT_TOKEN", "").strip()
 ALLOWED_USERS_RAW = os.environ.get("AIMS_REPAIRMAN_ALLOWED_USERS", "").strip()
-
-if not TOKEN:
-    raise SystemExit("Missing REPAIRMAN_BOT_TOKEN")
 
 ALLOWED_USERS = {
     int(x.strip())
@@ -366,6 +369,8 @@ def handle_callback(cb: dict) -> None:
 
 
 def main() -> None:
+    if not TOKEN:
+        raise SystemExit("Missing REPAIRMAN_BOT_TOKEN")
     print("AIMS Repairman Telegram Bot started")
     print(f"Allowed users: {sorted(ALLOWED_USERS) if ALLOWED_USERS else 'NONE'}")
 

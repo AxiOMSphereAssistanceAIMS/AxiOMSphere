@@ -43,9 +43,26 @@ class SandboxExecutor:
     def __init__(self, timeout: int = _DEFAULT_TIMEOUT) -> None:
         self.timeout = timeout
 
-    def run(self, code: str, *, extra_env: dict[str, str] | None = None) -> SandboxResult:
-        """Execute *code* and return stdout/stderr."""
-        with tempfile.TemporaryDirectory(prefix="aims_sandbox_") as tmpdir:
+    def run(self, code: str, *, extra_env: dict[str, str] | None = None, workdir: str | None = None) -> SandboxResult:
+        """Execute *code* and return stdout/stderr.
+
+        Args:
+            code: Python source to execute.
+            extra_env: Additional environment variables to set.
+            workdir: Working directory for execution. If None, a temp directory is created.
+
+        Returns:
+            SandboxResult with execution output and status.
+        """
+        should_cleanup = False
+
+        if workdir is None:
+            tmpdir = tempfile.mkdtemp(prefix="aims_sandbox_")
+            should_cleanup = True
+        else:
+            tmpdir = workdir
+
+        try:
             script = Path(tmpdir) / "script.py"
             script.write_text(textwrap.dedent(code), encoding="utf-8")
 
@@ -85,6 +102,13 @@ class SandboxExecutor:
                     stderr=str(exc),
                     returncode=-2,
                 )
+        finally:
+            if should_cleanup:
+                import shutil
+                try:
+                    shutil.rmtree(tmpdir, ignore_errors=True)
+                except Exception as e:
+                    log.warning("sandbox: failed to cleanup tmpdir %s: %s", tmpdir, e)
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
