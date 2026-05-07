@@ -8,8 +8,16 @@ from __future__ import annotations
 
 import logging
 import subprocess
+import sys
+from pathlib import Path
 from typing import Any
 
+# Allow imports from parent ops/ directory
+_ops_dir = Path(__file__).resolve().parents[1]
+if str(_ops_dir) not in sys.path:
+    sys.path.insert(0, str(_ops_dir))
+
+from core.runtime_names import QUEUE_PENDING, QUEUE_PROCESSING
 from .policy_gate import SysPolic, PolicyDenied
 
 log = logging.getLogger("aims.sysmr")
@@ -72,7 +80,7 @@ def _clear_queue(action: dict[str, Any]) -> str:
         import redis
         host = action.get("redis_host", "aims-redis")
         port = int(action.get("redis_port", 6379))
-        queues = action.get("queues") or [action.get("queue", "queue:pending"), "queue:processing"]
+        queues = action.get("queues") or [action.get("queue", QUEUE_PENDING), QUEUE_PROCESSING]
         r = redis.Redis(host=host, port=port, decode_responses=True)
         count = 0
         for q in queues:
@@ -88,7 +96,7 @@ def _reload_config(_action: dict[str, Any]) -> str:
 
 
 def _pause_worker(action: dict[str, Any]) -> str:
-    queue = action.get("queue", "queue:pending")
+    queue = action.get("queue", QUEUE_PENDING)
     try:
         import redis
         host = action.get("redis_host", "aims-redis")

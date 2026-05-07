@@ -8,6 +8,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from core.runtime_names import RESTARTABLE_SERVICES
+
 log = logging.getLogger("aims.syspolic")
 
 SAFE_ACTIONS: frozenset[str] = frozenset({
@@ -32,25 +34,8 @@ DANGEROUS_ACTIONS: frozenset[str] = frozenset({
 })
 
 # services that may be restarted automatically (docker compose service names, not container_name)
-RESTARTABLE_CONTAINERS: frozenset[str] = frozenset({
-    "axi-bot",
-    "omi-bot",
-    "argus-bot",
-    "logi-bot",
-    "aims-api",
-    "aims-worker",
-    "aims-orchestrator",
-    "queue-api",
-    "task-registry",
-    "doc-agent",
-    "knomi-agent",
-    "poli-agent",
-    "mainy-repair-agent",
-    "omi-api",
-    "qdrant",
-    "aims-redis",
-    "schedule",
-})
+# Imported from single source of truth: ops/core/runtime_names.py
+RESTARTABLE_CONTAINERS: frozenset[str] = RESTARTABLE_SERVICES
 
 
 class PolicyDenied(Exception):

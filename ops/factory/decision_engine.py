@@ -14,6 +14,16 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+import sys
+from pathlib import Path
+
+# Allow imports from parent ops/ directory
+_ops_dir = Path(__file__).resolve().parents[1]
+if str(_ops_dir) not in sys.path:
+    sys.path.insert(0, str(_ops_dir))
+
+from core.runtime_names import STEP_SERVICE_MAP
+
 
 class Action(str, enum.Enum):
     RETRY    = "RETRY"
@@ -30,18 +40,6 @@ class Decision:
     repair_action: dict[str, Any] = field(default_factory=dict)
     backoff_s:     float = 0.0
     save_pair:     bool  = False
-
-
-# Maps pipeline step name → docker compose service name for restart_container action.
-# Values are service names (e.g. "doc-agent"), not container names ("axiomsphere-doc-agent").
-STEP_SERVICE_MAP: dict[str, str | None] = {
-    "knomi_search":    "knomi-agent",
-    "context_filter":  None,            # in-process, no container
-    "doci_compose":    "doc-agent",
-    "cloud_validate":  "aims-api",
-    "poli_check":      "poli-agent",
-    "omi_store":       "omi-api",
-}
 
 _HTTP_STATUS_RE = re.compile(r"HTTP[^\d]*(\d{3})")
 _GPU_SIGNALS = ("model loading", "loading model", "model is loading", "cuda out of memory")

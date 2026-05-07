@@ -8,6 +8,7 @@ Port: 8006. No authentication — internal service only.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import subprocess
 import sys
@@ -25,6 +26,7 @@ import uvicorn
 from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 
+from core.runtime_names import QUEUE_PENDING, QUEUE_PROCESSING
 from core.service_auth import verify_service_token
 
 log = logging.getLogger("aims.argus_agent")
@@ -36,10 +38,10 @@ logging.basicConfig(
 # ── configuration ──────────────────────────────────────────────────────────────
 
 WATCHED_CONTAINERS = [
-    "axiomsphere-omi-api",
-    "axiomsphere-axi-bot",
-    "axiomsphere-qdrant",
-    "axiomsphere-task-registry",
+    "omi-api",
+    "axi-bot",
+    "qdrant",
+    "task-registry",
 ]
 
 OLLAMA_URL = "http://localhost:11434/api/tags"
@@ -61,20 +63,30 @@ _state: dict[str, Any] = {
 # ── checks ─────────────────────────────────────────────────────────────────────
 
 def _check_containers() -> dict[str, str]:
-    """Run 'docker ps' and return {container_name: "up" | "down"} for watched containers."""
+    """Run 'docker compose ps' and return {service_name: "up" | "down"} for watched services."""
     statuses: dict[str, str] = {c: "down" for c in WATCHED_CONTAINERS}
     try:
         result = subprocess.run(
-            ["docker", "ps", "--format", "{{.Names}}"],
+            ["docker", "compose", "ps", "--format", "json"],
             capture_output=True,
             text=True,
             timeout=10,
+            cwd="/home/axi_omi_sphere/aims-workspace",
         )
-        running = set(result.stdout.strip().splitlines())
+        running: set[str] = set()
+        for line in result.stdout.strip().splitlines():
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+                if data.get("State") == "running":
+                    running.add(data["Service"])
+            except (json.JSONDecodeError, KeyError):
+                pass
         for name in WATCHED_CONTAINERS:
             statuses[name] = "up" if name in running else "down"
     except Exception as exc:
-        log.warning("docker ps failed: %s", exc)
+        log.warning("docker compose ps failed: %s", exc)
     return statuses
 
 
@@ -93,8 +105,8 @@ async def _check_task_queue() -> int:
     try:
         import redis.asyncio as aioredis  # type: ignore
         r = aioredis.Redis(host="aims-redis", port=6379, decode_responses=True)
-        pending = await r.llen("queue:pending")
-        processing = await r.llen("queue:processing")
+        pending = await r.llen(QUEUE_PENDING)
+        processing = await r.llen(QUEUE_PROCESSING)
         await r.aclose()
         return int(pending + processing)
     except Exception:
