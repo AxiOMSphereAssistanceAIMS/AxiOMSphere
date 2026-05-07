@@ -3166,19 +3166,6 @@ async def handle_file_upload(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> 
             if st_done and st_done.get("ref_video_path"):
                 _unlink_axi_temp(str(st_done["ref_video_path"]))
             return
-                )
-            await update.message.reply_text(
-                f"{AXI_NAME}: не удалось сгенерировать видео — {type(e).__name__}: {e}{hint429}"
-                if lang == "ru" else
-                f"{AXI_NAME}: failed to generate video — {type(e).__name__}: {e}{hint429}"
-            )
-            # Оставляем режим ожидания картинки — можно прислать другое фото и повторить.
-            await update.message.reply_text(
-                "Режим видео всё ещё активен: пришлите другое изображение (jpg/png) или повторите «сгенерируй видео …»."
-                if lang == "ru" else
-                "Video mode is still active: send another image (jpg/png) or repeat «generate video …».",
-            )
-            return
         finally:
             if tmp_path is not None:
                 tmp_path.unlink(missing_ok=True)
