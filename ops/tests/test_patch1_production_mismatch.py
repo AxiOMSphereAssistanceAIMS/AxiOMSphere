@@ -107,11 +107,11 @@ class TestRepairExecutorQueueHandling:
 
         source = inspect.getsource(_clear_queue)
 
-        # Verify both queue keys are handled
-        assert "queue:pending" in source, \
-            "_clear_queue should handle queue:pending"
-        assert "queue:processing" in source, \
-            "_clear_queue should handle queue:processing"
+        # Verify both queue keys are handled via constants (not hardcoded strings)
+        assert "QUEUE_PENDING" in source, \
+            "_clear_queue should use QUEUE_PENDING constant"
+        assert "QUEUE_PROCESSING" in source, \
+            "_clear_queue should use QUEUE_PROCESSING constant"
 
         # Verify it loops through multiple queues
         assert "for q in queues" in source or "for queue in queues" in source, \
@@ -143,15 +143,47 @@ class TestArgusAgentQueueDepth:
 
         source = inspect.getsource(_check_task_queue)
 
-        # Verify both queue keys are referenced
-        assert "queue:pending" in source, \
-            "_check_task_queue should check queue:pending"
-        assert "queue:processing" in source, \
-            "_check_task_queue should check queue:processing"
-
-        # Verify it sums them
+        assert "QUEUE_PENDING" in source, \
+            "_check_task_queue should use QUEUE_PENDING constant"
+        assert "QUEUE_PROCESSING" in source, \
+            "_check_task_queue should use QUEUE_PROCESSING constant"
         assert "pending + processing" in source or "pending" in source and "processing" in source, \
             "_check_task_queue should sum both queue depths"
+
+
+class TestArgusAgentWatchedContainers:
+    """Test that argus_agent uses docker compose service names, not container names."""
+
+    def test_watched_containers_are_service_names(self):
+        """WATCHED_CONTAINERS should use service names (no axiomsphere- prefix)."""
+        from ops.agents.argus_agent import WATCHED_CONTAINERS
+        for name in WATCHED_CONTAINERS:
+            assert not name.startswith("axiomsphere-"), \
+                f"WATCHED_CONTAINERS should use service names, got container name: {name}"
+
+    def test_check_containers_uses_docker_compose_ps(self):
+        """_check_containers should use 'docker compose ps', not raw 'docker ps'."""
+        import inspect
+        from ops.agents.argus_agent import _check_containers
+        source = inspect.getsource(_check_containers)
+        assert '"docker", "compose", "ps"' in source or "docker compose ps" in source, \
+            "_check_containers must use 'docker compose ps' to resolve by service name"
+
+    def test_check_containers_source_has_no_axiomsphere_prefix(self):
+        """_check_containers source must not hardcode axiomsphere- container names."""
+        import inspect
+        from ops.agents.argus_agent import _check_containers
+        source = inspect.getsource(_check_containers)
+        assert "axiomsphere-" not in source, \
+            "_check_containers must not reference axiomsphere- container names directly"
+
+    def test_check_containers_parses_service_field(self):
+        """_check_containers should read the 'Service' field from docker compose ps JSON."""
+        import inspect
+        from ops.agents.argus_agent import _check_containers
+        source = inspect.getsource(_check_containers)
+        assert '"Service"' in source or "'Service'" in source, \
+            "_check_containers should parse the 'Service' field from docker compose ps --format json"
 
 
 if __name__ == "__main__":

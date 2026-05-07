@@ -159,6 +159,12 @@ flowchart TB
         Argus["📊 Argus Bot\nInfra monitor · Scheduler\nTraining loop supervision\n✅ Production"]
     end
 
+    subgraph "Orchestration Layer — Production ✅"
+        NemoClaw["🧠 NemoClaw\nNemotron 120B\nStrategic reasoning\n✅ Production"]
+        PipelineCoord["⚙️ PipelineCoordinator\nStateless FastAPI\n7-step document pipeline\n✅ Production (port 8000)"]
+        ConvOrch["💬 ConversationalOrchestrator\nQwen3:14b\nInteractive chat + planning\n✅ Production"]
+    end
+
     subgraph "Doc Generation Pipeline — Production ✅"
         Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nDraft + rewrite · DGX Spark"]
         Gemini["Gemini Flash/Pro\n+ Anthropic Claude\nISO compliance score · 0.0–1.0"]
@@ -170,31 +176,78 @@ flowchart TB
     end
 
     subgraph "Phase 3 — Deployed ✅"
-        NL["🧠 Logi Bot\nCross-dept AIMS sync\n✅ Deployed"]
-        NP["🔐 Poli Agent\nAccess rights · MoC gate\n✅ Deployed (port 8004)"]
+        NL["🔐 Poli Agent\nAccess rights · MoC gate\n✅ Deployed (port 8004)"]
         NM["🔧 Mainy Agent\nMaintenance automation\n✅ Deployed (port 8005)"]
         NR["🔍 Knomi Agent\nSemantic memory · RAG\n✅ Deployed (port 8002)"]
+        Repairman["🔧 Repairman API\nAutomated repair\n✅ Deployed (port 8010)"]
     end
 
-    TG --> Axi & Omi
+    subgraph "Recovery & Monitoring ✅"
+        Watchdog["👀 Watchdog Bot\nAutomatic recovery\nHealth monitoring\n✅ Production"]
+    end
+
+    TG --> Axi & Omi & ConvOrch
+    NemoClaw --> PipelineCoord
+    ConvOrch --> PipelineCoord
     Axi -->|"doc request"| Qwen --> Gemini
     Gemini -->|"score + feedback"| Qwen
     Qwen -->|"Final .docx"| TG
     Gemini -->|"score ≥ 0.8 → saved"| TRN
     Omi --> AR
-    Argus -.->|"monitor + schedule"| Axi & Omi & Qwen
+    Argus -.->|"health events"| PipelineCoord
+    PipelineCoord -.->|"repair trigger"| Repairman
+    Repairman -.->|"approval"| NL
     AR -.-> NR
     Argus -.-> NM
-    NP -.->|"gates"| NM
-    NL -.->|"orchestrates"| NP & NM & NR
+    NL -.->|"gates"| NM
+    Watchdog -.->|"monitors"| Axi & Omi & Argus & PipelineCoord
 
     style Axi fill:#0d2137,stroke:#29b6f6,color:#e0f7fa
     style Omi fill:#0d2137,stroke:#4dd0e1,color:#e0f7fa
     style Argus fill:#0d2137,stroke:#81c784,color:#e0f7fa
-    style NL fill:#003300,stroke:#66bb6a,color:#c8e6c9
-    style NP fill:#003300,stroke:#4ade80,color:#c8e6c9
+    style NemoClaw fill:#1a0033,stroke:#9c27b0,color:#e1bee7
+    style PipelineCoord fill:#1a0033,stroke:#ab47bc,color:#e1bee7
+    style ConvOrch fill:#1a0033,stroke:#ba68c8,color:#e1bee7
+    style NL fill:#003300,stroke:#4ade80,color:#c8e6c9
     style NM fill:#003300,stroke:#4ade80,color:#c8e6c9
     style NR fill:#003300,stroke:#4ade80,color:#c8e6c9
+    style Repairman fill:#003300,stroke:#4ade80,color:#c8e6c9
+    style Watchdog fill:#331a00,stroke:#ff9800,color:#ffe0b2
+```
+
+---
+
+## System Recovery
+
+AxiOMSphere includes automatic recovery infrastructure that survives full system restarts:
+
+**Watchdog Bot** (runs outside Docker stack):
+- Automatic startup sequence after hardware reboot
+- Dependency-aware service startup (4 tiers: infrastructure → core → agents → bots)
+- Health validation with 5-minute timeout
+- Telegram notifications on success/failure
+- Manual commands: `/status`, `/rebuild_all`, `/up`, `/auto_startup`, `/restart <service>`, `/logs <service>`
+
+**Recovery Flow:**
+```
+Hardware Reboot
+  → Watchdog detects >30% services down
+    → Tier 1: Redis, Qdrant (infrastructure)
+      → Tier 2: Core services (task-registry, omi-api, litellm)
+        → Tier 3: Agents (doc-agent, aims-api, aims-orchestrator)
+          → Tier 4: Bots & Workers (axi-bot, omi-bot, argus-bot)
+            → Health validation (30s intervals, 5 min timeout)
+              → Telegram notification + ArgusAgent monitoring
+```
+
+**Self-Healing Loop:**
+```
+ArgusAgent detects failure
+  → PipelineCoordinator.on_health_event()
+    → RepairmanAPI.trigger()
+      → PoliAgent approval (concept preservation check)
+        → Claude Code execution (repair/fix)
+          → ArgusAgent verification
 ```
 
 ---

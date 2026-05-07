@@ -133,32 +133,32 @@ class TestRepairmanAPIPoliIntegration:
 
 
 class TestLogiOrchestratorRepairmanIntegration:
-    """Test that LogiOrchestrator routes health events to RepairmanAPI."""
+    """Test that PipelineCoordinator routes health events to RepairmanAPI."""
 
     def test_logi_on_health_event_calls_repairman(self):
         """Verify on_health_event calls repairman_trigger tool."""
         import inspect
-        from ops.logi.orchestrator import LogiOrchestrator
+        from ops.logi.pipeline_coordinator import PipelineCoordinator
 
-        source = inspect.getsource(LogiOrchestrator.on_health_event)
+        source = inspect.getsource(PipelineCoordinator.on_health_event)
         assert "repairman_trigger" in source
         assert "call_tool" in source
 
     def test_logi_routes_critical_to_fix_mode(self):
         """Verify CRITICAL events trigger repairman fix mode."""
         import inspect
-        from ops.logi.orchestrator import LogiOrchestrator
+        from ops.logi.pipeline_coordinator import PipelineCoordinator
 
-        source = inspect.getsource(LogiOrchestrator.on_health_event)
+        source = inspect.getsource(PipelineCoordinator.on_health_event)
         assert 'level == "CRITICAL"' in source or 'CRITICAL' in source
         assert 'mode = "fix"' in source
 
     def test_logi_routes_warning_to_inspect_mode(self):
         """Verify WARNING events trigger repairman inspect mode."""
         import inspect
-        from ops.logi.orchestrator import LogiOrchestrator
+        from ops.logi.pipeline_coordinator import PipelineCoordinator
 
-        source = inspect.getsource(LogiOrchestrator.on_health_event)
+        source = inspect.getsource(PipelineCoordinator.on_health_event)
         assert 'level == "WARNING"' in source or 'WARNING' in source
         assert 'mode = "inspect"' in source
 
