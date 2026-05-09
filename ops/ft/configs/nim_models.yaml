@@ -1,0 +1,35 @@
+roles:
+  quality_gate:      "meta/llama-3.1-405b-instruct"
+  bulk_generation:   "meta/llama-3.1-70b-instruct"
+  reasoning_pairs:   "deepseek-ai/deepseek-r1"
+  dpo_reference:     "nvidia/nemotron-4-340b-instruct"
+  fast_verification: "deepseek-ai/deepseek-r1-distill-llama-70b"
+
+thresholds:
+  master_doc: 0.85
+  gold_pair:  0.80
+  dpo_pair:   0.60
+
+output_dirs:
+  quality_pairs: "aims_workspace/training/quality_pairs"
+  nim_synth:     "ops/ft/data/nim_synth"
+  teacher_pairs: "data/training/teacher_405b"
+
+# OmniRoute teacher combo aliases — all route through http://127.0.0.1:20128/v1
+teacher_combos:
+  doc_extract:
+    model: doc-extract-combo
+    env: OMNIROUTE_EXTRACT_MODEL
+    role: document structure, clauses, requirements, tables, references extraction
+  standard_expert:
+    model: doc-standard-expert-combo
+    env: OMNIROUTE_EXPERT_MODEL
+    role: international standards interpretation, mandatory/recommended/informational classification, gaps/conflicts/risks
+  training_pair_generator:
+    model: doc-training-standards-best
+    env: OMNIROUTE_TEACHER_MODEL
+    role: high-quality training pair generation
+  training_pair_auditor:
+    model: doc-training-pair-audit-combo
+    env: OMNIROUTE_AUDIT_MODEL
+    role: factuality/source grounding/unsupported claim audit

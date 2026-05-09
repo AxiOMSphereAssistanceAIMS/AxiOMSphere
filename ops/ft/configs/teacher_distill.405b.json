@@ -1,0 +1,26 @@
+{
+  "_comment": "Teacher distillation config — routed via OmniRoute (doc-training-standards-best)",
+  "teacher": {
+    "api_base": "http://127.0.0.1:20128/v1",
+    "model": "doc-training-standards-best",
+    "api_key_env": "OMNIROUTE_API_KEY",
+    "max_tokens": 2048,
+    "temperature": 0.2
+  },
+  "student": {
+    "model": "qwen2.5:14b-instruct-q8_0",
+    "_comment": "local fine-tuning target — replace with current FT candidate"
+  },
+  "generation": {
+    "batch_size": 10,
+    "output_dir": "data/training/teacher_405b",
+    "domains": ["oil_gas", "industrial_safety", "hse", "maintenance"],
+    "pairs_per_domain": 200
+  },
+  "quality_loop": {
+    "score_threshold": 0.85,
+    "gold_dir": "aims_workspace/training/quality_pairs",
+    "score_model": "doc-training-pair-audit-combo",
+    "fallback_model": "gemini-free-fallback"
+  }
+}
