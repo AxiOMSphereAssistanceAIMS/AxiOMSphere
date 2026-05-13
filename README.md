@@ -41,7 +41,7 @@ User request → Planning → Draft (Qwen3-32B) → Rewrite (Qwen3-32B) → Scor
 ```
 
 Unlike a single-prompt application, **one document workflow requires 20–100+ LLM calls**:
-- Complince agent: standart's identification by context (allocation for ISO55001/55002)
+- Complience agent: standart's identification by context (allocation for ISO55001/55002)
 - Reasoning agent: structural outline + ISO clause mapping to standard ISO 9000:2015:
 - Rewrite agent: professional formatting pass ISO 19005-1:2005
 - Quality gate: compliance scoring + gap feedback
@@ -87,7 +87,7 @@ Stage 2 — Draft agent: axi_omi_sphere (qwen3:32b-q8_0)   (~3 min)
 Stage 3 — Rewrite agent: axi_omi_sphere (qwen3:32b-q8_0)     (~2 min)
   → Professional formatting, paragraph cohesion, terminology standardization ISO 2145:1978
 
-Stage 4 — Compliance gate: Gemini Flash / Anthropic Claude  (~15 sec)
+Stage 4 — Compliance gate: NVIDIA NIM (OmniRoute · project1)  (~15 sec)
   → Score: 0.84 / 1.0
   → Feedback: "Add specific corrections and specification per ....."
 
@@ -131,7 +131,7 @@ result_path, preview, score, feedback = agent.generate(
     DocGenerationRequest(
         user_request="Create a Job Safety Analysis for confined space entry at an underground mine. "
                      "Reference ISO 45001. Include hazard table, controls hierarchy, permit conditions.",
-        dual_pipeline=True,   # R1-70B → Qwen-72B → Gemini quality gate
+        dual_pipeline=True,   # Draft → Rewrite → NIM quality gate
     )
 )
 
@@ -154,15 +154,19 @@ flowchart TB
     end
 
     subgraph "Agent Layer — Production ✅"
-        Axi["📄 Axi Bot\nDocument generation\nGemini API + Anthropic\n✅ Production"]
+        Axi["📄 Axi Bot\nDocument generation\nNVIDIA NIM scoring\n✅ Production"]
         Omi["🗄️ Omi Bot\nDocument registry\nOCR pipeline · RAG\n✅ Production"]
         Argus["📊 Argus Bot\nInfra monitor · Scheduler\nTraining loop supervision\n✅ Production"]
     end
 
     subgraph "Doc Generation Pipeline — Production ✅"
         Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nDraft + rewrite · DGX Spark"]
-        Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nRevision · DGX Spark"]
-        Gemini["Gemini Flash/Pro\n+ Anthropic Claude\nISO compliance score · 0.0–1.0"]
+        NIM["NVIDIA NIM\nOmniRoute · project1\nISO compliance score · 0.0–1.0"]
+    end
+
+    subgraph "Self-Healing Layer — Production ✅"
+        Watchdog["🔍 Watchdog Agent\nHealth aggregator · stability score"]
+        Repairman["🔧 RepairmanAPI\nDiagnosis + auto-repair"]
     end
 
     subgraph "Data Layer — Production ✅"
@@ -178,20 +182,23 @@ flowchart TB
     end
 
     TG --> Axi & Omi
-    Axi -->|"doc request"| R1 --> Qwen --> Gemini
-    Gemini -->|"score + feedback"| Qwen
+    Axi -->|"doc request"| R1 --> Qwen --> NIM
+    NIM -->|"score + feedback"| Qwen
     Qwen -->|"Final .docx"| TG
-    Gemini -->|"score ≥ 0.8 → saved"| TRN
+    NIM -->|"score ≥ 0.8 → saved"| TRN
     Omi --> AR
-    Argus -.->|"monitor + schedule"| Axi & Omi & R1 & Qwen
+    Argus -.->|"monitor + schedule"| Axi & Omi & Qwen
+    Argus -.->|"health events"| Repairman
+    Watchdog -.->|"stability gate"| Repairman
     AR -.-> NR
-    Argus -.-> NM
     NP -.->|"gates"| NM
     NL -.->|"orchestrates"| NP & NM & NR
 
     style Axi fill:#0d2137,stroke:#29b6f6,color:#e0f7fa
     style Omi fill:#0d2137,stroke:#4dd0e1,color:#e0f7fa
     style Argus fill:#0d2137,stroke:#81c784,color:#e0f7fa
+    style Watchdog fill:#0d2137,stroke:#ffd54f,color:#fff8e1
+    style Repairman fill:#0d2137,stroke:#ff8a65,color:#fbe9e7
     style NL fill:#1a0a2e,stroke:#9c6df4,color:#e9d5ff
     style NP fill:#1a0a2e,stroke:#f06292,color:#fce4ec
     style NM fill:#1a0a2e,stroke:#ffb74d,color:#fff3e0
@@ -208,7 +215,7 @@ flowchart TB
 |-------|-------|------|------|
 | **Draft** | axi_omi_sphere (qwen3:32b-q8_0) | ISO-aware reasoning, structural outline | ~3 min |
 | **Rewrite** | axi_omi_sphere (qwen3:32b-q8_0) | Professional formatting, terminology | ~2 min |
-| **Score** | Gemini Flash/Pro + Anthropic Claude | Compliance 0.0–1.0, gap feedback | ~15 sec |
+| **Score** | NVIDIA NIM (OmniRoute · project1) | Compliance 0.0–1.0, gap feedback | ~15 sec |
 | **Revise** | axi_omi_sphere (qwen3:32b-q8_0) | Targeted fix per score feedback | ~2 min |
 
 Quality gate: <60% → reject + retry · ≥60% → accepted · target **98% compliance**
@@ -355,14 +362,15 @@ flowchart TD
     START(["🏭 AxiOMSphere Factory\nAgent Build · Test · Tune"])
 
     subgraph PROD["✅ PRODUCTION — Built & Running"]
-        P1["📄 Axi Bot · DocAgent\nQwen3:32b-q8_0 → Gemini/Claude gate\nqwen2.5-aims-ft-v6: routing ✅\nqwen3:32b: fine-tuning in progress 🔄\nTarget: ISO score ≥ 0.85 · < 10 min"]
-        P2["🗄️ Omi Bot · DBAgent\nOCR pipeline + aims_registry.db\nRAG semantic search\nTarget: retrieval precision ≥ 90%"]
+        P1["📄 Axi Bot · DocAgent\nQwen3:32b-q8_0 → NIM scoring gate\nRouting model: fine-tuned v6 ✅\nOmi action classifier v15: 100% eval ✅\nTarget: ISO score ≥ 0.85 · < 10 min"]
+        P2["🗄️ Omi Bot · DBAgent\nOCR pipeline + document registry\nRAG semantic search\nTarget: retrieval precision ≥ 90%"]
         P3["📊 Argus Bot · SysDog\nDevOps monitor + queue scheduler\nTraining loop gold/DPO pairs\nTarget: uptime ≥ 99.5% · MTTR < 5 min"]
+        P4["🔧 Self-Healing Layer\n7 specialised agents (diagnosis · repair · gates)\nAutonomy Control Plane v1 ✅\n5/5 consecutive autonomous runs certified"]
     end
 
     START --> PROD
 
-    PROD --> GATE1{{"🔒 Gate 1\nScore targets met?\nArgus monitoring stable?"}}
+    PROD --> GATE1{{"🔒 Gate 1\nScore targets met?\nArgus monitoring stable?\nAutonomous runs certified?"}}
     GATE1 -->|"❌ Fail"| FIX1["🔧 RCA Loop\nSysDog collects failure logs\nRetune model · Update gold_pairs"]
     FIX1 --> GATE1
     GATE1 -->|"✅ Pass"| NEXT1
@@ -379,16 +387,16 @@ flowchart TD
 
     subgraph NEXT2["🔜 NEXT DEPLOY — Phase 4"]
         N3["🔧 SysMR\nScript execution engine\nRollback on failure\nTarget: 0 unauthorized changes"]
-        N4["🔍 SysRAG\nVector index over aims_registry\nInter-agent semantic search\nTarget: relevance ≥ 0.90 · < 2 sec"]
+        N4["🔍 SysRAG\nVector index over document registry\nInter-agent semantic search\nTarget: relevance ≥ 0.90 · < 2 sec"]
     end
 
     NEXT2 --> GATE3{{"🔒 Gate 3\nAll 7 agents integrated?\nOrchestrator routing stable?"}}
     GATE3 -->|"✅ Pass"| DONE
 
     subgraph TUNE["🔄 Continuous Tuning"]
-        T1["qwen2.5-aims-ft-v6\n6 cycles ✅ routing baseline"] --> T2["qwen2.5-aims-ft-v7\nPC Andrei · active 🔄"]
+        T1["Routing model v6\n6 cycles ✅ baseline"] --> T2["Routing model v7\nPC node · active 🔄"]
         T2 --> T3["qwen3:32b fine-tune\nnext cycle 🔜"]
-        T3 -.->|"scoring"| T4["Gemini / Claude Gate\n0.0–1.0 calibration"]
+        T3 -.->|"scoring"| T4["NVIDIA NIM Gate\nOmniRoute · project1\n0.0–1.0 calibration"]
     end
     TUNE -.-> FIX1 & FIX2
 
@@ -418,8 +426,9 @@ gantt
     Gate A Foundation ready                                   :done, gA, 2026-05-01, 2026-05-02
 
     section Phase 2 - Intelligence
-    Dual pipeline to Qwen to Gemini scoring                   :done, p2a, 2026-03-01, 2026-04-30
+    Dual pipeline Qwen to NIM scoring                         :done, p2a, 2026-03-01, 2026-04-30
     Fine tuning loop gold set and DPO                         :active, p2b, 2026-04-01, 2026-06-30
+    Self-healing layer and Autonomy Control Plane v1          :done, p2sh, 2026-05-01, 2026-05-13
     Model quality calibration and evaluator alignment         :active, p2c, 2026-07-01, 2026-08-31
     Gate B Model quality and safety                           :active, gB, 2026-09-01, 2026-09-02
 
@@ -455,6 +464,26 @@ flowchart LR
     C --- C1["7-agent ≥ 95%\n0 policy breaches"]
     D --- D1["UAT signed\nMTTR ≤ 30m"]
 ```
+
+---
+
+## Autonomy Control Plane v1 — Certified
+
+**Status: `READY_FOR_AUTONOMOUS_OPERATION_WITH_TASK_LEDGER_V1`**
+
+As of 2026-05-13, AxiOMSphere passed **5/5 consecutive autonomous task runs** without manual intervention, certifying the Autonomy Control Plane v1:
+
+| Run | Task Type | Result | Time |
+|-----|-----------|--------|------|
+| 1 | Readiness / status check | ✅ PASS | ~2 s |
+| 2 | DocAgent dry-run generation | ✅ PASS | ~3 s |
+| 3 | Knomi RAG — 3 semantic queries | ✅ PASS | ~4 s |
+| 4 | Document anonymization | ✅ PASS | ~5 s |
+| 5 | Cloud teacher scoring (NIM) | ✅ PASS | ~7 s |
+
+Each run: accept task → create run_id → agent chain → TaskLedger → Argus watchdog check → repair/retry loop (up to 5 attempts) → Telegram delivery.
+
+The **Self-Healing Layer** runs 7 specialised agents providing automated diagnosis, repair approval, security gating, and health aggregation — all operating without human intervention.
 
 ---
 
@@ -523,7 +552,7 @@ graph TD
     subgraph "Phase 1 — Engineer Assistant"
         A[Individual Engineer] -->|Natural language request| B("AI Document Assistant\nAxi Bot")
         B -->|"Qwen-32B dual pipeline"| C[Structured Document Draft]
-        C -->|"Cloud Quality Gate\nISO 45001 · ISO 21502 · IEC 82079"| D{"Score ≥ 80%?"}
+        C -->|"NIM Quality Gate\nISO 45001 · ISO 21502 · IEC 82079"| D{"Score ≥ 80%?"}
         D -->|Yes| E["✅ Approved Document .docx"]
         D -->|No| F[Qwen revises with recommendations]
         F --> D
@@ -577,10 +606,10 @@ flowchart TD
 ```mermaid
 flowchart TD
     DOCS["📄 Domain documents"] --> INGEST["00:01 ingest_new_docs"]
-    INGEST --> PAIRS["00:30 generate_pairs\n72B on DGX (~60–90 min)"]
+    INGEST --> PAIRS["00:30 generate_pairs\n32B on DGX (~60–90 min)"]
     PAIRS --> FT["02:30 ft_prepare_chain_run\n14B → 32B\n(2h buffer after pair gen)"]
-    FT --> DEPLOY["05:30 deploy_14b_andrei\nblob-push to PC Ollama"]
-    DEPLOY --> BOT["✅ qwen2.5-aims-ft-vN:latest\nactive on PC Andrei"]
+    FT --> DEPLOY["05:30 daily_deploy\nblob-push to secondary node"]
+    DEPLOY --> BOT["✅ Fine-tuned model vN:latest\nactive on secondary node"]
     style PAIRS fill:#1a2f4a
     style FT fill:#1a2f4a
     style BOT fill:#1a4731
@@ -588,24 +617,31 @@ flowchart TD
 
 **Model versioning:** `vN` / `vNrM` — e.g. `v7`, `v7r1`, `v8`, `v8r2`
 
+**Fine-tuning status (2026-05):**
+
+| Run | Model | Dataset | Eval (golden_v2) |
+|-----|-------|---------|------------------|
+| v15 | Qwen2.5-14B QLoRA | v10 (754 samples) | **14/14 — 100%** ✅ |
+| qwen3-8b-v1 | Qwen3-8B QLoRA | v9 | 2/15 — 13% ❌ |
+
 ---
 
-## GPU Cluster Topology for development and test with local database
+## GPU Cluster Topology
 
 ```mermaid
 graph LR
-    subgraph DGX["DGX Spark router orchestrated IP network (RJ45/WiFi redundant)  —  128 GB VRAM"]
-        DGX_MODELS["qwen3:32b-q8_0 (axi_omi_sphere)  ~34 GB\nqwen2.5-coder:32b  20 GB\nDocker Compose — all containers"]
-        DGX_DOCKER["NIM OCR · LiteLLM · Task Registry\nOmi · Axi · Argus bots"]
+    subgraph DGX["Primary Node — 128 GB VRAM · Redundant network"]
+        DGX_MODELS["qwen3:32b-q8_0 (axi_omi_sphere)  ~34 GB\nqwen2.5-coder:32b  20 GB\nDocker Compose — all production containers"]
+        DGX_DOCKER["NIM OCR · LiteLLM · Task Registry\nOmi · Axi · Argus bots\nSelf-Healing Layer"]
     end
-    subgraph PC["PC  unified network  —  RTX 4070 16 GB"]
-        PC_MODELS["qwen2.5-aims-ft-v7:latest  ~10 GB\nOLLAMA_HOST=0.0.0.0:11434"]
+    subgraph PC["Secondary Node — RTX 4070 16 GB"]
+        PC_MODELS["Fine-tuned routing model v7  ~10 GB\nOllama local inference"]
     end
-    DGX <-->|"Direct 10 Gbps cable"| PC
-    DGX -.->|"LAN fallback router IP"| PC
+    DGX <-->|"Direct high-speed link"| PC
+    DGX -.->|"LAN fallback"| PC
 ```
 
-**Routing rules:** Small models (14B FT) → PC only · Two 32B+ models never loaded simultaneously · `OLLAMA_RESOLVE_TTL_SEC=30` prevents 6s latency when DGX unreachable
+**Routing rules:** Small models (14B FT) → secondary node only · Two 32B+ models never loaded simultaneously
 
 ---
 
@@ -615,50 +651,23 @@ graph LR
 
 | Model | Size | Node | Role |
 |-------|------|------|------|
-| `axi_omi_sphere` (qwen3:32b-q8_0) | ~34 GB | DGX (warm) | DocAgent — draft, rewrite, revision |
-| `qwen2.5-coder:32b` | 20 GB | DGX (warm) | Argus diagnostics / code / chat |
-| `qwen2.5-aims-ft-v6` | ~10 GB | DGX | Intent routing — Omi, Axi, Argus |
-| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC Andrei | Small model — routing fallback |
-
-### Services & Ports
-
-| Service | Port | Notes |
-|---------|------|-------|
-| DocAgent API | **8767** | FastAPI, used by Omi + Axi |
-| Qdrant | **6333** | Vector DB — RAG |
-| LiteLLM Proxy | 4400 | Gemini key + Anthropic fallback |
-| Grafana | 3000 | DGX monitoring dashboard |
-| Task Registry | 8765 | FastAPI CRUD, monitored by Argus |
+| `axi_omi_sphere` (qwen3:32b-q8_0) | ~34 GB | Primary (warm) | DocAgent — draft, rewrite, revision |
+| `qwen2.5-coder:32b` | 20 GB | Primary (warm) | Argus diagnostics / code / chat |
+| `omi-ft-14b-v15` (Qwen2.5-14B QLoRA) | ~10 GB | Primary | Omi action classifier — **100% eval (14/14)** ✅ |
+| Routing model v6 (qwen2.5 FT) | ~10 GB | Primary | Intent routing — Omi, Axi, Argus |
+| Routing model v7 (qwen2.5 FT) | ~10 GB | Secondary | Small model — routing fallback |
+| Nemotron 3 Super 120B | ~100 GB | Primary | Repairman — autonomous code repair |
 
 ### Night Schedule
 
-| Time | Task | Note |
-|------|------|------|
+| Time (UTC) | Task | Note |
+|------|------|-------|
 | 22:30 | VRAM unload | Pre-DocBench cleanup |
 | 23:00 | DocBench nightly | Quality test |
 | 00:01 | training_ingest | New documents |
 | 00:30 | training_generate_pairs | 32B, ~60–90 min |
-| **02:30** | ft_prepare_chain_run | Shifted from 01:20 — 2h GPU buffer |
-| 05:30 | daily_deploy_14b | Push to PC |
-
-### Key .env Variables
-
-```bash
-PC_OLLAMA_URL=http://<unic IP network>:11434        # primary (direct 10Gbps)
-PC_OLLAMA_URL_FALLBACK=http://<router IP>:11434
-OLLAMA_RESOLVE_TTL_SEC=30                            # resolve cache
-QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0                   # no redundant warm-up
-DGX_HEAVY_MODEL=qwen2.5:32b-instruct-q8_K_M
-DGX_SECOND_HEAVY_MODEL=qwen3:32b
-LITELLM_BASE_URL=http://axiomsphere-litellm:4400
-```
-
-### Deploy
-
-```bash
-docker compose --profile telegram-bots up -d
-docker compose restart argus-bot omi-bot axi-bot
-```
+| **02:30** | ft_prepare_chain_run | Shifted 2h — GPU buffer after pair gen |
+| 05:30 | daily_deploy_14b | Push to secondary node |
 
 ---
 
@@ -682,21 +691,34 @@ more than international 150 standards, around 1500 master document
 
 ---
 
-## Audit Change Log — 2026-04-24
+## Audit Change Log
+
+### 2026-05 (May)
 
 | # | Change | Impact |
 |---|--------|--------|
-| A | Removed `gpus` from `ocr-watcher` / `omi-register` (CPU-only) | Freed DGX VRAM for models |
-| B | `pre_docbench_unload.py` + 22:30 step in night schedule | No VRAM collision before DocBench |
-| C | `ollama_resolve.py` tries PC first, DGX as fallback | Eliminated 6s DGX-timeout latency |
-| D–E | `weekly_model_upgrade.py` + `daily_deploy_14b` support `vNrM` versioning | Clean v7r1, v7r2, v8… deploys |
-| F | PC: `OLLAMA_HOST=0.0.0.0:11434` (machine env) | Small model reachable from DGX |
-| G | `chat_intent_router.py` — NLP free-text → slash command module | No more missed free-text commands |
+| M | Gemini → NVIDIA NIM migration | All scoring now runs on-premise via OmniRoute; zero active Gemini calls |
+| N | Self-healing agent cluster deployed (7 specialised agents) | Automated diagnosis, repair, and policy gating without manual intervention |
+| O | Autonomy Control Plane v1 certified — 5/5 runs PASS | System status: `READY_FOR_AUTONOMOUS_OPERATION_WITH_TASK_LEDGER_V1` |
+| P | `omi-ft-14b-v15` QLoRA — 100% eval (14/14 golden_v2) | Omi action classifier fully converged on v10 dataset (754 samples) |
+| Q | Nemotron 3 Super 120B added as Repairman model | Autonomous code repair via Claude Code proxy gateway |
+| R | TaskLedger v1 — per-run JSON ledger with repair/retry loop | Up to 5 repair attempts per step; full audit trail persisted |
+
+### 2026-04 (April)
+
+| # | Change | Impact |
+|---|--------|--------|
+| A | Removed GPU requirement from OCR watcher (CPU-only) | Freed primary node VRAM for inference models |
+| B | VRAM unload step added to nightly schedule | No VRAM collision before DocBench |
+| C | Resolver tries secondary node first, primary as fallback | Eliminated 6s timeout latency |
+| D–E | Model versioning supports `vNrM` format | Clean v7r1, v7r2, v8… deploys |
+| F | Secondary node Ollama accessible from primary over LAN | Small model routing works cross-node |
+| G | NLP intent router — free-text → slash command | No more missed free-text commands |
 | H | Intent router wired into all 3 bots (Argus 18, Omi 12, Axi 3 cmds) | All bots understand natural language |
-| I | `OLLAMA_RESOLVE_TTL_SEC=30` | Resolve cache — no more 6s delays |
-| J | `QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0` | Stops redundant warm-up API calls |
-| K | FT chain 01:20 → **02:30** | 2h GPU buffer after pair generation |
-| L | `set_andrei_direct_cable_private.ps1` (Windows Task Scheduler) | Ethernet profile survives reboot |
+| I | Resolve cache added | Prevents repeated resolution delays |
+| J | Redundant warm-up calls disabled | Stops unnecessary secondary node load |
+| K | FT chain shifted from 01:20 → **02:30** | 2h GPU buffer after pair generation |
+| L | Ethernet profile persistence script (Windows Task Scheduler) | Direct link survives reboot |
 
 ---
 
@@ -751,4 +773,8 @@ We are seeking cloud credits and startup program support:
 
 [Apache License 2.0](LICENSE)
 
-> Built on open-source: Python · Ollama · Qwen3 · Qwen2.5 · Google Gemini · Anthropic Claude · python-telegram-bot · python-docx · NIM OCR
+> Built on open-source: Python · Ollama · Qwen3 · Qwen2.5 · NVIDIA NIM · Anthropic Claude · python-telegram-bot · python-docx · NIM OCR
+
+---
+
+*End of document*
