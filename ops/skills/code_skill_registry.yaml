@@ -1,0 +1,217 @@
+version: 1
+curriculum: AIMS Code Skills Curriculum v1
+generated_at: "2026-05-15"
+
+# One entry per /code-* skill command.
+# slot: model slot that executes this skill.
+# safety_level: low | medium | high
+# requires_validation: skill output must be verified before use.
+# execution_note: additional routing / ownership context.
+
+skills:
+  code_search:
+    command: "/code-search"
+    slot: "32"
+    role: code_navigation
+    purpose:
+      - symbol_search
+      - file_search
+      - pattern_search
+      - call_graph
+    owner_pipeline:
+      - repair_learning_cycle
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: low
+
+  code_review:
+    command: "/code-review"
+    slot: "32"
+    role: code_quality_review
+    purpose:
+      - quality_review
+      - antipattern_detection
+      - coupling_analysis
+    owner_pipeline:
+      - repair_learning_cycle
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: low
+
+  code_fix:
+    command: "/code-fix"
+    slot: "32"
+    role: bug_fixing
+    purpose:
+      - traceback_fix
+      - failing_test_fix
+      - controlled_patch
+    owner_pipeline:
+      - repair_learning_cycle
+    output_contract: structured_json
+    safety_level: medium
+    requires_validation: true
+
+  code_test:
+    command: "/code-test"
+    slot: "32"
+    role: testing
+    purpose:
+      - generate_tests
+      - run_tests
+      - coverage
+    owner_pipeline:
+      - repair_learning_cycle
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: low
+    requires_validation: true
+
+  code_debug:
+    command: "/code-debug"
+    slot: "32"
+    role: runtime_debugging
+    purpose:
+      - hung_process
+      - runtime_failure
+      - port_audit
+    owner_pipeline:
+      - repair_learning_cycle
+    output_contract: structured_json
+    safety_level: medium
+
+  code_audit:
+    command: "/code-audit"
+    slot: "120"
+    role: security_audit
+    purpose:
+      - secrets
+      - injection
+      - owasp
+      - high_impact_review
+    owner_pipeline:
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: high
+    execution_note: "120-led design/review; slot 32 executes technical remediation under gate"
+
+  code_refactor:
+    command: "/code-refactor"
+    slot: "32"
+    role: safe_refactor
+    purpose:
+      - refactor
+      - blast_radius
+      - regression_checks
+    owner_pipeline:
+      - repair_learning_cycle
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: medium
+    requires_validation: true
+
+  code_perf:
+    command: "/code-perf"
+    slot: "32"
+    role: performance_profiling
+    purpose:
+      - vram
+      - gpu
+      - throughput
+      - latency
+    owner_pipeline:
+      - repair_learning_cycle
+    output_contract: structured_json
+    safety_level: low
+
+  code_model_slot:
+    command: "/code-model-slot"
+    slot: "32"
+    role: model_slot_operations
+    purpose:
+      - routing_audit
+      - model_registry_check
+      - slot_policy_validation
+    owner_pipeline:
+      - repair_learning_cycle
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: medium
+
+  code_ft_pipeline:
+    command: "/code-ft-pipeline"
+    slot: "32"
+    role: ft_pipeline_operations
+    purpose:
+      - status
+      - restart_plan
+      - retarget_plan
+      - validation
+    owner_pipeline:
+      - repair_learning_cycle
+    output_contract: structured_json
+    safety_level: medium
+    requires_validation: true
+
+  code_deploy:
+    command: "/code-deploy"
+    slot: "32"
+    role: deployment_smoke
+    purpose:
+      - docker
+      - smoke_test
+      - health_check
+    owner_pipeline:
+      - repair_learning_cycle
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: medium
+
+  code_scaffold:
+    command: "/code-scaffold"
+    slot: "120"
+    role: architecture_scaffolding
+    purpose:
+      - agent_scaffold
+      - worker_scaffold
+      - test_scaffold
+      - skill_scaffold
+    owner_pipeline:
+      - claude_code_bridge
+    output_contract: structured_json
+    safety_level: low
+    execution_note: "120 designs; slot 32 / Repairman implements under Argus gate"
+
+  code_migrate:
+    command: "/code-migrate"
+    slot: "120"
+    role: db_schema_migration
+    purpose:
+      - database_migration
+      - schema_change
+      - backup
+      - rollback
+    owner_pipeline:
+      - claude_code_bridge
+      - repair_learning_cycle
+    output_contract: structured_json
+    safety_level: high
+    requires_validation: true
+    execution_note: "120 designs migration safety plan; slot 32 / Repairman executes under Argus gate"
+
+# Actions that NO skill in this curriculum may authorize.
+global_forbidden_actions:
+  - model_promotion
+  - cleanup_apply
+  - delete_model_artifacts
+  - model_registry_current_update
+  - edit_secrets
+  - production_restart
+  - docker_compose_down
+  - cron_modification
+  - ollama_rm
+  - git_reset_hard
+  - rm_rf
+  - direct_ollama_pull_outside_intake_policy
+  - delete_qwen3_32b_q8_0_before_promotion_retention_cleanup
+  - delete_axi_omi_sphere_before_promotion_retention_cleanup
