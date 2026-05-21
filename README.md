@@ -89,7 +89,7 @@ Unlike a single-prompt application, **one document workflow requires 20–100+ L
 **What credits enable:**
 1. Validate multi-agent orchestration at production scale
 2. Optimize prompt strategies across model configurations
-3. Benchmark admin 14B / coding 32B/ logical 32B/ fine formating 32B quality vs. the highest documents tuned cloud model tradeoffs
+3. Benchmark admin chat 8B / routins 14B / coding 32B/ logical 70B/ fine formating 32B quality vs. the highest documents tuned cloud model tradeoffs
 4. Create production-ready automated pipelines for broader enterprise document processing and localization in professional collection databases. 
 
 Without sufficient API capacity it is not possible to realistically simulate or validate real-world agent workloads at the volume our architecture is designed for.
@@ -193,7 +193,7 @@ flowchart TB
     end
 
     subgraph "Orchestration Layer — Production ✅"
-        NemoClaw["🧠 NemoClaw\nslot120 — heavy audit\nStrategic reasoning\n✅ Production"]
+        NemoClaw["🧠 NemoClaw\nslot70 — heavy audit\nStrategic reasoning\n✅ Production"]
         PipelineCoord["⚙️ PipelineCoordinator\nStateless FastAPI\n7-step document pipeline\n✅ Production"]
         ConvOrch["💬 ConversationalOrchestrator\nslot14 — conversational\nInteractive chat + planning\n✅ Production"]
     end
@@ -959,7 +959,7 @@ cp .env.spark.example .env
 
 ```bash
 ollama pull qwen3:32b-q8_0       # primary draft/rewrite model (~34 GB)
-ollama pull qwen2.5-coder:32b    # Argus diagnostics
+ollama pull qwen3.3:70b          # Logi reasoning (~64 GB)
 ```
 
 ### 3. Start all services
@@ -1038,7 +1038,7 @@ We are seeking cloud credits and startup program support:
 
 **Evgeny Shokk** — Founder, AIMS Platform
 
-- 📧 Evgeny.shock@gmail.com
+- 📧 hello@axiomsphereai.com
 - 🌐 [Website](https://axiomsphereassistanceaims.github.io/AxiOMSphere/)
 - 💼 [LinkedIn](https://www.linkedin.com/in/evgeny-shokk-54781716)
 
