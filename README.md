@@ -1,7 +1,9 @@
 # AxiOMSphere
 > **Multi-agent AI platform that automates industrial engineering workflows — from document generation to ISO compliance — using coordinated LLM agents running on private infrastructure.**
 
-[🌐 Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/) · [📺 Demo](#demo) · [📬 Contact](#contact) · [📋 Apply for Credits](#grant-applications)
+**Self-Tuning · Self-Healing · Self-Orchestrated · Self-Driven**
+
+[🌐 Website](https://axiomsphereassistanceaims.github.io/AxiOMSphere/) · [📺 Demo](#demo) · [📬 Contact](#contact) · [📋 Apply for Credits](#grant-applications)
 
 ---
 
@@ -9,12 +11,43 @@
 
 AxiOMSphere replaces manual project startup engineering work with coordinated AI agents. Each agent handles one function — document generation, quality control, registry management, infrastructure monitoring — and they operate as a continuous pipeline.
 
+Four design principles define the system:
+- **Self-Tuning** — every production run saves training pairs automatically; models improve with each use through a nightly fine-tuning loop
+- **Self-Healing** — Argus monitors all services 24/7; detected failures trigger the Repairman loop (diagnose → approve → patch → verify) without manual intervention
+- **Self-Orchestrated** — agents coordinate through PipelineCoordinator and a task ledger; the Autonomy Control Plane v1 is certified for unattended operation
+- **Self-Driven** — free-text requests are classified locally and routed to the right agent; the system operates as a continuous, background engineering pipeline
+
 **The result is 1,5 year for 1 month:**
 -  A document describing a business process, typically written in 2-3 days each by several specialists from different disciplines (recruited for a specific project), can be created in less than 10 minutes within an integrated functional system within a single functional area, in accordance with the AIMS project philosophy (a total of 1.5 years of work in 1 month). Even by non-experts or department heads, it allows for task assignments via chat, voice, or text, from any location. The database is based on several projects, providing valuable experience.
 - ISO compliance verified automatically, not by hand
 - Every generation run feeds back into model training — the system improves with every use
 
 We're currently working in production with live engineers and actively scaling usage. We expect significant demand for the API in the next 1-3 months as the team expands and new types of documentation, tests, and cross-validations are added.
+
+---
+
+## Current Verified Status — 2026-05-21
+
+| Milestone | Result |
+|-----------|--------|
+| Autonomous Launch Test Suite | **10/10 PASS** |
+| Autonomy Control Plane v1 | **CERTIFIED** |
+| Consecutive autonomous task runs | **5/5 PASS** |
+| Final project status | `READY_FOR_AUTONOMOUS_OPERATION_WITH_TASK_LEDGER_V1` |
+| Telegram delivery after each control-plane run | confirmed |
+| Fullstack integration audit | **PASS — 14/14 agents fully integrated** |
+| DGX model concurrency policy | **PASS** |
+| Stability audit | WARN: historical Redis evidence only — no active blockers |
+| Inbox-cleanup lifecycle false blocker | closed |
+| Repairman Slot32 training pipeline | **5/5 phases active** — 44/750 pairs accumulating |
+| Slot120 replacement evaluation | **IN PROGRESS** — deepseek-r1:70b candidate (download) |
+| Next certification stage | 24h/72h long-running self-regulation |
+
+**Evidence docs:**
+- [`docs/AUTONOMY_CONTROL_PLANE_V1_CERTIFICATION.md`](docs/AUTONOMY_CONTROL_PLANE_V1_CERTIFICATION.md)
+- [`docs/AUTONOMY_NEXT_STAGE_LONG_RUNNING_SELF_REGULATION.md`](docs/AUTONOMY_NEXT_STAGE_LONG_RUNNING_SELF_REGULATION.md)
+- [`docs/AIMS_FULLSTACK_INTEGRATION_STATUS.md`](docs/AIMS_FULLSTACK_INTEGRATION_STATUS.md)
+- [`ops/autonomy_control/README.md`](ops/autonomy_control/README.md)
 
 ---
 
@@ -37,7 +70,7 @@ We're currently working in production with live engineers and actively scaling u
 AxiOMSphere is a **high-frequency, multi-agent system** where every user task decomposes into coordinated agent stages:
 
 ```
-User request → Planning → Draft (Qwen3-32B) → Rewrite (Qwen3-32B) → Score (Gemini + Claude) → Revise → Register → Notify
+User request → Planning → Draft (slot32) → Rewrite (slot32) → Score (cloud review gate) → Revise → Register → Notify
 ```
 
 Unlike a single-prompt application, **one document workflow requires 20–100+ LLM calls**:
@@ -80,18 +113,18 @@ Stage 1 — Planning agent      (~30 sec)
   → Identifies: JSA template, applicable OSHA 29 CFR 1910.147 local corporate manuals and procedures based on equipment types
   → Outlines: scope, equipment types identification sections, control hierarchy
 
-Stage 2 — Draft agent: axi_omi_sphere (qwen3:32b-q8_0)   (~3 min)
+Stage 2 — Draft agent: slot32 runtime model (resolved via registry)   (~3 min)
   → Generates structured draft with ISO 10013 / ISO/IEC Directives-aware section headers
   → Produces hazard table with risk matrix, elimination → substitution → PPE controls
 
-Stage 3 — Rewrite agent: axi_omi_sphere (qwen3:32b-q8_0)     (~2 min)
+Stage 3 — Rewrite agent: slot32 runtime model (resolved via registry)     (~2 min)
   → Professional formatting, paragraph cohesion, terminology standardization ISO 2145:1978
 
-Stage 4 — Compliance gate: Gemini Flash / Anthropic Claude  (~15 sec)
+Stage 4 — Cloud LLM Review Gate  (~15 sec)
   → Score: 0.84 / 1.0
   → Feedback: "Add specific corrections and specification per ....."
 
-Stage 5 — Revision: axi_omi_sphere (qwen3:32b-q8_0)          (~2 min)
+Stage 5 — Revision: slot32 runtime model (resolved via registry)          (~2 min)
   → Target correction applied, assessment re-checked (knowledge base and lessons learned in background)
 
 Output: JSA_confined_space_entry.docx → delivered to Telegram
@@ -131,7 +164,7 @@ result_path, preview, score, feedback = agent.generate(
     DocGenerationRequest(
         user_request="Create a Job Safety Analysis for confined space entry at an underground mine. "
                      "Reference ISO 45001. Include hazard table, controls hierarchy, permit conditions.",
-        dual_pipeline=True,   # R1-70B → Qwen-72B → Gemini quality gate
+        dual_pipeline=True,   # slot32 draft/rewrite → Cloud LLM Review Gate
     )
 )
 
@@ -154,20 +187,20 @@ flowchart TB
     end
 
     subgraph "Agent Layer — Production ✅"
-        Axi["📄 Axi Bot\nDocument generation\nGemini API + Anthropic\n✅ Production"]
+        Axi["📄 Axi Bot\nDocument generation\n✅ Production"]
         Omi["🗄️ Omi Bot\nDocument registry\nOCR pipeline · RAG\n✅ Production"]
         Argus["📊 Argus Bot\nInfra monitor · Scheduler\nTraining loop supervision\n✅ Production"]
     end
 
     subgraph "Orchestration Layer — Production ✅"
-        NemoClaw["🧠 NemoClaw\nNemotron 120B\nStrategic reasoning\n✅ Production"]
-        PipelineCoord["⚙️ PipelineCoordinator\nStateless FastAPI\n7-step document pipeline\n✅ Production (port 8000)"]
-        ConvOrch["💬 ConversationalOrchestrator\nQwen3:14b\nInteractive chat + planning\n✅ Production"]
+        NemoClaw["🧠 NemoClaw\nslot120 — heavy audit\nStrategic reasoning\n✅ Production"]
+        PipelineCoord["⚙️ PipelineCoordinator\nStateless FastAPI\n7-step document pipeline\n✅ Production"]
+        ConvOrch["💬 ConversationalOrchestrator\nslot14 — conversational\nInteractive chat + planning\n✅ Production"]
     end
 
     subgraph "Doc Generation Pipeline — Production ✅"
-        Qwen["axi_omi_sphere\nqwen3:32b-q8_0\nDraft + rewrite · DGX Spark"]
-        Gemini["Gemini Flash/Pro\n+ Anthropic Claude\nISO compliance score · 0.0–1.0"]
+        Qwen["slot32\nDraft + rewrite · DGX (server)"]
+        CloudGate["Cloud LLM Review Gate\nISO compliance score · 0.0–1.0\nProvider-abstracted external review"]
     end
 
     subgraph "Data Layer — Production ✅"
@@ -175,24 +208,25 @@ flowchart TB
         TRN[("gold_pairs.jsonl\ndpo_pairs.jsonl\nAuto-saved every run")]
     end
 
-    subgraph "Phase 3 — Deployed ✅"
-        NL["🔐 Poli Agent\nAccess rights · MoC gate\n✅ Deployed (port 8004)"]
-        NM["🔧 Mainy Agent\nMaintenance automation\n✅ Deployed (port 8005)"]
-        NR["🔍 Knomi Agent\nSemantic memory · RAG\n✅ Deployed (port 8002)"]
-        Repairman["🔧 Repairman API\nAutomated repair\n✅ Deployed (port 8010)"]
+    subgraph "Integrated Agents — 14/14 ✅"
+        NL["🔐 Poli Agent\nAccess rights · MoC gate\n✅ Deployed"]
+        NM["🔧 Mainy Agent\nMaintenance automation\n✅ Deployed"]
+        NR["🔍 Knomi Agent\nSemantic memory · RAG\n✅ Deployed"]
+        Repairman["🔧 Repairman API\nAutomated repair\n✅ Deployed"]
     end
 
-    subgraph "Recovery & Monitoring ✅"
-        Watchdog["👀 Watchdog Bot\nAutomatic recovery\nHealth monitoring\n✅ Production"]
+    subgraph "Self-Healing Layer — Certified ✅"
+        Watchdog["👀 Watchdog Agent\nStability score · Health aggregator\n✅ Certified"]
+        SH["Architect · Security · QA\nRelease · Docs agents\n✅ All 7 self-healing agents"]
     end
 
     TG --> Axi & Omi & ConvOrch
     NemoClaw --> PipelineCoord
     ConvOrch --> PipelineCoord
-    Axi -->|"doc request"| Qwen --> Gemini
-    Gemini -->|"score + feedback"| Qwen
+    Axi -->|"doc request"| Qwen --> CloudGate
+    CloudGate -->|"score + feedback"| Qwen
     Qwen -->|"Final .docx"| TG
-    Gemini -->|"score ≥ 0.8 → saved"| TRN
+    CloudGate -->|"score ≥ 0.8 → saved"| TRN
     Omi --> AR
     Argus -.->|"health events"| PipelineCoord
     PipelineCoord -.->|"repair trigger"| Repairman
@@ -201,6 +235,7 @@ flowchart TB
     Argus -.-> NM
     NL -.->|"gates"| NM
     Watchdog -.->|"monitors"| Axi & Omi & Argus & PipelineCoord
+    SH -.->|"gates"| Repairman
 
     style Axi fill:#0d2137,stroke:#29b6f6,color:#e0f7fa
     style Omi fill:#0d2137,stroke:#4dd0e1,color:#e0f7fa
@@ -258,12 +293,12 @@ ArgusAgent detects failure
 
 | Stage | Model | Role | Time |
 |-------|-------|------|------|
-| **Draft** | axi_omi_sphere (qwen3:32b-q8_0) | ISO-aware reasoning, structural outline | ~3 min |
-| **Rewrite** | axi_omi_sphere (qwen3:32b-q8_0) | Professional formatting, terminology | ~2 min |
-| **Score** | Gemini Flash/Pro + Anthropic Claude | Compliance 0.0–1.0, gap feedback | ~15 sec |
-| **Revise** | axi_omi_sphere (qwen3:32b-q8_0) | Targeted fix per score feedback | ~2 min |
+| **Draft** | slot32 runtime model (registry-resolved) | ISO-aware reasoning, structural outline | ~3 min |
+| **Rewrite** | slot32 runtime model (registry-resolved) | Professional formatting, terminology | ~2 min |
+| **Score** | Cloud LLM Review Gate | Compliance 0.0–1.0, gap feedback | ~15 sec |
+| **Revise** | slot32 runtime model (registry-resolved) | Targeted fix per score feedback | ~2 min |
 
-Quality gate: <60% → reject + retry · ≥60% → accepted · target **98% compliance**
+Quality gate: <60% → reject + retry · ≥60% → accepted · target: **98% compliance** (internal pilot goal)
 
 ### NLP Intent Routing
 
@@ -275,7 +310,7 @@ All bots use a local fine-tuned model (`chat_intent_router.py`) to classify free
 "generate MOC doc"    →  /doc --type=moc
 ```
 
-Keyword fallback (`_keyword_classify`) activates automatically when the PC Andrei small model is offline — no cloud calls needed for common commands.
+Keyword fallback (`_keyword_classify`) activates automatically when the secondary-node routing model is offline — no cloud calls needed for common commands.
 
 ### Cross-Bot Handoff
 
@@ -300,7 +335,9 @@ These feed the nightly fine-tuning pipeline (14B → 32B), so the system improve
 
 ---
 
-## Agent Architecture — 7 Types
+## Agent Architecture — Core Runtime Roles + 14 Fullstack Integrated Agents
+
+> Latest integration audit: **14/14 registered agents fully integrated** — 0 missing skill packs · 0 failed smokes · 0 active stale refs. See [`docs/AIMS_FULLSTACK_INTEGRATION_STATUS.md`](docs/AIMS_FULLSTACK_INTEGRATION_STATUS.md).
 
 ```mermaid
 flowchart TD
@@ -366,7 +403,7 @@ flowchart TD
     S5["🚀 Stage 5 · Commissioning & Startup\nISO §8.2 Asset Mgmt Plans · §8.4 Change Mgmt\nMC → RFSU → PAC → FAC · SOP · MoC · Handover dossiers"]
     S6["🏭 Stage 6 · O&M\nISO §8 Operation · §9 Evaluation · §10 Improvement\nRBI · KPI tracking · Audits · ISO 55001 certification · PDCA"]
 
-    DONE(["✅ AIMS FULLY OPERATIONAL"])
+    DONE(["✅ AIMS — Control Plane v1 Certified\nISO 55001-aligned workflows"])
 
     START --> S0 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> DONE
     S6 -.->|"PDCA Loop"| S2
@@ -393,7 +430,7 @@ flowchart TD
     START(["🏭 AxiOMSphere Factory\nAgent Build · Test · Tune"])
 
     subgraph PROD["✅ PRODUCTION — Built & Running"]
-        P1["📄 Axi Bot · DocAgent\nQwen3:32b-q8_0 → Gemini/Claude gate\nqwen2.5-aims-ft-v6: routing ✅\nqwen3:32b: fine-tuning in progress 🔄\nTarget: ISO score ≥ 0.85 · < 10 min"]
+        P1["📄 Axi Bot · DocAgent\nslot32 → Cloud LLM Review Gate\nqwen2.5-aims-ft-v6: routing ✅\nomi-ft-14b-v16: 100% on golden_v2 ✅\nTarget: ISO score ≥ 0.85 · < 10 min"]
         P2["🗄️ Omi Bot · DBAgent\nOCR pipeline + aims_registry.db\nRAG semantic search\nomi-ft-14b-v15: 100% on golden_v2 ✅\nTarget: retrieval precision ≥ 90%"]
         P3["📊 Argus Bot · SysDog\nDevOps monitor + queue scheduler\nTraining loop gold/DPO pairs\nTarget: uptime ≥ 99.5% · MTTR < 5 min"]
     end
@@ -421,11 +458,11 @@ flowchart TD
     subgraph TUNE["🔄 Continuous Tuning"]
         T1["qwen2.5-aims-ft-v6\n6 cycles ✅ routing baseline"] --> T2["omi-ft-14b-v15\n100% eval ✅ action classifier"]
         T2 --> T3["qwen3:8B-v2\nfixes timeout errors 🔄"]
-        T3 -.->|"scoring"| T4["Gemini / Claude Gate\n0.0–1.0 calibration"]
+        T3 -.->|"scoring"| T4["Cloud LLM Review Gate\nProvider-abstracted\n0.0–1.0 calibration"]
     end
     TUNE -.-> FIX2
 
-    DONE(["✅ AxiOMSphere FULLY OPERATIONAL\n7 Agents · ISO 55001 Compliant"])
+    DONE(["✅ Control Plane v1 Certified\n14 Agents Integrated\nISO 55001-aligned workflows\nNext: 24h/72h self-regulation"])
 
     style PROD fill:#003300,stroke:#66bb6a,color:#c8e6c9
     style NEXT1 fill:#003300,stroke:#4ade80,color:#c8e6c9
@@ -600,6 +637,7 @@ flowchart TD
     style F fill:#1a4731
     style G fill:#4a1515
     style I fill:#1a2f4a
+
 ```
 
 ---
@@ -611,8 +649,8 @@ flowchart TD
     DOCS["📄 Domain documents"] --> INGEST["00:01 ingest_new_docs"]
     INGEST --> PAIRS["00:30 generate_pairs\n72B on DGX (~60–90 min)"]
     PAIRS --> FT["02:30 ft_prepare_chain_run\n14B → 32B\n(2h buffer after pair gen)"]
-    FT --> DEPLOY["05:30 deploy_14b_andrei\nblob-push to PC Ollama"]
-    DEPLOY --> BOT["✅ qwen2.5-aims-ft-vN:latest\nactive on PC Andrei"]
+    FT --> DEPLOY["05:30 deploy_14b\nblob-push to PC (RTX) Ollama"]
+    DEPLOY --> BOT["✅ qwen2.5-aims-ft-vN:latest\nactive on PC (RTX)"]
     style PAIRS fill:#1a2f4a
     style FT fill:#1a2f4a
     style BOT fill:#1a4731
@@ -622,13 +660,18 @@ flowchart TD
 
 ### Fine-Tuning Status (2026-05)
 
-| Run | Model | Dataset | Eval (golden_v2, 14 cases) | Notes |
-|-----|-------|---------|----------------------------|-------|
-| v15 | Qwen2.5-14B QLoRA | v10 (754 samples) | **14/14 — 100%** ✅ | Omi action classifier — production |
-| qwen3-8b-v1 | Qwen3-8B QLoRA | v9 | 2/15 — 13% ❌ | 7× TimeoutError (thinking mode on at train time) + 6 routing errors |
-| qwen3-8b-v2 | Qwen3-8B QLoRA | v10 | In progress 🔄 | `enable_thinking: false` — config fixed |
+| Run | Model | Dataset | Eval | Notes |
+|-----|-------|---------|------|-------|
+| v16 | Qwen2.5-14B QLoRA | v10 (754 samples) | **50/50 — 100%** ✅ (golden_v2) | Omi action classifier — **deployed** |
+| v17 | Qwen2.5-14B QLoRA | v11 | 36/57 — 63.2% ⚠️ (golden_v3) | Regression vs v16 — NOT deployed; failures: answer×7, handoff×5, clarify×4 |
+| qwen3-14b-v17 | Qwen3-14B QLoRA | v11 | 31/57 — 54.4% ⚠️ (golden_v3) | Worse than v16 — NOT deployed |
+| **repairman-slot32-v1** | Qwen3-32B QLoRA | repairman_slot32_v1 | **GATE BLOCKED** — 44/750 pairs | Training unlocks at 750 pairs; accumulating via continuous learning loop · night window 02:00–06:00 UTC |
 
-DPO pairs: `ops/ft/scripts/dpo_train.py` — 22 pairs ready, TRL DPOTrainer, 4-bit QLoRA.
+golden_v3 expanded the suite to 57 cases. V17 nightly retrain scheduled; v16 remains production.
+
+**Repairman QLoRA feasibility (slot120 replacement):** DeepSeek-R1-Distill-Llama-70B (`deepseek-r1:70b`) selected as primary slot120 evaluation candidate — R1 chain-of-thought reasoning distillation on Llama 3.3 70B base, MIT license, Ollama-native. Download in progress (Gate 2). Gates 3–4 (4-bit load + LoRA init, tiny training run) pending.
+
+DPO pairs: `ops/ft/scripts/dpo_train.py` — TRL DPOTrainer, 4-bit QLoRA.
 
 ---
 
@@ -636,24 +679,24 @@ DPO pairs: `ops/ft/scripts/dpo_train.py` — 22 pairs ready, TRL DPOTrainer, 4-b
 
 ```mermaid
 graph LR
-    subgraph DGX["DGX Spark — 128 GB VRAM"]
-        DGX_MODELS["qwen3:32b-q8_0 (axi_omi_sphere)  ~34 GB\nqwen2.5-coder:32b  20 GB\nomi-ft-14b-v15  ~10 GB\nDocker Compose — all 21 containers"]
-        DGX_DOCKER["Task Registry · Qdrant · Redis · LiteLLM\nOmi · Axi · Argus · Logi · Poli · Mainy · Knomi"]
+    subgraph PRIMARY["DGX (server) — ≥128 GB VRAM"]
+        P_MODELS["slot32 (qwen3:32b-q8_0)  ~34 GB\nslot120 (nemotron-3-super:120b)  ~100 GB — on demand\nslot14 (omi-ft-14b-v16)  ~10 GB\nDocker Compose — 32+ containers"]
+        P_DOCKER["Task Registry · Qdrant · Redis\nOmi · Axi · Argus · Logi · Poli · Mainy · Knomi"]
     end
-    subgraph PC["PC Andrei — RTX 4070 16 GB"]
-        PC_MODELS["qwen2.5-aims-ft-v7:latest  ~10 GB\nOLLAMA_HOST=0.0.0.0:11434"]
+    subgraph SECONDARY["PC (RTX) — 16 GB VRAM"]
+        S_MODELS["slot14-ft (qwen2.5-aims-ft-vN)  ~10 GB\nOLLAMA_HOST=0.0.0.0:11434"]
     end
-    DGX <-->|"Direct 10 Gbps cable"| PC
-    DGX -.->|"LAN fallback (router IP)"| PC
+    PRIMARY <-->|"Direct high-speed link"| SECONDARY
+    PRIMARY -.->|"LAN fallback"| SECONDARY
 ```
 
-**Routing rules:** Small models (14B FT) → PC only · Two 32B+ models never loaded simultaneously on DGX · `nemotron-3-super:120b` (~100 GB) loads alone · `OLLAMA_RESOLVE_TTL_SEC=30` prevents 6s latency spikes
+**Routing rules:** slot14 FT models → PC (RTX) · slot32 and slot120 never loaded simultaneously on DGX (server) · slot120 loads alone on demand · `OLLAMA_RESOLVE_TTL_SEC=30` prevents latency spikes
 
 ---
 
 ## Technical Reference
 
-### Running Services (2026-05-04)
+### Running Services (2026-05-21)
 
 | # | Container | Status | Role |
 |---|-----------|--------|------|
@@ -665,7 +708,7 @@ graph LR
 | 6 | `axiomsphere-flaresolverr` | ✅ healthy | JS-render proxy for scrapers |
 | 7 | `axiomsphere-schedule` | ✅ running | Cron: nightly FT, deploy, etc. |
 | 8 | `axiomsphere-inbox-cleanup` | ✅ running | 14-day inbox purge |
-| 9 | `axiomsphere-litellm` | ✅ running | LiteLLM proxy — Gemini + Anthropic (port 4400) |
+| 9 | `axiomsphere-litellm` | ✅ running | Cloud AI review gate proxy (port 4400) |
 | 10 | `axiomsphere-ocr-watcher` | ✅ running | OCR pipeline (`Dockerfile.ocr-eng`) |
 | 11 | `axiomsphere-omi-api` | ✅ running | Omi REST API (port 8765) |
 | 12 | `axiomsphere-omi-quality-gate` | ✅ running | Post-OCR quality filter |
@@ -683,32 +726,16 @@ Scheduled (run on demand via `schedule` container, `restart: 'no'`): `omi-regist
 
 ### Model Table
 
-| Model | Size | Node | Role |
-|-------|------|------|------|
-| `axi_omi_sphere` (qwen3:32b-q8_0) | ~34 GB | DGX (warm) | DocAgent — draft, rewrite, revision |
-| `qwen2.5-coder:32b` | 20 GB | DGX (warm) | Argus diagnostics / code / chat |
-| `omi-ft-14b-v15` (Qwen2.5-14B QLoRA) | ~10 GB | DGX | Omi action classifier — **100% on 14/14 golden_v2** |
-| `qwen2.5-aims-ft-v6` | ~10 GB | DGX | Intent routing — Omi, Axi, Argus |
-| `qwen2.5-aims-ft-v7:latest` | ~10 GB | PC Andrei | Intent routing fallback |
-| `nemotron-3-super:120b` | ~100 GB | Ollama → NIM | Repairman (Claude Code proxy, port 8082) — load separately |
+| Slot | Model | Size | Node | Role |
+|------|-------|------|------|------|
+| **slot32** | `axi_omi_sphere` (qwen3:32b-q8_0) | ~34 GB | Primary (warm) | DocAgent — draft, rewrite, revision; Repairman FT base (slot32-v1 accumulating 44/750 pairs) |
+| **slot32-code** | `qwen2.5-coder:32b` | 20 GB | Primary (warm) | Argus diagnostics / code / chat |
+| **slot14** | `omi-ft-14b-v16` (Qwen2.5-14B QLoRA) | ~10 GB | Primary | Omi action classifier — **100% on 50/50 golden_v2 ✅ deployed** |
+| **slot14-ft** | `qwen2.5-aims-ft-vN:latest` | ~10 GB | Secondary (PC RTX) | Intent routing — Omi, Axi, Argus |
+| **slot120** | `nemotron-3-super:120b` | ~100 GB | Primary (on demand) | Repairman champion — retained baseline; load separately, never with slot32 |
+| **slot120-eval** | `deepseek-r1:70b` (candidate) | ~43 GB Q4_K_M | Primary (eval only) | Slot120 replacement evaluation — DeepSeek-R1-Distill-Llama-70B; download in progress; not routed to production |
 
-**VRAM rule:** never load two 70B+ models simultaneously on DGX (128 GB total). Unload before switching.
-
-### Services & Ports
-
-| Service | Port | Notes |
-|---------|------|-------|
-| DocAgent API | **8767** | FastAPI, used by Omi + Axi |
-| AIMS API | **8000** | Internal task API (internal network only — not exposed to host) |
-| Knomi Agent | **8002** | Semantic search / RAG API (127.0.0.1 only) |
-| Poli Agent | **8004** | Access rights, MoC gate (127.0.0.1 only) |
-| Mainy Repair Agent | **8005** | Maintenance repair executor (127.0.0.1 only) |
-| Qdrant | **6333** | Vector DB — RAG |
-| LiteLLM Proxy | **4400** | Gemini key + Anthropic fallback |
-| Task Registry | **8765** | FastAPI CRUD, monitored by Argus |
-| Grafana | **3000** | DGX monitoring dashboard |
-| Anthropic Proxy Gateway | **8082** | `ops/gateway/anthropic_proxy.py` → Ollama/NIM |
-| Ollama (DGX) | **11434** | Local model inference |
+**VRAM rule:** slot120 and slot32 are never loaded simultaneously. Unload before switching. slot120-eval is for benchmarking only — do not promote to routing until benchmark gates pass.
 
 ### Night Schedule
 
@@ -719,20 +746,7 @@ Scheduled (run on demand via `schedule` container, `restart: 'no'`): `omi-regist
 | 00:01 | `training_ingest` | Ingest new documents |
 | 00:30 | `training_generate_pairs` | 32B on DGX, ~60–90 min |
 | **02:30** | `ft_prepare_chain_run` | Shifted from 01:20 — 2h GPU buffer |
-| 05:30 | `daily_deploy_14b` | Push to PC Andrei via Ollama blob |
-
-### Key .env Variables
-
-```bash
-PC_OLLAMA_URL=http://<pc-direct-ip>:11434           # primary (direct 10 Gbps)
-PC_OLLAMA_URL_FALLBACK=http://<router-ip>:11434     # LAN fallback
-OLLAMA_RESOLVE_TTL_SEC=30                            # resolve cache — prevents 6s timeout
-AIMS_REDIS_URL=redis://aims-redis:6379               # cross-bot handoff + worker queue
-QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0                   # no redundant warm-up
-LITELLM_BASE_URL=http://axiomsphere-litellm:4400
-NVIDIA_API_KEY=<your-nim-api-key>                   # for cloud scoring via NIM
-AIMS_CLAUDE_PROXY_TOKEN=<your-token>                 # gateway auth token
-```
+| 05:30 | `daily_deploy_14b` | Push slot14-ft to PC (RTX) via Ollama blob |
 
 ### Deploy
 
@@ -751,15 +765,13 @@ bash ops/gateway/start_gateway.sh
 
 ## Claude Code Repairman
 
-Claude Code can run as a project-wide repair agent using the local gateway proxy:
+Claude Code runs as a project-wide repair agent through a local gateway proxy that routes to the on-premises slot120 model.
 
 ```bash
-# Start gateway first
+# Start gateway
 bash ops/gateway/start_gateway.sh
 
-# Connect Claude Code to the gateway
-ANTHROPIC_BASE_URL=http://localhost:8082 \
-ANTHROPIC_API_KEY=aims-local-repair-token \
+# Connect Claude Code via gateway (credentials in .env)
 claude --model aims-repairman-nemotron
 ```
 
@@ -788,6 +800,42 @@ more than international 150 standards, around 1500 master document
 ---
 
 ## Audit Change Log
+
+### 2026-05-21 — Repairman Slot32 Activation + Slot120 Replacement Evaluation
+
+| # | Change | Impact |
+|---|--------|--------|
+| 1 | Repairman Slot32 training pipeline activated — 5/5 phases complete (KNOMI, TRAINI, Hermes, Continuous Learning, Docs) | qwen3:32b is now the Repairman fine-tuning base; 44/750 training pairs accumulated |
+| 2 | Repairman knowledge base seeded — KNOMI Phase 1 (15/15 PASS) extracted repair domain topics | Structured repair rules and patterns available to training pipeline |
+| 3 | Traini dataset generator activated — 24/24 PASS; structured Q&A + repair scenario pairs generated | Automated pair generation from knowledge base operational |
+| 4 | Hermes Review Bridge (Phase 3) active — advisory quality gate for training pairs | Human-in-the-loop review wired into accumulation loop |
+| 5 | Continuous learning loop — 17/17 function modules PASS (env audit, log analysis, config diff, stack trace parse, root cause) | All repair pattern modules operational |
+| 6 | Slot120 replacement evaluation initiated — llama3.1:70b cancelled (~7%); candidate upgraded to deepseek-r1:70b | DeepSeek-R1-Distill-Llama-70B: R1 chain-of-thought reasoning on Llama 3.3 70B base; MIT license; Ollama-native; ~43 GB Q4_K_M |
+| 7 | Fullstack integration audit — terminology updated from "Gstack" to "Fullstack" across all project docs | Naming consistency across codebase and documentation |
+
+### 2026-05-15 — AIMS Code Skills Curriculum v1
+
+| # | Change | Impact |
+|---|--------|--------|
+| 1 | 13 `/code-*` skill commands defined — registry, audit, router, packet builder, test generator | Formal repair curriculum complete |
+| 2 | Code skill audit — 13/13 PASS | All skills conform to policy: slot, safety, output_contract |
+| 3 | Slot 32 skills (10): code_search, code_review, code_fix, code_test, code_debug, code_refactor, code_perf, code_model_slot, code_ft_pipeline, code_deploy | Engineering execution layer wired |
+| 4 | Slot 120 skills (3): code_audit, code_scaffold, code_migrate | High-stakes reasoning layer wired |
+| 5 | Global forbidden actions enforced — 14 actions no skill may authorise | Policy compliance verified |
+| 6 | RepairmanAPI auto-repair loop: ArgusAgent → RepairmanAPI wired | Phase 4 self-repair complete |
+
+### 2026-05-13 — Autonomy Control Plane v1 Certified
+
+| # | Change | Impact |
+|---|--------|--------|
+| 1 | 10/10 Autonomous Launch test suite — full PASS | `READY_FOR_AUTONOMOUS_OPERATION` confirmed |
+| 2 | Autonomy Control Plane v1 — 5/5 consecutive runs PASS | `ctrl_plane_v1_1778694743` certified |
+| 3 | Fullstack integration audit — 14/14 agents fully integrated | 0 missing skill packs · 0 failed smokes |
+| 4 | `omi-ft-14b-v16` trained — 50/50 (100%) on golden_v2 | Deployed; v17 63.2% regression held back |
+| 5 | Self-healing layer — all 7 agents UP (ports 8010–8016) | Watchdog stability 1.00 |
+| 6 | DGX model concurrency policy smoke — PASS | slot120 and slot32 mutual-exclusion verified |
+| 7 | Knomi RAG seed knowledge and KNOMI_OLLAMA_URL wired | 3/3 RAG queries return ≥ 5 results |
+| 8 | Cloud provider migration completed — 21 files updated | 0 active direct external provider calls remain |
 
 ### 2026-05-04 — Production Launch Sprint
 
@@ -828,7 +876,7 @@ more than international 150 standards, around 1500 master document
 | I | `OLLAMA_RESOLVE_TTL_SEC=30` | Resolve cache — no more 6s delays |
 | J | `QWEN_PC_ASSIST_WARM_ON_TELEGRAM=0` | Stops redundant warm-up API calls |
 | K | FT chain 01:20 → **02:30** | 2h GPU buffer after pair generation |
-| L | `set_andrei_direct_cable_private.ps1` (Windows Task Scheduler) | Ethernet profile survives reboot |
+| L | Secondary node direct-link network profile (Windows Task Scheduler) | Ethernet profile survives reboot |
 
 ---
 
@@ -851,7 +899,7 @@ AxiOMSphere/
 ├── docker-compose.dgx.yml       # DGX-specific overrides
 ├── .env.spark.example           # Environment variable template
 ├── ops/
-│   ├── axi_bot.py               # Telegram bot — document generation (~3976 lines)
+│   ├── axi_bot.py               # Telegram bot — document generation (~8772 lines as of 2026-05-19)
 │   ├── aims_orchestrator_daemon.py  # Redis polling daemon for aims-orchestrator
 │   ├── agents/                  # Agent classes: Omi, Argus, Doci, Poli, Mainy, Knomi…
 │   ├── argus/                   # Infra monitoring: keepalive, diagnose, orchestrator
@@ -870,7 +918,7 @@ AxiOMSphere/
 │   │   ├── eval/                # golden_v2.json — 14 eval cases (Omi)
 │   │   ├── logs/                # Eval results, train logs
 │   │   └── scripts/             # build_dataset, train_qlora, eval_actions, dpo_train
-│   ├── docagent/                # Doc generation: standards, RAG, NIM scoring
+│   ├── docagent/                # Doc generation: standards, RAG, cloud scoring
 │   ├── omi_telegram/            # OCR register + sync to registry
 │   ├── sandbox/                 # executor.py — isolated subprocess code execution
 │   ├── scripts/                 # Nightly ops: deploy, upgrade, pre-docbench
@@ -891,7 +939,7 @@ AxiOMSphere/
 
 ### Prerequisites
 
-- NVIDIA GPU (DGX Spark or equivalent, ≥40 GB VRAM recommended)
+- NVIDIA GPU (≥40 GB VRAM recommended for slot32; ≥128 GB for slot120)
 - [Ollama](https://ollama.ai) installed and running
 - Docker + Docker Compose
 - Python 3.11+
@@ -933,9 +981,43 @@ curl -sf http://localhost:8005/health  # Mainy Agent
 ### 5. Run tests
 
 ```bash
-export PYTHONPATH=/home/axi_omi_sphere/aims-workspace:$PYTHONPATH
+export PYTHONPATH=$(pwd):$PYTHONPATH
 python -m pytest ops/tests/ -v -m "not integration"
 ```
+
+---
+
+## Verified vs Target
+
+| Metric | Verified (2026-05-21) | Target |
+|--------|-----------------------|--------|
+| Autonomous launch test | 10/10 PASS | 10/10 |
+| Autonomy Control Plane runs | 5/5 consecutive PASS | 5/5 |
+| Agents integrated (Fullstack audit) | 14/14 | 14/14 |
+| Omi classifier accuracy (golden_v2) | 100% (50/50) | ≥ 95% |
+| Self-healing watchdog stability | 1.00 | ≥ 0.95 |
+| ISO review gate score (target) | Internal pilot goal: 0.98 | ≥ 0.98 |
+| Code Skills Curriculum v1 (13 skills) | 13/13 PASS audit | All PASS |
+| Repairman Slot32 training pairs | 44/750 (accumulating) | ≥ 750 to unlock training |
+| Slot120 replacement eval | deepseek-r1:70b — download in progress | Benchmark gates 3–4 pending |
+| 24h/72h unattended self-regulation | Not yet started | Next stage |
+
+---
+
+## Current Hardening Backlog
+
+| Priority | Item | Status |
+|----------|------|--------|
+| P1 | V17 fine-tune regression — fix 21 failures, retrain | Nightly run scheduled |
+| P1 | 24h/72h unattended self-regulation run | Next certification stage |
+| P1 | Repairman Slot32 training gate — accumulate 750 pairs via continuous learning loop | 44/750 — night window 02:00–06:00 UTC active |
+| P2 | Slot120 replacement eval — deepseek-r1:70b Gates 3–4 (4-bit load + LoRA init, tiny training run) | Gate 2 (HF download ~140 GB) in progress |
+| P2 | `axi_ft_log/` root-ownership — gold pairs write path | Workaround active |
+| P2 | ArgusAgent → Watchdog stability score wiring verification | WARN — historical evidence only |
+| P3 | Knomi seed knowledge auto-ingest policy | Manual for now |
+| P3 | Qwen3-coder:30b benchmark (slot32 code candidate) | Earliest 2026-05-22 |
+| P3 | Docs-agent anonymization module (GAP-2) and language normalization (GAP-5) | Zero progress — next sprint |
+| P4 | Formal ISO 55001 pre-audit | Phase 4 |
 
 ---
 
@@ -957,7 +1039,7 @@ We are seeking cloud credits and startup program support:
 **Evgeny Shokk** — Founder, AIMS Platform
 
 - 📧 Evgeny.shock@gmail.com
-- 🌐 [Website](https://axiomsphereaassistanceaims.github.io/AIMS-Agent-Orchestrator/)
+- 🌐 [Website](https://axiomsphereassistanceaims.github.io/AxiOMSphere/)
 - 💼 [LinkedIn](https://www.linkedin.com/in/evgeny-shokk-54781716)
 
 ---
@@ -966,4 +1048,4 @@ We are seeking cloud credits and startup program support:
 
 [Apache License 2.0](LICENSE)
 
-> Built on open-source: Python · Ollama · Qwen3 · Qwen2.5 · Google Gemini · Anthropic Claude · python-telegram-bot · python-docx · NIM OCR · Redis · Qdrant · Prometheus · Grafana
+> Built on open-source: Python · Ollama · Qwen3 · Qwen2.5 · python-telegram-bot · python-docx · Redis · Qdrant · Prometheus · Grafana · external cloud review gate
