@@ -12,15 +12,15 @@
 
 ## What Is AxiOMSphere
 
-AxiOMSphere is a development-stage multi-agent platform that coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations.
+AxiOMSphere is a development-stage multi-agent platform that coordinates specialised AI agents throughout the evolution of an industrial operating organisation: first, to develop the structured documents and work products required for project startup; then, to organise and synchronise departmental functions, responsibilities and interfaces; and, as the organisation matures, to support company specialists in developing, reviewing and updating the management system in alignment with company standards, applicable industry regulations and shareholder expectations.
 
-The platform follows ISO 55001 requirements and ISO 55002 guidance as its AIMS management-system framework basis. It is structured around the GFMAM Asset Management Landscape as its broader process-framework reference.
+The platform follows ISO 55001 requirements and ISO 55002 guidance as the foundation of its Asset Integrity Management System (AIMS) framework, while the GFMAM Asset Management Landscape provides the broader reference for its asset-management capability and lifecycle architecture.
 
 **Brand meaning:**
 - **Axiom** — a foundational, self-evident principle; the platform produces structured, traceable management-system work products from first principles
 - **AIMS** — Asset Integrity Management System; the operating framework the platform is designed to build and sustain
 - **O&M** — Operations and Maintenance; the production and reliability context the AIMS framework governs
-- **Sphere** — a coherent, integrated operating environment where all AIMS processes function together
+- **Sphere** — a coherent, integrated operating environment in which all AIMS processes function together as a goal-driven, self-orchestrating, self-monitoring, self-learning and self-restoring system, continuously aligned with the company’s objectives, approved tasks and human governance.
 
 ---
 
