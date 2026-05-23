@@ -23,7 +23,7 @@ Telegram Bot: оркестрация, мониторинг Task Registry, ген
     TASK_REGISTRY_URL                 — http://localhost:8765
     TASK_REGISTRY_STUCK_MINUTES       — порог зависших задач в минутах (default: 15)
     TASK_REGISTRY_MONITOR_INTERVAL    — интервал мониторинга в секундах (default: 900)
-    QWEN_PC_ASSIST_STACK              — 1: прогрев 70B + PC Qwen при каждом сообщении
+    QWEN_PC_ASSIST_STACK              — legacy toggle; avoid enabling unless explicitly needed
     AXI_LLM_LOCAL_FIRST               — 1: сначала Ollama, fallback → Anthropic. 0 (default): облако.
 """
 
@@ -57,6 +57,34 @@ _CORE_PATH = str(Path(__file__).resolve().parent)
 if _CORE_PATH not in _sys.path:
     _sys.path.insert(0, _CORE_PATH)
 from core.metrics import record_llm_call  # noqa: E402
+try:
+    from models.model_registry import resolve_slot as _resolve_slot
+except Exception:
+    _resolve_slot = None  # type: ignore[assignment]
+try:
+    from agents.skills.contextual_standard_discovery_and_document_review import run_axi_advisory_mode
+except Exception:
+    run_axi_advisory_mode = None  # type: ignore[assignment]
+try:
+    from orchestrator_planning.telegram_plan_day_live import (
+        FEATURE_FLAG as _PLAN_DAY_LIVE_FLAG,
+        render_live_plan_day_or_disabled as _render_live_plan_day_or_disabled,
+    )
+except Exception:
+    _PLAN_DAY_LIVE_FLAG = "AIMS_ENABLE_TELEGRAM_PLAN_DAY_READ_ONLY"
+    _render_live_plan_day_or_disabled = None  # type: ignore[assignment]
+try:
+    from axi_demo import (
+        cmd_demo,
+        cmd_demo_stop,
+        cmd_demo_help,
+        demo_start_callback,
+        demo_cancel_callback,
+        demo_about_callback,
+    )
+    _DEMO_AVAILABLE = True
+except Exception:
+    _DEMO_AVAILABLE = False
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 
@@ -97,6 +125,16 @@ AXI_CHAT_SHOW_SOURCES = os.environ.get("AXI_CHAT_SHOW_SOURCES", "0").strip().low
 AXI_CHAT_SHOW_TASK_REGISTRY_WARNINGS = os.environ.get(
     "AXI_CHAT_SHOW_TASK_REGISTRY_WARNINGS", "0"
 ).strip().lower() in ("1", "true", "yes", "on")
+AIMS_ENABLE_CONTEXTUAL_STANDARD_DISCOVERY = os.environ.get(
+    "AIMS_ENABLE_CONTEXTUAL_STANDARD_DISCOVERY", "0"
+).strip().lower() in ("1", "true", "yes", "on")
+AIMS_CONTEXTUAL_TRAINING_EXPORT_DIR = os.environ.get(
+    "AIMS_CONTEXTUAL_TRAINING_EXPORT_DIR",
+    "/data/traini_contextual_standard_discovery",
+).strip()
+AIMS_CONTEXTUAL_TRAINING_EXPORT_ENABLED = os.environ.get(
+    "AIMS_CONTEXTUAL_TRAINING_EXPORT_ENABLED", "0"
+).strip().lower() in ("1", "true", "yes", "on")
 
 TASK_REGISTRY_STUCK_MINUTES  = float(os.environ.get("TASK_REGISTRY_STUCK_MINUTES", "15"))
 TASK_REGISTRY_MONITOR_INTERVAL = int(os.environ.get("TASK_REGISTRY_MONITOR_INTERVAL", "900"))
@@ -129,10 +167,65 @@ AXI_GROUP_ALLOW_ALL_MEMBERS = os.environ.get("AXI_GROUP_ALLOW_ALL_MEMBERS", "1")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "").strip()
 ANTHROPIC_MODEL   = os.environ.get("AXI_ANTHROPIC_MODEL", "claude-sonnet-4-6").strip()
 
+# Document-generation model roles.
+# Creator (120B): local draft / rejected candidate — document structure generation target.
+# Teacher / Audit: external OmniRoute models — standards discovery, quality judging, audit.
+AIMS_DOCUMENT_CREATOR_MODEL: str = (
+    os.environ.get("AIMS_DOCUMENT_CREATOR_MODEL")
+    or os.environ.get("AIMS_LOCAL_DRAFT_MODEL")
+    or (_resolve_slot("120") if _resolve_slot else "")
+)
+AIMS_DOCUMENT_TEACHER_MODEL: str = (
+    os.environ.get("AIMS_DOCUMENT_TEACHER_MODEL")
+    or os.environ.get("OMNIROUTE_TEACHER_MODEL")
+    or "doc-training-standards-best"
+)
+AIMS_DOCUMENT_AUDIT_MODEL: str = (
+    os.environ.get("AIMS_DOCUMENT_AUDIT_MODEL")
+    or os.environ.get("OMNIROUTE_AUDIT_MODEL")
+    or "doc-training-pair-audit-combo"
+)
+
+# ChatLLM conversational layer — 14Bv16 redundant pool.
+# Roles: user-facing chat, clarification, summaries, lightweight workflow guidance,
+# action classification fallback when 32B is busy.
+# Two instances: PC Andrey (RTX 4070 Ti 16 GB — always running) and DGX Spark (on-demand).
+AIMS_CHATLLM_MODEL: str = (
+    os.environ.get("AIMS_CHATLLM_MODEL")
+    or os.environ.get("AIMS_CHAT_MODEL")
+    or (_resolve_slot("14") if _resolve_slot else "")
+)
+AIMS_CHATLLM_PC_URL: str = (
+    os.environ.get("AIMS_CHATLLM_PC_URL")
+    or os.environ.get("PC_OLLAMA_URL")
+    or f"http://{os.environ.get('ANDREI_HOST', '10.77.77.2')}:11434"
+)
+AIMS_CHATLLM_DGX_URL: str = (
+    os.environ.get("AIMS_CHATLLM_DGX_URL")
+    or os.environ.get("OLLAMA_LOCAL_URL", "http://localhost:11434")
+)
+
+# Workflow / repair / coding / primary action classifier — 32B on DGX.
+# Never route document creation here.
+AIMS_WORKFLOW_MODEL: str = (
+    os.environ.get("AIMS_WORKFLOW_MODEL")
+    or os.environ.get("AIMS_REPAIR_MODEL")
+    or "axi_omi_sphere"
+)
+
+# 120B training data pool root — organized by pair type.
+AIMS_DOC_CREATOR_TRAINING_DIR: Path = Path(
+    os.environ.get("AIMS_DOC_CREATOR_TRAINING_DIR", "aims_workspace/training/document_creator_120b")
+)
+
 _PENDING_ANALYZE: dict[int, dict[str, object]] = {}
 _PENDING_VIDEO: dict[int, dict[str, object]] = {}
 _PENDING_DOCFILL: dict[int, dict[str, object]] = {}  # step: await_blank | await_example | validating | await_approval
 _DOCFILL_VRAM_QUEUE: dict[int, str] = {}            # chat_id → blank_text, waiting for VRAM headroom
+_PENDING_DOCREVIEW: dict[int, dict[str, object]] = {}   # step: await_doc | ready
+_PENDING_DOC_INTAKE: dict[int, dict[str, object]] = {}  # step: await_more | await_task | await_mode
+_DOC_INTAKE_HANDLED_CALLBACKS: set[str] = set()  # Telegram callback_query.id de-duplication
+_DOC_DELIVERY_FEEDBACK_PENDING: dict[str, dict[str, object]] = {}
 DOCFILL_VRAM_MIN_FREE_GB: float = float(os.environ.get("DOCFILL_VRAM_MIN_FREE_GB", "36"))
 _VEO_GEN_BUSY: set[int] = set()
 _VEO_GEN_BUSY_LOCK = asyncio.Lock()
@@ -148,7 +241,41 @@ _AXI_DIALOG_LOCK = Lock()
 _AXI_PENDING_ANALYZE_PATH = AIMS_WORKSPACE / "axi_pending_analyze_state.json"
 _AXI_PENDING_LOCK = Lock()
 
+# ── Document intake router ─────────────────────────────────────────────────────
+_DI_INTAKE_DIR   = Path(os.environ.get("TELEGRAM_DOC_INTAKE_DIR", "/data/telegram_intake/cases"))
+_DI_INBOX_DIR    = Path(os.environ.get("DOCS_AGENT_INBOX_DIR",    "/data/docs_agent/inbox"))
+_DI_SYNC_ENABLED = os.environ.get("DOCS_AGENT_TELEGRAM_SYNC_ENABLED", "0") == "1"
+
 # ── System prompt (axi_bot_refocus_patch.md) ───────────────────────────────────
+
+
+def _load_axi_skill_context() -> str:
+    """Load only Axi runtime skill pack for internal prompt injection."""
+    try:
+        from agents.agent_skill_loader import load_agent_skill_text
+
+        text = load_agent_skill_text("axi")
+        if text:
+            digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+            log.info("Axi skill pack loaded: agent=axi chars=%d sha256=%s", len(text), digest)
+        else:
+            log.warning("Axi skill pack empty: agent=axi")
+        return text or ""
+    except Exception as exc:
+        log.warning("Axi skill pack load failed: %s", exc)
+        return ""
+
+
+AXI_SKILL_CONTEXT = _load_axi_skill_context()
+
+
+def _axi_system_prompt(system_override: str | None = None) -> str:
+    """Build internal Axi system prompt with optional runtime skill context."""
+    base = system_override if system_override is not None else AXI_SYSTEM_PROMPT
+    if AXI_SKILL_CONTEXT:
+        return base + "\n\n# Axi runtime skill pack\n" + AXI_SKILL_CONTEXT
+    return base
+
 
 AXI_SYSTEM_PROMPT = os.environ.get(
     "AXI_SYSTEM_PROMPT",
@@ -330,7 +457,7 @@ async def _gemini_reply(
     nim_url = os.environ.get("NVIDIA_NIM_URL", "http://127.0.0.1:8082").rstrip("/")
     nim_key = os.environ.get("NVIDIA_NIM_API_KEY", "")
 
-    sys_prompt = system_override if system_override is not None else AXI_SYSTEM_PROMPT
+    sys_prompt = _axi_system_prompt(system_override)
     user_text = f"{extra_context}\n\n{text}".strip() if extra_context else text
 
     timeout = _httpx.Timeout(60.0, connect=10.0)
@@ -386,7 +513,7 @@ async def _anthropic_reply(
     auth_token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
     model = os.environ.get("AIMS_ANTHROPIC_MODEL", ANTHROPIC_MODEL)
 
-    sys_prompt = system_override if system_override is not None else AXI_SYSTEM_PROMPT
+    sys_prompt = _axi_system_prompt(system_override)
     user_text = f"{extra_context}\n\n{text}".strip() if extra_context else text
     # Cloud fallback: truncate very large payloads to avoid 90s timeout
     _CLOUD_MAX_CHARS = 40_000
@@ -499,7 +626,7 @@ def _axi_llm_local_first_enabled() -> bool:
 
 
 # Semaphore: at most AXI_LLM_MAX_CONCURRENT heavy LLM calls at once.
-# Prevents stacking two 32B–72B inferences on the DGX GPU simultaneously.
+# Prevents stacking large local inferences on the DGX GPU simultaneously.
 _llm_semaphore: asyncio.Semaphore | None = None
 
 
@@ -569,12 +696,12 @@ def _local_ollama_reply_sync(
     extra_context: str = "",
     system_override: str | None = None,
 ) -> str:
-    """axi_omi_sphere (qwen3:32b-q8_0) on DGX — primary local path for Axi responses."""
+    """Local Axi response path resolved by environment/model routing."""
     from ollama_resolve import effective_ollama_base_url, heavy_ollama_model_name
 
     from omi_ollama import ollama_chat
 
-    sys_prompt = system_override if system_override is not None else AXI_SYSTEM_PROMPT
+    sys_prompt = _axi_system_prompt(system_override)
     user_text = f"{extra_context}\n\n{text}".strip() if extra_context else text
     messages = [
         {"role": "system", "content": sys_prompt},
@@ -1277,6 +1404,35 @@ async def _handle_standards_check(
         if recent_doc_text:
             file_texts.append(f"[FILE: {recent_doc_name}]\n{recent_doc_text[:8000]}")
 
+    if AIMS_ENABLE_CONTEXTUAL_STANDARD_DISCOVERY and run_axi_advisory_mode is not None:
+        try:
+            merged_doc_text = "\n\n".join(file_texts)[:24000] if file_texts else None
+            advisory = run_axi_advisory_mode(
+                text,
+                merged_doc_text,
+                force_fixture=True,
+                export_training_case=AIMS_CONTEXTUAL_TRAINING_EXPORT_ENABLED,
+                training_output_dir=AIMS_CONTEXTUAL_TRAINING_EXPORT_DIR,
+            )
+            if progress_msg is not None:
+                try:
+                    await progress_msg.delete()
+                except Exception:
+                    pass
+            _TG_LIMIT = 4000
+            chunks = [advisory[i : i + _TG_LIMIT] for i in range(0, len(advisory), _TG_LIMIT)] if advisory else ["…"]
+            for chunk in chunks:
+                await update.message.reply_text(chunk)
+            if _chat_id:
+                _dialog_append(_chat_id, "assistant", advisory[:2000])
+            _tr_done(
+                tr_id,
+                summary=f"contextual_standard_discovery:files={len(file_texts)}:fixture=1",
+            )
+            return
+        except Exception as e:
+            log.warning("contextual_standard_discovery route failed, fallback to legacy standards flow: %s", e)
+
     # Gather Omi registry context (top-5 docs by keyword)
     db_context = ""
     try:
@@ -1392,13 +1548,21 @@ async def _handle_standards_check(
                 await progress_msg.delete()
             except Exception:
                 pass
+        caption_text = (
+            f"{AXI_NAME}: ✅ {docx_path.name} ({dt:.0f}s)\n"
+            + ("Knowledge base updated for future generations." if saved_to_kb else "Knowledge base update skipped.")
+        )
         with docx_path.open("rb") as fh:
             await update.message.reply_document(
                 document=fh,
                 filename=docx_path.name,
-                caption=(
-                    f"{AXI_NAME}: ✅ {docx_path.name} ({dt:.0f}s)\n"
-                    + ("Knowledge base updated for future generations." if saved_to_kb else "Knowledge base update skipped.")
+                caption=caption_text,
+                reply_markup=_document_delivery_feedback_markup(
+                    _chat_id,
+                    docx_path,
+                    caption=caption_text,
+                    original_request=text,
+                    source="standards_corrected_document",
                 ),
             )
         if _chat_id:
@@ -1731,14 +1895,22 @@ async def _handle_db_strategy(
         final_content, "preservation_strategy", AXI_RESULTS_DIR, title=first_line,
     )
 
+    caption_text = (
+        f"📄 {first_line}\n"
+        f"Источники: {len(docs_with_content)} внутренних документов AIMS"
+        + (" + внешние стандарты" if external_note and "не удалось" not in external_note else "")
+    )
     with docx_path.open("rb") as fh:
         await update.message.reply_document(
             document=fh,
             filename=docx_path.name,
-            caption=(
-                f"📄 {first_line}\n"
-                f"Источники: {len(docs_with_content)} внутренних документов AIMS"
-                + (" + внешние стандарты" if external_note and "не удалось" not in external_note else "")
+            caption=caption_text,
+            reply_markup=_document_delivery_feedback_markup(
+                update.effective_chat.id if update.effective_chat else None,
+                docx_path,
+                caption=caption_text,
+                original_request=text,
+                source="preservation_strategy_document",
             ),
         )
     _tr_done(tr_id, summary=f"db_strategy:{docx_path.name}:{len(docs)}docs")
@@ -1747,7 +1919,7 @@ async def _handle_db_strategy(
 # ── VRAM warm-up ───────────────────────────────────────────────────────────────
 
 def _schedule_vram_warmup() -> None:
-    """Background warm: 70B on Spark + Qwen on PC (QWEN_PC_ASSIST_STACK); после снятия 70B — прогрев малой."""
+    """Legacy background warm path controlled by QWEN_PC_ASSIST_STACK; disabled unless explicitly needed."""
     try:
         from ollama_resolve import (
             effective_ollama_base_url,
@@ -1821,28 +1993,17 @@ def _strip_axi_prefix(text: str) -> str:
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if not _chat_allowed(update):
         return
-    lang = _reply_lang(update.message.text or "")
     keyboard = InlineKeyboardMarkup([[
-        InlineKeyboardButton("🚀 Начать работу с Axi", callback_data="axi_activate"),
+        InlineKeyboardButton("🚀 Start", callback_data="axi_activate"),
     ]])
-    if lang == "ru":
-        await update.message.reply_text(
-            f"*{AXI_NAME}* — оркестратор AIMS.\n\n"
-            "Я обрабатываю внешние задачи: веб-поиск, анализ документов, генерация Word-файлов.\n"
-            "Omi присылает результаты напрямую, но задачи идут через Axi.\n\n"
-            "Нажмите кнопку или напишите «Axi, …» для начала работы.",
-            parse_mode="Markdown",
-            reply_markup=keyboard,
-        )
-    else:
-        await update.message.reply_text(
-            f"*{AXI_NAME}* — AIMS Orchestrator.\n\n"
-            "I handle external tasks: web search, document analysis, Word file generation.\n"
-            "Omi can deliver results directly, but all tasks are routed through Axi.\n\n"
-            "Press the button or write 'Axi, …' to start.",
-            parse_mode="Markdown",
-            reply_markup=keyboard,
-        )
+    await update.message.reply_text(
+        f"*{AXI_NAME}* — AIMS Orchestrator.\n\n"
+        "I handle external tasks: web search, document analysis, Word file generation.\n"
+        "Omi can deliver results directly, but all tasks are routed through Axi.\n\n"
+        "Press *Start* or write 'Axi, …' to begin.",
+        parse_mode="Markdown",
+        reply_markup=keyboard,
+    )
 
 
 async def _cmd_start_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
@@ -1854,10 +2015,10 @@ async def _cmd_start_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
     if not _chat_allowed(update):
         return
     user = update.effective_user
-    name = user.first_name if user else "Пользователь"
+    name = user.first_name if user else "User"
     await query.message.reply_text(
-        f"👋 {name}, Axi активирован.\n"
-        "Пишите задачи — я готов к работе.",
+        f"👋 {name}, Axi is ready.\n"
+        "Send your tasks — I'm here to help.",
     )
 
 
@@ -1876,6 +2037,37 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         "Для генерации Word: 'сделай отчёт в Word' / 'generate report as docx'"
     )
     await update.message.reply_text(text, parse_mode="Markdown")
+
+
+async def cmd_plan(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not update.message:
+        return
+    arg = " ".join(ctx.args or []).strip().lower()
+    command_text = f"/plan {arg}".strip()
+    if not arg:
+        await update.message.reply_text(
+            "This phase enables only `/plan day` in read-only mode.",
+            parse_mode="Markdown",
+        )
+        return
+
+    if _render_live_plan_day_or_disabled is None:
+        await update.message.reply_text(
+            "Plan day live view is unavailable (backend import failed).",
+        )
+        return
+
+    if command_text != "/plan day":
+        await update.message.reply_text(
+            "This phase enables only `/plan day`.\n"
+            "No execution performed. No approval performed. No repair triggered.\n"
+            "READ_ONLY_PREVIEW_NOT_LIVE",
+            parse_mode="Markdown",
+        )
+        return
+
+    text = _render_live_plan_day_or_disabled(command_text)
+    await update.message.reply_text(text)
 
 
 async def cmd_quality_report(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
@@ -2648,6 +2840,13 @@ async def _process_analyze_batch(
                                 document=fh,
                                 filename=result_xlsx.name,
                                 caption=caption_text,
+                                reply_markup=_document_delivery_feedback_markup(
+                                    chat_id,
+                                    result_xlsx,
+                                    caption=caption_text,
+                                    original_request=prompt,
+                                    source="xlsx_updated_document",
+                                ),
                             )
                         break
                     except Exception as _send_err:
@@ -2693,6 +2892,13 @@ async def _process_analyze_batch(
                             filename=docx_path.name,
                             caption=caption_text,
                             parse_mode="Markdown",
+                            reply_markup=_document_delivery_feedback_markup(
+                                chat_id,
+                                docx_path,
+                                caption=caption_text,
+                                original_request=prompt,
+                                source="generated_batch_document",
+                            ),
                         )
                     break
                 except Exception as _send_err:
@@ -2749,7 +2955,7 @@ async def _process_analyze_batch(
                         continue
                     doc_text = _read_document_text(file_path)
                     file_name = file_entry.get("name", file_path.name) if isinstance(file_entry, dict) else file_path.name
-                    doc_texts.append({"name": file_name, "text": doc_text[:50000]})
+                    doc_texts.append({"name": file_name, "text": doc_text[:50000], "path": str(file_path)})
                 except Exception as e:
                     file_name = file_entry.get("name", "unknown") if isinstance(file_entry, dict) else str(file_entry)
                     log.warning("Failed to read %s: %s", file_name, e)
@@ -2773,75 +2979,82 @@ async def _process_analyze_batch(
 
             existing_memo = _find_existing_training_pair(content_hash)
             if existing_memo:
-                await bot.send_message(
-                    chat_id=chat_id,
-                    text=(
+                await _safe_send_message(
+                    bot,
+                    chat_id,
+                    (
                         f"ℹ️ Обучающая пара для этих файлов уже создана ранее:\n"
-                        f"📄 Файл: `{existing_memo['memo_file']}`\n"
-                        f"📅 Дата: {existing_memo['created']}\n"
-                        f"📊 Оценка локальной модели: {existing_memo.get('local_score', 'не оценено')}\n\n"
+                        f"Файл: {_tg_plain(existing_memo['memo_file'])}\n"
+                        f"Дата: {_tg_plain(existing_memo['created'])}\n"
+                        f"Оценка локальной модели: {_tg_plain(existing_memo.get('local_score', 'не оценено'))}\n\n"
                         f"Результат можно посмотреть в мастер-файле."
                         if lang == "ru" else
                         f"ℹ️ Training pair for these files already exists:\n"
-                        f"📄 File: `{existing_memo['memo_file']}`\n"
-                        f"📅 Date: {existing_memo['created']}\n"
-                        f"📊 Local model score: {existing_memo.get('local_score', 'not evaluated')}\n\n"
+                        f"File: {_tg_plain(existing_memo['memo_file'])}\n"
+                        f"Date: {_tg_plain(existing_memo['created'])}\n"
+                        f"Local model score: {_tg_plain(existing_memo.get('local_score', 'not evaluated'))}\n\n"
                         f"Result available in master file."
                     ),
-                    parse_mode="Markdown"
                 )
                 _tr_done(tr_id, summary=f"training_pair_duplicate:{existing_memo['memo_file']}")
                 return
 
-            # Step 2: Extract context using llama405b
-            # For training pair: use first doc as blank template, second as filled example
-            blank_text = doc_texts[0]["text"] if len(doc_texts) > 0 else ""
-            filled_text = doc_texts[1]["text"] if len(doc_texts) > 1 else doc_texts[0]["text"]
+            # Step 2: Detect template/reference roles from filenames, then extract context
+            blank_doc, filled_doc, _role_reason = _detect_template_reference_roles(doc_texts)
+            blank_text = blank_doc.get("text", "") if blank_doc else ""
+            filled_text = filled_doc.get("text", blank_text) if filled_doc else blank_text
+            blank_name_detected = blank_doc.get("name", doc_texts[0]["name"] if doc_texts else "blank") if blank_doc else ""
+            log.info("doctuning role detection: %s", _role_reason)
             context_result = await asyncio.to_thread(_extract_doc_context_sync, blank_text, filled_text)
 
             if not context_result or "error" in context_result:
-                await bot.send_message(
-                    chat_id=chat_id,
-                    text=(
-                        f"⚠️ Ошибка извлечения контекста: {context_result.get('error', 'unknown')}"
-                        if lang == "ru" else
-                        f"⚠️ Context extraction error: {context_result.get('error', 'unknown')}"
-                    )
-                )
-                _tr_done(tr_id, summary="training_pair_context_failed")
+                err_code = context_result.get("error", "unknown") if context_result else "unknown"
+                if err_code == "omniroute_session_limit":
+                    user_msg = "External model session limit is still active after cleanup. Please retry in a few minutes."
+                elif err_code == "omniroute_rate_limited":
+                    user_msg = "External model is rate-limited. Please wait a few minutes and retry."
+                else:
+                    user_msg = f"Context extraction error: {err_code}"
+                await bot.send_message(chat_id=chat_id, text=f"⚠️ {user_msg}")
+                _tr_done(tr_id, summary=f"training_pair_context_failed:{err_code}")
                 return
 
-            await bot.send_message(
-                chat_id=chat_id,
-                text=(
-                    f"✅ Контекст извлечен:\n"
-                    f"• Тип документа: {context_result.get('doc_type', 'unknown')}\n"
-                    f"• Стандарты: {', '.join(context_result.get('standards', []))}\n"
-                    f"• Ключевые поля: {len(context_result.get('key_fields', []))}"
-                    if lang == "ru" else
+            # Track file format for xlsx-aware output
+            _blank_suffix = Path(blank_doc.get("name", "")).suffix.lower() if blank_doc else ""
+            _filled_suffix = Path(filled_doc.get("name", "")).suffix.lower() if filled_doc else ""
+            _preferred_fmt = "xlsx" if _blank_suffix == ".xlsx" or _filled_suffix == ".xlsx" else "docx"
+
+            _PENDING_DOCFILL[chat_id] = {
+                "step": "await_standards_approval",
+                "source": "batch_training_pair",
+                "context_result": context_result,
+                "blank_name": blank_name_detected,
+                "filled_name": filled_doc.get("name", "") if filled_doc else "",
+                "blank_path": blank_doc.get("path", "") if blank_doc else "",
+                "filled_path": filled_doc.get("path", "") if filled_doc else "",
+                "content_hash": content_hash,
+                "blank_suffix": _blank_suffix,
+                "filled_suffix": _filled_suffix,
+                "preferred_output_format": _preferred_fmt,
+                "blank_text": blank_text,
+                "filled_text": filled_text,
+            }
+
+            standards_list = context_result.get("standards", [])
+            standards_str = ", ".join(standards_list) if standards_list else "—"
+            await _safe_send_message(
+                bot,
+                chat_id,
+                (
                     f"✅ Context extracted:\n"
-                    f"• Document type: {context_result.get('doc_type', 'unknown')}\n"
-                    f"• Standards: {', '.join(context_result.get('standards', []))}\n"
-                    f"• Key fields: {len(context_result.get('key_fields', []))}"
-                )
-            )
-
-            # Step 3: Save training pair memo
-            memo_path = _save_doctuning_memo(context_result, doc_texts[0]["name"], content_hash)
-
-            await bot.send_message(
-                chat_id=chat_id,
-                text=(
-                    f"✅ Обучающая пара сохранена: `{memo_path.name}`\n\n"
-                    f"Следующий шаг: используйте эту пару для дообучения модели."
-                    if lang == "ru" else
-                    f"✅ Training pair saved: `{memo_path.name}`\n\n"
-                    f"Next step: use this pair for model fine-tuning."
+                    f"Document type: {_tg_plain(context_result.get('doc_type', 'unknown'))}\n"
+                    f"Standards: {_tg_plain(standards_str)}\n"
+                    f"Key terms: {len(context_result.get('key_terms', []))}\n\n"
+                    "Reply yes or continue to generate the revised reference candidate, "
+                    "or cancel to discard."
                 ),
-                parse_mode="Markdown"
             )
-
-            _tr_done(tr_id, summary=f"training_pair_saved:{memo_path.name}")
+            _tr_done(tr_id, summary="training_pair_awaiting_confirmation")
         else:
             answer = await _llm_reply(request_text, use_search=use_search)
             dt = time.perf_counter() - t0
@@ -3019,9 +3232,12 @@ def _queue_to_omi_batch_inbox(
 ) -> Path:
     """
     Put file into Omi OCR/batch pipeline inbox.
-    If same content already exists, returns existing path.
+    Supports cross-device moves (/tmp → /data) via shutil.copy2 fallback.
+    If same content already exists, returns existing path and removes src.
     """
+    import errno
     import hashlib
+    import shutil
 
     inbox = AIMS_WORKSPACE / "batch_inbox"
     inbox.mkdir(parents=True, exist_ok=True)
@@ -3029,6 +3245,7 @@ def _queue_to_omi_batch_inbox(
     dest = inbox / original_name
     if dest.exists():
         if hashlib.sha256(dest.read_bytes()).hexdigest() == incoming_sha:
+            src_path.unlink(missing_ok=True)
             return dest
         stem, suffix = Path(original_name).stem, Path(original_name).suffix
         for n in range(2, 100):
@@ -3036,7 +3253,20 @@ def _queue_to_omi_batch_inbox(
             if not cand.exists():
                 dest = cand
                 break
-    src_path.replace(dest)
+    try:
+        src_path.replace(dest)
+        log.info("queue_to_omi_batch_inbox: queued %s -> %s", src_path, dest)
+    except OSError as e:
+        if e.errno == errno.EXDEV:
+            shutil.copy2(str(src_path), str(dest))
+            if not dest.exists() or dest.stat().st_size == 0:
+                raise RuntimeError(
+                    f"queue_to_omi_batch_inbox: copy succeeded but dest missing/empty: {dest}"
+                )
+            src_path.unlink(missing_ok=True)
+            log.warning("queue_to_omi_batch_inbox: cross-device move; copied %s -> %s", src_path, dest)
+        else:
+            raise
     if meta:
         meta_path = dest.with_name(dest.name + ".axi.json")
         try:
@@ -3173,9 +3403,24 @@ async def handle_file_upload(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> 
                 async with _VEO_GEN_BUSY_LOCK:
                     _VEO_GEN_BUSY.discard(chat_id)
 
-    # ── Docfill upload interception ──────────────────────────────────────────
+    # ── Priority 1: Single-doc review ────────────────────────────────────────
+    if chat_id in _PENDING_DOCREVIEW and _PENDING_DOCREVIEW[chat_id].get("step") == "await_doc":
+        await _handle_docreview_file(update, ctx, chat_id)
+        return
+
+    # ── Priority 2: Docfill upload interception ───────────────────────────────
     if chat_id in _PENDING_DOCFILL and _PENDING_DOCFILL[chat_id].get("step") in ("await_blank", "await_example"):
         await _handle_docfill_file(update, ctx, chat_id)
+        return
+
+    # ── Priority 3: Doc intake — add to active session ────────────────────────
+    if chat_id in _PENDING_DOC_INTAKE and _PENDING_DOC_INTAKE[chat_id].get("step") == "await_more":
+        await _di_add_document(update, ctx, chat_id)
+        return
+
+    # ── Priority 4: Doc intake — start new session for document uploads ───────
+    if update.message.document:
+        await _di_start_session(update, ctx, chat_id)
         return
 
     state = _get_pending_analyze_state(chat_id)
@@ -3569,23 +3814,28 @@ Special cases that are ALWAYS tasks:
 Respond with exactly one word: question, task, or unclear"""
 
         try:
-            # Use small model on PC Andrei for fast classification
+            # ChatLLM 14Bv16 for intent classification — PC Andrey first, DGX fallback
             import httpx
-            pc_andrei_url = os.environ.get("ANDREI_HOST", "10.77.77.2")
-            ollama_url = f"http://{pc_andrei_url}:11434/api/generate"
+            _classify_payload = {
+                "model": AIMS_CHATLLM_MODEL,
+                "prompt": classification_prompt,
+                "stream": False,
+                "options": {"temperature": 0.1, "num_predict": 10},
+            }
+            _classify_urls = [
+                f"{AIMS_CHATLLM_PC_URL.rstrip('/')}/api/generate",
+                f"{AIMS_CHATLLM_DGX_URL.rstrip('/')}/api/generate",
+            ]
+            response = None
+            for _url in _classify_urls:
+                try:
+                    response = httpx.post(_url, json=_classify_payload, timeout=10.0)
+                    if response.status_code == 200:
+                        break
+                except Exception:
+                    response = None
 
-            response = httpx.post(
-                ollama_url,
-                json={
-                    "model": "qwen2.5:14b",  # Fast classification model
-                    "prompt": classification_prompt,
-                    "stream": False,
-                    "options": {"temperature": 0.1, "num_predict": 10}
-                },
-                timeout=10.0
-            )
-
-            if response.status_code == 200:
+            if response is not None and response.status_code == 200:
                 result = response.json().get("response", "").strip().lower()
                 if "question" in result:
                     return "question"
@@ -3749,9 +3999,9 @@ Respond with exactly one word: question, task, or unclear"""
             if progress_msg is not None:
                 try:
                     await progress_msg.edit_text(
-                        f"⏱ {AXI_NAME}: формирую документ (72B)…"
+                        f"⏱ {AXI_NAME}: формирую документ через AIMS pipeline…"
                         if lang == "ru" else
-                        f"⏱ {AXI_NAME}: generating document (72B)…"
+                        f"⏱ {AXI_NAME}: generating document through AIMS pipeline…"
                     )
                 except Exception:
                     pass
@@ -3856,6 +4106,13 @@ Respond with exactly one word: question, task, or unclear"""
                     document=fh,
                     filename=docx_path.name,
                     caption=f"{AXI_NAME}: ✅ {docx_path.name} ({dt:.0f}с)\n{source_hint}{task_hint}",
+                    reply_markup=_document_delivery_feedback_markup(
+                        _chat_id,
+                        docx_path,
+                        caption=f"{AXI_NAME}: ✅ {docx_path.name} ({dt:.0f}с)\n{source_hint}{task_hint}",
+                        original_request=text,
+                        source="generated_chat_document",
+                    ),
                 )
             _dialog_append(_chat_id, "assistant", f"[doc:{docx_path.name}]")
             _tr_done(_tr_id, summary=f"docx:{docx_path.name}")
@@ -3946,74 +4203,820 @@ def _build_validate_system(standards: list[str]) -> str:
 
 _DOCFILL_CONTEXT_SYSTEM = (
     "You are a technical document classifier. Analyze the given blank form and filled example. "
+    "Select standards DIRECTLY relevant to what this document IS — its type and purpose. "
+    "For document templates, abstract forms, or reporting documents: prefer ISO 55001 (asset management), "
+    "ISO 9001 (quality), or records/lifecycle standards. "
+    "Do NOT suggest equipment inspection, hot work permit, confined space entry, or HSE procedure standards "
+    "unless the document explicitly covers those operations. "
     "Respond ONLY with valid JSON — no markdown fences, no extra text:\n"
     '{"doc_type": "<type>", "equipment_type": "<equipment or process>", '
-    '"industry": "<sector>", "key_terms": ["<term>", ...]}'
+    '"industry": "<sector>", "key_terms": ["<term>", ...], "standards": ["<standard>", ...]}'
 )
 
 
-def _extract_doc_context_sync(blank_text: str, filled_text: str) -> dict:
-    """Ask Omnirouter (NVIDIA NIM) to classify the document and extract context for standards search."""
+def _detect_template_reference_roles(doc_texts: list[dict]) -> tuple[dict, dict, str]:
+    """Return (blank_doc, filled_doc, reason) using filename hints then content density.
+
+    Filename keywords take priority over content analysis:
+      template hints : template, blank, form, empty
+      reference hints: completed, filled, reference, example, gemini, chatgpt
+
+    Diagnostic snippet:
+      blank, filled, reason = _detect_template_reference_roles([
+          {"name": "Completed_Downstream_Abstract_Lifecycle_ROI_Asset_Preservation_Chatgpt.xlsx", "text": "a b c"},
+          {"name": "Abstract Downstream template.xlsx", "text": "_ _ _"},
+      ])
+      assert filled["name"].startswith("Completed"), reason
+      assert "template" in blank["name"], reason
+    """
+    TEMPLATE_HINTS = {"template", "blank", "form", "empty"}
+    REFERENCE_HINTS = {"completed", "filled", "reference", "example", "gemini", "chatgpt"}
+
+    def _score(name: str) -> tuple[int, int]:
+        n = name.lower()
+        return (
+            sum(1 for h in TEMPLATE_HINTS if h in n),
+            sum(1 for h in REFERENCE_HINTS if h in n),
+        )
+
+    if len(doc_texts) >= 2:
+        t0, r0 = _score(doc_texts[0].get("name", ""))
+        t1, r1 = _score(doc_texts[1].get("name", ""))
+
+        if (r0 > t0) and (t1 > r1):
+            return (
+                doc_texts[1], doc_texts[0],
+                f"filename: '{doc_texts[1]['name']}' → template, '{doc_texts[0]['name']}' → reference",
+            )
+        if (t0 > r0) and (r1 > t1):
+            return (
+                doc_texts[0], doc_texts[1],
+                f"filename: '{doc_texts[0]['name']}' → template, '{doc_texts[1]['name']}' → reference",
+            )
+        if t0 > r0:
+            return doc_texts[0], doc_texts[1], f"filename hint: '{doc_texts[0]['name']}' has template keyword"
+        if t1 > r1:
+            return doc_texts[1], doc_texts[0], f"filename hint: '{doc_texts[1]['name']}' has template keyword"
+        if r0 > t0:
+            return doc_texts[1], doc_texts[0], f"filename hint: '{doc_texts[0]['name']}' has reference keyword, treating doc[1] as template"
+        if r1 > t1:
+            return doc_texts[0], doc_texts[1], f"filename hint: '{doc_texts[1]['name']}' has reference keyword, treating doc[0] as template"
+
+        # No filename signal — fall back to content density
+        _SPARSE = {"_", "__", "___", "N/A", "TBD", "[", "]", "...", "—"}
+
+        def _density(text: str) -> float:
+            toks = text.split()
+            if not toks:
+                return 0.0
+            return sum(1 for t in toks if t not in _SPARSE) / len(toks)
+
+        d0 = _density(doc_texts[0].get("text", ""))
+        d1 = _density(doc_texts[1].get("text", ""))
+        if d0 <= d1:
+            return doc_texts[0], doc_texts[1], f"content density: '{doc_texts[0]['name']}' is sparser (likely blank)"
+        return doc_texts[1], doc_texts[0], f"content density: '{doc_texts[1]['name']}' is sparser (likely blank)"
+
+    if doc_texts:
+        return doc_texts[0], doc_texts[0], "single document — used as both blank and filled"
+    return {}, {}, "no documents"
+
+
+# ── OmniRoute session management ─────────────────────────────────────────────
+
+def _omniroute_base_urls() -> tuple[str, str]:
+    """Return (base_without_v1, base_with_v1) for the configured OmniRoute endpoint."""
+    raw = (
+        os.environ.get("AIMS_OMNIROUTE_BASE_URL")
+        or os.environ.get("OMNIROUTE_BASE_URL")
+        or os.environ.get("AIMS_OMNIROUTER_URL")
+        or "http://host.docker.internal:20128/v1"
+    ).rstrip("/")
+    if raw.endswith("/v1"):
+        return raw[:-3], raw
+    return raw, raw + "/v1"
+
+
+def _omniroute_get_active_sessions_sync() -> list[dict]:
+    """Query known OmniRoute session endpoints. Returns [] on total failure."""
     try:
         import httpx
     except ImportError:
-        return {}
+        return []
 
-    omnirouter_url = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:8082").rstrip("/")
-    auth_token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
+    base_without, base_with = _omniroute_base_urls()
+    auth_token = (
+        os.environ.get("OMNIROUTE_API_KEY")
+        or os.environ.get("AIMS_CLAUDE_PROXY_TOKEN")
+        or "aims-local-repair-token"
+    )
+    headers = {"Authorization": f"Bearer {auth_token}"}
 
-    # Use llama405b (NVIDIA NIM) as primary, local-nemotron as fallback (via Omnirouter)
-    model = os.environ.get("AIMS_DOCTUNING_MODEL", "llama405b")
+    candidate_urls = [
+        f"{base_without}/sessions",
+        f"{base_without}/api/sessions",
+        f"{base_without}/v1/sessions",
+        f"{base_with}/sessions",
+    ]
+
+    for url in candidate_urls:
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                resp = client.get(url, headers=headers)
+            if resp.status_code != 200:
+                continue
+            data = resp.json()
+            if isinstance(data, list):
+                raw_sessions = data
+            elif isinstance(data, dict):
+                raw_sessions = (
+                    data.get("sessions")
+                    or data.get("data")
+                    or data.get("items")
+                    or []
+                )
+            else:
+                continue
+
+            result = []
+            for s in raw_sessions:
+                if not isinstance(s, dict):
+                    continue
+                result.append({
+                    "id": s.get("id") or s.get("session_id") or s.get("sessionId", ""),
+                    "created_at": s.get("created_at") or s.get("createdAt") or s.get("created") or "",
+                    "updated_at": s.get("updated_at") or s.get("updatedAt") or s.get("updated") or "",
+                    "status": (s.get("status") or "active"),
+                    "raw": s,
+                })
+            log.info("omniroute sessions: found %d via %s", len(result), url)
+            return result
+        except Exception:
+            continue
+
+    log.info("omniroute sessions: no sessions endpoint responded")
+    return []
+
+
+def _omniroute_close_session_sync(session_id: str) -> bool:
+    """Try all known patterns to close one OmniRoute session. Returns True on 2xx or 404."""
+    if not session_id:
+        return False
+    try:
+        import httpx
+    except ImportError:
+        return False
+
+    base_without, base_with = _omniroute_base_urls()
+    auth_token = (
+        os.environ.get("OMNIROUTE_API_KEY")
+        or os.environ.get("AIMS_CLAUDE_PROXY_TOKEN")
+        or "aims-local-repair-token"
+    )
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    candidate_actions = [
+        ("DELETE", f"{base_without}/sessions/{session_id}"),
+        ("POST",   f"{base_without}/sessions/{session_id}/close"),
+        ("DELETE", f"{base_without}/api/sessions/{session_id}"),
+        ("POST",   f"{base_without}/api/sessions/{session_id}/close"),
+        ("DELETE", f"{base_with}/sessions/{session_id}"),
+        ("POST",   f"{base_with}/sessions/{session_id}/close"),
+    ]
+
+    for method, url in candidate_actions:
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                resp = client.request(method, url, headers=headers)
+            if resp.status_code in (200, 201, 202, 204, 404):
+                log.info("omniroute close session: %s %s → %d", method, url, resp.status_code)
+                return True
+        except Exception:
+            continue
+
+    log.warning("omniroute close session: all endpoints failed for session_id=%s", session_id)
+    return False
+
+
+def _omniroute_debug_session_tables_sync() -> None:
+    """Read-only discovery of OmniRoute SQLite session table names. Logs only, no writes."""
+    db_path = Path.home() / ".omniroute" / "storage.sqlite"
+    if not db_path.exists():
+        log.info("omniroute db discovery: %s not found", db_path)
+        return
+    try:
+        import sqlite3
+        with sqlite3.connect(str(db_path)) as conn:
+            rows = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND lower(name) LIKE '%session%'"
+            ).fetchall()
+            log.info("omniroute db discovery: session tables=%s in %s",
+                     [r[0] for r in rows], db_path)
+    except Exception as exc:
+        log.info("omniroute db discovery: could not read %s: %s", db_path, exc)
+
+
+def _omniroute_preflight_free_one_slot_sync(reason: str = "") -> bool:
+    """
+    Pre-task preflight: if OmniRoute has >= 2 active sessions, close only the oldest one.
+    Never closes the newest session. Closes at most one session per call.
+    Returns True if a slot is available (or was freed).
+    """
+    sessions = _omniroute_get_active_sessions_sync()
+    # Include sessions with active/running/open/unknown status; if status absent treat as active.
+    active = [
+        s for s in sessions
+        if (s.get("status") or "").lower() in ("active", "running", "open", "", "unknown")
+    ] or sessions  # endpoint may only return active sessions — treat all as active
+
+    if len(active) < 2:
+        return True
+
+    def _ts(s: dict) -> str:
+        return str(s.get("created_at") or s.get("updated_at") or "")
+
+    sorted_sessions = sorted(active, key=_ts)
+    oldest = sorted_sessions[0]
+    newest = sorted_sessions[-1]
+
+    log.info(
+        "omniroute preflight: active_sessions=%d, closing oldest session=%s,"
+        " keeping newest session=%s (reason=%s)",
+        len(active),
+        oldest.get("id", "?"),
+        newest.get("id", "?"),
+        reason,
+    )
+    return _omniroute_close_session_sync(oldest.get("id", ""))
+
+
+def _track_omniroute_session(state: dict, session_id: str) -> None:
+    """Record a session ID owned by this task into the task state dict."""
+    if not session_id:
+        return
+    state.setdefault("omniroute_sessions", [])
+    if session_id not in state["omniroute_sessions"]:
+        state["omniroute_sessions"].append(session_id)
+
+
+def _cleanup_omniroute_sessions_from_state(state: dict) -> None:
+    """Close all OmniRoute sessions recorded by _track_omniroute_session."""
+    for sid in state.get("omniroute_sessions", []):
+        _omniroute_close_session_sync(sid)
+    state["omniroute_sessions"] = []
+
+
+def _extract_omniroute_content_from_body(body_text: str) -> str:
+    """Extract assistant content string from any OmniRoute response body.
+
+    Handles:
+    - Normal OpenAI JSON: {"choices":[{"message":{"content":"..."}}]}
+    - SSE/streaming: lines with "data: " prefix — concatenates delta.content chunks
+    - Anthropic-like: {"content":[{"type":"text","text":"..."}]}
+    - Direct fields: text, response, output
+    Falls back to body_text unchanged if nothing extracts. Never raises.
+    """
+    if not body_text:
+        return body_text
+
+    # SSE / streaming path
+    if "data:" in body_text and "chat.completion.chunk" in body_text:
+        parts: list[str] = []
+        for line in body_text.splitlines():
+            line = line.strip()
+            if not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            if payload == "[DONE]" or not payload:
+                continue
+            try:
+                chunk = json.loads(payload)
+            except Exception:
+                log.debug("omniroute sse chunk skip: %r", payload[:120])
+                continue
+            choices = chunk.get("choices")
+            if not choices:
+                continue
+            choice = choices[0] if isinstance(choices, list) else choices
+            if not isinstance(choice, dict):
+                continue
+            delta = choice.get("delta") or choice.get("message") or {}
+            content = delta.get("content")
+            if isinstance(content, str) and content:
+                parts.append(content)
+        if parts:
+            return "".join(parts)
+        log.warning("omniroute sse detected but no content chunks extracted; body_start=%s", body_text[:300])
+
+    # Normal JSON path
+    try:
+        data = json.loads(body_text)
+    except Exception:
+        return body_text
+
+    if "choices" in data:
+        choice = (data.get("choices") or [{}])[0]
+        if isinstance(choice, dict):
+            msg = choice.get("message") or choice.get("delta") or {}
+            content = msg.get("content", "")
+            if isinstance(content, str):
+                return content.strip()
+
+    if "content" in data:
+        blocks = data.get("content") or []
+        if isinstance(blocks, list) and blocks and isinstance(blocks[0], dict):
+            text = blocks[0].get("text", "")
+            if isinstance(text, str):
+                return text.strip()
+
+    for _k in ("text", "response", "output"):
+        val = data.get(_k)
+        if isinstance(val, str):
+            return val.strip()
+
+    return body_text
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _call_doctuning_openai_omniroute_sync(
+    model: str,
+    system: str,
+    prompt: str,
+    max_tokens: int = 512,
+    temperature: float = 0.0,
+    timeout: float = 120.0,
+) -> tuple[int, str]:
+    """POST to OmniRoute /v1/chat/completions. Returns (status_code, raw_text)."""
+    try:
+        import httpx
+    except ImportError:
+        return 503, "httpx not installed"
+
+    _, base_with = _omniroute_base_urls()
+    url = base_with + "/chat/completions"
+
+    auth_token = (
+        os.environ.get("OMNIROUTE_API_KEY")
+        or os.environ.get("AIMS_CLAUDE_PROXY_TOKEN")
+        or "aims-local-repair-token"
+    )
+
+    log.info("doctuning omniroute chat: url=%s model=%s", url, model)
+
+    # Preflight: free a slot if already at the 2-session limit
+    _omniroute_preflight_free_one_slot_sync(reason=f"model={model}")
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False,
+    }
+    headers = {
+        "Authorization": f"Bearer {auth_token}",
+        "Content-Type": "application/json",
+    }
+
+    def _do_request() -> tuple[int, str]:
+        # Phase 1: network — 503 only if the request itself fails before a response exists
+        try:
+            with httpx.Client(timeout=timeout) as client:
+                resp = client.post(url, headers=headers, json=payload)
+        except Exception as net_exc:
+            return 503, str(net_exc)
+
+        # Phase 2: capture status and raw body immediately — never downgrade status_code
+        status_code = resp.status_code
+        body_text = resp.text
+
+        session_id = (
+            resp.headers.get("x-omniroute-session-id")
+            or resp.headers.get("x-session-id")
+            or ""
+        )
+        if session_id:
+            log.info("doctuning omniroute session-id: %s", session_id)
+
+        if status_code == 429:
+            log.warning("doctuning omniroute rate limited: model=%s", model)
+            return 429, body_text
+
+        # Phase 3: extract assistant content — handles JSON, SSE chunks, direct fields
+        raw = _extract_omniroute_content_from_body(body_text)
+        if raw is body_text and raw != body_text:
+            log.warning(
+                "doctuning omniroute parse fallback: status=%s model=%s body_start=%s",
+                status_code, model, body_text[:500],
+            )
+
+        return status_code, raw
+
+    import time as _time
+    status, raw = _do_request()
+    if status == 429:
+        if "maximum number of active sessions" in raw:
+            # Session-limit 429: run preflight cleanup then retry after short wait
+            _omniroute_preflight_free_one_slot_sync(reason="429_retry")
+            _time.sleep(5)
+        else:
+            # Generic rate-limit: longer back-off
+            _time.sleep(20)
+        status, raw = _do_request()
+    return status, raw
+
+
+def _extract_doc_context_sync(blank_text: str, filled_text: str) -> dict:
+    """Classify document and extract context via OmniRoute /v1/chat/completions."""
+    model = (
+        os.environ.get("AIMS_DOCTUNING_EXTRACT_MODEL")
+        or os.environ.get("OMNIROUTE_EXTRACT_MODEL")
+        or os.environ.get("AIMS_DOCTUNING_MODEL")
+        or "doc-extract-combo"
+    )
 
     prompt = (
-        f"BLANK TEMPLATE (first 1500 chars):\n{blank_text[:1500]}\n\n"
-        f"FILLED EXAMPLE (first 1500 chars):\n{filled_text[:1500]}\n\n"
-        "Classify this document and extract context."
+        f"BLANK TEMPLATE (first 2000 chars):\n{blank_text[:2000]}\n\n"
+        f"FILLED EXAMPLE (first 2000 chars):\n{filled_text[:2000]}\n\n"
+        "Select standards that match the TYPE of this document, not incidental keywords. "
+        "Respond with JSON only."
+    )
+
+    status, raw = _call_doctuning_openai_omniroute_sync(
+        model=model,
+        system=_DOCFILL_CONTEXT_SYSTEM,
+        prompt=prompt,
+        max_tokens=512,
+        temperature=0.0,
+        timeout=120.0,
+    )
+    log.info("doctuning context extract: model=%s status=%d", model, status)
+
+    if status == 429:
+        if "maximum number of active sessions" in raw:
+            return {"error": "omniroute_session_limit", "raw": raw[:500]}
+        return {"error": "omniroute_rate_limited", "raw": raw[:500]}
+
+    if status != 200:
+        return {"error": f"omniroute_status_{status}", "raw": raw[:500]}
+
+    # SSE guard — extract content if helper was bypassed
+    if raw.lstrip().startswith("data:") and "chat.completion.chunk" in raw:
+        raw = _extract_omniroute_content_from_body(raw)
+
+    # strip markdown fences and leading "json" token
+    cleaned = raw.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.lstrip("`")
+        if cleaned.startswith("json"):
+            cleaned = cleaned[4:]
+        cleaned = cleaned.strip()
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3].strip()
+    cleaned = cleaned.strip("`").strip()
+    if cleaned.lower().startswith("json"):
+        cleaned = cleaned[4:].strip()
+
+    try:
+        return json.loads(cleaned)
+    except Exception:
+        return {"error": "json_parse_failed", "raw": cleaned[:500]}
+
+
+def _tg_plain(text: str) -> str:
+    """Return text as a plain string (no-op; used to document intent at call sites)."""
+    return str(text or "")
+
+
+async def _safe_send_message(bot, chat_id: int, text: str, **kwargs) -> None:
+    """Send a Telegram message, retrying without parse_mode on Markdown entity errors."""
+    import telegram.error as _tg_err
+    try:
+        await bot.send_message(chat_id=chat_id, text=text, **kwargs)
+    except _tg_err.BadRequest as _e:
+        if "can't parse entities" in str(_e).lower() or "Can't parse entities" in str(_e):
+            kwargs.pop("parse_mode", None)
+            await bot.send_message(chat_id=chat_id, text=text, **kwargs)
+        else:
+            raise
+
+
+def _is_group_chat_id(chat_id: int | None) -> bool:
+    return chat_id is not None and int(chat_id) < 0
+
+
+def _document_delivery_feedback_markup(
+    chat_id: int | None,
+    document_path: str | Path,
+    *,
+    caption: str = "",
+    original_request: str = "",
+    source: str = "axi_document_delivery",
+) -> InlineKeyboardMarkup | None:
+    """Create feedback buttons only for delivered documents/files in group chats."""
+    if not _is_group_chat_id(chat_id):
+        return None
+    delivery_key = _remember_document_delivery_for_feedback(
+        chat_id=chat_id,
+        document_path=document_path,
+        caption=caption,
+        original_request=original_request,
+        source=source,
+    )
+    return InlineKeyboardMarkup([[
+        InlineKeyboardButton("✅ Принять в БД", callback_data=f"doc_feedback:accept:{delivery_key}"),
+        InlineKeyboardButton("❌ На доработку", callback_data=f"doc_feedback:reject:{delivery_key}"),
+    ]])
+
+
+def _remember_document_delivery_for_feedback(
+    *,
+    chat_id: int,
+    document_path: str | Path,
+    caption: str,
+    original_request: str,
+    source: str,
+) -> str:
+    import hashlib as _hashlib
+
+    now = datetime.now(timezone.utc)
+    raw = f"{chat_id}:{document_path}:{now.isoformat()}:{source}"
+    delivery_key = _hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12]
+    _DOC_DELIVERY_FEEDBACK_PENDING[delivery_key] = {
+        "created_at": now.isoformat(),
+        "chat_id": chat_id,
+        "document_path": str(document_path),
+        "document_name": Path(document_path).name,
+        "caption": caption[:1000],
+        "original_request": original_request[:4000],
+        "source": source,
+    }
+    if len(_DOC_DELIVERY_FEEDBACK_PENDING) > 200:
+        oldest = sorted(
+            _DOC_DELIVERY_FEEDBACK_PENDING.items(),
+            key=lambda item: str(item[1].get("created_at", "")),
+        )[:50]
+        for key, _ in oldest:
+            _DOC_DELIVERY_FEEDBACK_PENDING.pop(key, None)
+    return delivery_key
+
+
+def _engineering_group_chat_id() -> int | None:
+    raw = os.environ.get("AIMS_ENGINEERING_GROUP_CHAT_ID", "").strip()
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
+def _group_debug_verbose() -> bool:
+    return os.environ.get("AIMS_GROUP_DEBUG_VERBOSE", "0").strip().lower() in ("1", "true", "yes", "on")
+
+
+async def _send_engineering_diagnostic(ctx: ContextTypes.DEFAULT_TYPE, text: str) -> None:
+    eng_chat = _engineering_group_chat_id()
+    if not eng_chat:
+        log.warning("AIMS_ENGINEERING_GROUP_CHAT_ID is not configured; diagnostic was not sent.")
+        return
+    await ctx.bot.send_message(chat_id=eng_chat, text=(text or "")[:3900])
+
+
+def _customer_doc_status_message(kind: str) -> str:
+    mapping = {
+        "accepted_dry_run": "✅ Документ принят. Регистрация подготовлена. Мы сообщим, когда регистрация будет завершена.",
+        "rejected": "❌ Документ отправлен на доработку. Регистрация в БД не выполнена.",
+        "expired": "Контекст документа истёк. Пожалуйста, запросите повторную выдачу документа.",
+        "error": "Не удалось обработать решение по документу. Команда проверит и вернётся с ответом.",
+    }
+    return mapping.get(kind, mapping["error"])
+
+
+async def _document_feedback_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    if not query:
+        return
+    data = query.data or ""
+    if not data.startswith("doc_feedback:"):
+        return
+
+    parts = data.split(":", 2)
+    if len(parts) != 3:
+        await query.answer("Invalid feedback button.", show_alert=False)
+        return
+    _, action, delivery_key = parts
+    if action not in ("accept", "reject"):
+        await query.answer("Invalid feedback action.", show_alert=False)
+        return
+    delivery = _DOC_DELIVERY_FEEDBACK_PENDING.get(delivery_key)
+    if not delivery:
+        await query.answer("Feedback session expired.", show_alert=False)
+        if query.message:
+            await query.message.reply_text(_customer_doc_status_message("expired"))
+        return
+
+    feedback = "accept_register" if action == "accept" else "reject_revise"
+    chat = update.effective_chat
+    user = update.effective_user
+    artifact_dir = ""
+    handoff_decision = ""
+    handoff_mode = ""
+    handoff_next_stage = ""
+    handoff_artifact = ""
+    execution_status = ""
+    execution_executed = False
+    execution_direct_db_write = False
+    feedback_id = ""
+    engineering_handoff_path = ""
+    try:
+        from agents.document_delivery_feedback_agent import record_document_delivery_feedback
+        from agents.document_registration_handoff_agent import prepare_omi_registration_handoff
+        from agents.omi_registration_execution_adapter import execute_omi_registration_handoff
+
+        result = record_document_delivery_feedback(
+            chat_id=delivery.get("chat_id") or (chat.id if chat else ""),
+            chat_title=getattr(chat, "title", None),
+            message_id=getattr(query.message, "message_id", None) if query.message else None,
+            user_id=getattr(user, "id", None),
+            username=getattr(user, "username", None),
+            original_request=str(delivery.get("original_request") or ""),
+            delivered_document_path=str(delivery.get("document_path") or ""),
+            delivered_document_name=str(delivery.get("document_name") or ""),
+            delivered_message_text=str(delivery.get("caption") or ""),
+            feedback=feedback,
+        )
+        artifact_dir = str(result.get("artifact_dir") or "")
+        feedback_id = str(result.get("feedback_id") or "")
+        engineering_handoff_path = str(result.get("engineering_handoff") or "")
+        handoff = prepare_omi_registration_handoff(result.get("artifact_dir", ""))
+        handoff_decision = str(handoff.get("decision") or "")
+        handoff_mode = str(handoff.get("handoff_mode") or "")
+        handoff_next_stage = str(handoff.get("next_stage") or "")
+        handoff_artifact = str(handoff.get("handoff_artifact") or "")
+    except Exception as exc:
+        log.exception("document feedback capture failed: %s", exc)
+        await query.answer("Feedback capture failed.", show_alert=False)
+        if query.message:
+            await query.message.reply_text(_customer_doc_status_message("error"))
+        await _send_engineering_diagnostic(
+            ctx,
+            (
+                "Document feedback callback error\n"
+                f"Action: {action}\n"
+                f"Chat: {getattr(chat, 'id', '')}\n"
+                f"User: {getattr(user, 'id', '')}\n"
+                f"Error: {exc}"
+            ),
+        )
+        return
+
+    accepted = feedback == "accept_register"
+    if accepted:
+        try:
+            handoff_artifact = str(handoff.get("handoff_artifact") or "")
+            if not handoff_artifact:
+                raise RuntimeError("handoff artifact is missing")
+            exec_result = execute_omi_registration_handoff(handoff_artifact, dry_run=True)
+            status = str(exec_result.get("status") or "")
+            execution_status = status
+            execution_executed = bool(exec_result.get("executed") is True)
+            execution_direct_db_write = bool(exec_result.get("direct_db_write") is True)
+            if status != "dry_run_ok":
+                log.warning("doc feedback accept dry-run status=%s issues=%s", status, exec_result.get("issues"))
+            ack = _customer_doc_status_message("accepted_dry_run")
+            if _group_debug_verbose() and artifact_dir:
+                ack += f"\nDebug: /doc_status {artifact_dir}"
+        except Exception as exc:
+            log.exception("document feedback accept handoff/dry-run failed: %s", exc)
+            ack = _customer_doc_status_message("error")
+            await _send_engineering_diagnostic(
+                ctx,
+                (
+                    "Document feedback accept error\n"
+                    f"Feedback ID: {feedback_id}\n"
+                    f"Action: accept\n"
+                    f"Artifact dir: {artifact_dir}\n"
+                    f"Handoff decision: {handoff_decision}\n"
+                    f"Handoff mode: {handoff_mode}\n"
+                    f"Error: {exc}"
+                ),
+            )
+    else:
+        ack = _customer_doc_status_message("rejected")
+        if _group_debug_verbose() and artifact_dir:
+            ack += f"\nDebug: /doc_status {artifact_dir}"
+
+    await _send_engineering_diagnostic(
+        ctx,
+        (
+            "Document feedback diagnostic\n"
+            f"Feedback ID: {feedback_id}\n"
+            f"Action: {'accept' if accepted else 'reject'}\n"
+            f"Feedback: {feedback}\n"
+            f"Artifact dir: {artifact_dir}\n"
+            f"Handoff artifact: {handoff_artifact}\n"
+            f"Handoff decision: {handoff_decision}\n"
+            f"Handoff mode: {handoff_mode or '-'}\n"
+            f"Execution status: {execution_status or '-'}\n"
+            f"Executed: {str(execution_executed).lower()}\n"
+            f"Direct DB write: {str(execution_direct_db_write).lower()}\n"
+            f"Next stage: {handoff_next_stage or '-'}\n"
+            f"Engineering handoff: {engineering_handoff_path or '-'}\n"
+            + (f"Status cmd: /doc_status {artifact_dir}\n" if artifact_dir else "")
+        ),
     )
 
     try:
-        with httpx.Client(timeout=120.0) as client:
-            resp = client.post(
-                f"{omnirouter_url}/v1/messages",
-                headers={
-                    "Authorization": f"Bearer {auth_token}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": [
-                        {"role": "user", "content": prompt}
-                    ],
-                    "system": _DOCFILL_CONTEXT_SYSTEM,
-                    "temperature": 0.0,
-                    "max_tokens": 256,
-                },
-            )
+        await query.edit_message_reply_markup(reply_markup=None)
+    except Exception:
+        pass
+    await query.answer(ack, show_alert=False)
+    if query.message:
+        await query.message.reply_text(ack)
+    _DOC_DELIVERY_FEEDBACK_PENDING.pop(delivery_key, None)
 
-        if resp.status_code != 200:
-            log.warning("doctuning context extract: omnirouter returned %d", resp.status_code)
-            return {}
 
-        data = resp.json()
-        content_blocks = data.get("content", [])
-        raw = ""
-        for block in content_blocks:
-            if block.get("type") == "text":
-                raw = block.get("text", "").strip()
-                break
+async def _di_create_case_package(
+    chat_id: int,
+    task_description: str,
+    mode: str,
+    files: list[dict],
+    selected_pipeline: str,
+    learning_contour: bool = False,
+) -> "Path":
+    """Create a case package in the intake dir; optionally sync to docs-agent inbox."""
+    import shutil as _shutil
+    import hashlib as _hashlib
+    import uuid as _uuid
+    from datetime import datetime as _dt
 
-        raw = raw.strip("`").strip()
-        if raw.startswith("json"):
-            raw = raw[4:].strip()
-        return json.loads(raw)
-    except Exception as e:
-        log.warning("doctuning context extract error: %s", e)
-        return {}
+    case_id = str(_uuid.uuid4())
+    case_dir = _DI_INTAKE_DIR / case_id
+    docs_dir = case_dir / "documents"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+
+    doc_entries = []
+    for f in files:
+        src = Path(f["local_path"])
+        dst = docs_dir / f["filename"]
+        _shutil.copy2(src, dst)
+        sha256 = _hashlib.sha256(dst.read_bytes()).hexdigest()
+        doc_entries.append({
+            "filename": f["filename"],
+            "original_name": f.get("original_name", f["filename"]),
+            "sha256": sha256,
+            "size_bytes": dst.stat().st_size,
+        })
+
+    import json as _json
+    manifest = {
+        "case_id": case_id,
+        "created_at": _dt.utcnow().isoformat() + "Z",
+        "chat_id": chat_id,
+        "task_description": task_description,
+        "mode": mode,
+        "selected_pipeline": selected_pipeline,
+        "document_count": len(files),
+        "documents": doc_entries,
+        "learning_contour": learning_contour,
+        "registration_forbidden": True,
+        "raw_upload": True,
+    }
+    (case_dir / "manifest.json").write_text(
+        _json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    if _DI_SYNC_ENABLED and mode != "tuning_pair":
+        dst_inbox = _DI_INBOX_DIR / case_id
+        _shutil.copytree(str(case_dir), str(dst_inbox))
+
+    return case_dir
+
+
+def _doctuning_ws() -> Path:
+    """Resolve the AIMS workspace root for doctuning artifacts.
+
+    Priority: AXI_DATA_ROOT → AIMS_WORKSPACE → /data (if exists) →
+              /aims_workspace (if exists) → sibling aims_workspace dir.
+    """
+    for _env in ("AXI_DATA_ROOT", "AIMS_WORKSPACE"):
+        _v = os.environ.get(_env)
+        if _v:
+            return Path(_v)
+    for _candidate in (Path("/data"), Path("/aims_workspace")):
+        if _candidate.exists():
+            return _candidate
+    return Path(__file__).resolve().parent.parent / "aims_workspace"
 
 
 def _save_doctuning_memo(context: dict, blank_name: str, content_hash: str = None) -> Path:
-    ws = Path(__file__).resolve().parent.parent
-    memo_dir = ws / "aims_workspace"
+    ws = _doctuning_ws()
+    memo_dir = ws / "training" / "doctuning_memos"
     memo_dir.mkdir(parents=True, exist_ok=True)
     memo_path = memo_dir / f"doctuning_memo_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
     memo_data = {
@@ -4031,8 +5034,8 @@ def _save_doctuning_memo(context: dict, blank_name: str, content_hash: str = Non
 
 def _find_existing_training_pair(content_hash: str) -> dict | None:
     """Check if training pair with this content hash already exists."""
-    ws = Path(__file__).resolve().parent.parent
-    memo_dir = ws / "aims_workspace"
+    ws = _doctuning_ws()
+    memo_dir = ws / "training" / "doctuning_memos"
     if not memo_dir.exists():
         return None
 
@@ -4051,6 +5054,127 @@ def _find_existing_training_pair(content_hash: str) -> dict | None:
             continue
 
     return None
+
+
+def _save_doctuning_failure_case(
+    *,
+    stage: str,
+    reason: str,
+    chat_id: int,
+    state: dict | None = None,
+    pair_path: str | None = None,
+    severity: str = "warning",
+    recoverable: bool = True,
+) -> Path:
+    """Save a doctuning failure case JSON for Repairman investigation."""
+    import hashlib as _hashlib
+    ws = _doctuning_ws()
+    fail_dir = ws / "training" / "doctuning_failures"
+    fail_dir.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc)
+    fname = f"{ts.strftime('%Y%m%d_%H%M%S')}_{stage}_{chat_id}.json"
+    fail_path = fail_dir / fname
+
+    _s = state or {}
+    _source_text = str(_s.get("blank_text", "") or "")
+    _source_hash = _hashlib.sha256(_source_text.encode()).hexdigest()[:16] if _source_text else ""
+
+    data = {
+        "source": "doctuning_batch_training_pair",
+        "stage": stage,
+        "reason": reason,
+        "severity": severity,
+        "recoverable": recoverable,
+        "chat_id": chat_id,
+        "pair_path": pair_path or "",
+        "master_document_status": str(_s.get("master_document_status", "")),
+        "master_document_error": str(_s.get("master_document_error", "")),
+        "repairman_status": "pending",
+        "created_at": ts.isoformat(),
+        "state_summary": {
+            "blank_name": str(_s.get("blank_name", "")),
+            "filled_name": str(_s.get("filled_name", "")),
+            "preferred_output_format": str(_s.get("preferred_output_format", "docx")),
+            "source_hash": _source_hash,
+            "task_id": str(_s.get("task_id", "")),
+        },
+    }
+    try:
+        fail_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        log.warning(
+            "doctuning failure case saved: %s stage=%s reason=%s",
+            fail_path, stage, reason[:120],
+        )
+    except Exception as _fe:
+        log.error("doctuning failure case write failed: %s", _fe)
+    return fail_path
+
+
+def _queue_doctuning_repair_case(failure_path: Path, reason: str) -> None:
+    """Append a repair queue entry to doctuning_repair_queue.jsonl."""
+    ws = _doctuning_ws()
+    queue_path = ws / "training" / "doctuning_repair_queue.jsonl"
+    queue_path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "failure_path": str(failure_path),
+        "reason": reason,
+        "queued_at": datetime.now(timezone.utc).isoformat(),
+        "status": "pending_repairman",
+    }
+    try:
+        with queue_path.open("a", encoding="utf-8") as _qf:
+            _qf.write(json.dumps(record, ensure_ascii=False) + "\n")
+        log.warning("doctuning repair case queued: %s", failure_path)
+    except Exception as _qe:
+        log.error("doctuning repair queue write failed: %s", _qe)
+
+
+def _request_repairman_investigation_for_doctuning_failure(failure_path: Path) -> bool:
+    """Submit a doctuning failure case to RepairmanAPI (port 8010).
+
+    Returns True if submitted, False if unavailable/failed (case queued instead).
+    Updates repairman_status field in the failure JSON.
+    """
+    _repairman_url = os.environ.get("AIMS_REPAIRMAN_API_URL", "http://localhost:8010")
+    _new_status = "pending"
+    try:
+        _data = json.loads(failure_path.read_text(encoding="utf-8"))
+        _task = (
+            f"Doctuning failure: stage={_data.get('stage')} "
+            f"reason={_data.get('reason', '')[:200]} "
+            f"pair_path={_data.get('pair_path', '')} "
+            f"severity={_data.get('severity')}"
+        )
+        import httpx as _httpx_rm
+        with _httpx_rm.Client(timeout=5.0) as _c:
+            _resp = _c.post(
+                f"{_repairman_url}/repair",
+                json={"task": _task, "mode": "inspect", "source": "doctuning_failure"},
+            )
+        _resp.raise_for_status()
+        _new_status = "sent"
+        _data["repairman_status"] = _new_status
+        failure_path.write_text(json.dumps(_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        log.info("doctuning repairman investigation submitted: %s", failure_path)
+        return True
+    except Exception as _re:
+        _err_str = str(_re).lower()
+        _new_status = (
+            "unavailable"
+            if ("connection refused" in _err_str or "connectionrefused" in _err_str)
+            else "failed"
+        )
+        try:
+            _data = json.loads(failure_path.read_text(encoding="utf-8"))
+            _data["repairman_status"] = _new_status
+            failure_path.write_text(json.dumps(_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        except Exception:
+            pass
+        log.warning(
+            "doctuning: repairman investigation not submitted (%s): %s", _new_status, _re
+        )
+        _queue_doctuning_repair_case(failure_path, str(_re)[:200])
+        return False
 
 
 def _read_document_text(file_path: Path) -> str:
@@ -4095,95 +5219,219 @@ async def _search_standards_for_context(context: dict) -> list[str]:
 
 
 def _validate_and_extract_context_sync(blank_text: str, filled_text: str) -> dict:
-    """Combined: extract context + validate document via Omnirouter (NVIDIA NIM).
+    """Combined: extract context + validate + produce revised reference via OmniRoute /chat/completions.
 
     Returns dict with:
-    - context: {doc_type, equipment_type, industry, key_terms}
-    - validation: {verdict, hallucination_score, issues, standards_met, reason}
+    - context: {doc_type, equipment_type, industry, key_terms, standards}
+    - validation: {status, hallucination_score, issues, standards_met, reason,
+                   missing_fields, unsupported_claims, recommendations}
+      hallucination_score is None on hard failure (HTTP error / JSON parse failure).
+    - revised_reference: str or None (None on hard failure)
+    - error: present only on failure — "omniroute_status_<N>" or "json_parse_failed"
+    - raw: first 500 chars of raw response (only on failure)
     """
-    try:
-        import httpx
-    except ImportError:
+    model = (
+        os.environ.get("AIMS_DOCTUNING_VALIDATE_MODEL")
+        or os.environ.get("OMNIROUTE_AUDIT_MODEL")
+        or os.environ.get("AIMS_DOCTUNING_MODEL")
+        or "doc-training-pair-audit-combo"
+    )
+
+    def _failed_validation(reason: str) -> dict:
         return {
-            "context": {},
-            "validation": {"verdict": "accept", "hallucination_score": 0.0, "issues": [], "reason": "httpx not installed", "standards_met": []}
+            "status": "failed",
+            "hallucination_score": None,
+            "evidence_risk": None,
+            "issues": ["teacher_audit_failed"],
+            "standards_met": [],
+            "reason": reason,
+            "missing_fields": [],
+            "unsupported_claims": [],
+            "validation_gaps": [],
+            "recommendations": [],
         }
 
-    omnirouter_url = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:8082").rstrip("/")
-    auth_token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
-    model = os.environ.get("AIMS_DOCTUNING_MODEL", "llama405b")
-
-    # Combined system prompt for context extraction + validation
     combined_system = (
         "You are an expert industrial document specialist and quality auditor for the AIMS platform. "
-        "Perform TWO tasks:\n\n"
-        "1. CLASSIFY the document and extract context:\n"
-        '   {"doc_type": "<type>", "equipment_type": "<equipment or process>", '
-        '"industry": "<sector>", "key_terms": ["<term>", ...]}\n\n'
-        "2. VALIDATE the filled example for hallucinations, fabricated values, and standards compliance "
-        "(ISO, API, ASME, OSHA, IEC, NFPA, IEEE, EN, ANSI, PAS, BS):\n"
-        '   {"hallucination_score": <0.0–1.0>, "issues": ["<specific issue>" ...], '
-        '"standards_met": ["<standard>" ...], "verdict": "accept" | "reject", "reason": "<one sentence>"}\n\n'
-        "Respond with valid JSON containing both 'context' and 'validation' keys. No markdown fences, no extra text."
+        "Perform THREE tasks and respond with a single valid JSON object. "
+        "No markdown fences, no extra text outside the JSON.\n\n"
+        "Task 1 — CLASSIFY and extract context:\n"
+        '  "context": {\n'
+        '    "doc_type": "<procedure|specification|report|form|checklist|...>",\n'
+        '    "equipment_type": "<equipment or process name>",\n'
+        '    "industry": "<sector>",\n'
+        '    "key_terms": ["<term>", ...],\n'
+        '    "standards": ["<applicable standard>", ...]\n'
+        "  }\n\n"
+        "Task 2 — VALIDATE the filled reference for hallucinations, fabricated values, "
+        "missing required fields, and standards compliance (ISO, API, ASME, OSHA, IEC, NFPA, "
+        "IEEE, EN, ANSI, PAS, BS). Do NOT invent page or section references.\n"
+        "  Status rules — use exactly one of these values:\n"
+        '    "failed"  — any of: hallucination_score ≥ 0.5; fabricated standard codes or\n'
+        "               equipment specifications; required normative sections completely absent.\n"
+        '    "warning" — issues present but none are fatal; document is usable with corrections.\n'
+        "               ALWAYS use 'warning' (not 'passed') when admin/template fields remain\n"
+        "               unfilled: TBD, TODO, Placeholder, [Date], [Author], [Dept], ???.\n"
+        '    "passed"  — only when ALL of the following hold: no required fields missing,\n'
+        "               hallucination_score < 0.2, no fabricated data, no TBD/placeholder\n"
+        "               admin fields, no unsupported normative claims.\n"
+        "  Hallucination score vs Evidence risk — treat as SEPARATE dimensions:\n"
+        "    hallucination_score — rate ONLY fabricated facts: invented specs, made-up standard\n"
+        "               clauses, nonexistent equipment models, false equipment parameters.\n"
+        "               Do NOT inflate for 'claims without citations' in overview documents.\n"
+        "    evidence_risk — rate unsubstantiated assertions relative to the document type.\n"
+        "               High evidence_risk is EXPECTED and acceptable for conference abstracts,\n"
+        "               executive summaries, and feasibility overviews — flag it but do not\n"
+        "               penalise hallucination_score.\n"
+        "  For conference abstracts and overview documents: recommendations should explicitly\n"
+        "  note the document type and suggest adding methodology/reference sections only if\n"
+        "  the submission venue requires them.\n"
+        '  "validation": {\n'
+        '    "status": "passed" | "warning" | "failed",\n'
+        '    "hallucination_score": <0.0–1.0, fabrications only>,\n'
+        '    "evidence_risk": <0.0–1.0, unsubstantiated assertions for this doc type>,\n'
+        '    "issues": ["<specific issue>", ...],\n'
+        '    "standards_met": ["<standard>", ...],\n'
+        '    "reason": "<one sentence overall verdict>",\n'
+        '    "missing_fields": ["<field or section missing>", ...],\n'
+        '    "unsupported_claims": ["<normative claim with no traceable evidence>", ...],\n'
+        '    "validation_gaps": ["<check not performed due to doc type or missing data>", ...],\n'
+        '    "recommendations": ["<actionable fix>", ...]\n'
+        "  }\n\n"
+        "Task 3 — PRODUCE a revised reference document:\n"
+        '  "revised_reference": "<full revised document text>"\n'
+        "  Rules:\n"
+        "  - Do NOT create a new document from scratch.\n"
+        "  - Start from the supplied filled reference.\n"
+        "  - Preserve all valid content and structure.\n"
+        "  - Apply only corrections for issues found in Task 2.\n"
+        "  - If no changes are needed, return the supplied reference unchanged.\n"
+        "  - Always return revised_reference as a non-empty string."
     )
 
     prompt = (
         f"BLANK TEMPLATE:\n{blank_text[:3000]}\n\n"
-        f"FILLED EXAMPLE (to audit):\n{filled_text[:4000]}\n\n"
-        "Extract context and validate the filled example."
+        f"FILLED REFERENCE (to audit and revise):\n{filled_text[:4000]}\n\n"
+        "Perform all three tasks and return a single JSON object. "
+        "Return ONLY raw JSON. Do not use markdown fences. Do not include text outside JSON."
     )
 
-    try:
-        with httpx.Client(timeout=180.0) as client:
-            resp = client.post(
-                f"{omnirouter_url}/v1/messages",
-                headers={
-                    "Authorization": f"Bearer {auth_token}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "system": combined_system,
-                    "temperature": 0.1,
-                    "max_tokens": 768,
-                },
-            )
+    log.info(
+        "doctuning validate+context+revise: model=%s blank_len=%d filled_len=%d",
+        model, len(blank_text), len(filled_text),
+    )
 
-        if resp.status_code != 200:
-            log.warning("doctuning validate+context: omnirouter returned %d", resp.status_code)
-            return {
-                "context": {},
-                "validation": {"verdict": "accept", "hallucination_score": 0.0, "issues": [], "reason": f"omnirouter error {resp.status_code}", "standards_met": []}
-            }
+    status, raw = _call_doctuning_openai_omniroute_sync(
+        model=model,
+        system=combined_system,
+        prompt=prompt,
+        max_tokens=8192,
+        temperature=0.1,
+        timeout=300.0,
+    )
 
-        data = resp.json()
-        content_blocks = data.get("content", [])
-        raw = ""
-        for block in content_blocks:
-            if block.get("type") == "text":
-                raw = block.get("text", "").strip()
-                break
+    log.info("doctuning validate+context+revise: status=%d raw_len=%d", status, len(raw))
 
-        raw = raw.strip("`").strip()
-        if raw.startswith("json"):
-            raw = raw[4:].strip()
-
-        result = json.loads(raw)
-
-        # Ensure both keys exist
-        if "context" not in result:
-            result["context"] = {}
-        if "validation" not in result:
-            result["validation"] = {"verdict": "accept", "hallucination_score": 0.0, "issues": [], "reason": "no validation returned", "standards_met": []}
-
-        return result
-    except Exception as e:
-        log.warning("doctuning validate+context error: %s", e)
+    if status != 200:
+        err_key = f"omniroute_status_{status}"
+        log.warning("doctuning validate+context+revise: %s raw_excerpt=%r", err_key, raw[:200])
         return {
             "context": {},
-            "validation": {"verdict": "accept", "hallucination_score": 0.0, "issues": [], "reason": f"validation error ({e})", "standards_met": []}
+            "validation": _failed_validation(f"{err_key}: {raw[:200]}"),
+            "revised_reference": None,
+            "error": err_key,
+            "raw": raw[:500],
         }
+
+    if not raw:
+        log.warning("teacher audit empty response: model=%s", model)
+        return {
+            "context": {},
+            "validation": _failed_validation("teacher_audit_empty_response"),
+            "revised_reference": None,
+            "error": "teacher_audit_empty_response",
+            "raw": "",
+        }
+
+    # If raw still looks like SSE (e.g. helper was bypassed), extract content now
+    if raw.lstrip().startswith("data:") and "chat.completion.chunk" in raw:
+        raw = _extract_omniroute_content_from_body(raw)
+
+    # Robust JSON parsing — strip markdown fences and leading "json" token
+    cleaned = raw.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.lstrip("`")
+        if cleaned.startswith("json"):
+            cleaned = cleaned[4:]
+        cleaned = cleaned.strip()
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3].strip()
+    cleaned = cleaned.strip("`").strip()
+    if cleaned.lower().startswith("json"):
+        cleaned = cleaned[4:].strip()
+
+    try:
+        result = json.loads(cleaned)
+    except Exception as exc:
+        log.warning(
+            "teacher audit json parse failed: model=%s raw_start=%s",
+            model, cleaned[:500],
+        )
+        return {
+            "context": {},
+            "validation": _failed_validation(f"json_parse_failed: {exc}; raw_start={cleaned[:500]}"),
+            "revised_reference": None,
+            "error": "json_parse_failed",
+            "raw": cleaned[:500],
+        }
+
+    # Ensure all three keys exist
+    if "context" not in result:
+        result["context"] = {}
+    if "validation" not in result:
+        result["validation"] = _failed_validation("no validation returned")
+    else:
+        v = result["validation"]
+        if "status" not in v:
+            v["status"] = "passed" if not v.get("issues") else "warning"
+        for field in ("missing_fields", "unsupported_claims", "recommendations", "validation_gaps"):
+            if field not in v:
+                v[field] = []
+        if "evidence_risk" not in v:
+            v["evidence_risk"] = None
+
+        # Deterministic guard: downgrade "passed" → "warning" when TBD/placeholder
+        # admin fields are detected in filled_text, regardless of LLM verdict.
+        import re as _re
+        _TBD_PAT = _re.compile(
+            r"\b(TBD|TODO|PLACEHOLDER|TO BE DETERMINED|TO BE CONFIRMED)\b"
+            r"|\[Date\]|\[DATE\]|\[Author\]|\[AUTHOR\]|\[Dept\]|\[DEPT\]"
+            r"|\[Department\]|\[Reviewer\]|\[REVIEWER\]|\[Approver\]|\[APPROVER\]"
+            r"|\[Name\]|\[Title\]|\[Division\]|\[Unit\]"
+            r"|\?\?\?",
+            _re.IGNORECASE,
+        )
+        if v.get("status") == "passed" and _TBD_PAT.search(filled_text):
+            v["status"] = "warning"
+            issues = v.setdefault("issues", [])
+            if "admin_fields_incomplete" not in issues:
+                issues.append("admin_fields_incomplete")
+            mf = v.setdefault("missing_fields", [])
+            _tbd_note = "Admin/template placeholder fields (TBD, [Date], [Author], etc.) not filled in"
+            if _tbd_note not in mf:
+                mf.append(_tbd_note)
+
+    # Ensure revised_reference is present and non-empty (success path only)
+    if not result.get("revised_reference"):
+        log.warning(
+            "doctuning validate+context+revise: revised_reference missing — falling back to filled_text"
+        )
+        result["revised_reference"] = filled_text
+        issues = result["validation"].setdefault("issues", [])
+        if "teacher_revision_missing" not in issues:
+            issues.append("teacher_revision_missing")
+
+    return result
 
 
 def _nim_validate_document_sync(blank_text: str, filled_text: str, standards: list[str]) -> dict:
@@ -4234,26 +5482,48 @@ _DOCFILL_FILL_SYSTEM = (
 
 
 def _local_generate_fill_sync(blank_text: str) -> str | None:
-    """Ask local ollama model to fill the blank form (DPO rejected — model's current output)."""
+    """Ask local ollama model to fill the blank form (DPO rejected — model's current output).
+
+    Uses httpx directly so no openai package is required.
+    Ollama exposes OpenAI-compatible /v1/chat/completions natively.
+    """
     try:
-        from openai import OpenAI as _OAI
+        import httpx
     except ImportError:
+        log.warning("local fill: httpx not available")
         return None
 
     ollama_url = os.environ.get("OLLAMA_LOCAL_URL", "http://localhost:11434").rstrip("/")
-    model = os.environ.get("AIMS_DRAFT_MODEL", "axi_omi_sphere")
-    client = _OAI(api_key="ollama", base_url=f"{ollama_url}/v1")
+    model = AIMS_DOCUMENT_CREATOR_MODEL
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": _DOCFILL_FILL_SYSTEM},
+            {"role": "user", "content": f"Fill in this blank form:\n\n{blank_text[:4000]}"},
+        ],
+        "stream": False,
+        "temperature": 0.3,
+        "max_tokens": 2048,
+    }
+
     try:
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": _DOCFILL_FILL_SYSTEM},
-                {"role": "user", "content": f"Fill in this blank form:\n\n{blank_text[:4000]}"},
-            ],
-            temperature=0.3,
-            max_tokens=2048,
-        )
-        result = (resp.choices[0].message.content or "").strip()
+        with httpx.Client(timeout=120.0) as client:
+            resp = client.post(
+                f"{ollama_url}/v1/chat/completions",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+            )
+        if resp.status_code != 200:
+            log.warning("local fill: ollama returned status %d", resp.status_code)
+            return None
+        data = resp.json()
+        result = (
+            data.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+            or ""
+        ).strip()
         return result if len(result) > 80 else None
     except Exception as e:
         log.warning("doctuning local generate error: %s", e)
@@ -4334,12 +5604,12 @@ _REPAIRMAN_SYSTEM_DOCFILL = (
 
 
 def _repairman_fix_local_model_sync(model: str) -> str:
-    """Call repairman gateway to diagnose and recover the local model. Returns root_cause string."""
+    """Call repairman gateway to diagnose and recover the local model. Returns root_cause string.
+
+    Uses httpx when the openai package is not installed.
+    """
     import subprocess as _sp
-    try:
-        from openai import OpenAI as _OAI
-    except ImportError:
-        return "openai not available"
+    import json as _json
 
     gateway_url = "http://localhost:8082/v1"
     token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
@@ -4350,64 +5620,113 @@ def _repairman_fix_local_model_sync(model: str) -> str:
         "ollama service not running, or connection refused on port 11434. "
         "Diagnose and provide safe recovery commands in 'tests_run'."
     )
+    payload = {
+        "model": "aims-repairman-nemotron",
+        "messages": [
+            {"role": "system", "content": _REPAIRMAN_SYSTEM_DOCFILL},
+            {"role": "user",   "content": problem},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 512,
+    }
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
+    content = ""
     try:
-        client = _OAI(api_key=token, base_url=gateway_url)
-        resp = client.chat.completions.create(
-            model="aims-repairman-nemotron",
-            messages=[
-                {"role": "system", "content": _REPAIRMAN_SYSTEM_DOCFILL},
-                {"role": "user",   "content": problem},
-            ],
-            temperature=0.1,
-            max_tokens=512,
-        )
-        content = (resp.choices[0].message.content or "").strip()
         try:
-            import json as _json
-            data = _json.loads(content)
-            root_cause = data.get("root_cause", content[:200])
-            log.info("repairman root_cause: %s", root_cause)
-            for cmd in data.get("tests_run", [])[:3]:
-                if isinstance(cmd, str) and any(cmd.strip().startswith(p) for p in _REPAIR_CMD_WHITELIST):
-                    log.info("repairman exec: %s", cmd)
-                    _sp.run(cmd, shell=True, timeout=60, capture_output=True)
-            return root_cause
-        except Exception:
-            return content[:300]
+            from openai import OpenAI as _OAI
+            client = _OAI(api_key=token, base_url=gateway_url)
+            resp_oa = client.chat.completions.create(
+                model="aims-repairman-nemotron",
+                messages=payload["messages"],
+                temperature=0.1,
+                max_tokens=512,
+            )
+            content = (resp_oa.choices[0].message.content or "").strip()
+        except ImportError:
+            import httpx as _httpx
+            with _httpx.Client(timeout=60.0) as _c:
+                _r = _c.post(f"{gateway_url}/chat/completions", json=payload, headers=headers)
+            content = (
+                _r.json().get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                or ""
+            ).strip()
     except Exception as e:
         log.warning("repairman gateway call failed: %s", e)
         return f"repairman unavailable: {e}"
 
+    try:
+        data = _json.loads(content)
+        root_cause = data.get("root_cause", content[:200])
+        log.info("repairman root_cause: %s", root_cause)
+        for cmd in data.get("tests_run", [])[:3]:
+            if isinstance(cmd, str) and any(cmd.strip().startswith(p) for p in _REPAIR_CMD_WHITELIST):
+                log.info("repairman exec: %s", cmd)
+                _sp.run(cmd, shell=True, timeout=60, capture_output=True)
+        return root_cause
+    except Exception:
+        return content[:300]
+
 
 def _repairman_final_report_sync(model: str, cycles: int, last_root_cause: str) -> str:
-    """After exhausting all repair cycles, ask repairman to write a human-readable failure report."""
+    """After exhausting all repair cycles, ask repairman to write a human-readable failure report.
+
+    Uses httpx when the openai package is not installed.
+    """
+    gateway_url = "http://localhost:8082/v1"
+    token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
+    problem = (
+        f"You attempted to repair the local Ollama model '{model}' {cycles} times. "
+        f"Last diagnosed root cause: {last_root_cause}\n"
+        f"All {cycles} repair cycles failed — generation still returns no valid output. "
+        "Write a concise 2–3 sentence report for the engineer explaining:\n"
+        "1. What the root cause appears to be.\n"
+        "2. What specific manual action is required to resolve it.\n"
+        "Plain text only, no JSON, no markdown."
+    )
+    system_msg = (
+        "You are the AIMS Repairman reporting a repair failure to a human engineer. "
+        "Be concise and actionable."
+    )
+    payload = {
+        "model": "aims-repairman-nemotron",
+        "messages": [
+            {"role": "system", "content": system_msg},
+            {"role": "user",   "content": problem},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 256,
+    }
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
     try:
-        from openai import OpenAI as _OAI
-        gateway_url = "http://localhost:8082/v1"
-        token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
-        client = _OAI(api_key=token, base_url=gateway_url)
-        problem = (
-            f"You attempted to repair the local Ollama model '{model}' {cycles} times. "
-            f"Last diagnosed root cause: {last_root_cause}\n"
-            f"All {cycles} repair cycles failed — generation still returns no valid output. "
-            "Write a concise 2–3 sentence report for the engineer explaining:\n"
-            "1. What the root cause appears to be.\n"
-            "2. What specific manual action is required to resolve it.\n"
-            "Plain text only, no JSON, no markdown."
-        )
-        resp = client.chat.completions.create(
-            model="aims-repairman-nemotron",
-            messages=[
-                {"role": "system", "content": (
-                    "You are the AIMS Repairman reporting a repair failure to a human engineer. "
-                    "Be concise and actionable."
-                )},
-                {"role": "user", "content": problem},
-            ],
-            temperature=0.1,
-            max_tokens=256,
-        )
-        return (resp.choices[0].message.content or "").strip()
+        try:
+            from openai import OpenAI as _OAI
+            client = _OAI(api_key=token, base_url=gateway_url)
+            resp_oa = client.chat.completions.create(
+                model="aims-repairman-nemotron",
+                messages=payload["messages"],
+                temperature=0.1,
+                max_tokens=256,
+            )
+            return (resp_oa.choices[0].message.content or "").strip()
+        except ImportError:
+            import httpx as _httpx
+            with _httpx.Client(timeout=60.0) as _c:
+                _r = _c.post(f"{gateway_url}/chat/completions", json=payload, headers=headers)
+            return (
+                _r.json().get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                or ""
+            ).strip()
     except Exception as e:
         return (
             f"Repairman unreachable after {cycles} cycles. "
@@ -4429,12 +5748,23 @@ async def _local_fill_with_repair(
     filled_text is None when all cycles failed; repairman_report contains the final diagnosis.
     """
     loop = asyncio.get_event_loop()
-    model = os.environ.get("AIMS_DRAFT_MODEL", "axi_omi_sphere")
+    model = AIMS_DOCUMENT_CREATOR_MODEL
 
     # First attempt (clean, no repairman pre-check)
     result = await loop.run_in_executor(None, _local_generate_fill_sync, blank_text)
     if result:
         return result, ""
+
+    # Quick repairman reachability check — skip the full cycle loop if repairman is down.
+    _gateway_url = "http://localhost:8082"
+    try:
+        import httpx as _httpx_hc
+        with _httpx_hc.Client(timeout=5.0) as _hc:
+            _hc.get(f"{_gateway_url}/health")
+    except Exception as _hc_exc:
+        _hc_msg = str(_hc_exc)
+        log.warning("doctuning: repairman unreachable, skipping repair loop: %s", _hc_msg)
+        return None, f"repairman unavailable: {_hc_msg}"
 
     log.warning(
         "doctuning: initial generation failed — starting repairman loop (max %d cycles)",
@@ -4477,6 +5807,494 @@ async def _local_fill_with_repair(
     return None, final_report
 
 
+def _xlsx_safe_text(value: object) -> str:
+    """Sanitize a value for an openpyxl string cell — prevent Excel formula injection.
+
+    Excel and LibreOffice treat any cell value starting with =, +, -, @, TAB, or CR
+    as a formula, producing #NAME? or unexpected evaluation.  For string-typed cells
+    written via openpyxl we prefix the problematic characters with a single apostrophe
+    (the canonical CSV/OOXML defense); the apostrophe is stored in the cell but not
+    displayed to the end user in most spreadsheet apps.
+    """
+    s = str(value) if value is not None else ""
+    if s and s[0] in ("=", "+", "-", "@", "\t", "\r", "|"):
+        s = "'" + s
+    return s
+
+
+def _create_doctuning_xlsx_candidate(
+    template_path: "Path | None",
+    reference_path: "Path | None",
+    chosen_text: str,
+    context: dict,
+    validation: dict,
+    output_path: "Path",
+) -> "Path":
+    """Build a validated XLSX candidate using the incoming workbook as base.
+
+    Strategy:
+    1. Select source: reference .xlsx first, then template .xlsx.
+    2. Copy source → output_path (never modifies the original).
+    3. Open copy; add/replace only AIMS_Review sheet; leave all other sheets untouched.
+    4. Save.
+    5. Validate with openpyxl (reopen).
+    6. If LibreOffice is available, additionally validate with headless convert.
+    7. On any failure raise — caller handles XLSX policy (no DOCX substitution).
+    """
+    import shutil
+    import subprocess
+    import tempfile
+
+    try:
+        from openpyxl import load_workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.utils import get_column_letter
+    except ImportError as _ie:
+        raise RuntimeError("openpyxl not available") from _ie
+
+    # Select source: filled/reference preferred, then blank/template
+    source_path: "Path | None" = None
+    for candidate_src in (reference_path, template_path):
+        if candidate_src and Path(candidate_src).exists() and Path(candidate_src).suffix.lower() == ".xlsx":
+            source_path = Path(candidate_src)
+            break
+
+    if source_path is None:
+        raise FileNotFoundError(
+            "No source .xlsx workbook available "
+            "(reference_path and template_path both absent or not .xlsx)"
+        )
+
+    # Copy source → output_path; original is never touched
+    try:
+        shutil.copy2(str(source_path), str(output_path))
+        log.info("doctuning xlsx: copied %s → %s", source_path, output_path)
+    except Exception as _e:
+        raise RuntimeError(f"Could not copy source workbook: {_e}") from _e
+
+    # Open the copy
+    try:
+        wb = load_workbook(str(output_path))
+    except Exception as _e:
+        Path(output_path).unlink(missing_ok=True)
+        raise RuntimeError(f"Could not open copied workbook: {_e}") from _e
+
+    # Add/replace AIMS_Review only — all other sheets left untouched
+    if "AIMS_Review" in wb.sheetnames:
+        del wb["AIMS_Review"]
+    ws = wb.create_sheet("AIMS_Review")
+
+    header_font = Font(bold=True)
+    header_fill = PatternFill("solid", fgColor="DCE6F1")
+    wrap = Alignment(wrap_text=True, vertical="top")
+
+    def _row(label: str, value: str, row_idx: int) -> None:
+        ws.cell(row=row_idx, column=1, value=label).font = header_font
+        ws.cell(row=row_idx, column=1).fill = header_fill
+        cell = ws.cell(row=row_idx, column=2, value=_xlsx_safe_text(value))
+        cell.alignment = wrap
+
+    row = 1
+    ws.cell(row=row, column=1, value="AIMS Doctuning Review").font = Font(bold=True, size=13)
+    row += 1
+
+    _row("Document type",       context.get("doc_type", "—"),                                   row); row += 1
+    _row("Equipment type",      context.get("equipment_type", "—"),                              row); row += 1
+    _row("Industry",            context.get("industry", "—"),                                   row); row += 1
+    _row("Standards",           ", ".join(context.get("standards", [])) or "—",                  row); row += 1
+    _row("Key terms",           ", ".join(context.get("key_terms", [])) or "—",                  row); row += 1
+    _row("Validation status",   validation.get("status", "—"),                                   row); row += 1
+    h = validation.get("hallucination_score")
+    _row("Hallucination score", f"{h:.3f}" if h is not None else "—",                            row); row += 1
+    er = validation.get("evidence_risk")
+    _row("Evidence/substantiation risk", f"{er:.3f}" if isinstance(er, float) else (str(er) if er is not None else "—"), row); row += 1
+    _row("Issues",              "\n".join(validation.get("issues", [])) or "none",               row); row += 1
+    _row("Missing fields",      "\n".join(validation.get("missing_fields", [])) or "none",      row); row += 1
+    _row("Validation gaps",     "\n".join(validation.get("validation_gaps", [])) or "none",     row); row += 1
+    _row("Unsupported claims",  "\n".join(validation.get("unsupported_claims", [])) or "none",  row); row += 1
+    _row("Recommendations",     "\n".join(validation.get("recommendations", [])) or "none",     row); row += 1
+    _row("Reason",              validation.get("reason", "—"),                                   row); row += 1
+
+    row += 1
+    ws.cell(row=row, column=1, value="Revised reference text").font = Font(bold=True)
+    row += 1
+    cell = ws.cell(row=row, column=2, value=_xlsx_safe_text(chosen_text))
+    cell.alignment = wrap
+
+    row += 2
+    _row(
+        "Note",
+        "Original workbook preserved; AIMS review added as separate sheet.",
+        row,
+    )
+
+    ws.column_dimensions[get_column_letter(1)].width = 26
+    ws.column_dimensions[get_column_letter(2)].width = 90
+
+    try:
+        wb.save(str(output_path))
+        log.info("doctuning xlsx: saved to %s", output_path)
+    except Exception as _e:
+        Path(output_path).unlink(missing_ok=True)
+        raise RuntimeError(f"openpyxl save failed: {_e}") from _e
+
+    # ── Validation 1: openpyxl reopen ────────────────────────────────────────
+    try:
+        load_workbook(str(output_path), data_only=False)
+        log.info("doctuning xlsx: openpyxl validation passed")
+    except Exception as exc:
+        log.warning("doctuning xlsx validation failed: %s", exc)
+        _xlsx_write_validation_failure(output_path, source_path, exc)
+        Path(output_path).unlink(missing_ok=True)
+        raise ValueError(f"XLSX failed openpyxl validation: {exc}") from exc
+
+    # ── Validation 2: LibreOffice headless convert (if available) ────────────
+    lo_bin = shutil.which("libreoffice") or shutil.which("soffice")
+    if lo_bin:
+        try:
+            with tempfile.TemporaryDirectory() as _tmpdir:
+                result = subprocess.run(
+                    [lo_bin, "--headless", "--convert-to", "xlsx",
+                     "--outdir", _tmpdir, str(output_path)],
+                    capture_output=True, text=True, timeout=90,
+                )
+            if result.returncode != 0:
+                raise RuntimeError(
+                    f"exit {result.returncode}: {result.stderr[:400]}"
+                )
+            log.info("doctuning xlsx: LibreOffice validation passed")
+        except Exception as exc:
+            log.warning("doctuning xlsx libreoffice validation failed: %s", exc)
+            _xlsx_write_validation_failure(output_path, source_path, exc)
+            Path(output_path).unlink(missing_ok=True)
+            raise ValueError(f"XLSX failed LibreOffice validation: {exc}") from exc
+    else:
+        log.info("doctuning xlsx: libreoffice not found — skipping LO validation")
+
+    return Path(output_path)
+
+
+def _xlsx_write_validation_failure(output_path: "Path", source_path: "Path | None", exc: Exception) -> None:
+    """Write a sidecar failure note to doctuning_debug/. Best-effort, not sent to user."""
+    try:
+        debug_dir = _doctuning_ws() / "training" / "doctuning_debug"
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        sidecar = debug_dir / (Path(output_path).stem + "_validation_failure.txt")
+        sidecar.write_text(
+            f"XLSX validation failed\nsource: {source_path}\nerror: {exc}\n",
+            encoding="utf-8",
+        )
+    except Exception:
+        pass
+
+
+async def _run_doctuning_continue_for_chat(
+    bot,
+    chat_id: int,
+    state: dict,
+    lang: str = "en",
+) -> None:
+    """Batch doctuning continuation: local rejected candidate + teacher audit → await_approval.
+
+    Replicates the normal-VRAM path of _handle_docfill_file step 'await_example'.
+    State must contain blank_text, filled_text, blank_name, content_hash, context_result.
+    On completion sets state['step'] = 'await_approval' and keeps state in _PENDING_DOCFILL.
+    """
+    loop = asyncio.get_event_loop()
+    blank_text = str(state.get("blank_text", ""))
+    filled_text = str(state.get("filled_text", ""))
+    blank_name = str(state.get("blank_name", "blank"))
+    content_hash = str(state.get("content_hash", ""))
+    ctx_res = state.get("context_result", {})
+    preferred_fmt = state.get("preferred_output_format", "docx")
+
+    # 1. Save context memo (informational — not the final training pair)
+    try:
+        memo_path = await loop.run_in_executor(None, _save_doctuning_memo, ctx_res, blank_name, content_hash)
+        log.info("doctuning batch: context memo saved: %s", memo_path)
+    except Exception as exc:
+        log.warning("doctuning batch: context memo save failed: %s", exc)
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text="⏳ Generating local rejected candidate and running teacher audit in parallel…",
+    )
+
+    # 2. Parallel: local fill + teacher validation
+    combined_result, (local_fill, repair_report) = await asyncio.gather(
+        loop.run_in_executor(None, _validate_and_extract_context_sync, blank_text, filled_text),
+        _local_fill_with_repair(blank_text),
+    )
+    verdict = combined_result.get("validation", {})
+    audit_error = combined_result.get("error")
+    h_score_raw = verdict.get("hallucination_score")
+    h_score = float(h_score_raw) if h_score_raw is not None else None
+    v_issues = verdict.get("issues", [])
+    v_status = verdict.get("status", "")
+    v_standards = verdict.get("standards_met", [])
+    v_reason = str(verdict.get("reason", ""))
+    audit_failed = (
+        bool(audit_error)
+        or v_status == "failed"
+        or "teacher_audit_failed" in v_issues
+        or h_score is None
+    )
+    if audit_failed:
+        _fail_b = _save_doctuning_failure_case(
+            stage="teacher_audit",
+            reason=v_reason or audit_error or "audit status=failed",
+            chat_id=chat_id,
+            state=state,
+            severity="error",
+            recoverable=True,
+        )
+        await loop.run_in_executor(
+            None, _request_repairman_investigation_for_doctuning_failure, _fail_b
+        )
+
+    # 3. Separate rejected (local draft) from chosen (teacher-revised or filled_text fallback)
+    if local_fill:
+        rejected_text = local_fill
+    else:
+        _local_fail_why = repair_report or "local generation failed"
+        rejected_text = f"LOCAL_DRAFT_UNAVAILABLE: {_local_fail_why}\n\n{blank_text}"
+        _fail_a = _save_doctuning_failure_case(
+            stage="local_rejected_generation",
+            reason=_local_fail_why,
+            chat_id=chat_id,
+            state=state,
+            severity="warning",
+            recoverable=True,
+        )
+        await loop.run_in_executor(
+            None, _request_repairman_investigation_for_doctuning_failure, _fail_a
+        )
+    # _validate_and_extract_context_sync returns context+validation+revised_reference.
+    # Check all plausible keys in case the schema is extended in the future.
+    chosen_text = (
+        combined_result.get("revised_reference")
+        or combined_result.get("revised_text")
+        or combined_result.get("chosen")
+        or combined_result.get("candidate")
+        or combined_result.get("reference_candidate")
+        or combined_result.get("output")
+        or None
+    )
+    teacher_revision_available = chosen_text is not None and not audit_failed
+    if not teacher_revision_available:
+        chosen_text = filled_text
+
+    # 4. Build candidate file from chosen_text — xlsx if requested, else docx/txt fallback
+    stem = Path(blank_name).stem or "candidate"
+    candidate_path: Path | None = None
+    xlsx_sent = False
+    _xlsx_generation_error: str = ""
+
+    if preferred_fmt == "xlsx":
+        _blank_path_str = str(state.get("blank_path", "")).strip()
+        _filled_path_str = str(state.get("filled_path", "")).strip()
+        _template_path = Path(_blank_path_str) if _blank_path_str else None
+        _reference_path = Path(_filled_path_str) if _filled_path_str else None
+        _ctx = combined_result.get("context") or {}
+        _val = combined_result.get("validation") or {}
+        _out = Path(f"/tmp/doctuning_candidate_{chat_id}_{stem}.xlsx")
+        try:
+            _xlsx_result = await loop.run_in_executor(
+                None,
+                _create_doctuning_xlsx_candidate,
+                _template_path if (_template_path and _template_path.exists()) else None,
+                _reference_path if (_reference_path and _reference_path.exists()) else None,
+                chosen_text,
+                _ctx,
+                _val,
+                _out,
+            )
+            if _xlsx_result and _xlsx_result.exists():
+                candidate_path = _xlsx_result
+            else:
+                _xlsx_generation_error = "generator returned no path"
+                log.warning("doctuning xlsx generation failed; no DOCX substitute sent: generator returned no path")
+        except Exception as _xlsx_exc:
+            _xlsx_generation_error = str(_xlsx_exc)
+            log.warning("doctuning xlsx generation failed; no DOCX substitute sent: %s", _xlsx_exc)
+
+        if candidate_path is None:
+            # Policy: do not substitute DOCX when user requested XLSX.
+            # Save a debug artifact (not sent to user), report failure, mark state as failed.
+            try:
+                debug_dir = _doctuning_ws() / "training" / "doctuning_debug"
+                debug_dir.mkdir(parents=True, exist_ok=True)
+                debug_file = debug_dir / f"doctuning_debug_{chat_id}_{stem}.docx"
+                try:
+                    from docx import Document as _DocxDocument
+                    _d = _DocxDocument()
+                    _d.add_paragraph(chosen_text)
+                    _d.save(str(debug_file))
+                except Exception:
+                    debug_file = debug_dir / f"doctuning_debug_{chat_id}_{stem}.txt"
+                    debug_file.write_text(chosen_text or "", encoding="utf-8")
+            except Exception as _de:
+                log.warning("doctuning batch: debug artifact write failed: %s", _de)
+
+            state.update({
+                "step": "candidate_generation_failed",
+                "candidate_path": "",
+                "preferred_output_format": "xlsx",
+                "xlsx_generation_error": _xlsx_generation_error,
+                "local_fill": rejected_text,
+                "rejected_candidate": rejected_text,
+                "filled_text": filled_text,
+                "chosen_candidate": chosen_text,
+                "candidate_text": chosen_text,
+                "repair_report": repair_report,
+                "nim_score": h_score,
+                "nim_issues": v_issues,
+                "nim_standards": v_standards,
+                "context_combined": combined_result.get("context") or {},
+                "validation_combined": combined_result.get("validation") or {},
+            })
+            _PENDING_DOCFILL[chat_id] = state
+            _fail_c = _save_doctuning_failure_case(
+                stage="xlsx_candidate_generation",
+                reason=_xlsx_generation_error or "xlsx candidate is None after generation",
+                chat_id=chat_id,
+                state=state,
+                severity="error",
+                recoverable=True,
+            )
+            await loop.run_in_executor(
+                None, _request_repairman_investigation_for_doctuning_failure, _fail_c
+            )
+            await bot.send_message(
+                chat_id=chat_id,
+                text=(
+                    "XLSX candidate generation failed validation. "
+                    "I did not send a DOCX substitute because the requested output format is Excel. "
+                    "The task is kept for repair."
+                ),
+            )
+            return
+
+    else:
+        # DOCX fallback (only when preferred_fmt is not xlsx)
+        try:
+            from docx import Document as _DocxDocument
+            doc_out = _DocxDocument()
+            doc_out.add_paragraph(chosen_text)
+            candidate_path = Path(f"/tmp/doctuning_candidate_{chat_id}_{stem}.docx")
+            doc_out.save(str(candidate_path))
+        except Exception as exc:
+            log.warning("doctuning batch: docx creation failed (%s) — using .txt fallback", exc)
+            try:
+                candidate_path = Path(f"/tmp/doctuning_candidate_{chat_id}_{stem}.txt")
+                candidate_path.write_text(chosen_text or "", encoding="utf-8")
+            except Exception as exc2:
+                log.error("doctuning batch: txt fallback also failed: %s", exc2)
+                candidate_path = None
+
+    # 5. Build caption and send candidate file
+    caption_parts = ["📄 Revised reference candidate"]
+    if not teacher_revision_available:
+        caption_parts.append(
+            "Teacher audit failed or revision output was unavailable; sending supplied reference as fallback candidate."
+        )
+    if repair_report:
+        caption_parts.append(f"⚠️ Repairman note: {repair_report[:200]}")
+    if candidate_path and candidate_path.suffix.lower() == ".xlsx":
+        caption_parts.append(
+            "Revised reference candidate is attached as XLSX. "
+            "The incoming workbook was used as the base and AIMS review notes were added in a separate sheet."
+        )
+    caption = "\n".join(caption_parts)
+
+    if candidate_path and candidate_path.exists():
+        try:
+            with open(candidate_path, "rb") as fh:
+                await bot.send_document(
+                    chat_id=chat_id,
+                    document=fh,
+                    filename=candidate_path.name,
+                    caption=caption[:1024],
+                )
+            if candidate_path.suffix.lower() == ".xlsx":
+                xlsx_sent = True
+        except Exception as exc:
+            log.warning("doctuning batch: send_document failed: %s", exc)
+            await bot.send_message(
+                chat_id=chat_id,
+                text="Candidate was generated but could not be sent. Please check logs.",
+            )
+        finally:
+            # Keep XLSX on disk — the approval step will resend and then unlink it.
+            if candidate_path and candidate_path.suffix.lower() != ".xlsx":
+                try:
+                    candidate_path.unlink(missing_ok=True)
+                except Exception:
+                    pass
+    else:
+        await bot.send_message(
+            chat_id=chat_id,
+            text="Candidate was generated but could not be sent. Please check logs.",
+        )
+
+    # 6. Update state → await_approval
+    state.update({
+        "step": "await_approval",
+        "local_fill": rejected_text,
+        "rejected_candidate": rejected_text,
+        "filled_text": filled_text,
+        "chosen_candidate": chosen_text,
+        "candidate_text": chosen_text,
+        "candidate_path": str(candidate_path) if candidate_path else "",
+        "repair_report": repair_report,
+        "nim_score": h_score,
+        "nim_issues": v_issues,
+        "nim_standards": v_standards,
+        "context_combined": combined_result.get("context") or {},
+        "validation_combined": combined_result.get("validation") or {},
+    })
+    _PENDING_DOCFILL[chat_id] = state
+
+    # 7. Show audit results + approval prompt
+    standards_text = ", ".join(v_standards) if v_standards else "—"
+    issues_lines = "\n".join(f"  {i+1}. {issue}" for i, issue in enumerate(v_issues))
+
+    if audit_failed:
+        nim_block = (
+            "⚠️ Teacher audit failed\n"
+            f"Reason: {_tg_plain(v_reason or audit_error or 'unknown')}\n\n"
+            "Revised reference was not generated by the teacher model.\n"
+            "You may still approve the fallback candidate or cancel.\n"
+            "Approve: /doctuning_approve\n"
+            "Cancel: /doctuning_cancel"
+        )
+    elif v_issues:
+        nim_block = (
+            f"📋 Omnirouter (Claude) — reference audit:\n"
+            f"Standards: {_tg_plain(standards_text)}\n"
+            f"Hallucination score: {h_score:.2f}\n\n"
+            f"Recommendations:\n{_tg_plain(issues_lines)}\n\n"
+            f"{_tg_plain(v_reason)}\n\n"
+            "Consider these points before approving.\n"
+            "Approve as master document: /doctuning_approve\n"
+            "Cancel: /doctuning_cancel"
+        )
+    else:
+        nim_block = (
+            f"✅ Omnirouter (Claude) — no issues found\n"
+            f"Standards: {_tg_plain(standards_text)}\n"
+            f"Hallucination score: {h_score:.2f} — {_tg_plain(v_reason)}\n\n"
+            "Approve as master document: /doctuning_approve\n"
+            "Cancel: /doctuning_cancel"
+        )
+
+    _dt_keyboard = InlineKeyboardMarkup([[
+        InlineKeyboardButton("✅ Approve master document", callback_data="dt_approve"),
+        InlineKeyboardButton("❌ Cancel", callback_data="dt_cancel"),
+    ]])
+    await _safe_send_message(bot, chat_id, nim_block, reply_markup=_dt_keyboard)
+
+
 def _docfill_save_dpo_pair(blank_text: str, chosen_text: str, rejected_text: str, doc_type: str) -> None:
     """Save doctuning DPO pair (human expert chosen, local model rejected)."""
     ws = Path(__file__).resolve().parent.parent
@@ -4492,6 +6310,16 @@ def _docfill_save_dpo_pair(blank_text: str, chosen_text: str, rejected_text: str
                 "rejected_score": 0.5,
                 "rejected_feedback": "Local model fill — to be improved toward human expert reference",
                 "pipeline": f"doctuning_{doc_type}",
+                "target_model": AIMS_DOCUMENT_CREATOR_MODEL,
+                "target_skill": "document_structure_generation",
+                "rejected_model": AIMS_DOCUMENT_CREATOR_MODEL,
+                "teacher_model": AIMS_DOCUMENT_TEACHER_MODEL,
+                "audit_model": AIMS_DOCUMENT_AUDIT_MODEL,
+                "teacher_models": {
+                    "standards_discovery": AIMS_DOCUMENT_TEACHER_MODEL,
+                    "audit": AIMS_DOCUMENT_AUDIT_MODEL,
+                    "quality_judge": AIMS_DOCUMENT_TEACHER_MODEL,
+                },
             }, ensure_ascii=False) + "\n")
         log.info("doctuning: DPO pair saved to standard_dpo_pairs.jsonl")
     except Exception as e:
@@ -4522,6 +6350,16 @@ def _docfill_save_training_pair(blank_text: str, filled_text: str, doc_type: str
             "doc_type": doc_type,
             "blank_name": source_name,
             "saved_at": datetime.now(timezone.utc).isoformat(),
+            "target_model": AIMS_DOCUMENT_CREATOR_MODEL,
+            "target_skill": "document_structure_generation",
+            "rejected_model": AIMS_DOCUMENT_CREATOR_MODEL,
+            "teacher_model": AIMS_DOCUMENT_TEACHER_MODEL,
+            "audit_model": AIMS_DOCUMENT_AUDIT_MODEL,
+            "teacher_models": {
+                "standards_discovery": AIMS_DOCUMENT_TEACHER_MODEL,
+                "audit": AIMS_DOCUMENT_AUDIT_MODEL,
+                "quality_judge": AIMS_DOCUMENT_TEACHER_MODEL,
+            },
         },
     }
     with out_file.open("a", encoding="utf-8") as f:
@@ -4529,32 +6367,141 @@ def _docfill_save_training_pair(blank_text: str, filled_text: str, doc_type: str
     return out_file
 
 
-def _docfill_save_to_omi(title: str, content: str, doc_type: str) -> str | None:
-    """Save master document to OmiAgent via /documents API."""
-    try:
-        import urllib.request as _ur
-        payload = json.dumps({
-            "action": "create_master",
-            "title": title,
-            "content": content,
-            "metadata": {
-                "doc_type": doc_type,
-                "source": "axi_docfill",
-                "created_at": datetime.now(timezone.utc).isoformat(),
+def _doc_creator_120b_save(
+    *,
+    pair_type: str,
+    blank_text: str,
+    filled_text: str,
+    doc_type: str,
+    source_name: str,
+    extra_meta: dict | None = None,
+) -> Path:
+    """Save a training record to the 120B document-creator training pool.
+
+    pair_type must be one of: template_fill_pairs, approved_master_pairs,
+    audit_revision_pairs, failed_generation_cases, structure_pairs.
+    """
+    subdir = AIMS_DOC_CREATOR_TRAINING_DIR / pair_type
+    subdir.mkdir(parents=True, exist_ok=True)
+    out_file = subdir / f"train_{pair_type}.jsonl"
+    meta: dict = {
+        "source": source_name,
+        "doc_type": doc_type,
+        "pair_type": pair_type,
+        "saved_at": datetime.now(timezone.utc).isoformat(),
+        "target_model": AIMS_DOCUMENT_CREATOR_MODEL,
+        "target_skill": "document_structure_generation",
+        "teacher_model": AIMS_DOCUMENT_TEACHER_MODEL,
+        "audit_model": AIMS_DOCUMENT_AUDIT_MODEL,
+    }
+    if extra_meta:
+        meta.update(extra_meta)
+    record = {
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are an AIMS document specialist. When given a blank technical form, "
+                    "fill in all fields accurately for the specified equipment type based on "
+                    "industrial maintenance and safety standards."
+                ),
             },
-        }).encode()
+            {"role": "user", "content": f"Fill in this form:\n\n{blank_text}"},
+            {"role": "assistant", "content": filled_text},
+        ],
+        "_meta": meta,
+    }
+    with out_file.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    return out_file
+
+
+def _doc_creator_120b_save_failed(
+    *,
+    blank_text: str,
+    doc_type: str,
+    source_name: str,
+    repair_report: str,
+) -> None:
+    """Record a failed 120B generation attempt for later analysis."""
+    subdir = AIMS_DOC_CREATOR_TRAINING_DIR / "failed_generation_cases"
+    subdir.mkdir(parents=True, exist_ok=True)
+    out_file = subdir / "failed_generation_cases.jsonl"
+    record = {
+        "blank_text": blank_text[:2000],
+        "doc_type": doc_type,
+        "source_name": source_name,
+        "repair_report": repair_report,
+        "saved_at": datetime.now(timezone.utc).isoformat(),
+        "target_model": AIMS_DOCUMENT_CREATOR_MODEL,
+    }
+    try:
+        with out_file.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception as e:
+        log.warning("doc_creator_120b failed-case save error: %s", e)
+
+
+def _docfill_save_to_omi(title: str, content: str, doc_type: str) -> str | None:
+    """Optional future path: register master document via OmiAgent POST /documents.
+
+    Only call this when a real /documents endpoint is confirmed to exist.
+    As of 2026-05: omi-api returns 404 on /documents — use _queue_to_omi_batch_inbox instead.
+    Returns doc_id string on success.
+    Raises RuntimeError on HTTP/network/parse failure.
+    """
+    import uuid as _uuid
+    import urllib.request as _ur
+    import urllib.error as _ue
+
+    base_url = (
+        os.environ.get("OMI_API_URL")
+        or os.environ.get("OMI_URL")
+        or os.environ.get("AIMS_OMI_URL")
+        or "http://localhost:8008"
+    ).rstrip("/")
+    url = f"{base_url}/documents"
+    task_id = f"doctuning-{_uuid.uuid4().hex[:12]}"
+
+    payload = json.dumps({
+        "task_id": task_id,
+        "title": title,
+        "doc_type": doc_type,
+        "status": "master",
+        "quality_score": 0.0,
+        "summary": (content or "")[:500],
+        "metadata": {
+            "source": "doctuning_batch_training_pair",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        },
+    }).encode()
+
+    log.info("docfill_save_to_omi: POST %s task_id=%s title=%r", url, task_id, title[:80])
+    try:
         req = _ur.Request(
-            "http://localhost:8008/documents",
+            url,
             data=payload,
             headers={"Content-Type": "application/json"},
             method="POST",
         )
         with _ur.urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read())
-            return result.get("id") or result.get("document_id")
-    except Exception as e:
-        log.warning("docfill save to omi failed: %s", e)
-        return None
+            status_code = resp.status
+            body = resp.read().decode("utf-8", errors="replace")
+            log.info("docfill_save_to_omi: HTTP %s body=%r", status_code, body[:500])
+            result = json.loads(body)
+            doc_id = (
+                result.get("doc_id")
+                or result.get("id")
+                or result.get("document_id")
+            )
+            if doc_id:
+                return str(doc_id)
+            raise ValueError(f"OmiAgent returned no id field: body={body[:300]!r}")
+    except _ue.HTTPError as http_exc:
+        body_text = (http_exc.read() or b"").decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(
+            f"OmiAgent HTTP {http_exc.code}: url={url} body={body_text!r}"
+        ) from http_exc
 
 
 async def _handle_docfill_file(
@@ -4599,15 +6546,15 @@ async def _handle_docfill_file(
     if step == "await_blank":
         state["blank_path"] = str(tmp_path)
         state["blank_name"] = file_name
+        state["blank_suffix"] = suffix
         state["step"] = "await_example"
         _PENDING_DOCFILL[chat_id] = state
         await update.message.reply_text(
-            f"✅ Шаблон принят: `{file_name}`\n\n"
-            "Теперь загрузите **эталонный заполненный** документ (файл 2 из 2)."
+            f"✅ Шаблон принят: {_tg_plain(file_name)}\n\n"
+            "Теперь загрузите эталонный заполненный документ (файл 2 из 2)."
             if lang == "ru" else
-            f"✅ Template accepted: `{file_name}`\n\n"
-            "Now send the **filled reference** document (file 2 of 2).",
-            parse_mode="Markdown",
+            f"✅ Template accepted: {_tg_plain(file_name)}\n\n"
+            "Now send the filled reference document (file 2 of 2).",
         )
         return
 
@@ -4616,6 +6563,9 @@ async def _handle_docfill_file(
         blank_name = str(state.get("blank_name", "blank"))
         doc_type = str(state.get("doc_type", "procedure"))
         filled_name = Path(file_name).stem
+        _blank_suffix = state.get("blank_suffix", Path(blank_name).suffix.lower())
+        state["filled_suffix"] = suffix
+        state["preferred_output_format"] = "xlsx" if _blank_suffix == ".xlsx" or suffix == ".xlsx" else "docx"
         state["step"] = "validating"
         _PENDING_DOCFILL[chat_id] = state
 
@@ -4636,7 +6586,7 @@ async def _handle_docfill_file(
         # ── Preflight: check Ollama availability and VRAM ────────────────────
         ollama_alive = await loop.run_in_executor(None, _check_ollama_alive_sync)
         vram_free_gb = await loop.run_in_executor(None, _check_vram_free_gb_sync)
-        model = os.environ.get("AIMS_DRAFT_MODEL", "axi_omi_sphere")
+        model = AIMS_DOCUMENT_CREATOR_MODEL
 
         if not ollama_alive:
             await update.message.reply_text(
@@ -4672,16 +6622,15 @@ async def _handle_docfill_file(
             repair_report = ""
         else:
             await update.message.reply_text(
-                f"✅ Эталон принят: `{file_name}`\n\n"
+                f"✅ Эталон принят: {_tg_plain(file_name)}\n\n"
                 "⏳ Запускаю два параллельных пути:\n"
                 "  • Локальная модель заполняет шаблон (rejected)\n"
                 "  • Omnirouter (Claude) проверяет ваш эталон по стандартам…"
                 if lang == "ru" else
-                f"✅ Reference accepted: `{file_name}`\n\n"
+                f"✅ Reference accepted: {_tg_plain(file_name)}\n\n"
                 "⏳ Running two parallel paths:\n"
                 "  • Local model fills the blank (rejected candidate)\n"
                 "  • Omnirouter (Claude) audits your reference against standards…",
-                parse_mode="Markdown",
             )
             # Wait for repair task to complete (if repairman was launched for ollama-down)
             if repair_task is not None:
@@ -4727,40 +6676,40 @@ async def _handle_docfill_file(
 
         if v_issues:
             nim_block = (
-                f"📋 **Omnirouter (Claude) — замечания по эталону:**\n"
-                f"Стандарты: {standards_text}\n"
-                f"Hallucination score: `{h_score:.2f}`\n\n"
-                f"Замечания:\n{issues_lines}\n\n"
-                f"_{v_reason}_\n\n"
+                f"📋 Omnirouter (Claude) — замечания по эталону:\n"
+                f"Стандарты: {_tg_plain(standards_text)}\n"
+                f"Hallucination score: {h_score:.2f}\n\n"
+                f"Замечания:\n{_tg_plain(issues_lines)}\n\n"
+                f"{_tg_plain(v_reason)}\n\n"
                 "Учтите замечания при финальном решении.\n"
-                "Подтвердить как мастер-документ: `/doctuning_approve`\n"
-                "Отмена: `/doctuning_cancel`"
+                "Подтвердить как мастер-документ: /doctuning_approve\n"
+                "Отмена: /doctuning_cancel"
                 if lang == "ru" else
-                f"📋 **Omnirouter (Claude) — reference audit:**\n"
-                f"Standards: {standards_text}\n"
-                f"Hallucination score: `{h_score:.2f}`\n\n"
-                f"Recommendations:\n{issues_lines}\n\n"
-                f"_{v_reason}_\n\n"
+                f"📋 Omnirouter (Claude) — reference audit:\n"
+                f"Standards: {_tg_plain(standards_text)}\n"
+                f"Hallucination score: {h_score:.2f}\n\n"
+                f"Recommendations:\n{_tg_plain(issues_lines)}\n\n"
+                f"{_tg_plain(v_reason)}\n\n"
                 "Consider these points before approving.\n"
-                "Approve as master document: `/doctuning_approve`\n"
-                "Cancel: `/doctuning_cancel`"
+                "Approve as master document: /doctuning_approve\n"
+                "Cancel: /doctuning_cancel"
             )
         else:
             nim_block = (
-                f"✅ **Omnirouter (Claude) — замечаний нет**\n"
-                f"Стандарты: {standards_text}\n"
-                f"Hallucination score: `{h_score:.2f}` — {v_reason}\n\n"
-                "Подтвердить как мастер-документ: `/doctuning_approve`\n"
-                "Отмена: `/doctuning_cancel`"
+                f"✅ Omnirouter (Claude) — замечаний нет\n"
+                f"Стандарты: {_tg_plain(standards_text)}\n"
+                f"Hallucination score: {h_score:.2f} — {_tg_plain(v_reason)}\n\n"
+                "Подтвердить как мастер-документ: /doctuning_approve\n"
+                "Отмена: /doctuning_cancel"
                 if lang == "ru" else
-                f"✅ **Omnirouter (Claude) — no issues found**\n"
-                f"Standards: {standards_text}\n"
-                f"Hallucination score: `{h_score:.2f}` — {v_reason}\n\n"
-                "Approve as master document: `/doctuning_approve`\n"
-                "Cancel: `/doctuning_cancel`"
+                f"✅ Omnirouter (Claude) — no issues found\n"
+                f"Standards: {_tg_plain(standards_text)}\n"
+                f"Hallucination score: {h_score:.2f} — {_tg_plain(v_reason)}\n\n"
+                "Approve as master document: /doctuning_approve\n"
+                "Cancel: /doctuning_cancel"
             )
 
-        await update.message.reply_text(nim_block, parse_mode="Markdown")
+        await _safe_send_message(ctx.bot, chat_id, nim_block)
         # Don't delete tmp_path yet — keep for cleanup after approval
         return
 
@@ -4878,6 +6827,768 @@ async def _job_docfill_vram_monitor(ctx: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
 
+async def _approve_doctuning_for_chat(
+    bot,
+    chat_id: int,
+    state: dict,
+    lang: str = "en",
+) -> None:
+    """Shared approval handler for batch_training_pair source.
+
+    Works from both /doctuning_approve command and the dt_approve inline callback.
+    Uses bot.send_message / bot.send_document so it is not tied to a specific Update.
+    """
+    loop = asyncio.get_event_loop()
+
+    blank_text    = str(state.get("blank_text", ""))
+    filled_text   = str(state.get("filled_text", ""))
+    blank_name    = str(state.get("blank_name", "blank"))
+    doc_type      = str(state.get("doc_type", "procedure"))
+    nim_issues    = state.get("nim_issues") or []
+    nim_standards = state.get("nim_standards") or []
+    nim_score     = state.get("nim_score")
+    ctx_result    = state.get("context_result") or {}
+    ctx_combined  = state.get("context_combined") or {}
+    val_combined  = state.get("validation_combined") or {}
+    preferred_output_format = str(state.get("preferred_output_format", "docx")).lower()
+    candidate_path_raw = str(state.get("candidate_path", "") or "")
+    candidate_path = Path(candidate_path_raw) if candidate_path_raw else None
+
+    chosen_text = (
+        state.get("chosen_candidate")
+        or state.get("candidate_text")
+        or filled_text
+    )
+    rejected_text = (
+        state.get("rejected_candidate")
+        or state.get("local_fill")
+        or f"LOCAL_DRAFT_UNAVAILABLE: approval path fallback\n\n{blank_text}"
+    )
+
+    await bot.send_message(
+        chat_id=chat_id,
+        text="⏳ Saving training pair and queuing master document for Omi ingestion…",
+    )
+
+    # 1. Queue master document to Omi batch inbox (primary path).
+    #    POST /documents is not available on current omi-api; inbox is the correct handoff.
+    doc_title = f"{doc_type.title()} — {blank_name}"
+    omi_id: str | None = None
+    master_doc_status: str = "not_attempted"
+    master_doc_path: str = "local_only"
+    master_doc_error: str = ""
+
+    log.info("batch_training_pair: queuing master document to Omi batch inbox: title=%r", doc_title)
+    try:
+        import functools as _functools
+        _inbox_ts = datetime.now(timezone.utc)
+        _inbox_name = (
+            f"doctuning_{chat_id}_{_inbox_ts.strftime('%Y%m%d_%H%M%S')}.txt"
+        )
+        _omi_queue_tmp_dir = _doctuning_ws() / "training" / "doctuning_omi_queue_tmp"
+        _omi_queue_tmp_dir.mkdir(parents=True, exist_ok=True)
+        _inbox_tmp = _omi_queue_tmp_dir / _inbox_name
+        _inbox_tmp.write_text(chosen_text or "", encoding="utf-8")
+        _inbox_meta = {
+            "source": "doctuning_batch_training_pair",
+            "title": doc_title,
+            "doc_type": doc_type,
+            "chat_id": chat_id,
+            "created_at": _inbox_ts.isoformat(),
+            "pair_path": None,
+            "status": "master",
+            "master_document_status": "queued_for_omi_ingestion",
+            "ingest_intent": "master_document_registration",
+        }
+        _queued_path = await loop.run_in_executor(
+            None,
+            _functools.partial(
+                _queue_to_omi_batch_inbox, _inbox_tmp, _inbox_name, meta=_inbox_meta
+            ),
+        )
+        master_doc_status = "queued_for_omi_ingestion"
+        master_doc_path = f"omi_inbox:{_queued_path}"
+        log.info(
+            "batch_training_pair: master doc queued to omi inbox: %s queue_path=%s",
+            _inbox_name, _queued_path,
+        )
+    except Exception as _q_exc:
+        master_doc_status = "omi_failed"
+        master_doc_path = "local_only"
+        master_doc_error = str(_q_exc)
+        log.error("batch_training_pair: omi inbox queue failed: %s", _q_exc, exc_info=True)
+
+    # 2. Save JSON training pair (must not be blocked by Omi failure)
+    now_ts = datetime.now(timezone.utc)
+    pair_dir = _doctuning_ws() / "training" / "doctuning_pairs"
+    pair_dir.mkdir(parents=True, exist_ok=True)
+    pair_fname = f"{now_ts.strftime('%Y%m%d_%H%M%S')}_{chat_id}.json"
+    pair_path = pair_dir / pair_fname
+    _ctx_for_pair = ctx_combined or ctx_result or {}
+    pair_data = {
+        "source": "batch_training_pair",
+        "created_at": now_ts.isoformat(),
+        "approved_at": now_ts.isoformat(),
+        "input": {
+            "template": blank_text,
+            "context": _ctx_for_pair,
+            "standards": nim_standards,
+        },
+        "chosen": chosen_text,
+        "rejected": rejected_text,
+        "context": _ctx_for_pair,
+        "validation": val_combined or {
+            "hallucination_score": nim_score,
+            "issues": nim_issues,
+            "standards_met": nim_standards,
+        },
+        "candidate_path": str(pair_path),
+        "master_document_status": master_doc_status,
+        "master_document_path": master_doc_path,
+        "master_document_error": master_doc_error,
+    }
+    pair_saved = False
+    pair_save_error: str | None = None
+    try:
+        pair_path.write_text(json.dumps(pair_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        if not pair_path.exists() or pair_path.stat().st_size == 0:
+            raise ValueError("pair file missing or empty after write")
+        json.loads(pair_path.read_text(encoding="utf-8"))
+        pair_saved = True
+        log.info("batch_training_pair: pair saved verified: %s (%d bytes)", pair_path, pair_path.stat().st_size)
+    except Exception as _e:
+        pair_save_error = str(_e)
+        log.error("batch_training_pair: pair save failed: %s | path=%s", _e, pair_path, exc_info=True)
+
+    # Point D — Omi registration failure case
+    if master_doc_status == "omi_failed":
+        _fail_d = _save_doctuning_failure_case(
+            stage="omi_registration",
+            reason=master_doc_error or "OmiAgent registration failed",
+            chat_id=chat_id,
+            state=state,
+            pair_path=str(pair_path) if pair_saved else None,
+            severity="warning" if pair_saved else "error",
+            recoverable=True,
+        )
+        await asyncio.get_event_loop().run_in_executor(
+            None, _request_repairman_investigation_for_doctuning_failure, _fail_d
+        )
+
+    # Point E — training pair save failure case
+    if not pair_saved:
+        _fail_e = _save_doctuning_failure_case(
+            stage="training_pair_save",
+            reason=pair_save_error or "pair save returned False",
+            chat_id=chat_id,
+            state=state,
+            severity="critical",
+            recoverable=True,
+        )
+        await asyncio.get_event_loop().run_in_executor(
+            None, _request_repairman_investigation_for_doctuning_failure, _fail_e
+        )
+
+    # 3. Send approved document file back to user
+    stem = Path(blank_name).stem or "approved"
+    approved_path: Path | None = None
+    file_sent = False
+    log.info(
+        "batch_training_pair: approved output format=%s candidate_path=%s",
+        preferred_output_format,
+        candidate_path,
+    )
+
+    if preferred_output_format == "xlsx":
+        if (
+            candidate_path is not None
+            and candidate_path.exists()
+            and candidate_path.suffix.lower() == ".xlsx"
+        ):
+            approved_path = candidate_path
+            log.info("batch_training_pair: sending approved xlsx=%s", approved_path)
+            try:
+                with open(approved_path, "rb") as _fh:
+                    await bot.send_document(
+                        chat_id=chat_id,
+                        document=_fh,
+                        filename=approved_path.name,
+                        caption="✅ Approved master document",
+                        reply_markup=_document_delivery_feedback_markup(
+                            chat_id,
+                            approved_path,
+                            caption="✅ Approved master document",
+                            original_request=str(state.get("task_description") or state.get("blank_name") or ""),
+                            source="approved_master_document",
+                        ),
+                    )
+                file_sent = True
+            except Exception as _e:
+                log.warning("batch_training_pair: send approved xlsx failed: %s", _e)
+                _fail_f_xlsx = _save_doctuning_failure_case(
+                    stage="telegram_send_document",
+                    reason=str(_e),
+                    chat_id=chat_id,
+                    state=state,
+                    pair_path=str(pair_path) if pair_saved else None,
+                    severity="error",
+                    recoverable=True,
+                )
+                await asyncio.get_event_loop().run_in_executor(
+                    None, _request_repairman_investigation_for_doctuning_failure, _fail_f_xlsx
+                )
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text="Candidate was generated but could not be sent. Please check logs.",
+                )
+        else:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=(
+                    "Approved training pair was saved, but the approved XLSX document "
+                    "could not be resent because the candidate file is missing."
+                ),
+            )
+    else:
+        try:
+            from docx import Document as _DocxDocument
+            doc_out = _DocxDocument()
+            doc_out.add_paragraph(chosen_text)
+            approved_path = Path(f"/tmp/doctuning_approved_{chat_id}_{stem}.docx")
+            doc_out.save(str(approved_path))
+        except Exception:
+            try:
+                approved_path = Path(f"/tmp/doctuning_approved_{chat_id}_{stem}.txt")
+                approved_path.write_text(chosen_text, encoding="utf-8")
+            except Exception as _e2:
+                log.error("batch_training_pair: approved file creation failed: %s", _e2)
+                approved_path = None
+
+        if approved_path and approved_path.exists():
+            try:
+                with open(approved_path, "rb") as _fh:
+                    await bot.send_document(
+                        chat_id=chat_id,
+                        document=_fh,
+                        filename=approved_path.name,
+                        caption="✅ Approved master document",
+                        reply_markup=_document_delivery_feedback_markup(
+                            chat_id,
+                            approved_path,
+                            caption="✅ Approved master document",
+                            original_request=str(state.get("task_description") or state.get("blank_name") or ""),
+                            source="approved_master_document",
+                        ),
+                    )
+                file_sent = True
+            except Exception as _e:
+                log.warning("batch_training_pair: send approved doc failed: %s", _e)
+                _fail_f_doc = _save_doctuning_failure_case(
+                    stage="telegram_send_document",
+                    reason=str(_e),
+                    chat_id=chat_id,
+                    state=state,
+                    pair_path=str(pair_path) if pair_saved else None,
+                    severity="error",
+                    recoverable=True,
+                )
+                await asyncio.get_event_loop().run_in_executor(
+                    None, _request_repairman_investigation_for_doctuning_failure, _fail_f_doc
+                )
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text="Candidate was generated but could not be sent. Please check logs.",
+                )
+            finally:
+                try:
+                    approved_path.unlink(missing_ok=True)
+                except Exception:
+                    pass
+
+    # 4. Cleanup and confirmation
+    _PENDING_DOCFILL.pop(chat_id, None)
+
+    lines = ["✅ Approved and saved (batch training pair):"]
+    if pair_saved:
+        lines.append(f"  Training pair: {_tg_plain(pair_path.resolve())}")
+        lines.append(f"  training_pair_saved:{_tg_plain(pair_path.resolve())}")
+    else:
+        lines.append("  ⚠️ Training pair was not saved. See logs.")
+
+    if master_doc_status == "registered":
+        lines.append(f"  Master document registered in OmiAgent (id={_tg_plain(omi_id)}): {_tg_plain(doc_title)}")
+    elif master_doc_status == "queued_for_omi_ingestion":
+        lines.append(f"  Master document queued for Omi ingestion: {_tg_plain(master_doc_path)}")
+    elif master_doc_status == "omi_failed":
+        lines.append("  ⚠️ OmiAgent registration failed and a repair case was queued.")
+
+    if not file_sent and approved_path is None:
+        lines.append("  ⚠️ Approved document file could not be generated.")
+
+    await _safe_send_message(bot, chat_id, "\n".join(lines))
+
+
+async def _doctuning_callback_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle dt_approve and dt_cancel inline button callbacks."""
+    query = update.callback_query
+    if query is None:
+        return
+    await query.answer()
+
+    chat_id = query.message.chat_id if query.message else None
+    if chat_id is None:
+        return
+
+    lang = AXI_FORCE_REPLY_LANG if AXI_FORCE_REPLY_LANG in ("en", "ru") else "ru"
+
+    if query.data == "dt_approve":
+        state = _PENDING_DOCFILL.get(chat_id)
+        if not state or state.get("step") != "await_approval":
+            await ctx.bot.send_message(
+                chat_id=chat_id,
+                text="No pending approval. Start with /doctuning.",
+            )
+            return
+        if chat_id in _DOCFILL_VRAM_QUEUE:
+            await ctx.bot.send_message(
+                chat_id=chat_id,
+                text=(
+                    "⏳ Local generation is still queued (waiting for VRAM).\n"
+                    "I'll notify you when it's done — approve then.\n"
+                    "Or /doctuning_cancel to cancel (DPO pair will be skipped)."
+                ),
+            )
+            return
+        if state.get("source") == "batch_training_pair":
+            await _approve_doctuning_for_chat(ctx.bot, chat_id, state, lang)
+        else:
+            await ctx.bot.send_message(
+                chat_id=chat_id,
+                text="Use /doctuning_approve to approve this document type.",
+            )
+
+    elif query.data == "dt_cancel":
+        state = _PENDING_DOCFILL.pop(chat_id, None)
+        if state:
+            await ctx.bot.send_message(chat_id=chat_id, text="❌ Doctuning cancelled.")
+        else:
+            await ctx.bot.send_message(chat_id=chat_id, text="No active doctuning session to cancel.")
+
+
+async def _handle_docreview_file(
+    update: Update, ctx: ContextTypes.DEFAULT_TYPE, chat_id: int
+) -> None:
+    """Download the uploaded doc for a single-document review session."""
+    if update.message is None or update.message.document is None:
+        return
+    doc = update.message.document
+    file_name = doc.file_name or f"upload_{doc.file_id[-8:]}"
+    staging_dir = _DI_INTAKE_DIR / "staging" / str(chat_id)
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    local_path = staging_dir / file_name
+    tg_file = await ctx.bot.get_file(doc.file_id)
+    await tg_file.download_to_drive(str(local_path))
+
+    state = _PENDING_DOCREVIEW[chat_id]
+    state.setdefault("files", []).append({
+        "filename": file_name,
+        "original_name": file_name,
+        "local_path": str(local_path),
+        "file_id": doc.file_id,
+    })
+    state["step"] = "ready"
+
+    kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("Evaluate", callback_data="dr_standards_yes"),
+        InlineKeyboardButton("No", callback_data="dr_standards_no"),
+    ]])
+    await update.message.reply_text(
+        "Do you want to verify the document against standards?",
+        reply_markup=kb,
+    )
+
+
+async def _di_start_session(
+    update: Update, ctx: ContextTypes.DEFAULT_TYPE, chat_id: int
+) -> None:
+    """Start a new doc intake session: download the first document and ask for more."""
+    if update.message is None or update.message.document is None:
+        return
+    doc = update.message.document
+    file_name = doc.file_name or f"upload_{doc.file_id[-8:]}"
+    intake_session_id = __import__("uuid").uuid4().hex[:10]
+    prompt_version = 1
+
+    # Use session-specific staging, not chat-wide staging, so old test uploads
+    # cannot leak into a new document package.
+    staging_dir = _DI_INTAKE_DIR / "staging" / intake_session_id
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    local_path = staging_dir / file_name
+    tg_file = await ctx.bot.get_file(doc.file_id)
+    await tg_file.download_to_drive(str(local_path))
+    _PENDING_DOC_INTAKE[chat_id] = {
+        "step": "await_more",
+        "intake_session_id": intake_session_id,
+        "prompt_version": prompt_version,
+        "files": [{
+            "filename": file_name,
+            "original_name": file_name,
+            "local_path": str(local_path),
+            "file_id": doc.file_id,
+        }],
+    }
+
+    kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("Yes", callback_data=f"di_more:{intake_session_id}:{prompt_version}"),
+        InlineKeyboardButton("No", callback_data=f"di_enough:{intake_session_id}:{prompt_version}"),
+    ]])
+    sent_msg = await update.message.reply_text(
+        f"Received: {file_name}\nAny more documents?",
+        reply_markup=kb,
+    )
+    _PENDING_DOC_INTAKE[chat_id]["last_prompt_message_id"] = sent_msg.message_id
+
+
+async def _di_add_document(
+    update: Update, ctx: ContextTypes.DEFAULT_TYPE, chat_id: int
+) -> None:
+    """Add another document to an active intake session."""
+    if update.message is None or update.message.document is None:
+        return
+    doc = update.message.document
+    file_name = doc.file_name or f"upload_{doc.file_id[-8:]}"
+
+    state = _PENDING_DOC_INTAKE[chat_id]
+    if not state.get("intake_session_id"):
+        state["intake_session_id"] = __import__("uuid").uuid4().hex[:10]
+
+    # Add files to the current intake session folder only.
+    staging_dir = _DI_INTAKE_DIR / "staging" / str(state["intake_session_id"])
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    local_path = staging_dir / file_name
+    tg_file = await ctx.bot.get_file(doc.file_id)
+    await tg_file.download_to_drive(str(local_path))
+
+    # Delete previous Yes/No prompt so the chat keeps only the latest intake prompt.
+    # Fallback to removing only the keyboard if Telegram refuses deletion.
+    old_prompt_message_id = state.get("last_prompt_message_id")
+    if old_prompt_message_id:
+        try:
+            await ctx.bot.delete_message(
+                chat_id=chat_id,
+                message_id=int(old_prompt_message_id),
+            )
+        except Exception as exc:
+            log.debug("doc intake: could not delete old prompt message: %s", exc)
+            try:
+                await ctx.bot.edit_message_reply_markup(
+                    chat_id=chat_id,
+                    message_id=int(old_prompt_message_id),
+                    reply_markup=None,
+                )
+            except Exception as exc2:
+                log.debug("doc intake: could not clear old prompt keyboard: %s", exc2)
+
+    if not state.get("intake_session_id"):
+        state["intake_session_id"] = __import__("uuid").uuid4().hex[:10]
+    state["prompt_version"] = int(state.get("prompt_version") or 0) + 1
+    intake_session_id = state["intake_session_id"]
+    prompt_version = state["prompt_version"]
+    state["files"].append({
+        "filename": file_name,
+        "original_name": file_name,
+        "local_path": str(local_path),
+        "file_id": doc.file_id,
+    })
+    _PENDING_DOC_INTAKE[chat_id] = state
+
+    kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("Yes", callback_data=f"di_more:{intake_session_id}:{prompt_version}"),
+        InlineKeyboardButton("No", callback_data=f"di_enough:{intake_session_id}:{prompt_version}"),
+    ]])
+    count = len(state["files"])
+    sent_msg = await update.message.reply_text(
+        f"Received: {file_name} ({count} document{'s' if count > 1 else ''} total)\nAny more documents?",
+        reply_markup=kb,
+    )
+    state["last_prompt_message_id"] = sent_msg.message_id
+    _PENDING_DOC_INTAKE[chat_id] = state
+
+
+async def _di_receive_task(
+    update: Update, ctx: ContextTypes.DEFAULT_TYPE, chat_id: int
+) -> None:
+    """Receive task description text and present mode selection."""
+    if update.message is None:
+        return
+    task_text = (update.message.text or "").strip()
+    if not task_text:
+        return
+    state = _PENDING_DOC_INTAKE[chat_id]
+    state["task_description"] = task_text
+    state["step"] = "await_mode"
+    state["task_prompt_sent"] = True
+    _PENDING_DOC_INTAKE[chat_id] = state
+    await update.message.reply_text("Task received. Choose processing mode.")
+    await _di_ask_mode(update, ctx, chat_id)
+
+
+async def _di_ask_mode(
+    update: Update, ctx: ContextTypes.DEFAULT_TYPE, chat_id: int
+) -> None:
+    """Present mode-selection buttons based on document count."""
+    state = _PENDING_DOC_INTAKE.get(chat_id, {})
+    count = len(state.get("files", []))
+
+    if count == 1:
+        kb = InlineKeyboardMarkup([[
+            InlineKeyboardButton("Evaluate", callback_data="di_one_evaluate"),
+            InlineKeyboardButton("No", callback_data="di_cancel"),
+        ]])
+        text = "1 document received. Evaluate against standards?"
+    elif count == 2:
+        kb = InlineKeyboardMarkup([[
+            InlineKeyboardButton("Tuning", callback_data="di_two_tuning"),
+            InlineKeyboardButton("Consolidate", callback_data="di_two_consolidate"),
+        ]])
+        text = "2 documents received. Create a tuning pair or compare and consolidate documents?"
+    else:
+        kb = InlineKeyboardMarkup([[
+            InlineKeyboardButton("Register", callback_data="di_multi_register"),
+            InlineKeyboardButton("Consolidate", callback_data="di_multi_consolidate"),
+        ]])
+        text = f"{count} documents received. Register documents or compare and consolidate into one document?"
+
+    if update.message:
+        await update.message.reply_text(text, reply_markup=kb)
+    elif update.callback_query and update.callback_query.message:
+        await update.callback_query.message.reply_text(text, reply_markup=kb)
+
+
+async def _di_callback_handler(
+    update: Update, ctx: ContextTypes.DEFAULT_TYPE
+) -> None:
+    """Handle all di_* and dr_* inline button callbacks."""
+    query = update.callback_query
+    if query is None:
+        return
+    await query.answer()
+    chat_id = query.message.chat_id if query.message else None
+    if chat_id is None:
+        return
+    # De-duplicate Telegram callback queries. This prevents double replies when
+    # Telegram/client retries the same callback or one button event is processed twice.
+    callback_id = str(getattr(query, "id", "") or "")
+    if callback_id:
+        if callback_id in _DOC_INTAKE_HANDLED_CALLBACKS:
+            try:
+                await query.answer("Already handled.", show_alert=False)
+            except Exception:
+                pass
+            return
+        _DOC_INTAKE_HANDLED_CALLBACKS.add(callback_id)
+        if len(_DOC_INTAKE_HANDLED_CALLBACKS) > 2000:
+            _DOC_INTAKE_HANDLED_CALLBACKS.clear()
+
+    data = query.data or ""
+
+    # ── dr_* — single-doc review ──────────────────────────────────────────────
+    if data == "dr_standards_yes":
+        state = _PENDING_DOCREVIEW.pop(chat_id, None)
+        if not state or not state.get("files"):
+            await query.edit_message_text("Session expired. Please upload the document again.")
+            return
+        task = state.get("task_description", "Evaluate against standards")
+        case_dir = await _di_create_case_package(
+            chat_id=chat_id,
+            task_description=task,
+            mode="evaluate_against_standards",
+            files=state["files"],
+            selected_pipeline="single_document_docreview",
+            learning_contour=False,
+        )
+        reply_text = None
+        try:
+            from doc_agent_api import DocAgentClient  # type: ignore
+            _api_url = os.environ.get("DOC_AGENT_API_URL", "http://doc-agent:8767")
+            _client = DocAgentClient(_api_url)
+            result = await asyncio.get_event_loop().run_in_executor(
+                None, lambda: _client.review(str(case_dir))
+            )
+            reply_text = f"Document review submitted. Case: {case_dir.name}\nResult: {result}"
+        except Exception:
+            pass
+        if reply_text is None:
+            reply_text = (
+                f"Document received for standards evaluation.\n"
+                f"Case ID: {case_dir.name}\n"
+                "The review pipeline will process it shortly."
+            )
+        await query.edit_message_text(reply_text)
+
+    elif data == "dr_standards_no":
+        _PENDING_DOCREVIEW.pop(chat_id, None)
+        await query.edit_message_text("Document received. No standards check requested.")
+
+    # ── di_more / di_enough ───────────────────────────────────────────────────
+    elif data.startswith("di_more"):
+        state = _PENDING_DOC_INTAKE.get(chat_id)
+        if not state:
+            await query.edit_message_text("Session expired. Please upload your documents again.")
+            return
+        parts = data.split(":")
+        if len(parts) >= 3:
+            if (
+                str(state.get("intake_session_id")) != parts[1]
+                or str(state.get("prompt_version")) != parts[2]
+            ):
+                await query.answer("Old prompt ignored. Use the latest document prompt.", show_alert=False)
+                return
+        elif state.get("intake_session_id"):
+            await query.answer("Old prompt ignored. Use the latest document prompt.", show_alert=False)
+            return
+        state["step"] = "await_more"
+        _PENDING_DOC_INTAKE[chat_id] = state
+        await query.edit_message_text(
+            f"{len(state['files'])} document(s) collected. Upload the next document."
+        )
+        return
+
+    elif data.startswith("di_enough"):
+        log.warning("DOC_INTAKE_TRACE di_enough chat_id=%s data=%s state=%s", chat_id, data, _PENDING_DOC_INTAKE.get(chat_id))
+        state = _PENDING_DOC_INTAKE.get(chat_id)
+        if not state:
+            await query.edit_message_text("Session expired.")
+            return
+        parts = data.split(":")
+        if len(parts) >= 3:
+            if (
+                str(state.get("intake_session_id")) != parts[1]
+                or str(state.get("prompt_version")) != parts[2]
+            ):
+                await query.answer("Old prompt ignored. Use the latest document prompt.", show_alert=False)
+                return
+        elif state.get("intake_session_id"):
+            await query.answer("Old prompt ignored. Use the latest document prompt.", show_alert=False)
+            return
+
+        # Avoid duplicate identical task prompts if the same callback/update is processed twice
+        # or if the user presses "No" from more than one intake message.
+        if state.get("task_description"):
+            state["step"] = "await_mode"
+            _PENDING_DOC_INTAKE[chat_id] = state
+            await query.answer("Task already received.")
+            await _di_ask_mode(update, ctx, chat_id)
+            return
+
+        if state.get("task_prompt_sent") and state.get("step") == "await_task":
+            await query.answer("Task prompt already sent.")
+            return
+
+        state["step"] = "await_task"
+        state["task_prompt_sent"] = True
+        _PENDING_DOC_INTAKE[chat_id] = state
+        count = len(state["files"])
+        await query.edit_message_text(
+            (
+                "Document intake closed. No more documents will be added to this package.\n\n"
+                f"{count} document(s) ready. Please describe the task for the uploaded documents."
+            ),
+            reply_markup=None,
+        )
+        return
+
+    # ── Mode callbacks ────────────────────────────────────────────────────────
+    elif data == "di_one_evaluate":
+        state = _PENDING_DOC_INTAKE.pop(chat_id, None)
+        if not state:
+            await query.edit_message_text("Session expired.")
+            return
+        task = state.get("task_description", "Evaluate against standards")
+        case_dir = await _di_create_case_package(
+            chat_id=chat_id,
+            task_description=task,
+            mode="evaluate_against_standards",
+            files=state["files"],
+            selected_pipeline="single_document_docreview",
+            learning_contour=False,
+        )
+        reply_text = None
+        try:
+            from doc_agent_api import DocAgentClient  # type: ignore
+            _api_url = os.environ.get("DOC_AGENT_API_URL", "http://doc-agent:8767")
+            _client = DocAgentClient(_api_url)
+            result = await asyncio.get_event_loop().run_in_executor(
+                None, lambda: _client.review(str(case_dir))
+            )
+            reply_text = f"Review submitted. Case: {case_dir.name}\nResult: {result}"
+        except Exception:
+            pass
+        if reply_text is None:
+            reply_text = (
+                f"Document queued for standards evaluation.\n"
+                f"Case ID: {case_dir.name}"
+            )
+        await query.edit_message_text(reply_text)
+
+    elif data == "di_two_tuning":
+        state = _PENDING_DOC_INTAKE.pop(chat_id, None)
+        if not state:
+            await query.edit_message_text("Session expired.")
+            return
+        case_dir = await _di_create_case_package(
+            chat_id=chat_id,
+            task_description=state.get("task_description", "Create tuning pair"),
+            mode="tuning_pair",
+            files=state["files"],
+            selected_pipeline="doctuning_pair_generation",
+            learning_contour=True,
+        )
+        await query.edit_message_text(
+            f"Tuning pair package created.\nCase ID: {case_dir.name}"
+        )
+
+    elif data in ("di_two_consolidate", "di_multi_consolidate"):
+        state = _PENDING_DOC_INTAKE.pop(chat_id, None)
+        if not state:
+            await query.edit_message_text("Session expired.")
+            return
+        case_dir = await _di_create_case_package(
+            chat_id=chat_id,
+            task_description=state.get("task_description", "Compare and consolidate"),
+            mode="compare_consolidate",
+            files=state["files"],
+            selected_pipeline="multi_document_consolidate",
+            learning_contour=False,
+        )
+        await query.edit_message_text(
+            f"Consolidation package created.\nCase ID: {case_dir.name}"
+        )
+
+    elif data == "di_multi_register":
+        state = _PENDING_DOC_INTAKE.pop(chat_id, None)
+        if not state:
+            await query.edit_message_text("Session expired.")
+            return
+        case_dir = await _di_create_case_package(
+            chat_id=chat_id,
+            task_description=state.get("task_description", "Register documents"),
+            mode="register",
+            files=state["files"],
+            selected_pipeline="multi_document_register",
+            learning_contour=False,
+        )
+        await query.edit_message_text(
+            f"Registration package created.\nCase ID: {case_dir.name}\n"
+            "Documents will be reviewed before registration."
+        )
+
+    elif data == "di_cancel":
+        _PENDING_DOC_INTAKE.pop(chat_id, None)
+        _PENDING_DOCREVIEW.pop(chat_id, None)
+        await query.edit_message_text("Document intake cancelled.")
+
+
 async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     """Approve the pending doctuning reference — saves SFT pair, DPO pair, and master document."""
     if not _chat_allowed(update) or update.message is None or update.effective_chat is None:
@@ -4888,10 +7599,9 @@ async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) 
     state = _PENDING_DOCFILL.get(chat_id)
     if not state or state.get("step") != "await_approval":
         await update.message.reply_text(
-            "Нет активного ожидания одобрения. Запустите `/doctuning` для начала."
+            "Нет активного ожидания одобрения. Запустите /doctuning для начала."
             if lang == "ru" else
-            "No pending approval. Start with `/doctuning`.",
-            parse_mode="Markdown",
+            "No pending approval. Start with /doctuning.",
         )
         return
 
@@ -4900,14 +7610,19 @@ async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) 
         await update.message.reply_text(
             "⏳ Локальная генерация ещё в очереди (ждём VRAM).\n"
             "Уведомлю, когда завершится — тогда и подтверждайте.\n"
-            "Или `/doctuning_cancel` чтобы отменить (DPO-пара будет пропущена)."
+            "Или /doctuning_cancel чтобы отменить (DPO-пара будет пропущена)."
             if lang == "ru" else
             "⏳ Local generation is still queued (waiting for VRAM).\n"
             "I'll notify you when it's done — approve then.\n"
-            "Or `/doctuning_cancel` to cancel (DPO pair will be skipped).",
-            parse_mode="Markdown",
+            "Or /doctuning_cancel to cancel (DPO pair will be skipped).",
         )
         return
+
+    # ── batch_training_pair: dedicated approval path ──────────────────────────
+    if state.get("source") == "batch_training_pair":
+        await _approve_doctuning_for_chat(ctx.bot, chat_id, state, lang)
+        return
+    # ── normal /doctuning approval path ───────────────────────────────────────
 
     blank_text    = str(state.get("blank_text", ""))
     filled_text   = str(state.get("filled_text", ""))
@@ -4926,7 +7641,7 @@ async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) 
     doc_title = f"{doc_type.title()} — {filled_name}"
 
     # Run saves sequentially to reduce CPU/GPU load (was parallel with asyncio.gather)
-    # Step 1: Save SFT pair
+    # Step 1: Save SFT pair (legacy path) + 120B template_fill_pairs + approved_master_pairs
     try:
         sft_result = await loop.run_in_executor(
             None, _docfill_save_training_pair, blank_text, filled_text, doc_type, filled_name
@@ -4936,7 +7651,33 @@ async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) 
         sft_result = e
         sft_ok = False
 
-    # Step 2: Save DPO pair (if local fill available)
+    # Save to 120B training pool: template_fill (blank→approved_reference) and approved_master
+    try:
+        await loop.run_in_executor(
+            None,
+            lambda: _doc_creator_120b_save(
+                pair_type="template_fill_pairs",
+                blank_text=blank_text,
+                filled_text=filled_text,
+                doc_type=doc_type,
+                source_name=filled_name,
+            ),
+        )
+        await loop.run_in_executor(
+            None,
+            lambda: _doc_creator_120b_save(
+                pair_type="approved_master_pairs",
+                blank_text=blank_text,
+                filled_text=filled_text,
+                doc_type=doc_type,
+                source_name=filled_name,
+                extra_meta={"approved_by": "human_expert"},
+            ),
+        )
+    except Exception as e:
+        log.warning("doc_creator_120b save error: %s", e)
+
+    # Step 2: Save DPO pair (if local fill available); record failed case otherwise
     dpo_saved = False
     if local_fill:
         try:
@@ -4946,6 +7687,20 @@ async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) 
             dpo_saved = True
         except Exception as e:
             log.warning("DPO save error: %s", e)
+    else:
+        # 120B generation failed — record for analysis
+        try:
+            await loop.run_in_executor(
+                None,
+                lambda: _doc_creator_120b_save_failed(
+                    blank_text=blank_text,
+                    doc_type=doc_type,
+                    source_name=filled_name,
+                    repair_report=repair_report,
+                ),
+            )
+        except Exception as e:
+            log.warning("doc_creator_120b failed-case save error: %s", e)
 
     # Step 3: Save master document to OmiAgent
     try:
@@ -4970,38 +7725,39 @@ async def cmd_doctuning_approve(update: Update, ctx: ContextTypes.DEFAULT_TYPE) 
     _PENDING_DOCFILL.pop(chat_id, None)
 
     # Build confirmation
-    lines_ru = ["✅ **Одобрено и сохранено:**"]
-    lines_en = ["✅ **Approved and saved:**"]
+    lines_ru = ["✅ Одобрено и сохранено:"]
+    lines_en = ["✅ Approved and saved:"]
 
     if sft_ok:
-        lines_ru.append("  • SFT-пара → `ops/ft/data/docfill_v1/train_docfill_v1.jsonl`")
-        lines_en.append("  • SFT pair → `ops/ft/data/docfill_v1/train_docfill_v1.jsonl`")
+        lines_ru.append("  SFT-пара: ops/ft/data/docfill_v1/train_docfill_v1.jsonl")
+        lines_en.append("  SFT pair: ops/ft/data/docfill_v1/train_docfill_v1.jsonl")
     else:
-        lines_ru.append(f"  ⚠️ SFT-пара: ошибка — {sft_result}")
-        lines_en.append(f"  ⚠️ SFT pair: error — {sft_result}")
+        lines_ru.append(f"  ⚠️ SFT-пара: ошибка — {_tg_plain(sft_result)}")
+        lines_en.append(f"  ⚠️ SFT pair: error — {_tg_plain(sft_result)}")
 
     if dpo_saved:
-        lines_ru.append("  • DPO-пара → `data/training/standard_dpo_pairs.jsonl`")
-        lines_en.append("  • DPO pair → `data/training/standard_dpo_pairs.jsonl`")
+        lines_ru.append("  DPO-пара: data/training/standard_dpo_pairs.jsonl")
+        lines_en.append("  DPO pair: data/training/standard_dpo_pairs.jsonl")
     elif local_fill:
-        lines_ru.append(f"  ⚠️ DPO-пара: ошибка — {results[2]}")
-        lines_en.append(f"  ⚠️ DPO pair: error — {results[2]}")
+        lines_ru.append(f"  ⚠️ DPO-пара: ошибка — {_tg_plain(results[2])}")
+        lines_en.append(f"  ⚠️ DPO pair: error — {_tg_plain(results[2])}")
     else:
-        report_suffix_ru = f"\n    _{repair_report}_" if repair_report else ""
-        report_suffix_en = report_suffix_ru
-        lines_ru.append(f"  • DPO-пара: Repairman исчерпал 5 циклов ремонта — пропущено{report_suffix_ru}")
-        lines_en.append(f"  • DPO pair: Repairman exhausted 5 repair cycles — skipped{report_suffix_en}")
+        report_note = f" ({_tg_plain(repair_report)})" if repair_report else ""
+        lines_ru.append(f"  DPO-пара: Repairman исчерпал 5 циклов ремонта — пропущено{report_note}")
+        lines_en.append(f"  DPO pair: Repairman exhausted 5 repair cycles — skipped{report_note}")
 
     if omi_ok:
-        id_str = f" (id={omi_id})" if omi_id else ""
-        lines_ru.append(f"  • Мастер-документ → OmiAgent{id_str}: `{doc_title}`")
-        lines_en.append(f"  • Master document → OmiAgent{id_str}: `{doc_title}`")
+        id_str = f" (id={_tg_plain(omi_id)})" if omi_id else ""
+        lines_ru.append(f"  Мастер-документ → OmiAgent{id_str}: {_tg_plain(doc_title)}")
+        lines_en.append(f"  Master document → OmiAgent{id_str}: {_tg_plain(doc_title)}")
     else:
-        lines_ru.append(f"  ⚠️ Мастер-документ: ошибка OmiAgent — {omi_result}")
-        lines_en.append(f"  ⚠️ Master document: OmiAgent error — {omi_result}")
+        lines_ru.append(f"  ⚠️ Мастер-документ: ошибка OmiAgent — {_tg_plain(omi_result)}")
+        lines_en.append(f"  ⚠️ Master document: OmiAgent error — {_tg_plain(omi_result)}")
 
     msg = "\n".join(lines_ru) if lang == "ru" else "\n".join(lines_en)
-    await update.message.reply_text(msg, parse_mode="Markdown")
+    await _safe_send_message(ctx.bot, chat_id, msg)
+
+
 
 
 async def cmd_analyze(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
@@ -5059,6 +7815,498 @@ async def cmd_analyze_end(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> Non
 
 # ── Main message handler ───────────────────────────────────────────────────────
 
+_REPAIRMAN_LOG_ROOT = Path("/data/audit/telegram_repairman/logs")
+_REPAIRMAN_LOG_PATH_RE = re.compile(r"(/data/audit/telegram_repairman/logs/[^\s`'\"<>]+)")
+_DOC_APPROVAL_STATUS_ALLOWED_ROOTS = (
+    Path("/data/artifacts/document_delivery_feedback"),
+    AIMS_WORKSPACE / "artifacts" / "document_delivery_feedback",
+    AIMS_WORKSPACE / "tmp" / "document_approval_handoff_test",
+)
+
+
+def _read_repairman_log_tail(log_path: str) -> str:
+    """Safely read the last lines of a Repairman log under the approved log root."""
+    allowed_root = _REPAIRMAN_LOG_ROOT.resolve()
+    requested = Path(log_path).resolve()
+
+    if requested == allowed_root or allowed_root not in requested.parents:
+        return (
+            "Invalid log path. Repairman log reading is only allowed under "
+            "/data/audit/telegram_repairman/logs/."
+        )
+
+    if not requested.exists():
+        return f"Repairman log not found: {requested}"
+
+    if not requested.is_file():
+        return f"Repairman log path is not a file: {requested}"
+
+    text = requested.read_text(encoding="utf-8", errors="replace")
+    lines = text.splitlines()
+    tail = "\n".join(lines[-120:]) if lines else "(log file is empty)"
+    reply = f"Repairman log tail: {requested}\n\n{tail}"
+    if len(reply) > 3900:
+        reply = reply[:3800] + "\n\n[truncated for Telegram message size]"
+    return reply
+
+
+def _find_latest_repairman_log() -> Path | None:
+    """Find the newest Repairman log visible to axi-bot."""
+    allowed_root = _REPAIRMAN_LOG_ROOT.resolve()
+    if not allowed_root.exists() or not allowed_root.is_dir():
+        return None
+    candidates = [
+        p for p in allowed_root.glob("*.log")
+        if p.is_file() and allowed_root in p.resolve().parents
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: (p.stat().st_mtime, p.name))
+
+
+def _looks_like_repairman_result_request(text: str) -> bool:
+    """Detect private-chat shorthand for showing the latest Repairman output."""
+    lower = (text or "").strip().lower()
+    if "repairman" not in lower:
+        return False
+    return any(
+        marker in lower
+        for marker in (
+            "show",
+            "latest",
+            "last",
+            "result",
+            "log",
+            "покажи",
+            "последн",
+            "результат",
+            "лог",
+        )
+    )
+
+
+def _extract_repairman_log_path(text: str) -> str | None:
+    """Extract a Repairman log path from free text for shared safe handling."""
+    match = _REPAIRMAN_LOG_PATH_RE.search(text or "")
+    if not match:
+        return None
+    return match.group(1).rstrip(".,;:)")
+
+
+def _is_allowed_doc_approval_status_path(path: str) -> tuple[bool, str]:
+    """Allow only document-approval artifact directories under approved roots."""
+    raw = (path or "").strip()
+    if not raw:
+        return (False, "Artifact path is empty.")
+    try:
+        requested = Path(raw).expanduser().resolve(strict=False)
+    except Exception as exc:
+        return (False, f"Invalid artifact path: {exc}")
+
+    for root in _DOC_APPROVAL_STATUS_ALLOWED_ROOTS:
+        root_resolved = root.expanduser().resolve(strict=False)
+        if requested == root_resolved or root_resolved in requested.parents:
+            return (True, "")
+    return (
+        False,
+        "Artifact path is not allowed. Use paths under "
+        "/data/artifacts/document_delivery_feedback, "
+        "aims_workspace/artifacts/document_delivery_feedback, or "
+        "aims_workspace/tmp/document_approval_handoff_test.",
+    )
+
+
+async def cmd_doc_approval_status(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Read and summarize document approval / Omi handoff status by artifact directory."""
+    if not update.message:
+        return
+
+    artifact_dir = " ".join(ctx.args or []).strip()
+    if not artifact_dir:
+        await update.message.reply_text(
+            "Usage: /doc_approval_status <artifact_dir>\n"
+            "Alias: /doc_status <artifact_dir>"
+        )
+        return
+
+    allowed, reason = _is_allowed_doc_approval_status_path(artifact_dir)
+    if not allowed:
+        await update.message.reply_text(
+            "Invalid status artifact path.\n"
+            f"{reason}\n\n"
+            "Usage: /doc_approval_status <artifact_dir>"
+        )
+        return
+
+    try:
+        from agents.document_approval_status_agent import read_document_approval_status
+
+        status = read_document_approval_status(artifact_dir)
+    except Exception as exc:
+        log.exception("cmd_doc_approval_status failed: %s", exc)
+        await update.message.reply_text(f"Document approval status error: {exc}")
+        return
+
+    if status.get("status") != "ok":
+        issues = status.get("issues") or []
+        issue_text = f"\nIssue: {issues[0]}" if issues else ""
+        await update.message.reply_text(
+            "Could not read document approval status."
+            f"{issue_text}\n\n"
+            "Usage: /doc_approval_status <artifact_dir>"
+        )
+        return
+
+    msg = (
+        "Document approval status\n\n"
+        f"Feedback ID: {status.get('feedback_id', '')}\n"
+        f"Feedback: {status.get('feedback')}\n"
+        f"Registration decision: {status.get('registration_decision')}\n"
+        f"Should register: {str(bool(status.get('should_register_document'))).lower()}\n"
+        f"Omi handoff: {status.get('omi_handoff_decision')}\n"
+        f"Handoff mode: {status.get('handoff_mode')}\n"
+        f"Execution status: {status.get('execution_status')}\n"
+        f"Executed: {str(bool(status.get('executed'))).lower()}\n"
+        f"Direct DB write: {str(bool(status.get('direct_db_write'))).lower()}\n"
+        f"Next stage: {status.get('next_stage')}\n\n"
+        f"Summary:\n{status.get('summary')}\n\n"
+        f"Artifacts:\n{status.get('artifact_dir')}"
+    )
+    await update.message.reply_text(msg[:3900])
+
+
+async def cmd_engineer_execute(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Execute an approved repairman_task.json through repairman-api.
+
+    Safety v1:
+    - allows only mode=inspect;
+    - sends task to repairman through engineering_handoff dry_run=False;
+    - does not directly execute shell commands inside axi-bot.
+    """
+    if not update.message:
+        return
+
+    task_path = " ".join(ctx.args or []).strip()
+    if not task_path:
+        await update.message.reply_text(
+            "Usage:\n"
+            "/engineer_execute <path-to-repairman_task.json>\n\n"
+            "Safety v1: only mode=inspect is allowed. "
+            "Repairman will be triggered through repairman-api."
+        )
+        return
+
+    try:
+        import json
+        from pathlib import Path as _Path
+        from logi.tool_registry import call_tool
+
+        task = json.loads(_Path(task_path).read_text(encoding="utf-8"))
+        mode = (task.get("mode") or "inspect").strip()
+
+        if mode != "inspect":
+            await update.message.reply_text(
+                "Execution blocked by safety policy.\n"
+                f"Only mode=inspect is allowed in /engineer_execute v1. Got: {mode}"
+            )
+            return
+
+        handoff = call_tool("engineering_handoff", {
+            "repairman_task": task,
+            "dry_run": False,
+        })
+
+        if handoff.get("error"):
+            await update.message.reply_text(f"Engineering execute failed: {handoff['error']}")
+            return
+
+        repairman_payload = handoff.get("repairman_payload", {})
+        repairman_result = handoff.get("repairman_result", {})
+
+        await update.message.reply_text(
+            "✅ Engineering task sent to Repairman.\n\n"
+            f"Mode: {repairman_payload.get('mode', 'inspect')}\n"
+            f"Source: {repairman_payload.get('source', 'axi_engineering_assist')}\n\n"
+            f"Repairman result:\n{str(repairman_result)[:3000]}"
+        )
+
+    except Exception as exc:
+        log.exception("cmd_engineer_execute failed: %s", exc)
+        await update.message.reply_text(f"Engineering execute error: {exc}")
+
+
+async def cmd_engineer_result(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Return the tail of an approved Repairman log path."""
+    if not update.message:
+        return
+
+    log_path = " ".join(ctx.args or []).strip()
+    if not log_path:
+        await update.message.reply_text(
+            "Usage: /engineer_result /data/audit/telegram_repairman/logs/<file>.log"
+        )
+        return
+
+    try:
+        await update.message.reply_text(_read_repairman_log_tail(log_path))
+    except Exception as exc:
+        log.exception("cmd_engineer_result failed: %s", exc)
+        await update.message.reply_text(f"Engineering result error: {exc}")
+
+
+
+async def cmd_engineer_handoff(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Review a repairman_task.json payload without executing repairman."""
+    if not update.message:
+        return
+
+    task_path = " ".join(ctx.args or []).strip()
+    if not task_path:
+        await update.message.reply_text(
+            "Usage:\n"
+            "/engineer_handoff <path-to-repairman_task.json>\n\n"
+            "This shows the prepared repairman payload only. Repairman is NOT executed."
+        )
+        return
+
+    try:
+        from logi.tool_registry import call_tool
+
+        handoff = call_tool("engineering_handoff", {
+            "repairman_task_path": task_path,
+            "dry_run": True,
+        })
+
+        if handoff.get("error"):
+            await update.message.reply_text(f"Engineering handoff failed: {handoff['error']}")
+            return
+
+        payload = handoff.get("repairman_payload", {})
+        await update.message.reply_text(
+            "✅ Engineering handoff dry-run prepared.\n"
+            "Repairman was NOT executed.\n\n"
+            f"Task: {payload.get('task', '')}\n"
+            f"Mode: {payload.get('mode', 'inspect')}\n"
+            f"Source: {payload.get('source', 'axi_engineering_assist')}\n\n"
+            "Next step: review this payload. Execution requires an explicit repairman trigger."
+        )
+
+    except Exception as exc:
+        log.exception("cmd_engineer_handoff failed: %s", exc)
+        await update.message.reply_text(f"Engineering handoff error: {exc}")
+
+
+
+async def cmd_engineer(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Prepare engineering-assist artifacts for Repairman handoff.
+
+    Safe mode: creates planning artifacts and dry-run repairman payload only.
+    It does not execute repairman, edit files, or restart containers.
+    """
+    if not update.message:
+        return
+
+    task_text = " ".join(ctx.args or []).strip()
+    if not task_text:
+        await update.message.reply_text(
+            "Usage:\n"
+            "/engineer <engineering task>\n\n"
+            "This prepares engineering_task.md, repairman_task.json, "
+            "and validation_plan.md. Repairman is NOT executed."
+        )
+        return
+
+    try:
+        from logi.tool_registry import call_tool
+
+        safe_suffix = str(int(time.time()))
+        out_dir = f"/data/engineering_assist/axi_{safe_suffix}"
+
+        assist = call_tool("engineering_assist", {
+            "user_request": task_text,
+            "mode": "inspect",
+            "out_dir": out_dir,
+        })
+
+        if assist.get("error"):
+            await update.message.reply_text(f"Engineering assist failed: {assist['error']}")
+            return
+
+        handoff = call_tool("engineering_handoff", {
+            "repairman_task": assist["repairman_task"],
+            "dry_run": True,
+        })
+
+        if handoff.get("error"):
+            await update.message.reply_text(f"Engineering handoff dry-run failed: {handoff['error']}")
+            return
+
+        paths = assist.get("paths", {})
+        payload = handoff.get("repairman_payload", {})
+
+        await update.message.reply_text(
+            "✅ Engineering assist prepared.\n"
+            "Repairman was NOT executed.\n\n"
+            f"Mode: `{payload.get('mode', 'inspect')}`\n"
+            f"Source: `{payload.get('source', 'axi_engineering_assist')}`\n\n"
+            "Artifacts:\n"
+            f"- `{paths.get('engineering_task')}`\n"
+            f"- `{paths.get('repairman_task')}`\n"
+            f"- `{paths.get('validation_plan')}`\n\n"
+            "Next step: review repairman_task.json, then explicitly trigger repairman if approved.",
+        )
+
+    except Exception as exc:
+        log.exception("cmd_engineer failed: %s", exc)
+        await update.message.reply_text(f"Engineering assist error: {exc}")
+
+
+def _should_private_text_use_engineering_route(private_text: str) -> bool:
+    """Return True when private free-text should be routed to /engineer flow."""
+    text = (private_text or "").strip().lower()
+    if not text:
+        return False
+
+    # Read-only status/policy requests must stay in normal Axi answer path.
+    readonly_markers = (
+        "без изменения файлов",
+        "read-only",
+        "readonly",
+        "status",
+        "статус",
+        "готовность",
+        "gstack integration",
+        "gstack",
+        "какие агенты подключены",
+        "smoke pass",
+        "smoke",
+        "краткий отчёт",
+        "краткий отчет",
+        "service lifecycle policy",
+        "argus batch lifecycle policy",
+        "model slots",
+        "slot14",
+        "slot32",
+        "slot120",
+        "concurrency policy",
+        "escalation policy",
+    )
+    if any(marker in text for marker in readonly_markers):
+        return False
+    return True
+
+
+
+# ── Self-Learning Approval UI ──────────────────────────────────────────────────
+
+def _sl_build_markup(buttons: list[dict]) -> InlineKeyboardMarkup | None:
+    if not buttons:
+        return None
+    rows = [[InlineKeyboardButton(b["text"], callback_data=b["callback_data"])] for b in buttons]
+    return InlineKeyboardMarkup(rows)
+
+
+async def cmd_skills_pending(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show self-learning approval queue."""
+    if not _chat_allowed(update):
+        return
+    try:
+        from self_learning.axi_approval_commands import handle_skills_pending
+        payload = handle_skills_pending()
+    except Exception as exc:
+        await update.message.reply_text(f"⚠️ Self-learning queue error: {exc}")
+        return
+    text = payload.get("text") or f"Pending approvals: {payload.get('count', 0)}"
+    markup = _sl_build_markup(payload.get("inline_buttons", []))
+    await update.message.reply_text(text[:4000], reply_markup=markup)
+
+
+async def cmd_skill_details(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show detail card for a skill approval request."""
+    if not _chat_allowed(update):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /skill_details <request_id>")
+        return
+    try:
+        from self_learning.axi_approval_commands import handle_skill_details
+        payload = handle_skill_details(ctx.args[0])
+    except Exception as exc:
+        await update.message.reply_text(f"⚠️ Error: {exc}")
+        return
+    text = payload.get("text") or f"Details: {ctx.args[0]}"
+    markup = _sl_build_markup(payload.get("inline_buttons", []))
+    await update.message.reply_text(text[:4000], reply_markup=markup)
+
+
+async def cmd_skill_evidence(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show evidence for a skill approval request."""
+    if not _chat_allowed(update):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /skill_evidence <request_id>")
+        return
+    try:
+        from self_learning.axi_approval_commands import handle_skill_evidence
+        payload = handle_skill_evidence(ctx.args[0])
+    except Exception as exc:
+        await update.message.reply_text(f"⚠️ Error: {exc}")
+        return
+    text = payload.get("text") or f"Evidence: {ctx.args[0]}"
+    markup = _sl_build_markup(payload.get("inline_buttons", []))
+    await update.message.reply_text(text[:4000], reply_markup=markup)
+
+
+async def cmd_skill_rollback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show rollback plan for a skill approval request."""
+    if not _chat_allowed(update):
+        return
+    if not ctx.args:
+        await update.message.reply_text("Usage: /skill_rollback <request_id>")
+        return
+    try:
+        from self_learning.axi_approval_commands import handle_skill_rollback
+        payload = handle_skill_rollback(ctx.args[0])
+    except Exception as exc:
+        await update.message.reply_text(f"⚠️ Error: {exc}")
+        return
+    text = payload.get("text") or f"Rollback: {ctx.args[0]}"
+    markup = _sl_build_markup(payload.get("inline_buttons", []))
+    await update.message.reply_text(text[:4000], reply_markup=markup)
+
+
+async def _skill_approval_callback_handler(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle skill_* inline button callbacks."""
+    query = update.callback_query
+    if not query:
+        return
+    await query.answer()
+    if not _chat_allowed(update):
+        return
+    data = query.data or ""
+    user = update.effective_user
+    reviewer = str(user.id) if user else "unknown"
+    try:
+        from self_learning.axi_approval_callbacks import dispatch_callback
+        payload = dispatch_callback(data, reviewer=reviewer)
+    except Exception as exc:
+        log.exception("skill approval callback error: %s", exc)
+        if query.message:
+            await query.message.reply_text(f"⚠️ Callback error: {exc}")
+        return
+    if payload.get("type") == "skill_decision_recorded":
+        log.info(
+            "skill approval decision: request=%s decision=%s reviewer=%s",
+            payload.get("approval_request_id"),
+            payload.get("decision"),
+            reviewer,
+        )
+    text = payload.get("text") or data
+    markup = _sl_build_markup(payload.get("inline_buttons", []))
+    if query.message:
+        await query.message.reply_text(text[:4000], reply_markup=markup)
+
+
 async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if not update.message or not update.message.text:
         return
@@ -5081,10 +8329,102 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         lang = pending.get("lang", "en")
         await _process_analyze_batch(ctx.bot, _chat_id, pending["prompt"], pending["files"], lang=lang)
         return
+    # ── Doctuning batch_training_pair: standards approval ─────────────────────
+    if _chat_id and _chat_id in _PENDING_DOCFILL:
+        df_state = _PENDING_DOCFILL[_chat_id]
+        raw_lower = update.message.text.strip().lower()
+        if df_state.get("step") == "await_standards_approval" and df_state.get("source") == "batch_training_pair":
+            # Guard: no file was generated yet
+            if any(w in raw_lower for w in ("file", "xlsx", "docx", "generate", "regenerate", "attachment", "send me")):
+                await update.message.reply_text(
+                    "The revised reference candidate is not generated yet. "
+                    "Please continue the current step first."
+                )
+                return
+            # Confirmation — trigger real continuation pipeline
+            if any(w in raw_lower for w in ("yes", "continue", "proceed", "ok", "looks good", "go ahead")):
+                await _run_doctuning_continue_for_chat(
+                    ctx.bot, _chat_id, df_state,
+                    lang=_reply_lang(update.message.text),
+                )
+                return
+            # Cancel
+            if any(w in raw_lower for w in ("cancel", "stop", "no")):
+                _PENDING_DOCFILL.pop(_chat_id, None)
+                await update.message.reply_text("Doctuning cancelled.")
+                return
+            # Upload standards intent
+            if any(w in raw_lower for w in ("upload standards", "provide standards", "i will provide standards")):
+                await update.message.reply_text(
+                    "Please upload your standards document as a file."
+                )
+                return
+            # Unknown text — hold, don't fall through to _process_request_text
+            await update.message.reply_text(
+                "Doctuning approval pending. Reply **yes** to generate the candidate or **cancel** to discard.",
+                parse_mode="Markdown",
+            )
+            return
+        # Other pending doctuning steps (not file-upload steps): guard hallucination claims
+        if df_state.get("step") not in ("await_blank", "await_example"):
+            if any(w in raw_lower for w in ("file", "xlsx", "docx", "generate", "regenerate", "attachment")):
+                await update.message.reply_text(
+                    "The revised reference candidate is not generated yet. "
+                    "Please continue the current step first."
+                )
+                return
+    # ── Doc intake: capture task description ──────────────────────────────────
+    if (
+        _chat_id is not None
+        and _chat_id in _PENDING_DOC_INTAKE
+        and _PENDING_DOC_INTAKE[_chat_id].get("step") in ("await_task", "await_more", "await_mode")
+        and (_PENDING_DOC_INTAKE[_chat_id].get("files") or [])
+    ):
+        await _di_receive_task(update, ctx, _chat_id)
+        return
     # ──────────────────────────────────────────────────────────────────────────
     state = _get_pending_analyze_state(_chat_id) if _chat_id is not None else None
     if state and state.get("awaiting_clarify") and (state.get("files") or []):
         text = update.message.text.strip()
+
+    # AIMS routing policy:
+    # - private chat with Axi = engineering/project task by default
+    # - group chat with Axi = document/registry workflow by default
+    #
+    # Explicit commands are handled by CommandHandler before handle_chat.
+    # This branch routes only normal private text to the same safe behavior as /engineer:
+    # create engineering artifacts and keep repairman execution disabled.
+    try:
+        chat_type = getattr(update.effective_chat, "type", "") if update.effective_chat else ""
+        if chat_type == "private":
+            private_text = (update.message.text or "").strip()
+            if _looks_like_repairman_result_request(private_text):
+                latest = _find_latest_repairman_log()
+                if latest:
+                    await update.message.reply_text(_read_repairman_log_tail(str(latest)))
+                else:
+                    await update.message.reply_text(
+                        "No repairman logs found under /data/audit/telegram_repairman/logs/."
+                    )
+                return
+
+            repairman_log_path = _extract_repairman_log_path(private_text)
+            if repairman_log_path:
+                await update.message.reply_text(_read_repairman_log_tail(repairman_log_path))
+                return
+
+            if _should_private_text_use_engineering_route(private_text):
+                old_args = getattr(ctx, "args", None)
+                ctx.args = private_text.split()
+                try:
+                    await cmd_engineer(update, ctx)
+                finally:
+                    ctx.args = old_args
+                return
+    except Exception as exc:
+        log.exception("private engineering route failed: %s", exc)
+        await update.message.reply_text(f"Engineering route error: {exc}")
+        return
         state["prompt"] = text
         state["awaiting_clarify"] = False
         files = list(state.get("files") or [])
@@ -5265,10 +8605,137 @@ async def _job_monitor_stuck_tasks(context: ContextTypes.DEFAULT_TYPE) -> None:
 
 # ── Bot setup ──────────────────────────────────────────────────────────────────
 
+
+
+def _di_docs_agent_processed() -> Path:
+    """Directory where docs-agent moves processed case folders."""
+    return Path(os.environ.get("DOCS_AGENT_PROCESSED_DIR", "/data/docs_agent/processed"))
+
+
+def _di_docs_agent_notify_interval_sec() -> float:
+    try:
+        return max(2.0, float(os.environ.get("DOCS_AGENT_RESULT_NOTIFY_INTERVAL_SEC", "10")))
+    except Exception:
+        return 10.0
+
+
+async def _di_docs_agent_result_notifier(application: Application) -> None:
+    """
+    Poll docs-agent processed cases and send primary_output back to Telegram.
+
+    Contract:
+    processed/<case_id>/
+      manifest.json  -> contains chat_id
+      result.json    -> contains primary_output, status, selected_pipeline, note
+      .telegram_notified marker prevents duplicate notifications
+    """
+    import json as _json
+    import asyncio as _asyncio
+    import logging as _logging
+    from datetime import datetime as _datetime, timezone as _timezone
+
+    _log = globals().get("log") or _logging.getLogger(__name__)
+    bot = application.bot
+
+    while True:
+        try:
+            root = _di_docs_agent_processed()
+            root.mkdir(parents=True, exist_ok=True)
+
+            for case_dir in sorted([x for x in root.iterdir() if x.is_dir()]):
+                marker = case_dir / ".telegram_notified"
+                if marker.exists():
+                    continue
+
+                manifest_path = case_dir / "manifest.json"
+                result_path = case_dir / "result.json"
+                if not manifest_path.exists() or not result_path.exists():
+                    continue
+
+                try:
+                    manifest = _json.loads(manifest_path.read_text(encoding="utf-8"))
+                    result = _json.loads(result_path.read_text(encoding="utf-8"))
+                except Exception as exc:
+                    _log.warning("docs-agent notifier: cannot read %s: %s", case_dir, exc)
+                    continue
+
+                chat_id = manifest.get("chat_id")
+                if not chat_id:
+                    _log.warning("docs-agent notifier: missing chat_id in %s", manifest_path)
+                    continue
+
+                case_id = result.get("case_id") or manifest.get("case_id") or case_dir.name
+                pipeline = result.get("selected_pipeline") or manifest.get("selected_pipeline") or manifest.get("mode") or "docs-agent"
+                status = result.get("status", "unknown")
+                document_count = result.get("document_count") or manifest.get("document_count") or len(manifest.get("documents", []))
+                note = result.get("note", "")
+                primary_output = result.get("primary_output")
+
+                summary = (
+                    "✅ Пакет документов обработан docs-agent.\n\n"
+                    f"Case ID: {case_id}\n"
+                    f"Pipeline: {pipeline}\n"
+                    f"Status: {status}\n"
+                    f"Documents: {document_count}"
+                )
+                if note:
+                    summary += f"\nNote: {note}"
+
+                sent = False
+                primary_path = None
+                if primary_output:
+                    primary_path = case_dir / str(primary_output)
+                    if primary_path.exists() and primary_path.is_file():
+                        try:
+                            with primary_path.open("rb") as fh:
+                                await bot.send_document(
+                                    chat_id=chat_id,
+                                    document=fh,
+                                    filename=primary_path.name,
+                                    caption=summary[:1024],
+                                    reply_markup=_document_delivery_feedback_markup(
+                                        chat_id,
+                                        primary_path,
+                                        caption=summary,
+                                        original_request=str(manifest.get("task_description") or manifest.get("mode") or ""),
+                                        source="docs_agent_completed_document",
+                                    ),
+                                )
+                            sent = True
+                        except Exception as exc:
+                            _log.warning("docs-agent notifier: send_document failed for %s: %s", primary_path, exc)
+
+                if not sent:
+                    if primary_output and primary_path is not None and not primary_path.exists():
+                        summary += f"\n\n⚠️ Output file listed but not found: {primary_output}"
+                    await bot.send_message(chat_id=chat_id, text=summary)
+                    sent = True
+
+                if sent:
+                    marker.write_text(
+                        _datetime.now(_timezone.utc).isoformat() + "\n",
+                        encoding="utf-8",
+                    )
+                    _log.info("docs-agent notifier: Telegram notified for case %s", case_id)
+
+        except _asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            _log.warning("docs-agent notifier loop error: %s", exc)
+
+        await _asyncio.sleep(_di_docs_agent_notify_interval_sec())
+
+
 async def _post_init(application: Application) -> None:
+    try:
+        application.create_task(_di_docs_agent_result_notifier(application))
+    except Exception as e:
+        log.warning("docs-agent notifier start failed: %s", e)
+
     commands = [
         BotCommand("start",          "Запуск / приветствие"),
         BotCommand("help",           "Справка по командам"),
+        BotCommand("plan",           "Read-only /plan day (feature-flagged)"),
         BotCommand("analyze",        "Ожидать и анализировать файл"),
         BotCommand("analyze_done",   "Запустить пакет /analyze сейчас"),
         BotCommand("analyze_end",    "Алиас завершения загрузки файлов"),
@@ -5278,6 +8745,9 @@ async def _post_init(application: Application) -> None:
         BotCommand("doctuning",         "Создать тюнинг-пару из шаблона + эталона"),
         BotCommand("doctuning_approve", "Одобрить эталон — сохранить мастер-документ и пары"),
         BotCommand("doctuning_cancel",  "Отменить режим doctuning"),
+        BotCommand("demo",              "Launch AIMS walkthrough demonstration"),
+        BotCommand("demo_stop",         "Stop a running demonstration"),
+        BotCommand("demo_help",         "Demonstration commands help"),
     ]
     try:
         await application.bot.set_my_commands(commands)
@@ -5320,6 +8790,7 @@ def main() -> None:
     # Commands
     app.add_handler(CommandHandler("start",          cmd_start))
     app.add_handler(CommandHandler("help",           cmd_help))
+    app.add_handler(CommandHandler("plan",           cmd_plan))
     app.add_handler(CommandHandler("analyze",        cmd_analyze))
     app.add_handler(CommandHandler("analyze_done",   cmd_analyze_done))
     app.add_handler(CommandHandler("analyze_end",    cmd_analyze_end))
@@ -5330,9 +8801,32 @@ def main() -> None:
     app.add_handler(CommandHandler("doctuning",         cmd_doctuning))
     app.add_handler(CommandHandler("doctuning_approve", cmd_doctuning_approve))
     app.add_handler(CommandHandler("doctuning_cancel",  cmd_doctuning_cancel))
+    app.add_handler(CommandHandler("engineer",        cmd_engineer))
+    app.add_handler(CommandHandler("engineer_handoff", cmd_engineer_handoff))
+    app.add_handler(CommandHandler("engineer_execute", cmd_engineer_execute))
+    app.add_handler(CommandHandler("engineer_result", cmd_engineer_result))
+    app.add_handler(CommandHandler("doc_approval_status", cmd_doc_approval_status))
+    app.add_handler(CommandHandler("doc_status", cmd_doc_approval_status))
+    app.add_handler(CommandHandler("skills_pending",  cmd_skills_pending))
+    app.add_handler(CommandHandler("skill_details",   cmd_skill_details))
+    app.add_handler(CommandHandler("skill_evidence",  cmd_skill_evidence))
+    app.add_handler(CommandHandler("skill_rollback",  cmd_skill_rollback))
+    if _DEMO_AVAILABLE:
+        app.add_handler(CommandHandler("demo",       cmd_demo))
+        app.add_handler(CommandHandler("demo_stop",  cmd_demo_stop))
+        app.add_handler(CommandHandler("demo_help",  cmd_demo_help))
 
     # Inline button callbacks
     app.add_handler(CallbackQueryHandler(_cmd_start_callback, pattern="^axi_activate$"))
+    app.add_handler(CallbackQueryHandler(_doctuning_callback_handler, pattern="^dt_"))
+    app.add_handler(CallbackQueryHandler(_document_feedback_callback, pattern="^doc_feedback:"))
+    app.add_handler(CallbackQueryHandler(_di_callback_handler, pattern="^di_"))
+    app.add_handler(CallbackQueryHandler(_di_callback_handler, pattern="^dr_"))
+    app.add_handler(CallbackQueryHandler(_skill_approval_callback_handler, pattern="^skill_"))
+    if _DEMO_AVAILABLE:
+        app.add_handler(CallbackQueryHandler(demo_start_callback,  pattern="^demo_start$"))
+        app.add_handler(CallbackQueryHandler(demo_cancel_callback, pattern="^demo_cancel$"))
+        app.add_handler(CallbackQueryHandler(demo_about_callback,  pattern="^demo_about$"))
 
     # Text messages
     app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO, handle_file_upload))
