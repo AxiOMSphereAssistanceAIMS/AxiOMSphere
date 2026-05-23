@@ -26,7 +26,7 @@ The platform follows ISO 55001 requirements and ISO 55002 guidance as its AIMS m
 
 ## Founder-Led Development
 
-AxiOMSphere is designed, built and maintained by **Evgeny Shokk** (Founder). The platform was built to address a real industrial problem — creating the connected AIMS framework that industrial projects need before they can operate reliably. Development draws on direct experience with industrial operations and the requirements of ISO 55001 / ISO 55002-based asset management systems.
+AxiOMSphere is designed, built and maintained by **E.Shokk** (Founder). The platform was built to address a real industrial problem — creating the connected AIMS framework that industrial projects need before they can operate reliably. Development draws on direct experience with industrial operations and the requirements of ISO 55001 / ISO 55002-based asset management systems.
 
 Contact: **hello@axiomsphereai.com**
 
