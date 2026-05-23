@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AxiOMSphere — Privacy-first Industrial AI</title>
-  <meta name="description" content="AxiOMSphere is a privacy-first industrial AI platform for source-backed engineering document workflows. Local multi-agent processing on private infrastructure with controlled external evaluation." />
-  <link rel="canonical" href="https://www.axiomsphereai.com/" />
+  <title>AxiOMSphere — AI Platform for AIMS and Industrial Operations</title>
+  <meta name="description" content="AxiOMSphere is a privacy-first multi-agent platform for building and continuously improving the ISO 55001 / ISO 55002-based Asset Integrity Management System required for industrial project startup and production operations." />
+  <link rel="canonical" href="https://axiomsphereai.com/" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="AxiOMSphere — Privacy-first Industrial AI" />
-  <meta property="og:description" content="Source-backed engineering document workflows. Local processing by default. Controlled external evaluation only. Human review required." />
-  <meta property="og:url" content="https://www.axiomsphereai.com/" />
+  <meta property="og:title" content="AxiOMSphere — AI Platform for AIMS and Industrial Operations" />
+  <meta property="og:description" content="Coordinated AI agents for industrial project startup, production operations and ISO 55001 / ISO 55002-based AIMS work products." />
+  <meta property="og:url" content="https://axiomsphereai.com/" />
   <meta property="og:site_name" content="AxiOMSphere" />
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="AxiOMSphere — Privacy-first Industrial AI" />
-  <meta name="twitter:description" content="Source-backed engineering document workflows on private infrastructure." />
+  <meta name="twitter:title" content="AxiOMSphere — AI Platform for AIMS and Industrial Operations" />
+  <meta name="twitter:description" content="Privacy-first multi-agent platform for ISO 55001 / ISO 55002-based AIMS — industrial project startup and production operations." />
   <!-- Favicon inline SVG -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23080b12'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%230ea5e9' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%230ea5e9'/%3E%3Cline x1='16' y1='4' x2='16' y2='8' stroke='%230ea5e9' stroke-width='2'/%3E%3Cline x1='16' y1='24' x2='16' y2='28' stroke='%230ea5e9' stroke-width='2'/%3E%3Cline x1='4' y1='16' x2='8' y2='16' stroke='%230ea5e9' stroke-width='2'/%3E%3Cline x1='24' y1='16' x2='28' y2='16' stroke='%230ea5e9' stroke-width='2'/%3E%3C/svg%3E" />
   <style>
@@ -268,6 +268,58 @@
     .ps-panel.problem li::before { content: '—'; color: rgba(239,68,68,0.6); flex-shrink: 0; font-weight: 700; }
     .ps-panel.solution li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-weight: 700; }
 
+    /* ── AIMS lifecycle stages ─────────────────────── */
+    .stages-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;
+    }
+    @media (max-width: 820px) { .stages-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 520px) { .stages-grid { grid-template-columns: 1fr 1fr; } }
+    .stage-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.35rem 1.1rem;
+      border-top: 3px solid var(--accent);
+    }
+    .stage-num {
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
+      color: var(--accent); margin-bottom: 0.55rem;
+    }
+    .stage-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
+    .stage-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .stages-note {
+      margin-top: 2rem; font-size: 0.85rem; color: var(--muted);
+      padding: 1rem 1.25rem; background: rgba(14,165,233,0.04);
+      border: 1px solid rgba(14,165,233,0.12); border-radius: var(--radius);
+    }
+
+    /* ── Standards / Framework ─────────────────────── */
+    .standards-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .standards-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.75rem;
+    }
+    @media (max-width: 640px) { .standards-grid { grid-template-columns: 1fr; } }
+    .std-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .std-tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 800;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.15rem 0.6rem; border-radius: 20px; margin-bottom: 0.75rem;
+      background: rgba(14,165,233,0.10); color: var(--accent);
+      border: 1px solid rgba(14,165,233,0.18);
+    }
+    .std-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.45rem; }
+    .std-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+    .std-disclaimer {
+      background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15);
+      border-radius: var(--radius); padding: 1.1rem 1.4rem;
+      font-size: 0.825rem; color: var(--muted); line-height: 1.65;
+    }
+    .std-disclaimer strong { color: var(--amber); }
+
     /* ── Pipeline timeline ─────────────────────────── */
     .timeline-wrap { overflow-x: auto; }
     .timeline {
@@ -374,6 +426,33 @@
       font-style: italic;
     }
 
+    /* ── Capacity model card ───────────────────────── */
+    .capacity-block {
+      background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.18);
+      border-radius: var(--radius); padding: 1.75rem 2rem; margin-top: 2rem;
+    }
+    .capacity-block h3 {
+      font-size: 0.875rem; font-weight: 700; color: var(--green);
+      letter-spacing: 0.02em; margin-bottom: 0.35rem;
+    }
+    .capacity-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--subtle); margin-bottom: 1rem;
+    }
+    .capacity-figure {
+      display: flex; gap: 2.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: flex-end;
+    }
+    .cap-stat { display: flex; flex-direction: column; gap: 0.2rem; }
+    .cap-num { font-size: 1.75rem; font-weight: 800; color: var(--green); letter-spacing: -0.03em; }
+    .cap-unit { font-size: 0.78rem; color: var(--muted); }
+    .capacity-block p { font-size: 0.825rem; color: var(--muted); line-height: 1.65; margin-bottom: 0.65rem; }
+    .capacity-block p:last-child { margin-bottom: 0; }
+    .capacity-block .cap-qual {
+      font-size: 0.78rem; color: var(--subtle); font-style: italic;
+      padding: 0.6rem 0.9rem;
+      background: rgba(0,0,0,0.2); border-radius: 6px;
+    }
+
     /* ── Credits section ───────────────────────────── */
     .credits-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
@@ -458,365 +537,464 @@
         </svg>
         Axi<span>OM</span>Sphere
       </a>
+      <button class="menu-btn" onclick="toggleNav(this)" aria-expanded="false" aria-controls="main-nav" aria-label="Toggle navigation">☰</button>
       <nav id="main-nav" aria-label="Main navigation">
         <a href="#platform">Platform</a>
-        <a href="#workflows">Workflows</a>
-        <a href="#privacy">Privacy</a>
+        <a href="#aims-framework">AIMS Framework</a>
+        <a href="#lifecycle">Lifecycle</a>
         <a href="#validation">Validation</a>
         <a href="#credits">Credits</a>
         <a class="nav-cta" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
       </nav>
-      <button class="menu-btn" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation" onclick="toggleNav(this)">☰</button>
     </div>
   </div>
 </header>
 
-<main>
-
 <!-- ══ HERO ════════════════════════════════════════════════════════════ -->
-<section class="hero" id="top">
+<section class="hero" id="platform">
   <div class="container">
     <div class="hero-grid">
-      <!-- Left: copy -->
-      <div class="hero-copy">
-        <p class="hero-eyebrow">Industrial AI · Private Infrastructure · Development-Stage Platform</p>
-        <h1>Engineering document workflows,<br><em>grounded in evidence</em> and built for privacy.</h1>
-        <p class="hero-lead">
-          AxiOMSphere helps industrial teams draft and review technical documentation for preservation, shutdown, maintenance and asset-integrity workflows — while keeping sensitive source documents on private infrastructure by default.
-        </p>
+      <div class="hero-content">
+        <p class="hero-eyebrow">Industrial Operations · ISO 55001 / ISO 55002 · Coordinated AI Agents</p>
+        <h1>Building the <em>AIMS framework</em> for industrial project startup and production operations.</h1>
+        <p class="hero-lead">AxiOMSphere coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations in accordance with ISO 55001 / ISO 55002.</p>
         <div class="cta-group">
-          <a class="btn-primary" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">
-            Discuss a Pilot
-          </a>
-          <a class="btn-secondary" href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener noreferrer">
-            View on GitHub
-          </a>
+          <a class="btn-primary" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
+          <a class="btn-secondary" href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener noreferrer">View on GitHub</a>
         </div>
-        <div class="hero-trust" aria-label="Key commitments">
-          <span>Local processing by default</span>
-          <span>Anonymized external evaluation only</span>
-          <span>Human approval required</span>
+        <div class="hero-trust">
+          <span>Private infrastructure by default</span>
+          <span>Traceable evidence</span>
+          <span>Qualified human review before operational use</span>
         </div>
       </div>
-
-      <!-- Right: pipeline diagram -->
-      <div class="hero-visual" role="img" aria-label="Local document workflow diagram">
-        <p class="pipeline-title">Default Workflow</p>
+      <div class="hero-visual" aria-label="AIMS workflow diagram">
+        <p class="pipeline-title">AIMS Coordination Workflow</p>
         <div class="pipeline-steps">
           <div class="pipeline-step">
-            <div class="step-icon locked">🔒</div>
+            <div class="step-icon locked">📋</div>
             <div class="step-body">
-              <div class="step-label">Source Documents</div>
-              <div class="step-sub">Ingested and indexed locally via OCR and registry</div>
+              <div class="step-label">Project Intent</div>
+              <div class="step-sub">Scope, objectives and management-system context</div>
             </div>
-            <span class="step-badge badge-private">Private</span>
+            <span class="step-badge badge-private">PRIVATE</span>
           </div>
           <div class="pipeline-step">
-            <div class="step-icon local">⚙</div>
+            <div class="step-icon local">⚙️</div>
             <div class="step-body">
-              <div class="step-label">Local Agent Processing</div>
-              <div class="step-sub">Drafting and review by local language model agents</div>
+              <div class="step-label">AIMS Framework</div>
+              <div class="step-sub">ISO 55001 / ISO 55002-based structure and process architecture</div>
             </div>
-            <span class="step-badge badge-local">On-prem</span>
+            <span class="step-badge badge-local">INTEGRATED</span>
           </div>
           <div class="pipeline-step">
-            <div class="step-icon bench">📋</div>
+            <div class="step-icon local">🤝</div>
             <div class="step-body">
-              <div class="step-label">Benchmark Evidence</div>
-              <div class="step-sub">Standards and guidance themes referenced from internal registry</div>
+              <div class="step-label">Coordinated Agents</div>
+              <div class="step-sub">Generate, review, align and register work products</div>
             </div>
-            <span class="step-badge badge-local">Traceable</span>
+            <span class="step-badge badge-local">INTEGRATED</span>
           </div>
           <div class="pipeline-step">
-            <div class="step-icon bench">↗</div>
+            <div class="step-icon bench">🗂️</div>
             <div class="step-body">
-              <div class="step-label">Controlled External Evaluation</div>
-              <div class="step-sub">Anonymized context only — no raw documents transmitted</div>
+              <div class="step-label">Controlled Work Products</div>
+              <div class="step-sub">Registered with traceable evidence and source references</div>
             </div>
-            <span class="step-badge badge-anon">Anonymized</span>
+            <span class="step-badge badge-anon">TRACEABLE</span>
           </div>
           <div class="pipeline-step">
-            <div class="step-icon human">✓</div>
+            <div class="step-icon human">👤</div>
             <div class="step-body">
-              <div class="step-label">Human Review &amp; Approval</div>
-              <div class="step-sub">Engineer reviews output before operational use</div>
+              <div class="step-label">Human-Governed Operations</div>
+              <div class="step-sub">Qualified review required before operational use</div>
             </div>
-            <span class="step-badge badge-human">Required</span>
+            <span class="step-badge badge-human">REVIEWED</span>
           </div>
         </div>
-        <div class="pipeline-note">
-          Source documents remain on private infrastructure throughout the default workflow.
-        </div>
+        <p class="pipeline-note">Sensitive source information remains on private infrastructure throughout the workflow.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ══ TRUST STRIP ══════════════════════════════════════════════════════ -->
-<div class="trust-strip" id="platform">
+<div class="trust-strip">
   <div class="container">
     <div class="trust-grid">
       <div class="trust-card">
-        <div class="trust-icon">🛡</div>
-        <div class="trust-label">Local-first processing</div>
-        <div class="trust-text">Sensitive document content stays on private infrastructure by default.</div>
+        <div class="trust-icon">🏗️</div>
+        <div class="trust-label">AIMS-Based System</div>
+        <div class="trust-text">An integrated framework for project startup, asset integrity and production operations.</div>
       </div>
       <div class="trust-card">
-        <div class="trust-icon">📎</div>
-        <div class="trust-label">Source-backed review</div>
-        <div class="trust-text">Recommendations are prepared against traceable standards and guidance themes.</div>
+        <div class="trust-icon">🤖</div>
+        <div class="trust-label">Coordinated Agents</div>
+        <div class="trust-text">Specialised agents build and align connected processes, controls and work products.</div>
       </div>
       <div class="trust-card">
-        <div class="trust-icon">👤</div>
-        <div class="trust-label">Human-governed output</div>
-        <div class="trust-text">Qualified engineering review remains mandatory before operational use.</div>
+        <div class="trust-icon">🔒</div>
+        <div class="trust-label">Private by Default</div>
+        <div class="trust-text">Sensitive source information remains on private infrastructure by default.</div>
       </div>
       <div class="trust-card">
-        <div class="trust-icon">🔬</div>
-        <div class="trust-label">Pilot preparation</div>
-        <div class="trust-text">Development platform preparing for controlled industrial validation.</div>
+        <div class="trust-icon">✅</div>
+        <div class="trust-label">Human-Governed</div>
+        <div class="trust-text">Qualified review is required before outputs are used operationally.</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- ══ PROBLEM / SOLUTION ═══════════════════════════════════════════════ -->
-<section>
+<section id="problem-solution">
   <div class="container">
-    <p class="section-label">The challenge</p>
+    <p class="section-label">Challenge & Approach</p>
     <div class="ps-grid">
       <div class="ps-panel problem">
-        <h3>Industrial documentation is too important for untraceable automation.</h3>
+        <h3>Industrial projects need an operating system before they can operate reliably.</h3>
         <ul>
-          <li>Source materials are fragmented across disciplines, document versions and review histories</li>
-          <li>Sensitive engineering content cannot be submitted uncontrolled to external AI services</li>
-          <li>Procedure maintenance is slow, labour-intensive and difficult to audit after changes</li>
+          <li>Launching an industrial project requires a connected system of roles, responsibilities, processes, procedures, plans, registers and controls.</li>
+          <li>These work products are developed across disciplines and can become fragmented, inconsistent or difficult to maintain.</li>
+          <li>The reliability of future production depends directly on the quality and alignment of this management-system foundation.</li>
+          <li>Sensitive source materials cannot be routinely submitted to external AI services during development.</li>
         </ul>
       </div>
       <div class="ps-panel solution">
-        <h3>A controlled workflow, not a black box.</h3>
+        <h3>A coordinated agent platform for building the AIMS operating framework.</h3>
         <ul>
-          <li>Local drafting and document review agents working on private infrastructure</li>
-          <li>Benchmark preparation from standards and guidance references retained in the local registry</li>
-          <li>Every output is traceable and retained for qualified human decision-making</li>
+          <li>AxiOMSphere uses specialised agents to create, review, align and register management-system work products across the project and production lifecycle.</li>
+          <li>Evidence, interfaces and lessons learned are retained in a controlled knowledge layer.</li>
+          <li>ISO 55001 / ISO 55002 forms the stated management-system foundation for all AIMS work-product development.</li>
+          <li>Qualified human review remains mandatory before operational use at every stage.</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══ PIPELINE ══════════════════════════════════════════════════════════ -->
-<section style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+<!-- ══ AIMS FRAMEWORK ═══════════════════════════════════════════════════ -->
+<section id="aims-framework" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
-    <p class="section-label">How it works</p>
-    <h2>Five stages. Evidence at every step.</h2>
+    <p class="section-label">Platform Foundation</p>
+    <h2>AIMS: from project startup to organised production operations.</h2>
+    <p class="section-lead">Asset Integrity Management System (AIMS) is the integrated framework connecting project startup, operational readiness, asset integrity, reliability, maintenance, assurance, production operations and continuous improvement.</p>
+    <div class="stages-grid">
+      <div class="stage-card">
+        <div class="stage-num">01</div>
+        <div class="stage-title">Project Definition</div>
+        <div class="stage-desc">Strategy, scope, objectives and stakeholder requirements.</div>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">02</div>
+        <div class="stage-title">Organisational Setup</div>
+        <div class="stage-desc">Roles, responsibilities, interfaces and governance.</div>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">03</div>
+        <div class="stage-title">Functional Framework</div>
+        <div class="stage-desc">Policies, plans, procedures, registers and operational controls.</div>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">04</div>
+        <div class="stage-title">Operational Readiness</div>
+        <div class="stage-desc">Asset integrity, reliability, maintenance, assurance and handover preparation.</div>
+      </div>
+      <div class="stage-card">
+        <div class="stage-num">05</div>
+        <div class="stage-title">Production Operations</div>
+        <div class="stage-desc">Controlled execution, monitoring, feedback and continuous improvement.</div>
+      </div>
+    </div>
+    <div class="stages-note">
+      AxiOMSphere is designed to connect these stages through specialised agents and a maintained Single Source of Truth.
+    </div>
+  </div>
+</section>
+
+<!-- ══ ABOUT / BRAND ════════════════════════════════════════════════════ -->
+<section id="about">
+  <div class="container">
+    <p class="section-label">About AxiOMSphere</p>
+    <h2>A name built on four organising principles.</h2>
+    <p class="section-lead">The AxiOMSphere brand reflects the foundational structure of the platform and the framework it serves.</p>
+    <div class="cards-grid">
+      <div class="wf-card">
+        <div class="wf-icon">📐</div>
+        <div class="wf-title">Axiom</div>
+        <div class="wf-desc">Disciplined foundation built on recognised management-system principles — the axiomatic base from which AIMS work products are developed.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🏭</div>
+        <div class="wf-title">AIMS</div>
+        <div class="wf-desc">Asset Integrity Management System — the organising framework and the platform's primary purpose: building and maintaining the AIMS required to launch and operate industrial projects.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">⚙️</div>
+        <div class="wf-title">O&amp;M</div>
+        <div class="wf-desc">Operations and maintenance as a critical lifecycle value domain — where AIMS work products are used, tested and continuously improved through real operational experience.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🌐</div>
+        <div class="wf-title">Sphere</div>
+        <div class="wf-desc">An interconnected ecosystem and maintained Single Source of Truth — where all agents, work products, evidence and interfaces are aligned and traceable.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STANDARDS ════════════════════════════════════════════════════════ -->
+<section class="standards-section" id="standards">
+  <div class="container">
+    <p class="section-label">Management-System Foundation</p>
+    <h2>Following ISO 55001 / ISO 55002 as the management-system foundation.</h2>
+    <p class="section-lead">AIMS management-system workflows are structured in accordance with ISO 55001 requirements and ISO 55002 application guidance. The GFMAM Asset Management Landscape is used as a broader process-framework reference.</p>
+    <div class="standards-grid">
+      <div class="std-card">
+        <span class="std-tag">ISO 55001</span>
+        <div class="std-title">Requirements reference</div>
+        <div class="std-desc">The requirements standard for the asset management system and its controlled development, implementation and improvement.</div>
+      </div>
+      <div class="std-card">
+        <span class="std-tag">ISO 55002</span>
+        <div class="std-title">Application guidance</div>
+        <div class="std-desc">Application guidance reference for implementing and improving the asset management system in accordance with ISO 55001 requirements.</div>
+      </div>
+      <div class="std-card">
+        <span class="std-tag">GFMAM</span>
+        <div class="std-title">Landscape reference</div>
+        <div class="std-desc">The GFMAM Asset Management Landscape supports the broader capability and lifecycle process architecture that AIMS work products address.</div>
+      </div>
+    </div>
+    <div class="std-disclaimer">
+      <strong>Important:</strong> AxiOMSphere follows ISO 55001 / ISO 55002 as its AIMS framework basis. Generated work products require qualified human review before operational use and do not by themselves constitute independent certification or formal compliance approval.
+    </div>
+  </div>
+</section>
+
+<!-- ══ CAPABILITIES ══════════════════════════════════════════════════════ -->
+<section id="capabilities">
+  <div class="container">
+    <p class="section-label">Platform Capabilities</p>
+    <h2>What AxiOMSphere builds.</h2>
+    <p class="section-lead">Coordinated agents across four primary capability domains — from project initiation to continuous improvement of the AIMS framework.</p>
+    <div class="cards-grid">
+      <div class="wf-card">
+        <div class="wf-icon">🚀</div>
+        <div class="wf-title">Project Startup System</div>
+        <div class="wf-desc">Develop the organisational and functional foundation required to launch an industrial project — from strategy and scope to responsibilities, roles and governance.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🗂️</div>
+        <div class="wf-title">AIMS Process Architecture</div>
+        <div class="wf-desc">Build and maintain policies, plans, procedures, registers, responsibilities, interfaces and operational controls aligned to ISO 55001 / ISO 55002.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🔧</div>
+        <div class="wf-title">Operational Readiness &amp; Integrity</div>
+        <div class="wf-desc">Support the frameworks required for asset integrity, reliability, maintenance, assurance and production readiness across the asset lifecycle.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🔄</div>
+        <div class="wf-title">Knowledge &amp; Continuous Improvement</div>
+        <div class="wf-desc">Register work products, retain traceable evidence and convert validated experience into improved agent capability through a learning loop.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ══════════════════════════════════════════════════════ -->
+<section id="lifecycle" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <p class="section-label">How It Works</p>
+    <h2>Five stages from intent to operational knowledge.</h2>
+    <p class="section-lead">Each stage produces traceable, registered outputs that feed the next — with sensitive source information remaining private throughout.</p>
     <div class="timeline-wrap">
-      <div class="timeline">
+      <div class="timeline" aria-label="Workflow stages">
         <div class="tl-step">
           <div class="tl-num">01</div>
-          <div class="tl-label">Context</div>
-          <div class="tl-desc">Retrieve relevant local document context via OCR registry and vector search.</div>
+          <div class="tl-label">Define</div>
+          <div class="tl-desc">Capture project context, objectives and required management-system scope.</div>
         </div>
         <div class="tl-step">
           <div class="tl-num">02</div>
-          <div class="tl-label">Draft / Review</div>
-          <div class="tl-desc">Prepare or analyse technical documentation locally — no source document leaves the environment.</div>
+          <div class="tl-label">Build</div>
+          <div class="tl-desc">Generate interconnected AIMS work products through specialised agents.</div>
         </div>
         <div class="tl-step">
           <div class="tl-num">03</div>
-          <div class="tl-label">Benchmark</div>
-          <div class="tl-desc">Build source-backed review themes and evidence against standards and guidance references.</div>
+          <div class="tl-label">Align</div>
+          <div class="tl-desc">Check interfaces, responsibilities, evidence and consistency across the system.</div>
         </div>
         <div class="tl-step">
           <div class="tl-num">04</div>
-          <div class="tl-label">Evaluate</div>
-          <div class="tl-desc">Use approved external evaluation only — anonymized context, no raw project documents.</div>
+          <div class="tl-label">Review</div>
+          <div class="tl-desc">Use controlled evaluation and qualified expert review before operational use.</div>
         </div>
         <div class="tl-step">
           <div class="tl-num">05</div>
-          <div class="tl-label">Approve &amp; Learn</div>
-          <div class="tl-desc">Engineer reviews and approves output. Validated cases inform future improvement.</div>
+          <div class="tl-label">Learn</div>
+          <div class="tl-desc">Retain validated outputs and lessons for continuous platform improvement.</div>
         </div>
       </div>
     </div>
     <div class="timeline-center">
-      <span class="timeline-note">Documents remain on private infrastructure throughout the default workflow.</span>
+      <span class="timeline-note">Sensitive source information remains private by default throughout the workflow.</span>
     </div>
   </div>
 </section>
 
-<!-- ══ WORKFLOWS ════════════════════════════════════════════════════════ -->
-<section id="workflows">
-  <div class="container">
-    <p class="section-label">Initial workflows</p>
-    <h2>Where the platform is being validated.</h2>
-    <p class="section-lead">Internal test scenarios across the following engineering document workflow categories.</p>
-    <div class="cards-grid">
-      <div class="wf-card">
-        <div class="wf-icon">🏭</div>
-        <div class="wf-title">Asset Preservation</div>
-        <div class="wf-desc">Procedure drafting and review for extended shutdown or storage conditions.</div>
-      </div>
-      <div class="wf-card">
-        <div class="wf-icon">⚙️</div>
-        <div class="wf-title">Shutdown &amp; Restart</div>
-        <div class="wf-desc">De-preservation, recommissioning and readiness documentation workflows.</div>
-      </div>
-      <div class="wf-card">
-        <div class="wf-icon">🔧</div>
-        <div class="wf-title">Maintenance &amp; Reliability</div>
-        <div class="wf-desc">Technical instruction review and evidence-backed gap identification.</div>
-      </div>
-      <div class="wf-card">
-        <div class="wf-icon">📝</div>
-        <div class="wf-title">Document Assurance</div>
-        <div class="wf-desc">Structured comments, review matrices and checklist preparation from source requirements.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══ PRIVACY ══════════════════════════════════════════════════════════ -->
+<!-- ══ PRIVACY ARCHITECTURE ══════════════════════════════════════════════ -->
 <section class="privacy-section" id="privacy">
   <div class="container">
-    <p class="section-label">Privacy architecture</p>
-    <h2>Designed for controlled industrial information handling.</h2>
-    <p class="section-lead">A clear boundary between what stays private and what is permitted to reach external services — and only with controls.</p>
+    <p class="section-label">Privacy Architecture</p>
+    <h2>Private by design. Controlled evaluation only.</h2>
+    <p class="section-lead">The information boundary is a fundamental design constraint, not an optional setting. Source materials stay local; only anonymized context reaches external evaluators.</p>
     <div class="privacy-panels">
       <div class="priv-panel local">
-        <h3>Stays on private infrastructure <span class="pill">Default</span></h3>
+        <h3>Local — Private Infrastructure <span class="pill">ON-PREM</span></h3>
         <ul>
-          <li>Source documents and project records</li>
-          <li>OCR results and document registry</li>
-          <li>Retrieved project context and RAG results</li>
-          <li>Evidence artifacts and learning cases</li>
+          <li>All AIMS work-product generation and agent coordination</li>
+          <li>Source documents, project data and sensitive context</li>
+          <li>Document registry, evidence store and knowledge base</li>
+          <li>Model inference and fine-tuning pipeline</li>
+          <li>Audit trail and traceable source references</li>
         </ul>
       </div>
       <div class="priv-panel external">
-        <h3>External only when authorised <span class="pill">Controlled</span></h3>
+        <h3>External — Controlled Evaluation Only <span class="pill">ANONYMIZED</span></h3>
         <ul>
-          <li>Anonymized research and benchmarking queries</li>
-          <li>Non-identifying evaluation prompts</li>
-          <li>Anonymized technical context for quality scoring</li>
-          <li>No raw customer documents by default</li>
+          <li>Benchmark review of anonymized agent output quality</li>
+          <li>Standards and guidance discovery from approved sources</li>
+          <li>Evaluator comparison using anonymized workflow context</li>
+          <li>No raw source documents or identifiable project data</li>
         </ul>
       </div>
     </div>
     <div class="privacy-statement">
-      <strong>Privacy statement:</strong> Sensitive source documents remain on private infrastructure by default. Approved external services are used only with anonymized context for benchmarking, research or evaluation unless separately authorised.
+      <strong>Privacy commitment:</strong> Sensitive source information remains on private infrastructure by default. Approved external services receive anonymized context only unless separately authorised by the project owner.
     </div>
   </div>
 </section>
 
-<!-- ══ VALIDATION STATUS ══════════════════════════════════════════════ -->
+<!-- ══ VALIDATION STATUS ══════════════════════════════════════════════════ -->
 <section id="validation">
   <div class="container">
-    <p class="section-label">Development status</p>
-    <h2>Built for validation. Preparing for pilot use.</h2>
-    <p class="section-lead">Current capability status, based on internal development and test scenarios.</p>
+    <p class="section-label">Development Status</p>
+    <h2>Built for validation. Preparing for controlled pilot use.</h2>
+    <p class="section-lead">All capability statements reflect internal development and test scenarios unless explicitly stated otherwise.</p>
     <div class="status-wrap">
       <div class="status-row">
-        <span class="status-name">Multi-agent orchestration workflow</span>
-        <span class="status-badge s-validated">Internally validated</span>
+        <span class="status-name">Agent orchestration and task-ledger controls</span>
+        <span class="status-badge s-validated">Internally Validated</span>
       </div>
       <div class="status-row">
-        <span class="status-name">Document drafting and review workflow</span>
-        <span class="status-badge s-implemented">Implemented — internal scenarios</span>
+        <span class="status-name">Management-system work-product generation pipeline</span>
+        <span class="status-badge s-implemented">Implemented — Internal Validation</span>
       </div>
       <div class="status-row">
-        <span class="status-name">OCR ingestion and document registry</span>
+        <span class="status-name">OCR ingestion, document registry and retrieval</span>
         <span class="status-badge s-implemented">Implemented</span>
       </div>
       <div class="status-row">
         <span class="status-name">Evidence and learning-case collection</span>
-        <span class="status-badge s-implemented">Implemented</span>
+        <span class="status-badge s-implemented">Implemented in Development Workflow</span>
       </div>
       <div class="status-row">
-        <span class="status-name">Standards and guidance benchmarking</span>
-        <span class="status-badge s-active">In active development</span>
+        <span class="status-name">ISO 55001 / ISO 55002 AIMS scope expansion</span>
+        <span class="status-badge s-active">In Active Development</span>
       </div>
       <div class="status-row">
-        <span class="status-name">Controlled industrial pilot</span>
+        <span class="status-name">Controlled industrial pilot validation</span>
         <span class="status-badge s-preparing">Preparing</span>
       </div>
     </div>
-    <p class="status-note">
-      Capability statements reflect internal development and test scenarios unless explicitly stated otherwise.<br>
-      Internal results will be shared with pilot partners under appropriate agreements.
-    </p>
+    <p class="status-note">Capability statements reflect internal development and test scenarios unless explicitly stated otherwise.</p>
+
+    <!-- Capacity model -->
+    <div class="capacity-block">
+      <div class="capacity-label">Under Validation</div>
+      <h3>Capacity model under validation</h3>
+      <div class="capacity-figure">
+        <div class="cap-stat">
+          <span class="cap-num">350</span>
+          <span class="cap-unit">workflow hours</span>
+        </div>
+        <div class="cap-stat">
+          <span class="cap-num">~2</span>
+          <span class="cap-unit">working months (single stream)</span>
+        </div>
+        <div class="cap-stat">
+          <span class="cap-num">1,000</span>
+          <span class="cap-unit">AIMS work products</span>
+        </div>
+      </div>
+      <p>Target capacity model under validation: preparing a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate assumes approximately 10 minutes of human task formulation and 11 minutes of agent-assisted preparation per work product, based on an 8-hour working day and 22 working days per month.</p>
+      <p class="cap-qual">This is a development-stage capacity model subject to pilot validation. It excludes additional qualified review, approval and assurance activities. Parallel discipline workflows and background agent processing may improve calendar turnaround, but are not presented as guaranteed delivery outcomes.</p>
+    </div>
   </div>
 </section>
 
-<!-- ══ CREDITS ══════════════════════════════════════════════════════════ -->
-<section style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);" id="credits">
+<!-- ══ STARTUP CREDITS ════════════════════════════════════════════════════ -->
+<section id="credits" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
-    <p class="section-label">Startup credits</p>
-    <h2>Seeking credits for controlled validation at scale.</h2>
-    <p class="section-lead">API and cloud credits will help us benchmark local workflows, evaluate anonymized review cases and prepare an industrial pilot — without moving sensitive documents outside the private environment.</p>
+    <p class="section-label">Startup Support</p>
+    <h2>Seeking credits to validate an ISO 55001 / ISO 55002-based AIMS agent platform at scale.</h2>
+    <p class="section-lead">Credits will support controlled validation of coordinated agents that build, align and review AIMS management-system work products; benchmark local capability against approved external evaluators; develop a traceable knowledge base; and prepare a limited industrial pilot.</p>
     <div class="credits-grid">
       <div class="credits-card">
-        <div class="credits-card-icon">⚡</div>
-        <div class="credits-card-title">API credits</div>
-        <div class="credits-card-desc">External benchmark review and anonymized standards and guidance discovery.</div>
+        <div class="credits-card-icon">🔌</div>
+        <div class="credits-card-title">API / Evaluator Access</div>
+        <div class="credits-card-desc">Benchmark agent outputs and research anonymized framework references using approved external evaluators.</div>
       </div>
       <div class="credits-card">
         <div class="credits-card-icon">💻</div>
-        <div class="credits-card-title">GPU / cloud compute</div>
-        <div class="credits-card-desc">Controlled local-model inference and evaluation experiments at scale.</div>
+        <div class="credits-card-title">GPU / Cloud Compute</div>
+        <div class="credits-card-desc">Evaluate and improve local agent capability for complex AIMS workflow processing at scale.</div>
       </div>
       <div class="credits-card">
-        <div class="credits-card-icon">🗄</div>
-        <div class="credits-card-title">Storage / retrieval</div>
-        <div class="credits-card-desc">Document metadata and evidence-search scale testing.</div>
+        <div class="credits-card-icon">🗄️</div>
+        <div class="credits-card-title">Retrieval / Knowledge Services</div>
+        <div class="credits-card-desc">Scale controlled registry, evidence and Single Source of Truth experiments at industrial document volumes.</div>
       </div>
       <div class="credits-card">
-        <div class="credits-card-icon">🔐</div>
-        <div class="credits-card-title">Security / monitoring</div>
-        <div class="credits-card-desc">Pilot-readiness controls and operational visibility tooling.</div>
+        <div class="credits-card-icon">🛡️</div>
+        <div class="credits-card-title">Security / Monitoring</div>
+        <div class="credits-card-desc">Prepare auditable and privacy-preserving pilot infrastructure for controlled external validation.</div>
       </div>
     </div>
     <div class="validation-block">
-      <h3>90-Day Validation Plan</h3>
+      <h3>90-day validation plan</h3>
       <ul>
-        <li>Run 100–300 anonymized document-review workflows across target workflow categories</li>
-        <li>Benchmark local agent outputs against approved frontier evaluators using anonymized context</li>
-        <li>Measure source relevance, gap-detection quality, human usefulness and cost per workflow</li>
-        <li>Build verified learning cases to support ongoing local-model improvement</li>
-        <li>Prepare a limited industrial pilot proposal based on validation findings</li>
+        <li>Validate representative AIMS work-product workflows across project startup and production-operations scope.</li>
+        <li>Benchmark local agents against approved external evaluators using anonymized context only.</li>
+        <li>Assess alignment, traceability, reviewer usefulness and cost per workflow.</li>
+        <li>Prepare controlled pilot scope and evidence pack for industrial engagement.</li>
       </ul>
     </div>
     <div class="credits-cta">
-      <a class="btn-primary" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Startup%20Support%20or%20Pilot">
-        Discuss Support or Pilot Access
-      </a>
+      <a class="btn-primary" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Startup%20Support%20or%20Pilot">Discuss Support or Pilot Access</a>
     </div>
   </div>
 </section>
 
-<!-- ══ RESPONSIBLE USE ════════════════════════════════════════════════ -->
+<!-- ══ RESPONSIBLE USE ════════════════════════════════════════════════════ -->
 <section class="responsible-callout">
   <div class="callout-inner">
-    <div class="callout-icon" aria-hidden="true">⚖️</div>
-    <h2>Responsible engineering AI</h2>
-    <p>
-      AxiOMSphere supports engineering drafting and review workflows.
-      Generated documents and recommendations require qualified human review before operational use.
-    </p>
-    <p class="callout-small">
-      No automatic compliance certification claims. Copyrighted standards and guidance documents are referenced as benchmarks, not reproduced.
-      Every recommendation includes traceable evidence from source materials.
-    </p>
+    <div class="callout-icon">⚖️</div>
+    <h2>Built for responsible industrial use.</h2>
+    <p>AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 / ISO 55002 principles. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.</p>
+    <p class="callout-small">Sensitive source information remains private by default. Approved external services receive anonymized context only unless separately authorised.</p>
   </div>
 </section>
 
-<!-- ══ FOOTER ════════════════════════════════════════════════════════ -->
-</main>
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="container">
     <div class="footer-inner">
       <div class="footer-brand">
-        <div class="logo" aria-label="AxiOMSphere">
-          <svg class="logo-mark" width="20" height="20" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <a class="logo" href="#" aria-label="AxiOMSphere">
+          <svg class="logo-mark" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <rect width="28" height="28" rx="7" fill="#0d1117"/>
             <circle cx="14" cy="14" r="7" stroke="#0ea5e9" stroke-width="1.5"/>
             <circle cx="14" cy="14" r="2.5" fill="#0ea5e9"/>
@@ -824,16 +1002,18 @@
             <line x1="14" y1="21" x2="14" y2="24" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="4" y1="14" x2="7" y2="14" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="21" y1="14" x2="24" y2="14" stroke="#0ea5e9" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="7.5" y1="7.5" x2="9.5" y2="9.5" stroke="#0ea5e9" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="18.5" y1="18.5" x2="20.5" y2="20.5" stroke="#0ea5e9" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
           </svg>
           Axi<span>OM</span>Sphere
-        </div>
-        <p class="footer-desc">Privacy-first industrial AI for source-backed engineering document workflows.</p>
+        </a>
+        <p class="footer-desc">Privacy-first multi-agent platform for industrial project startup and production operations.</p>
         <p class="footer-note">Development-stage platform · &copy; 2026 AxiOMSphere</p>
       </div>
       <div class="footer-links">
         <a href="mailto:hello@axiomsphereai.com">hello@axiomsphereai.com</a>
         <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-        <a href="https://www.axiomsphereai.com/">axiomsphereai.com</a>
+        <a href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
       </div>
     </div>
   </div>
@@ -846,15 +1026,6 @@
     btn.setAttribute('aria-expanded', open);
     btn.textContent = open ? '✕' : '☰';
   }
-  // Close nav on link click (mobile)
-  document.querySelectorAll('#main-nav a').forEach(function(a) {
-    a.addEventListener('click', function() {
-      var nav = document.getElementById('main-nav');
-      var btn = document.querySelector('.menu-btn');
-      nav.classList.remove('open');
-      if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.textContent = '☰'; }
-    });
-  });
 </script>
 </body>
 </html>

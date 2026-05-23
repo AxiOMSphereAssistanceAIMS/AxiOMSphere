@@ -7,39 +7,53 @@
 
 ## One-Line Summary
 
-Privacy-first industrial AI platform for source-backed engineering document workflows, running on private GPU infrastructure with local multi-agent processing and controlled external evaluation.
+Privacy-first multi-agent platform for building and continuously improving the ISO 55001 / ISO 55002-based Asset Integrity Management System required to launch industrial projects and organise production operations.
 
 ---
 
 ## The Problem We Are Solving
 
-Industrial engineering teams manage large volumes of technical procedures, maintenance instructions, and review documents across the asset lifecycle. The core challenge is not a lack of AI capability — it is that the source materials for these workflows (technical standards, proprietary procedures, asset records) are sensitive and cannot be routinely submitted to external AI services.
+Industrial projects cannot operate reliably without an AIMS operating framework — a coherent system of interconnected processes, procedures, plans, asset registers, maintenance programmes, controls and assurance records that must be established before production operations begin and continuously improved throughout the asset lifecycle.
 
-Current approaches require either:
-- Manual preparation that takes days or weeks per procedure, or
-- Sending sensitive technical content to external services, which is not acceptable for most industrial operators
+Building this framework is document-intensive, multi-disciplinary and time-consuming. The core challenges:
 
-There is no production-ready solution that provides the quality of frontier model output while keeping source documents on private infrastructure.
+- Preparing a comprehensive AIMS framework from first principles requires coordinated input across engineering, operations, maintenance, and management disciplines
+- Source materials — technical standards, proprietary procedures, asset data, regulatory requirements — are sensitive and cannot be routinely submitted to external AI services
+- All outputs must be traceable to applicable standards and guidance and require qualified human review before they can be used operationally
+- The ISO 55001 / ISO 55002 management-system structure creates interdependencies between documents that are difficult to maintain manually at scale
+- Projects are frequently delayed or fail to reach operational stability because the AIMS framework was never systematically built
 
 ---
 
 ## Our Approach
 
-AxiOMSphere processes engineering requests using local language model agents on private GPU infrastructure. Source documents stay on private infrastructure. Only anonymized technical context is submitted to approved external evaluators — for benchmarking and quality scoring purposes, not document processing.
+AxiOMSphere coordinates specialised AI agents on private GPU infrastructure to build and continuously improve the AIMS operating framework for industrial projects. The platform is structured in accordance with ISO 55001 (Asset Management — Management Systems — Requirements) and ISO 55002 (Asset Management — Management Systems — Guidelines for the Application of ISO 55001).
 
-The key design decisions:
-- **Local drafting agents** — source documents never leave private infrastructure during the drafting workflow
-- **Controlled external evaluation** — anonymized context submitted to external evaluators only for benchmarking; raw source documents never transmitted
-- **Evidence retention** — every workflow generates locally stored audit artifacts with traceable source references
-- **Human review gate** — all agent outputs are recommendations; qualified engineering review is required before operational use
+Key design decisions:
+
+- **Local AIMS agent coordination** — source documents and asset data stay on private infrastructure; no transmission during the drafting workflow
+- **ISO 55001 / ISO 55002-aligned structure** — work products are developed within the management-system framework, not as standalone documents
+- **Controlled external evaluation** — anonymized context submitted to approved evaluators for benchmarking quality; raw source content never transmitted
+- **Evidence retention** — every workflow generates locally stored traceable artifacts
+- **Human review gate** — all agent outputs are recommendations; qualified review and approval is required before operational use
+
+The platform does not claim to independently certify compliance with ISO 55001 or any other standard. Generated work products require qualified human review before operational use.
 
 ---
 
 ## Current Status
 
-The platform has completed internal development and initial testing across the core workflow categories. The multi-agent orchestration, OCR ingestion, document registry, and drafting pipeline are operationally validated in internal test scenarios. Standards and guidance benchmarking is in active development. External industrial pilot preparation is underway.
+The platform has completed internal development and initial testing of the multi-agent orchestration, OCR ingestion, document registry, and work-product drafting pipeline. These capabilities are operationally validated in internal test scenarios. ISO 55001 / ISO 55002-aligned benchmarking is in active development. External industrial pilot preparation is underway.
 
-The next stage is a controlled 90-day validation programme processing 100–300 anonymized engineering review cases across the target workflow categories.
+The next stage is a controlled validation programme processing a representative AIMS work-product set across the five lifecycle stages — project definition, organisational setup, functional framework, operational readiness, and production operations.
+
+---
+
+## Development-Stage Capacity Model
+
+Preparing a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate assumes approximately 10 minutes of human task formulation and 11 minutes of agent-assisted preparation per work product, based on an 8-hour working day and 22 working days per month.
+
+This is a development-stage capacity model subject to pilot validation. It excludes additional qualified review, approval and assurance activities.
 
 ---
 
@@ -47,21 +61,22 @@ The next stage is a controlled 90-day validation programme processing 100–300 
 
 | Resource | Intended use | Why external |
 |---------|-------------|-------------|
-| API credits | External evaluation benchmarks using anonymized context; standards and guidance discovery | Quality scoring requires frontier model evaluation; cannot be done locally without prohibitive cost |
-| GPU / cloud compute | Local-model inference scaling; controlled evaluation experiments | DGX Spark handles primary processing; scaling experiments require additional compute |
-| Storage / search services | Retrieval and document-metadata scale testing | Testing at industrial document volumes requires storage at scale |
+| API credits | External evaluation benchmarks using anonymized context; ISO 55001 / ISO 55002-aligned standards discovery | Quality benchmarking requires frontier model evaluation at scale; cannot be done locally without prohibitive cost |
+| GPU / cloud compute | Local-model inference scaling; controlled evaluation experiments across AIMS lifecycle stages | DGX Spark handles primary processing; scale validation requires additional compute |
+| Storage / search services | Document registry and retrieval scale testing at industrial AIMS work-product volumes | Testing at realistic industrial scale requires storage and search infrastructure |
 | Monitoring / security tooling | Secure pilot infrastructure preparation | External pilot requires hardened monitoring and audit infrastructure |
 
-All external usage follows the privacy architecture described above. Credits support controlled validation — not unrestricted autonomous deployment.
+Credits support controlled validation — not unrestricted autonomous deployment. All external usage follows the privacy architecture described above.
 
 ---
 
 ## What We Are Not Claiming
 
 We are not claiming:
-- Compliance certification with any standard (all outputs require qualified human review)
+
+- Compliance certification with ISO 55001 or any other standard (all outputs require qualified human review)
 - Production deployment at client sites (the platform is in active development)
-- Benchmarked performance at scale (the 90-day validation plan will produce this data)
+- Benchmarked performance at industrial scale (the validation programme will produce this data)
 
 We are building toward a controlled industrial pilot with evidence-backed performance claims.
 
@@ -69,11 +84,11 @@ We are building toward a controlled industrial pilot with evidence-backed perfor
 
 ## Responsible Use Commitments
 
-- All agent outputs are recommendations — no automatic compliance certification
-- Sensitive documents are handled on private infrastructure by default
+- All agent outputs are recommendations — no automatic certification is claimed or implied
+- Generated work products require qualified human review before operational use
+- Sensitive source documents are handled on private infrastructure by default
 - Copyrighted standards and guidance documents are referenced as benchmarks, not reproduced
 - Every recommendation includes traceable evidence from source materials
-- Qualified engineering review is required before any output is used operationally
 
 ---
 

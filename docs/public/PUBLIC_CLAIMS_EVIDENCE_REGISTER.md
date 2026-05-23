@@ -18,18 +18,30 @@ Every claim in README.md and index.html must appear in this register with its ev
 
 ## Registered Claims
 
+### Platform Identity
+
+| Claim | Location | Evidence basis | Confidence |
+|-------|----------|---------------|------------|
+| Privacy-first multi-agent platform | README, index | Source documents processed locally; external services receive only anonymized context | INTERNALLY_VALIDATED |
+| Builds and continuously improves AIMS | README, index | Multi-agent pipeline for AIMS work product drafting, review and improvement — validated internally | INTERNALLY_VALIDATED |
+| Required to launch industrial projects and organise production operations | README, index | ISO 55001 positions AIMS as a management-system requirement for operating industrial assets | INTERNALLY_VALIDATED |
+| ISO 55001 / ISO 55002 management-system framework basis | README, index | Platform structure follows ISO 55001 requirements and ISO 55002 guidance; stated with required disclaimer | INTERNALLY_VALIDATED |
+| GFMAM Asset Management Landscape as process-framework reference | README, index | Public framework widely accepted in asset management practice; referenced, not certified | INTERNALLY_VALIDATED |
+
+---
+
 ### Infrastructure and Architecture
 
 | Claim | Location | Evidence basis | Confidence |
 |-------|----------|---------------|------------|
 | Multi-agent orchestration workflow | README, index | Agent coordination tested in internal scenarios | INTERNALLY_VALIDATED |
-| Local document drafting without external source transmission | README, index | Source documents processed on private GPU; only anonymized context sent externally | INTERNALLY_VALIDATED |
-| OCR and document registry pipeline | README | OCR ingestion operational; Qdrant registry running | INTERNALLY_VALIDATED |
-| Evidence and learning-case collection | README | Gold pair and DPO pair auto-save operational | INTERNALLY_VALIDATED |
-| Private GPU infrastructure | README | DGX Spark hardware in private environment | INTERNALLY_VALIDATED |
+| Local AIMS work product drafting without external source transmission | README, index | Source documents processed on private GPU; only anonymized context sent externally | INTERNALLY_VALIDATED |
+| OCR and AIMS document registry pipeline | README, index | OCR ingestion operational; Qdrant registry running | INTERNALLY_VALIDATED |
+| Evidence and learning-case collection | README, index | Gold pair and DPO pair auto-save operational | INTERNALLY_VALIDATED |
+| Private GPU infrastructure | README, index | DGX Spark hardware in private environment | INTERNALLY_VALIDATED |
 | Docker, Redis, Qdrant, Python stack | README | Stack confirmed operational | INTERNALLY_VALIDATED |
-| Local open-weight language models | README | Ollama serving local models confirmed | INTERNALLY_VALIDATED |
-| Vector search for document retrieval | README | Qdrant operational | INTERNALLY_VALIDATED |
+| Local open-weight language models via Ollama | README | Ollama serving local models confirmed | INTERNALLY_VALIDATED |
+| Vector search for AIMS document retrieval | README | Qdrant operational | INTERNALLY_VALIDATED |
 | Prometheus and Grafana monitoring | README | Monitoring stack deployed | INTERNALLY_VALIDATED |
 
 ---
@@ -38,23 +50,33 @@ Every claim in README.md and index.html must appear in this register with its ev
 
 | Claim | Location | Evidence basis | Confidence |
 |-------|----------|---------------|------------|
-| Document drafting and review workflow | README, index | Implemented and run in internal test scenarios | INTERNALLY_VALIDATED |
-| Source-backed review against standards and guidance themes | README, index | Benchmarking pipeline in active development | IN_DEVELOPMENT |
+| AIMS work product drafting and review workflow | README, index | Implemented and run in internal test scenarios | INTERNALLY_VALIDATED |
+| ISO 55001 / ISO 55002-aligned structure | README, index | Work products developed within management-system framework | INTERNALLY_VALIDATED |
 | Controlled external evaluation (anonymized context only) | README, index | Architecture design implemented; external evaluation controlled | INTERNALLY_VALIDATED |
 | Human review required before operational use | README, index | Policy constraint; no automatic certification claimed | INTERNALLY_VALIDATED |
+| AIMS framework benchmarking against standards and guidance | README, index | Benchmarking pipeline in active development | IN_DEVELOPMENT |
 
 ---
 
-### Use Cases
+### AIMS Lifecycle Stages
 
 | Claim | Location | Evidence basis | Confidence |
 |-------|----------|---------------|------------|
-| Asset preservation procedure drafting | README, index | Tested in internal scenarios | INTERNALLY_VALIDATED |
-| Shutdown and de-preservation documentation | README, index | Tested in internal scenarios | INTERNALLY_VALIDATED |
-| Maintenance and reliability workflows | README, index | Tested in internal scenarios | INTERNALLY_VALIDATED |
-| Technical procedure review | README, index | Tested in internal scenarios | INTERNALLY_VALIDATED |
-| Engineering checklist preparation | README, index | Tested in internal scenarios | INTERNALLY_VALIDATED |
-| Asset management documentation | README, index | Tested in internal scenarios | INTERNALLY_VALIDATED |
+| Stage 01: Project Definition work products | README, index | Work product categories established from ISO 55001 / ISO 55002 requirements | INTERNALLY_VALIDATED |
+| Stage 02: Organisational Setup work products | README, index | Work product categories established from ISO 55001 / ISO 55002 requirements | INTERNALLY_VALIDATED |
+| Stage 03: Functional Framework work products | README, index | Core AIMS process documentation tested in internal scenarios | INTERNALLY_VALIDATED |
+| Stage 04: Operational Readiness work products | README, index | Work product categories established from management-system requirements | IN_DEVELOPMENT |
+| Stage 05: Production Operations work products | README, index | Continuous improvement and management review structure defined | IN_DEVELOPMENT |
+
+---
+
+### Development-Stage Capacity Model
+
+| Claim | Location | Evidence basis | Confidence |
+|-------|----------|---------------|------------|
+| 350 workflow hours / ~2 working months for 1,000 AIMS work products | README, index | Estimate based on ~10 min human task formulation + ~11 min agent-assisted preparation per item; 8-hr day / 22-day month; stated as development-stage estimate subject to validation | IN_DEVELOPMENT |
+| Estimate excludes qualified review, approval and assurance | README, index | Explicit qualification included in all instances of this claim | INTERNALLY_VALIDATED |
+| Subject to pilot validation | README, index | Explicit qualification included in all instances of this claim | INTERNALLY_VALIDATED |
 
 ---
 
@@ -68,9 +90,9 @@ Every claim in README.md and index.html must appear in this register with its ev
 
 ---
 
-## Claims Removed
+## Claims Removed in Grant-Readiness Rewrite (2026-05-23)
 
-The following claims appeared in earlier versions and were removed:
+The following claims appeared in the original repository and were removed for the grant-readiness version:
 
 | Removed claim | Reason |
 |--------------|--------|
@@ -83,6 +105,20 @@ The following claims appeared in earlier versions and were removed:
 | Specific model names (Gemini, Nemotron, DeepSeek) | Third-party competitive sensitivity |
 | Internal port numbers (8000, 8082, etc.) | Internal infrastructure — not for public |
 | ".env", "API_KEY", "TOKEN" references | Security — not for public |
+
+---
+
+## Scope Restoration (2026-05-23)
+
+The grant-readiness rewrite narrowed the product scope to "engineering document workflows." The following scope items have been restored with appropriate qualifications:
+
+| Restored scope element | Qualification included |
+|-----------------------|----------------------|
+| ISO 55001 / ISO 55002 as management-system foundation | "follows as framework basis"; disclaimer that outputs do not constitute certification |
+| Full AIMS lifecycle (5 stages) | "development-stage"; staged capabilities qualify which are validated vs in development |
+| Capacity model (350 hr / 1,000 items) | Full development-stage qualification; excludes review/approval/assurance |
+| GFMAM Landscape reference | Referenced as process-framework; not certified compliance |
+| Brand pillars (Axiom / AIMS / O&M / Sphere) | Descriptive; not performance claims |
 
 ---
 

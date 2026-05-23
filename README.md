@@ -1,127 +1,127 @@
 # AxiOMSphere
 
-**Privacy-first industrial AI for source-backed engineering document workflows.**
+**Privacy-first multi-agent platform for building and continuously improving the Asset Integrity Management System required to launch industrial projects and organise production operations.**
 
-[Website](https://axiomsphereassistanceaims.github.io/AxiOMSphere/) · [GitHub](https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere) · [Contact](mailto:hello@axiomsphereai.com)
+[Website](https://axiomsphereai.com) · [GitHub](https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere) · [Contact](mailto:hello@axiomsphereai.com)
 
-> **Safety statement:** AxiOMSphere supports engineering drafting and review workflows. Generated documents and recommendations require qualified human review before operational use.
+> **Safety statement:** AxiOMSphere develops and reviews AIMS management-system work products. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.
 
-> **Privacy statement:** Sensitive source documents remain on private infrastructure by default. Approved external services are used only with anonymized context for benchmarking, research or evaluation unless separately authorised.
+> **Privacy statement:** Sensitive source documents remain on private infrastructure by default. Approved external services receive only anonymized context unless separately authorised.
+
+---
+
+## What Is AxiOMSphere
+
+AxiOMSphere is a development-stage multi-agent platform that coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations.
+
+The platform follows ISO 55001 / ISO 55002 as its AIMS management-system framework basis. It is structured around the GFMAM Asset Management Landscape as its broader process-framework reference.
+
+**Brand meaning:**
+- **Axiom** — a foundational, self-evident principle; the platform produces structured, traceable management-system work products from first principles
+- **AIMS** — Asset Integrity Management System; the operating framework the platform is designed to build and sustain
+- **O&M** — Operations and Maintenance; the production and reliability context the AIMS framework governs
+- **Sphere** — a coherent, integrated operating environment where all AIMS processes function together
 
 ---
 
 ## The Problem
 
-Industrial engineering teams manage large volumes of technical procedures, maintenance instructions, shutdown documents and review comments across the asset lifecycle. Preparing and maintaining this documentation is time-consuming, error-prone and difficult to trace.
+Industrial projects cannot operate reliably without an AIMS operating framework. That framework — comprising interconnected processes, procedures, plans, asset registers, maintenance programmes, controls and assurance records — must be built before production operations begin and continuously improved throughout the asset lifecycle.
 
-Key challenges:
-- Documentation preparation for a single procedure requires input from multiple engineering disciplines across days or weeks
-- Review and gap-assessment work is largely manual and depends on individual expertise
-- Sensitive technical source documents require controlled handling and cannot routinely be sent to external services
-- Recommendations must be traceable back to source standards and guidance materials
-- Maintaining consistency across large sets of related documents during any change requires significant coordination
+Building this framework is document-intensive, multi-disciplinary, and time-consuming. Source materials — technical standards, asset data, proprietary procedures — are sensitive and cannot be routinely submitted to external AI services. All outputs must be traceable to applicable standards and guidance and require qualified human review before they can be used operationally.
 
 ---
 
 ## The Solution
 
-AxiOMSphere is a development-stage technical platform that combines local multi-agent processing with source-backed document review, while keeping sensitive materials on private infrastructure by default.
+AxiOMSphere coordinates specialised AI agents on private GPU infrastructure to:
 
-Core capabilities being validated:
-- **Local document drafting** — engineering requests are processed by local language model agents without sending source documents externally
-- **Source-backed review** — documents are benchmarked against relevant standards and guidance themes from the internal registry
-- **OCR and document registry** — existing documents are ingested, indexed and made available to agents as structured retrieval context
-- **Controlled external evaluation** — only anonymized technical context is submitted to approved external evaluators for benchmarking
-- **Evidence retention** — every workflow generates traceable evidence records stored locally
-- **Human review required** — all agent outputs are recommendations; qualified engineering review is required before operational use
+- Draft and review AIMS work products aligned to ISO 55001 / ISO 55002 requirements
+- Ingest, index and retrieve source standards, guidance materials and existing documents
+- Generate interconnected procedures, plans, registers and controls as a coherent system
+- Retain traceable evidence for every output
+- Submit only anonymized context to approved external evaluators — source documents never leave private infrastructure
 
----
-
-## How It Works
-
-```
-Engineering request
-  → Local context extraction (OCR, RAG, document registry)
-  → Local document drafting or document review
-    → Source-backed benchmark preparation
-      → Controlled external evaluation (anonymized context only, where approved)
-        → Human-reviewed output
-          → Evidence and learning-case retention
-```
-
-Agents are coordinated through a local orchestration layer. No source document content leaves private infrastructure unless separately authorised.
+All outputs are recommendations. Qualified human review and approval is required before any work product is used operationally.
 
 ---
 
-## Privacy-First Architecture
+## Management-System Foundation
+
+The platform is structured in accordance with ISO 55001 (Asset Management — Management Systems — Requirements) and ISO 55002 (Asset Management — Management Systems — Guidelines for the Application of ISO 55001).
+
+AxiOMSphere follows ISO 55001 / ISO 55002 as its AIMS framework basis. Generated work products require qualified human review before operational use and do not by themselves constitute independent certification or formal compliance approval.
+
+The GFMAM Asset Management Landscape provides the broader process-framework reference covering all 39 subject groups across the asset management knowledge domain.
+
+---
+
+## AIMS Lifecycle Stages
+
+| Stage | Description |
+|-------|-------------|
+| **01 Project Definition** | Asset strategy, project scope, regulatory requirements, risk register baseline |
+| **02 Organisational Setup** | AIMS structure, roles, competence framework, system architecture |
+| **03 Functional Framework** | Core AIMS processes, procedures, plans, controls and registers |
+| **04 Operational Readiness** | Validation testing, assurance programme, training and mobilisation records |
+| **05 Production Operations** | Operations and maintenance, continuous improvement, management review |
+
+---
+
+## Capabilities
+
+| Capability | Status |
+|-----------|--------|
+| Multi-agent orchestration for AIMS work products | Internally validated |
+| ISO 55001 / ISO 55002-aligned document drafting and review | Implemented for internal test scenarios |
+| OCR ingestion and searchable AIMS document registry | Implemented |
+| Evidence and learning-case collection | Implemented in development workflow |
+| AIMS framework benchmarking against standards and guidance | In active development |
+| Controlled external evaluation with anonymized context | Implemented |
+| Industrial pilot programme | Preparing |
+
+---
+
+## Privacy Architecture
 
 | Principle | Implementation |
 |-----------|----------------|
-| Source documents stay local | Processed on private GPU infrastructure by default |
-| External services receive only anonymized context | Benchmark and evaluation calls never include raw source documents |
-| Outputs are recommendations | No automatic compliance certification; qualified engineer review required |
-| Evidence is retained locally | Every workflow generates audit artifacts stored on private infrastructure |
+| Source documents stay local | Processed on private GPU infrastructure; never transmitted externally |
+| External services receive only anonymized context | Benchmark calls never include raw source documents or proprietary data |
+| Outputs are recommendations | No automatic certification; qualified human review required before operational use |
+| Evidence retained locally | Every workflow generates audit artifacts stored on private infrastructure |
+| ISO 55001 / ISO 55002 aligned | Work products structured in accordance with applicable management-system requirements |
 
 ---
 
-## Initial Use Cases
+## Development-Stage Capacity Model
 
-The platform is being validated for the following workflow categories:
+Preparing a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate assumes approximately 10 minutes of human task formulation and 11 minutes of agent-assisted preparation per work product, based on an 8-hour working day and 22 working days per month.
 
-- **Asset preservation procedures** — drafting and reviewing preservation scope and method documents
-- **Shutdown and de-preservation documentation** — procedure preparation for planned shutdown and restart sequences
-- **Maintenance and reliability workflows** — maintenance instruction drafting and gap assessment
-- **Technical procedure review** — structured review of existing documents against applicable standards and guidance themes
-- **Engineering checklist preparation** — generating review checklists from source requirements
-- **Asset management documentation** — asset register, SAMP-aligned planning documents and lifecycle records
-
----
-
-## Current Development Status
-
-| Capability | Status |
-|------------|--------|
-| Multi-agent orchestration workflow | Internally validated |
-| Document drafting and review workflow | Implemented for internal test scenarios |
-| OCR and document registry pipeline | Implemented |
-| Evidence and learning-case collection | Implemented in development workflow |
-| Standards and guidance benchmarking | In active development |
-| Long-duration unattended validation | Planned next stage |
-| External industrial pilot | Preparing |
-
-Internal test results are maintained separately and will be shared with pilot partners under appropriate agreements.
+This is a development-stage capacity model subject to pilot validation. It excludes additional qualified review, approval and assurance activities, which must be planned separately. Final figures will be established during controlled pilot validation.
 
 ---
 
 ## 90-Day Validation Plan
 
-- Process 100–300 anonymized engineering review cases across target workflow categories
-- Benchmark local review workflows against frontier evaluators using anonymized context
-- Measure source relevance, gap-detection quality, reviewer usefulness and cost per workflow
-- Prepare a controlled industrial pilot proposal based on validation findings
+- Process a representative AIMS work-product set across the five lifecycle stages under controlled conditions
+- Benchmark agent-assisted drafts against ISO 55001 / ISO 55002 requirements using anonymized context submitted to approved evaluators
+- Measure source traceability, alignment quality, human usefulness rating and cost per workflow
+- Build verified learning cases to support continuous local-model improvement
+- Prepare a limited industrial pilot proposal based on validation findings
 
 ---
 
 ## Why We Are Seeking Startup Credits
 
-| Resource requested | Intended use |
-|-------------------|--------------|
-| API credits | External evaluation benchmarks and anonymized standards and guidance discovery |
+| Resource | Intended use |
+|---------|-------------|
+| API credits | External benchmark evaluation and ISO 55001 / ISO 55002-aligned standards discovery using anonymized context |
 | GPU / cloud compute | Local-model inference scaling and controlled evaluation experiments |
-| Storage / search services | Retrieval and document-metadata scale testing |
+| Storage / search services | Document registry and retrieval scale testing at industrial AIMS work-product volumes |
 | Monitoring / security tooling | Secure pilot infrastructure preparation |
 
-Credits support controlled validation — not unrestricted autonomous deployment. All external use follows the privacy architecture described above.
-
----
-
-## Responsible Use
-
-- Qualified human engineering review is required before any output is used operationally
-- The platform does not claim to independently certify compliance with any standard
-- Copyrighted standards and guidance documents are referenced as benchmarks, not reproduced
-- Every recommendation is accompanied by traceable evidence from source materials
-- Sensitive documents are handled on private infrastructure by default
+Credits support controlled validation — not unrestricted autonomous deployment. All external usage follows the privacy architecture described above.
 
 ---
 
@@ -131,9 +131,20 @@ The platform runs on private GPU infrastructure using:
 
 - Python, Docker, Redis, Qdrant
 - Local open-weight language models via Ollama
-- Vector search for document retrieval
+- Vector search for AIMS document retrieval
 - Prometheus and Grafana for operational monitoring
 - Provider-abstracted external evaluation for benchmarking
+
+---
+
+## Responsible Use
+
+AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 / ISO 55002 principles. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.
+
+- The platform does not claim to independently certify compliance with any standard
+- Copyrighted standards and guidance documents are referenced as benchmarks, not reproduced
+- Every recommendation is accompanied by traceable evidence from source materials
+- Sensitive documents are handled on private infrastructure by default
 
 ---
 
