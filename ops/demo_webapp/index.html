@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AxiOMSphere Reply</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--tg-theme-bg-color, #1a1a2e);
+      font-family: system-ui, sans-serif;
+      color: var(--tg-theme-text-color, #e0e0e0);
+      font-size: 16px;
+    }
+    #status {
+      text-align: center;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">Submitting reply…</div>
+  <script>
+    (function () {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      const queryId = tg.initDataUnsafe && tg.initDataUnsafe.query_id;
+      const initData = tg.initData;
+
+      if (!token || !queryId || !initData) {
+        document.getElementById("status").textContent = "Missing parameters.";
+        return;
+      }
+
+      // BACKEND_URL is replaced at deploy time with the real HTTPS endpoint.
+      // Example: https://demo.axiomsphereai.com
+      const BACKEND_URL = "%%BACKEND_URL%%";
+
+      fetch(BACKEND_URL + "/demo/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: token,
+          init_data: initData,
+          web_app_query_id: queryId,
+        }),
+      })
+        .then(function (r) {
+          if (r.ok) {
+            document.getElementById("status").textContent = "Sent.";
+            tg.close();
+          } else {
+            document.getElementById("status").textContent = "Error — please retry.";
+          }
+        })
+        .catch(function () {
+          document.getElementById("status").textContent = "Network error — please retry.";
+        });
+    })();
+  </script>
+</body>
+</html>

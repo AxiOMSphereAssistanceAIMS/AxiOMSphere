@@ -4,12 +4,12 @@ Uses asyncio.run() for async tests.
 """
 
 import asyncio
-import importlib
 import sys
 import time
 import types
+import uuid
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -21,8 +21,15 @@ if OPS_DIR not in sys.path:
 # Stub telegram before importing axi_demo
 _tg = types.ModuleType("telegram")
 _tg.Update = MagicMock
-_tg.InlineKeyboardButton = MagicMock(side_effect=lambda text, callback_data: {"text": text, "cbd": callback_data})
+_tg.InlineKeyboardButton = MagicMock(
+    side_effect=lambda text=None, callback_data=None, web_app=None: {
+        "text": text, "cbd": callback_data, "web_app": web_app
+    }
+)
 _tg.InlineKeyboardMarkup = MagicMock(side_effect=lambda rows: {"rows": rows})
+_tg.WebAppInfo = MagicMock(side_effect=lambda url: {"url": url})
+_tg.InlineQueryResultArticle = MagicMock
+_tg.InputTextMessageContent = MagicMock
 _tg_constants = types.ModuleType("telegram.constants")
 _tg_constants.ChatAction = MagicMock()
 _tg_constants.ChatAction.TYPING = "typing"
@@ -37,12 +44,16 @@ from axi_demo import (  # noqa: E402
     COOLDOWN_SECONDS,
     DemoSession,
     DemoState,
+    _ReplySlot,
     _interruptible_sleep,
+    _pending_replies,
     _run_demo,
     _sessions,
     cmd_demo_stop,
     demo_cancel_callback,
     demo_start_callback,
+    handle_webapp_reply,
+    set_demo_bot,
 )
 
 
@@ -105,9 +116,13 @@ def test_lobby_text_contains_start_axi():
 
 
 def test_lobby_text_no_countdown():
-    # Must not contain a 5-second countdown announcement
     assert "5 seconds" not in axi_demo.LOBBY_TEXT
     assert "5-second" not in axi_demo.LOBBY_TEXT
+
+
+def test_lobby_text_fictional_disclaimer():
+    assert "fictional" in axi_demo.LOBBY_TEXT.lower()
+    assert "OilGasExploration" in axi_demo.LOBBY_TEXT
 
 
 def test_lobby_keyboard_button_label():
@@ -130,11 +145,9 @@ def test_script_no_llm_calls():
             assert term not in text, f"Script step contains banned term '{term}'"
 
 
-def test_engineer_label_is_project_input():
-    progressive_steps = [s for s in axi_demo._SCRIPT if s["type"] == "ENGINEER_PROGRESSIVE_TYPE"]
-    assert len(progressive_steps) >= 1
-    for s in progressive_steps:
-        assert "PROJECT INPUT" in s["text"], f"Expected 'PROJECT INPUT' prefix, got: {s['text'][:60]}"
+def test_customer_word_type_steps_present():
+    customer_steps = [s for s in axi_demo._SCRIPT if s["type"] == "CUSTOMER_WORD_TYPE"]
+    assert len(customer_steps) >= 3, "Expected at least 3 CUSTOMER_WORD_TYPE steps"
 
 
 def test_interruptible_sleep_completes():
@@ -308,12 +321,162 @@ def test_run_demo_stops_on_event():
 
 def test_fictional_scenario_present():
     all_text = " ".join(s.get("text", "") for s in axi_demo._SCRIPT)
-    assert "North Shore" in all_text
-    assert "Gulf" in all_text
+    assert "OilGasExploration" in all_text, "OilGasExploration project name must appear in script"
+    assert "Gulf Region" in all_text, "Gulf Region location must appear in script"
+
+
+def test_fictional_disclaimer_present():
+    all_text = " ".join(s.get("text", "") for s in axi_demo._SCRIPT)
+    assert "fictional" in all_text.lower(), "Fictional disclaimer must appear in script"
+    assert "OilGasExploration is a fictional project name" in all_text
+
+
+def test_no_qatar_references():
+    all_text = " ".join(s.get("text", "") for s in axi_demo._SCRIPT)
+    assert "Qatar Energy" not in all_text, "Qatar Energy must not appear in demo script"
+    assert "Qatar\n" not in all_text and "\nQatar" not in all_text
+    # Allow "Qatar" only if it is part of a banned-term check; it must not appear as a standalone word
+    import re
+    standalone_qatar = re.findall(r"\bQatar\b", all_text)
+    assert not standalone_qatar, f"Standalone 'Qatar' found in script: {standalone_qatar}"
 
 
 def test_no_real_operator_names():
     all_text = " ".join(s.get("text", "") for s in axi_demo._SCRIPT)
-    forbidden = ["Saudi Aramco", "Shell", "BP ", "TotalEnergies", "Chevron", "ExxonMobil"]
+    forbidden = ["Saudi Aramco", "Shell", "BP ", "TotalEnergies", "Chevron", "ExxonMobil", "Qatar Energy"]
     for name in forbidden:
         assert name not in all_text, f"Real operator '{name}' found in demo script"
+
+
+# -- Web App Reply transport tests --------------------------------------------
+
+def test_set_demo_bot_registers_bot():
+    bot = AsyncMock()
+    set_demo_bot(bot)
+    assert axi_demo._demo_bot is bot
+    axi_demo._demo_bot = None  # restore
+
+
+def test_reply_slot_created_with_chat_and_text():
+    slot = _ReplySlot(chat_id=9001, answer_text="Hello world")
+    assert slot.chat_id == 9001
+    assert slot.answer_text == "Hello world"
+    assert slot.created_at > 0
+
+
+def test_handle_webapp_reply_unknown_token():
+    _pending_replies.clear()
+    result = asyncio.run(handle_webapp_reply("bad-token", "qid123"))
+    assert result is False
+
+
+def test_handle_webapp_reply_no_bot():
+    _pending_replies.clear()
+    axi_demo._demo_bot = None
+    token = str(uuid.uuid4())
+    _pending_replies[token] = _ReplySlot(chat_id=9002, answer_text="test")
+
+    result = asyncio.run(handle_webapp_reply(token, "qid"))
+    assert result is False
+    # Token should have been consumed even on failure (slot popped)
+    assert token not in _pending_replies
+
+
+def test_handle_webapp_reply_success_signals_session():
+    _pending_replies.clear()
+    _sessions.clear()
+
+    chat_id = 9003
+    session = DemoSession(chat_id=chat_id, state=DemoState.RUNNING)
+    _sessions[chat_id] = session
+
+    token = str(uuid.uuid4())
+    _pending_replies[token] = _ReplySlot(chat_id=chat_id, answer_text="answer text")
+    session.current_reply_token = token
+
+    bot = AsyncMock()
+    bot.answer_web_app_query = AsyncMock()
+    set_demo_bot(bot)
+
+    result = asyncio.run(handle_webapp_reply(token, "qid9003"))
+    assert result is True
+    assert token not in _pending_replies
+    assert session.reply_event.is_set()
+    assert session.current_reply_token is None
+    axi_demo._demo_bot = None
+
+
+def test_handle_webapp_reply_expired_token():
+    _pending_replies.clear()
+    token = str(uuid.uuid4())
+    slot = _ReplySlot(chat_id=9004, answer_text="expired")
+    slot.created_at = time.monotonic() - 400.0  # past TTL
+    _pending_replies[token] = slot
+
+    bot = AsyncMock()
+    set_demo_bot(bot)
+
+    result = asyncio.run(handle_webapp_reply(token, "qid"))
+    assert result is False
+    axi_demo._demo_bot = None
+
+
+def test_webapp_url_env_not_set_by_default():
+    # Without DEMO_WEBAPP_URL set, CUSTOMER_WORD_TYPE steps are skipped silently
+    original = axi_demo.DEMO_WEBAPP_URL
+    axi_demo.DEMO_WEBAPP_URL = ""
+
+    _sessions.clear()
+    chat_id = 9005
+    session = DemoSession(chat_id=chat_id, state=DemoState.RUNNING)
+    _sessions[chat_id] = session
+
+    bot = AsyncMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=500))
+    bot.send_chat_action = AsyncMock()
+    bot.edit_message_text = AsyncMock()
+
+    asyncio.run(_run_demo(session, bot))
+    assert session.state == DemoState.COMPLETED
+
+    axi_demo.DEMO_WEBAPP_URL = original
+
+
+def test_no_braille_blank_in_session_or_reply():
+    # Ensure the old braille-blank hack is not present anywhere in the module
+    import inspect
+    source = inspect.getsource(axi_demo)
+    assert "⠀" not in source, "Braille blank U+2800 found — _R hack should be removed"
+
+
+def test_customer_type_function_removed():
+    assert not hasattr(axi_demo, "_customer_type"), "_customer_type() must be removed"
+
+
+def test_pending_replies_cleared_after_stop():
+    _pending_replies.clear()
+    _sessions.clear()
+    axi_demo.DEMO_WEBAPP_URL = "https://example.invalid"
+
+    chat_id = 9006
+    session = DemoSession(chat_id=chat_id, state=DemoState.RUNNING)
+    _sessions[chat_id] = session
+
+    bot = AsyncMock()
+    bot.send_message = AsyncMock(return_value=MagicMock(message_id=600))
+    bot.send_chat_action = AsyncMock()
+    bot.edit_message_text = AsyncMock()
+
+    async def run_and_stop():
+        task = asyncio.create_task(_run_demo(session, bot))
+        await asyncio.sleep(0.05)
+        session.stop_event.set()
+        session.reply_event.set()  # unblock any waiting step
+        await asyncio.wait_for(task, timeout=5)
+
+    asyncio.run(run_and_stop())
+
+    # After cancellation, no orphaned tokens should remain for this session
+    orphaned = [t for t, s in _pending_replies.items() if s.chat_id == chat_id]
+    assert not orphaned, f"Orphaned reply tokens found: {orphaned}"
+    axi_demo.DEMO_WEBAPP_URL = ""

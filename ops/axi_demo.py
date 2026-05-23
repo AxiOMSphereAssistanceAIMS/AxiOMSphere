@@ -1,18 +1,20 @@
 """
 Recordable scripted Telegram AIMS walkthrough demo for AxiOMSphere bot.
+Scenario: OilGasExploration — Maintenance Management Philosophy.
 
 Safety constraints:
   - Zero LLM / model / evaluator calls
   - Zero external service calls
   - Zero operational / training / evidence writes
-  - All scenario content is fictional
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import time
+import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
@@ -22,6 +24,11 @@ from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
 log = logging.getLogger(__name__)
+
+# Mini App URL for the Web App Reply transport.
+# Must be an HTTPS URL served by ops/demo_reply_api.py behind a TLS reverse proxy.
+# When empty, CUSTOMER_WORD_TYPE steps are skipped (development / no-HTTPS mode).
+DEMO_WEBAPP_URL: str = os.environ.get("DEMO_WEBAPP_URL", "")
 
 # ── Session state ──────────────────────────────────────────────────────────────
 
@@ -41,181 +48,68 @@ class DemoSession:
     lobby_message_id: Optional[int] = None
     task: Optional[asyncio.Task] = None
     stop_event: asyncio.Event = field(default_factory=asyncio.Event)
+    reply_event: asyncio.Event = field(default_factory=asyncio.Event)
+    current_reply_token: Optional[str] = None
     started_at: float = field(default_factory=time.monotonic)
 
 
-# in-memory session store; one session per chat
+@dataclass
+class _ReplySlot:
+    chat_id: int
+    answer_text: str
+    created_at: float = field(default_factory=time.monotonic)
+
+
 _sessions: dict[int, DemoSession] = {}
-_last_completed: dict[int, float] = {}   # chat_id → monotonic time
+_last_completed: dict[int, float] = {}
+_pending_replies: dict[str, _ReplySlot] = {}
+_demo_bot = None  # registered via set_demo_bot() in _post_init
 
 COOLDOWN_SECONDS = 60
+_REPLY_TOKEN_TTL = 300.0  # seconds before a pending reply token expires
 
 # ── Static content ─────────────────────────────────────────────────────────────
 
 LOBBY_TEXT = (
-    "*AxiOMSphere AIMS Walkthrough*\n\n"
-    "This demonstration walks through a scripted internal development scenario.\n"
-    "No real data is processed. All outputs are illustrative.\n\n"
-    "_North Shore Gas Processing Development — Gulf Region_\n\n"
-    "Press *▶ START AXI* to begin or *About* to learn more."
+    "*AxiOMSphere — AIMS Platform Demo*\n\n"
+    "This demonstration walks through a live scenario:\n"
+    "_Creating a Maintenance Management Philosophy for a new gas processing project._\n\n"
+    "_Scripted fictional demonstration. OilGasExploration is a fictional project name. "
+    "No real customer or project data is used._\n\n"
+    "Press *▶ START AXI* to begin."
 )
 
 LOBBY_KEYBOARD = InlineKeyboardMarkup([[
-    InlineKeyboardButton("▶ START AXI",  callback_data="demo_start"),
-    InlineKeyboardButton("About",        callback_data="demo_about"),
-    InlineKeyboardButton("■ CANCEL",     callback_data="demo_cancel"),
+    InlineKeyboardButton("▶ START AXI", callback_data="demo_start"),
+    InlineKeyboardButton("About",       callback_data="demo_about"),
+    InlineKeyboardButton("■ CANCEL",    callback_data="demo_cancel"),
 ]])
 
 ABOUT_TEXT = (
     "*About this demonstration*\n\n"
     "AxiOMSphere coordinates specialised AI agents on private GPU infrastructure "
-    "to build, synchronise, restore and continuously improve the AIMS operating "
-    "framework for industrial projects.\n\n"
-    "This walkthrough is a scripted internal scenario. It makes no external calls "
-    "and writes no operational data. All content is fictional.\n\n"
-    "_Scenario: North Shore Gas Processing Development, Gulf Region_\n"
-    "_Framework: ISO 55001 / ISO 55002_"
+    "to build, synchronise and continuously improve the AIMS operating framework "
+    "for industrial projects, structured in accordance with ISO 55001 / ISO 55002.\n\n"
+    "All outputs are recommendations. Qualified human review is required before "
+    "operational use."
 )
 
 DEMO_HELP_TEXT = (
     "*Demo commands*\n\n"
-    "/demo — launch demonstration lobby\n"
+    "/demo — launch demonstration\n"
     "/demo\\_stop — stop a running demonstration\n"
     "/demo\\_help — show this message"
 )
 
-# ── Script ─────────────────────────────────────────────────────────────────────
-# Each step is a dict with keys:
-#   type: ENGINEER_PROGRESSIVE_TYPE | POST_AS_COMPLETED_CARD | PAUSE | TYPING_INDICATOR
-#   text: message text (Markdown)
-#   delay_before: seconds to wait before this step
-#   delay_after: seconds to wait after this step (for PAUSE type, also the pause length)
-#   chars_per_sec: typing speed (ENGINEER_PROGRESSIVE_TYPE only)
+# ── Helpers ────────────────────────────────────────────────────────────────────
 
-_SCRIPT: list[dict] = [
-    # ── Scene 1: Project input ─────────────────────────────────────────────────
-    {
-        "type": "ENGINEER_PROGRESSIVE_TYPE",
-        "text": "PROJECT INPUT: Begin AIMS scope definition for North Shore Gas Processing Development.",
-        "delay_before": 0.5,
-        "delay_after": 1.2,
-        "chars_per_sec": 3,
-    },
-    {
-        "type": "TYPING_INDICATOR",
-        "delay_before": 0.4,
-        "delay_after": 1.8,
-        "text": "",
-    },
-    {
-        "type": "POST_AS_COMPLETED_CARD",
-        "text": (
-            "*AXIOMSPHERE ASSISTANT*\n\n"
-            "Scope definition initiated for *North Shore Gas Processing Development* "
-            "(Gulf Region, pilot stage).\n\n"
-            "Registering project under AIMS lifecycle stage *01 — Project Definition*.\n"
-            "Applying ISO 55001 requirements baseline and ISO 55002 guidance structure.\n\n"
-            "_Work products queued:_ Asset Strategy · Project Scope Register · "
-            "Risk Register Baseline · Organisational Boundary Definition"
-        ),
-        "delay_before": 0.3,
-        "delay_after": 1.5,
-    },
-    # ── Scene 2: Framework build ───────────────────────────────────────────────
-    {
-        "type": "TYPING_INDICATOR",
-        "delay_before": 0.8,
-        "delay_after": 2.0,
-        "text": "",
-    },
-    {
-        "type": "POST_AS_COMPLETED_CARD",
-        "text": (
-            "*AXIOMSPHERE ASSISTANT — AIMS Framework Build*\n\n"
-            "Drafting functional framework across *Stage 03 — Functional Framework*.\n\n"
-            "✦ *Processes registered:* 14 core processes mapped to ISO 55001 §8\n"
-            "✦ *Interfaces identified:* Engineering ↔ Operations · Operations ↔ Maintenance · "
-            "Maintenance ↔ HSE\n"
-            "✦ *Gap scan:* 3 interface alignment items flagged for synchronisation\n\n"
-            "All outputs are draft recommendations. Qualified human review required "
-            "before operational use."
-        ),
-        "delay_before": 0.3,
-        "delay_after": 1.5,
-    },
-    # ── Scene 3: Second engineer input ────────────────────────────────────────
-    {
-        "type": "ENGINEER_PROGRESSIVE_TYPE",
-        "text": "PROJECT INPUT: Assess impact of revised flare system specification on AIMS framework.",
-        "delay_before": 1.0,
-        "delay_after": 1.2,
-        "chars_per_sec": 3,
-    },
-    {
-        "type": "TYPING_INDICATOR",
-        "delay_before": 0.5,
-        "delay_after": 2.2,
-        "text": "",
-    },
-    {
-        "type": "POST_AS_COMPLETED_CARD",
-        "text": (
-            "*AXIOMSPHERE ASSISTANT — Change Impact Assessment*\n\n"
-            "Tracing downstream impact of *Flare System Specification Revision v3*.\n\n"
-            "✦ *Directly affected work products:* 7\n"
-            "  — Maintenance Strategy · Inspection Programme · Competence Framework\n"
-            "  — Operating Philosophy · Risk Register · Procedure Index · Training Records\n\n"
-            "✦ *Interface touchpoints requiring re-alignment:* 4\n"
-            "✦ *Estimated review effort:* 2.1 workflow hours (planning estimate only)\n\n"
-            "_Change propagation traced before downstream impact compounds._\n"
-            "All outputs require qualified human review before operational action."
-        ),
-        "delay_before": 0.3,
-        "delay_after": 1.5,
-    },
-    # ── Scene 4: Knowledge retention ──────────────────────────────────────────
-    {
-        "type": "TYPING_INDICATOR",
-        "delay_before": 0.8,
-        "delay_after": 1.8,
-        "text": "",
-    },
-    {
-        "type": "POST_AS_COMPLETED_CARD",
-        "text": (
-            "*AXIOMSPHERE ASSISTANT — Knowledge Retention*\n\n"
-            "Validated outputs captured in the AIMS knowledge layer.\n\n"
-            "✦ *Evidence records logged:* 11\n"
-            "✦ *Traceable to:* ISO 55001 §6.1 · §7.2 · §8.1 · §8.2\n"
-            "✦ *Continuous learning update:* framework consistency model updated with "
-            "this change-impact trace\n\n"
-            "Closed loop: Build → Synchronise → Assess Change → Retain Knowledge.\n"
-            "Next cycle begins on next scope event."
-        ),
-        "delay_before": 0.3,
-        "delay_after": 1.5,
-    },
-    # ── Scene 5: Completion ────────────────────────────────────────────────────
-    {
-        "type": "POST_AS_COMPLETED_CARD",
-        "text": (
-            "*AXIOMSPHERE ASSISTANT — Walkthrough Complete*\n\n"
-            "This demonstration showed:\n\n"
-            "① AIMS scope definition and work-product registration\n"
-            "② Framework build across ISO 55001 / ISO 55002 lifecycle stages\n"
-            "③ Change-impact tracing before downstream propagation\n"
-            "④ Closed-loop knowledge retention\n\n"
-            "_Scenario: North Shore Gas Processing Development, Gulf Region_\n"
-            "_All content is fictional. No external calls were made. "
-            "No operational data was written._\n\n"
-            "For information: hello@axiomsphereai.com"
-        ),
-        "delay_before": 0.5,
-        "delay_after": 0,
-    },
-]
+def _kb(*rows):
+    """Build InlineKeyboardMarkup from row lists of (label, callback_data) tuples."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(label, callback_data=cb) for label, cb in row]
+        for row in rows
+    ])
 
-# ── Utilities ──────────────────────────────────────────────────────────────────
 
 async def _interruptible_sleep(seconds: float, stop: asyncio.Event) -> bool:
     """Sleep for `seconds`; return True if interrupted by stop event."""
@@ -226,45 +120,558 @@ async def _interruptible_sleep(seconds: float, stop: asyncio.Event) -> bool:
         return False
 
 
-async def _type_progressively(
-    text: str,
-    chat_id: int,
-    bot,
-    chars_per_sec: float,
-    stop: asyncio.Event,
-) -> Optional[int]:
-    """Send a message that appears to be typed character-by-character (3 chars/sec).
-    Returns the message_id of the final message, or None if cancelled."""
-    chunk = ""
-    msg = None
-    delay = 1.0 / chars_per_sec
+async def _send_typing(bot, chat_id: int, stop: asyncio.Event, duration: float = 1.2) -> bool:
+    """Send typing indicator, then sleep. Returns True if interrupted."""
+    try:
+        await bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
+    except Exception:
+        pass
+    return await _interruptible_sleep(duration, stop)
 
-    for char in text:
-        if stop.is_set():
-            return None
-        chunk += char
-        try:
-            if msg is None:
-                msg = await bot.send_message(chat_id=chat_id, text=chunk)
-            else:
-                await bot.edit_message_text(
-                    chat_id=chat_id,
-                    message_id=msg.message_id,
-                    text=chunk,
-                )
-        except Exception:
-            pass
-        if await _interruptible_sleep(delay, stop):
-            return None
 
-    return msg.message_id if msg else None
+def set_demo_bot(bot) -> None:
+    """Register the bot instance so handle_webapp_reply() can call answerWebAppQuery."""
+    global _demo_bot
+    _demo_bot = bot
 
+
+async def _wait_for_reply(session: DemoSession) -> bool:
+    """
+    Wait until the Web App reply arrives (reply_event set by handle_webapp_reply)
+    or the session stop_event fires.  Returns True if stopped/cancelled.
+    """
+    session.reply_event.clear()
+    done, _ = await asyncio.wait(
+        [
+            asyncio.ensure_future(session.stop_event.wait()),
+            asyncio.ensure_future(session.reply_event.wait()),
+        ],
+        return_when=asyncio.FIRST_COMPLETED,
+    )
+    return session.stop_event.is_set()
+
+
+async def handle_webapp_reply(token: str, web_app_query_id: str) -> bool:
+    """
+    Called by demo_reply_api when a validated Mini App reply arrives.
+    Looks up the pending reply slot, posts the answer as a genuine user message
+    via answerWebAppQuery, then signals the waiting _run_demo coroutine.
+    Returns True on success, False if token unknown/expired or bot unavailable.
+    """
+    slot = _pending_replies.pop(token, None)
+    if slot is None:
+        log.warning("demo reply: unknown or expired token %s", token)
+        return False
+
+    if time.monotonic() - slot.created_at > _REPLY_TOKEN_TTL:
+        log.warning("demo reply: token %s expired", token)
+        return False
+
+    bot = _demo_bot
+    if bot is None:
+        log.warning("demo reply: bot not registered")
+        return False
+
+    try:
+        from telegram import InlineQueryResultArticle, InputTextMessageContent
+        result = InlineQueryResultArticle(
+            id=token,
+            title="Reply",
+            input_message_content=InputTextMessageContent(slot.answer_text),
+        )
+        await bot.answer_web_app_query(
+            web_app_query_id=web_app_query_id,
+            result=result,
+        )
+    except Exception as exc:
+        log.warning("demo reply: answerWebAppQuery failed: %s", exc)
+        return False
+
+    session = _sessions.get(slot.chat_id)
+    if session and session.current_reply_token == token:
+        session.current_reply_token = None
+        session.reply_event.set()
+
+    return True
+
+
+# ── Script ─────────────────────────────────────────────────────────────────────
+#
+# Step types:
+#   BOT_MESSAGE              — send Markdown message from the bot
+#   BOT_MESSAGE_WITH_BUTTONS — send Markdown message + inline keyboard; stores msg_id in refs[ref]
+#   BOT_EDIT_BUTTONS         — edit refs[ref] with updated text / buttons
+#   CUSTOMER_WORD_TYPE       — genuine right-side user message via Telegram Web App answerWebAppQuery
+#                              (shows a single "Reply" button; answer_text is server-selected)
+#   TYPING_INDICATOR         — send typing action then pause
+#
+# delay_before / delay_after: float seconds (0 = skip)
+
+_SCRIPT: list[dict] = [
+
+    # ── Greeting ───────────────────────────────────────────────────────────────
+    {
+        "type": "BOT_MESSAGE",
+        "text": "Hi, What is your name?",
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": "Evgeny",
+        "delay_after": 0.8,
+    },
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.2,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": (
+            "Hi Evgeny, I am ready — starting from a new project description?\n\n"
+            "Project Name —\n"
+            "Country Location —\n"
+            "Period of Area License —\n"
+            "Date of Start —"
+        ),
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": "OilGasExploration\nGulf Region — fictional scenario\n15 years\n01.01.2028",
+        "delay_after": 0.8,
+    },
+
+    # ── Task definition ────────────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": "Define AIMS scope — tell me your task:",
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": "Axi, Create Maintenance Management Philosophy.",
+        "delay_after": 0.8,
+    },
+
+    # ── Document / questions choice ────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.4,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE_WITH_BUTTONS",
+        "text": (
+            "Please upload the Technical Economical Justification "
+            "or any licence approval documents from the package…\n\n"
+            "Tell me and I'll upload — or reply to my questions:"
+        ),
+        "buttons": [[("📎 Upload", "demo_noop"), ("💬 Questions reply", "demo_noop")]],
+        "ref": "upload_msg",
+        "delay_after": 2.0,
+    },
+    {
+        "type": "BOT_EDIT_BUTTONS",
+        "ref": "upload_msg",
+        "text": (
+            "Please upload the Technical Economical Justification "
+            "or any licence approval documents from the package…\n\n"
+            "Tell me and I'll upload — or reply to my questions:\n\n"
+            "✅ *Questions reply*"
+        ),
+        "buttons": None,
+        "delay_after": 0.8,
+    },
+
+    # ── 1. Business & Strategic Context — Q1.1 ────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.2,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": (
+            "*Business & Strategic Context*\n\n"
+            "1.1  What are the organization's overall business objectives "
+            "and drivers for this project?"
+        ),
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "Develop a gas processing facility concept with a safe, reliable and "
+            "maintainable operating organisation before full-field investment approval. "
+            "Key drivers include maximising long-term asset value, ensuring safe and "
+            "reliable operations, and establishing robust asset integrity from day one."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── Q1.2 with value buttons ────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE_WITH_BUTTONS",
+        "text": (
+            "*Business & Strategic Context*\n"
+            "1.1  What are the organization's overall business objectives and drivers for this project?\n"
+            "1.2  What are the key value expectations from the assets "
+            "(production, safety, reliability, cost)?"
+        ),
+        "buttons": [[
+            ("Production", "demo_noop"),
+            ("Safety",     "demo_noop"),
+            ("Reliability","demo_noop"),
+            ("Cost",       "demo_noop"),
+        ]],
+        "ref": "value_buttons",
+        "delay_after": 1.5,
+    },
+    # — Production —
+    {
+        "type": "BOT_EDIT_BUTTONS",
+        "ref": "value_buttons",
+        "text": (
+            "*Business & Strategic Context*\n"
+            "1.2  Key value expectations:\n\n"
+            "✅ Production"
+        ),
+        "buttons": [[
+            ("Safety",     "demo_noop"),
+            ("Reliability","demo_noop"),
+            ("Cost",       "demo_noop"),
+        ]],
+        "delay_after": 0.3,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": "Production: Achieve plateau production of ~X MMSCFD with minimal unplanned downtime.",
+        "delay_after": 0.8,
+    },
+    # — Safety —
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 0.5,
+        "delay_after": 0.1,
+    },
+    {
+        "type": "BOT_EDIT_BUTTONS",
+        "ref": "value_buttons",
+        "text": (
+            "*Business & Strategic Context*\n"
+            "1.2  Key value expectations:\n\n"
+            "✅ Production\n✅ Safety"
+        ),
+        "buttons": [[
+            ("Reliability","demo_noop"),
+            ("Cost",       "demo_noop"),
+        ]],
+        "delay_after": 0.3,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": "Safety: Zero fatalities and no major process safety events (Tier 1/2).",
+        "delay_after": 0.8,
+    },
+    # — Reliability —
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 0.5,
+        "delay_after": 0.1,
+    },
+    {
+        "type": "BOT_EDIT_BUTTONS",
+        "ref": "value_buttons",
+        "text": (
+            "*Business & Strategic Context*\n"
+            "1.2  Key value expectations:\n\n"
+            "✅ Production\n✅ Safety\n✅ Reliability"
+        ),
+        "buttons": [[("Cost", "demo_noop")]],
+        "delay_after": 0.3,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": "Reliability: Target >98% plant availability.",
+        "delay_after": 0.8,
+    },
+    # — Cost —
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 0.5,
+        "delay_after": 0.1,
+    },
+    {
+        "type": "BOT_EDIT_BUTTONS",
+        "ref": "value_buttons",
+        "text": (
+            "*Business & Strategic Context*\n"
+            "1.2  Key value expectations:\n\n"
+            "✅ Production\n✅ Safety\n✅ Reliability\n✅ Cost"
+        ),
+        "buttons": None,
+        "delay_after": 0.3,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "Cost: Optimize lifecycle cost (CAPEX + OPEX) "
+            "while maintaining integrity and compliance."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── Q1.3 ──────────────────────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": "1.3  What are the critical success factors for the project?",
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "Robust design aligned with operating conditions (high temperature, corrosive environment).\n"
+            "Effective commissioning and startup with minimal defects.\n"
+            "Strong asset integrity and maintenance strategy from day one.\n"
+            "Skilled workforce and clear accountability structure.\n"
+            "Integration of digital systems (EAM/CMMS) for data-driven decision making."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── 2. Scope of Assets — Q2.1 ─────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.2,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": (
+            "*2.  Scope of Assets*\n\n"
+            "2.1  What assets are included in the scope of the "
+            "Asset Integrity Management system?"
+        ),
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "Process equipment: separators, compressors, heat exchangers, pipelines.\n"
+            "Static equipment: pressure vessels, tanks, piping systems.\n"
+            "Rotating equipment: gas turbines, pumps, compressors.\n"
+            "Safety systems: ESD, fire & gas detection, relief systems.\n"
+            "Utilities: power generation, water systems, instrument air.\n"
+            "Supporting infrastructure: control systems, buildings, export pipelines."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── Q2.2 ──────────────────────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": (
+            "2.2  What is the lifecycle stage of the assets "
+            "(design, construction, commissioning, operation)?"
+        ),
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "The project is currently in late construction and pre-commissioning phase. "
+            "Asset Integrity Management requirements are being embedded to ensure smooth "
+            "transition into operation. "
+            "Lifecycle approach covers design → construction → commissioning → "
+            "operation → eventual decommissioning."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── Q2.3 ──────────────────────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": "2.3  What are the boundaries and interfaces with other systems or facilities?",
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "Upstream interface: wellheads and gathering system supplying raw gas.\n"
+            "Downstream interface: LNG plant/export pipeline network.\n"
+            "Utilities interface: shared power grid and water supply systems.\n"
+            "External stakeholders: contractors, regulators, and joint venture partners."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── 3. Risk & Criticality — Q3.1 ──────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.2,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": (
+            "*3.  Risk & Criticality*\n\n"
+            "3.1  What are the major risks associated with asset failure "
+            "(HSE, financial, operational)?"
+        ),
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "HSE: hydrocarbon release, fire/explosion, toxic gas exposure (H₂S).\n"
+            "Financial: production loss, contractual penalties, repair/replacement costs.\n"
+            "Operational: plant shutdown, reduced throughput, equipment degradation.\n"
+            "Reputational: impact on national energy supply commitments."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── Q3.2 ──────────────────────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": "3.2  Which assets are considered critical and why?",
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "High-pressure gas pipelines → risk of major release and explosion.\n"
+            "Compressors and turbines → directly impact production continuity.\n"
+            "Pressure vessels and separators → contain hazardous hydrocarbons.\n"
+            "Safety systems (ESD, F&G) → essential for risk mitigation and emergency response.\n"
+            "Critical assets are defined based on the consequence of failure and likelihood."
+        ),
+        "delay_after": 0.8,
+    },
+
+    # ── Q3.3 ──────────────────────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": "3.3  What risk assessment methodologies will be applied?",
+        "delay_after": 0.6,
+    },
+    {
+        "type": "CUSTOMER_WORD_TYPE",
+        "text": (
+            "HAZID / HAZOP for design and process hazard identification.\n"
+            "RBI (Risk-Based Inspection) for static equipment.\n"
+            "RCM (Reliability-Centered Maintenance) for maintenance strategy.\n"
+            "SIL assessment for safety instrumented systems.\n"
+            "Bow-Tie analysis for major accident hazards.\n"
+            "Risk matrix aligned with corporate and regulatory requirements."
+        ),
+        "delay_after": 1.0,
+    },
+
+    # ── Document generation & approval ────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 2.5,
+        "delay_after": 0.4,
+    },
+    {
+        "type": "BOT_MESSAGE_WITH_BUTTONS",
+        "text": (
+            "📄 *Please approve \"AIMS Philosophy\"*\n\n"
+            "_[Generating: Maintenance\\_Management\\_Philosophy.docx …]_\n\n"
+            "Review the draft and confirm:"
+        ),
+        "buttons": [[("✅ Approval", "demo_noop"), ("💬 Comment", "demo_noop")]],
+        "ref": "approval_msg",
+        "delay_after": 2.5,
+    },
+    {
+        "type": "BOT_EDIT_BUTTONS",
+        "ref": "approval_msg",
+        "text": (
+            "📄 *AIMS Philosophy — Approved*\n\n"
+            "_Maintenance\\_Management\\_Philosophy.docx registered._"
+        ),
+        "buttons": None,
+        "delay_after": 1.0,
+    },
+
+    # ── Continue dialogue offer ────────────────────────────────────────────────
+    {
+        "type": "TYPING_INDICATOR",
+        "duration": 1.0,
+        "delay_after": 0.2,
+    },
+    {
+        "type": "BOT_MESSAGE_WITH_BUTTONS",
+        "text": (
+            "We need to go through details in AIMS Philosophy.\n"
+            "I will initiate the dialogue with related questions for your reply.\n\n"
+            "*Business & Strategic Context*\n"
+            "1.1  …\n\n"
+            "Would you like to continue?\n\n"
+            "I also support:\n"
+            "Org Chart · Milestone Plan · Procedures · Strategy · Guidelines · Instructions"
+        ),
+        "buttons": [[
+            ("Y — right now",           "demo_noop"),
+            ("N — pause, next task",    "demo_noop"),
+        ]],
+        "ref": "continue_msg",
+        "delay_after": 1.5,
+    },
+    {
+        "type": "BOT_MESSAGE",
+        "text": (
+            "_Scripted fictional demonstration. OilGasExploration is a fictional project name. "
+            "No real customer or project data is used._"
+        ),
+        "delay_after": 0,
+    },
+]
 
 # ── Playback engine ────────────────────────────────────────────────────────────
 
 async def _run_demo(session: DemoSession, bot) -> None:
     chat_id = session.chat_id
     stop = session.stop_event
+    refs: dict[str, int] = {}   # ref_name → message_id
 
     try:
         for step in _SCRIPT:
@@ -280,19 +687,7 @@ async def _run_demo(session: DemoSession, bot) -> None:
 
             stype = step["type"]
 
-            if stype == "ENGINEER_PROGRESSIVE_TYPE":
-                await _type_progressively(
-                    step["text"], chat_id, bot,
-                    step.get("chars_per_sec", 3), stop,
-                )
-
-            elif stype == "TYPING_INDICATOR":
-                try:
-                    await bot.send_chat_action(chat_id=chat_id, action=ChatAction.TYPING)
-                except Exception:
-                    pass
-
-            elif stype == "POST_AS_COMPLETED_CARD":
+            if stype == "BOT_MESSAGE":
                 try:
                     await bot.send_message(
                         chat_id=chat_id,
@@ -300,10 +695,85 @@ async def _run_demo(session: DemoSession, bot) -> None:
                         parse_mode="Markdown",
                     )
                 except Exception as exc:
-                    log.warning("demo card send failed: %s", exc)
+                    log.warning("demo BOT_MESSAGE failed: %s", exc)
 
-            elif stype == "PAUSE":
-                pass  # handled by delay_before / delay_after
+            elif stype == "BOT_MESSAGE_WITH_BUTTONS":
+                buttons = step.get("buttons")
+                keyboard = _kb(*buttons) if buttons else None
+                try:
+                    msg = await bot.send_message(
+                        chat_id=chat_id,
+                        text=step["text"],
+                        parse_mode="Markdown",
+                        reply_markup=keyboard,
+                    )
+                    ref = step.get("ref")
+                    if ref:
+                        refs[ref] = msg.message_id
+                except Exception as exc:
+                    log.warning("demo BOT_MESSAGE_WITH_BUTTONS failed: %s", exc)
+
+            elif stype == "BOT_EDIT_BUTTONS":
+                ref = step.get("ref")
+                msg_id = refs.get(ref) if ref else None
+                if msg_id:
+                    buttons = step.get("buttons")
+                    keyboard = _kb(*buttons) if buttons else None
+                    try:
+                        await bot.edit_message_text(
+                            chat_id=chat_id,
+                            message_id=msg_id,
+                            text=step["text"],
+                            parse_mode="Markdown",
+                            reply_markup=keyboard,
+                        )
+                    except Exception as exc:
+                        log.warning("demo BOT_EDIT_BUTTONS failed: %s", exc)
+
+            elif stype == "CUSTOMER_WORD_TYPE":
+                if not DEMO_WEBAPP_URL:
+                    # No HTTPS backend — skip customer reply steps silently.
+                    pass
+                else:
+                    token = str(uuid.uuid4())
+                    _pending_replies[token] = _ReplySlot(
+                        chat_id=chat_id,
+                        answer_text=step["text"],
+                    )
+                    session.current_reply_token = token
+
+                    try:
+                        from telegram import WebAppInfo
+                        reply_kb = InlineKeyboardMarkup([[
+                            InlineKeyboardButton(
+                                "Reply",
+                                web_app=WebAppInfo(
+                                    url=f"{DEMO_WEBAPP_URL.rstrip('/')}?token={token}"
+                                ),
+                            )
+                        ]])
+                        await bot.send_message(
+                            chat_id=chat_id,
+                            text="↩",
+                            reply_markup=reply_kb,
+                        )
+                    except Exception as exc:
+                        log.warning("demo CUSTOMER_WORD_TYPE send Reply button failed: %s", exc)
+                        _pending_replies.pop(token, None)
+                        session.current_reply_token = None
+                        if stop.is_set():
+                            break
+                        continue
+
+                    interrupted = await _wait_for_reply(session)
+                    _pending_replies.pop(token, None)
+                    if interrupted:
+                        break
+
+            elif stype == "TYPING_INDICATOR":
+                duration = step.get("duration", 1.2)
+                if await _send_typing(bot, chat_id, stop, duration):
+                    break
 
             delay_after = step.get("delay_after", 0)
             if delay_after and await _interruptible_sleep(delay_after, stop):
@@ -334,13 +804,11 @@ async def cmd_demo(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         return
     chat_id = update.effective_chat.id
 
-    # Delete the incoming /demo command message immediately
     try:
         await update.message.delete()
     except Exception:
         pass
 
-    # Enforce cooldown
     last = _last_completed.get(chat_id)
     if last is not None:
         elapsed = time.monotonic() - last
@@ -352,7 +820,6 @@ async def cmd_demo(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
             )
             return
 
-    # Cancel any existing session
     existing = _sessions.get(chat_id)
     if existing and existing.state == DemoState.RUNNING:
         existing.stop_event.set()
@@ -413,7 +880,6 @@ async def demo_start_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
         await query.answer("No lobby active. Send /demo to begin.", show_alert=True)
         return
 
-    # Remove lobby buttons
     try:
         await query.edit_message_reply_markup(reply_markup=None)
     except Exception:
@@ -467,9 +933,15 @@ async def demo_about_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
     if query is None:
         return
     await query.answer()
-    chat_id = update.effective_chat.id
     await ctx.bot.send_message(
-        chat_id=chat_id,
+        chat_id=update.effective_chat.id,
         text=ABOUT_TEXT,
         parse_mode="Markdown",
     )
+
+
+async def demo_noop_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Acknowledge taps on scripted demo buttons silently."""
+    query = update.callback_query
+    if query:
+        await query.answer()

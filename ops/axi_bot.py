@@ -81,6 +81,7 @@ try:
         demo_start_callback,
         demo_cancel_callback,
         demo_about_callback,
+        demo_noop_callback,
     )
     _DEMO_AVAILABLE = True
 except Exception:
@@ -8732,6 +8733,18 @@ async def _post_init(application: Application) -> None:
     except Exception as e:
         log.warning("docs-agent notifier start failed: %s", e)
 
+    if _DEMO_AVAILABLE:
+        try:
+            from axi_demo import set_demo_bot
+            set_demo_bot(application.bot)
+        except Exception as e:
+            log.warning("demo set_demo_bot failed: %s", e)
+        try:
+            from demo_reply_api import start_demo_reply_api
+            start_demo_reply_api()
+        except Exception as e:
+            log.warning("demo_reply_api start failed: %s", e)
+
     commands = [
         BotCommand("start",          "Запуск / приветствие"),
         BotCommand("help",           "Справка по командам"),
@@ -8827,6 +8840,7 @@ def main() -> None:
         app.add_handler(CallbackQueryHandler(demo_start_callback,  pattern="^demo_start$"))
         app.add_handler(CallbackQueryHandler(demo_cancel_callback, pattern="^demo_cancel$"))
         app.add_handler(CallbackQueryHandler(demo_about_callback,  pattern="^demo_about$"))
+        app.add_handler(CallbackQueryHandler(demo_noop_callback,   pattern="^demo_noop$"))
 
     # Text messages
     app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO, handle_file_upload))
