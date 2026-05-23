@@ -508,6 +508,69 @@
     .footer-links a:hover { color: var(--text); }
     @media (max-width: 540px) { .footer-inner { flex-direction: column; } .footer-links { align-items: flex-start; } }
 
+    /* ── Differentiation cards — reuse .wf-card ───── */
+
+    /* ── Founder block ─────────────────────────────── */
+    .founder-block {
+      max-width: 680px; background: var(--card);
+      border: 1px solid var(--border); border-left: 3px solid var(--accent);
+      border-radius: var(--radius); padding: 2rem;
+    }
+    .founder-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .founder-role { font-size: 0.825rem; color: var(--accent); font-weight: 600; margin-bottom: 1rem; letter-spacing: 0.02em; }
+    .founder-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.65; margin-bottom: 0.75rem; }
+    .founder-contact { display: inline-block; color: var(--accent); font-size: 0.875rem; font-weight: 600; }
+
+    /* ── Validation roadmap ────────────────────────── */
+    .roadmap-wrap { margin-top: 2.5rem; }
+    .roadmap-heading { font-size: 0.875rem; font-weight: 700; color: var(--text); margin-bottom: 1.25rem; }
+    .roadmap-steps {
+      display: flex; flex-direction: column; gap: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .rm-step {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+    }
+    .rm-step:last-child { border-bottom: none; }
+    .rm-marker {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--surface); border: 1.5px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; color: var(--muted); flex-shrink: 0;
+    }
+    .rm-done .rm-marker { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3); color: var(--green); }
+    .rm-current .rm-marker { background: rgba(14,165,233,0.12); border-color: rgba(14,165,233,0.3); color: var(--accent); }
+    .rm-body { flex: 1; }
+    .rm-title { font-size: 0.875rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .rm-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin-bottom: 0.5rem; }
+    .rm-badge {
+      font-size: 0.68rem; font-weight: 700; padding: 0.12rem 0.55rem;
+      border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .rm-completed { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+    .rm-current-badge { background: rgba(14,165,233,0.10); color: var(--accent); border: 1px solid rgba(14,165,233,0.18); }
+    .rm-funding { background: rgba(245,158,11,0.10); color: var(--amber); border: 1px solid rgba(245,158,11,0.18); }
+    .rm-planned { background: rgba(148,163,184,0.08); color: var(--muted); border: 1px solid rgba(148,163,184,0.15); }
+
+    /* ── Path to deployment ────────────────────────── */
+    .pathway-steps { display: flex; flex-direction: column; gap: 1rem; }
+    .path-step {
+      display: flex; align-items: flex-start; gap: 1.25rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .path-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(14,165,233,0.10); border: 2px solid rgba(14,165,233,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.875rem; font-weight: 800; color: var(--accent); flex-shrink: 0;
+    }
+    .path-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .path-desc { font-size: 0.825rem; color: var(--muted); line-height: 1.55; }
+    .path-desc em { color: var(--accent); font-style: normal; font-weight: 600; }
+
     /* ── Focus states for accessibility ─────────────── */
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
@@ -544,6 +607,7 @@
         <a href="#lifecycle">Lifecycle</a>
         <a href="#validation">Validation</a>
         <a href="#credits">Credits</a>
+        <a href="#founder">Founder</a>
         <a class="nav-cta" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
       </nav>
     </div>
@@ -557,7 +621,7 @@
       <div class="hero-content">
         <p class="hero-eyebrow">Industrial Operations · ISO 55001 / ISO 55002 · Coordinated AI Agents</p>
         <h1>Building the <em>AIMS framework</em> for industrial project startup and production operations.</h1>
-        <p class="hero-lead">AxiOMSphere coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations in accordance with ISO 55001 / ISO 55002.</p>
+        <p class="hero-lead">AxiOMSphere coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations in accordance with ISO 55001 requirements and ISO 55002 guidance.</p>
         <div class="cta-group">
           <a class="btn-primary" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
           <a class="btn-secondary" href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener noreferrer">View on GitHub</a>
@@ -747,7 +811,7 @@
 <section class="standards-section" id="standards">
   <div class="container">
     <p class="section-label">Management-System Foundation</p>
-    <h2>Following ISO 55001 / ISO 55002 as the management-system foundation.</h2>
+    <h2>Following ISO 55001 requirements and ISO 55002 guidance as the management-system foundation.</h2>
     <p class="section-lead">AIMS management-system workflows are structured in accordance with ISO 55001 requirements and ISO 55002 application guidance. The GFMAM Asset Management Landscape is used as a broader process-framework reference.</p>
     <div class="standards-grid">
       <div class="std-card">
@@ -767,7 +831,7 @@
       </div>
     </div>
     <div class="std-disclaimer">
-      <strong>Important:</strong> AxiOMSphere follows ISO 55001 / ISO 55002 as its AIMS framework basis. Generated work products require qualified human review before operational use and do not by themselves constitute independent certification or formal compliance approval.
+      <strong>Important:</strong> AxiOMSphere follows ISO 55001 requirements and ISO 55002 guidance as its AIMS framework basis. Generated work products require qualified human review before operational use and do not by themselves constitute independent certification or formal compliance approval.
     </div>
   </div>
 </section>
@@ -840,6 +904,52 @@
     </div>
     <div class="timeline-center">
       <span class="timeline-note">Sensitive source information remains private by default throughout the workflow.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ WHY THIS IS DIFFERENT ════════════════════════════════════════════ -->
+<section id="differentiation">
+  <div class="container">
+    <p class="section-label">What Makes This Different</p>
+    <h2>Purpose-built for AIMS. Not a general chat tool.</h2>
+    <p class="section-lead">General-purpose AI services are not designed for the structured, multi-disciplinary, privacy-sensitive requirements of industrial management-system development.</p>
+    <div class="cards-grid">
+      <div class="wf-card">
+        <div class="wf-icon">🎯</div>
+        <div class="wf-title">AIMS-Centred Scope</div>
+        <div class="wf-desc">Every agent, workflow and knowledge layer is designed around ISO 55001 / ISO 55002-based AIMS work products — not generic document generation.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🔒</div>
+        <div class="wf-title">Private by Default</div>
+        <div class="wf-desc">Sensitive source materials remain on private infrastructure throughout. External services receive only anonymized context — by architectural design, not user configuration.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🤝</div>
+        <div class="wf-title">Coordinated Agents</div>
+        <div class="wf-desc">Specialised agents generate, review, align and register interconnected work products across disciplines — maintaining consistency across the whole AIMS framework, not individual documents in isolation.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">📐</div>
+        <div class="wf-title">Framework-Grounded</div>
+        <div class="wf-desc">Work products are structured in accordance with ISO 55001 requirements and ISO 55002 guidance — with traceable evidence and required human review at every stage.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOUNDER ═══════════════════════════════════════════════════════════ -->
+<section id="founder" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <p class="section-label">Founder-Led Development</p>
+    <h2>Building and operating the platform directly.</h2>
+    <p class="section-lead">AxiOMSphere is founder-led and founder-operated. The platform is designed, built and maintained by the founder — combining industrial operations experience with hands-on AI infrastructure development.</p>
+    <div class="founder-block">
+      <div class="founder-name">Evgeny Shokk</div>
+      <div class="founder-role">Founder · AxiOMSphere</div>
+      <p class="founder-desc">Evgeny leads all technical and product development at AxiOMSphere. The platform was built to address a real industrial problem — creating the connected AIMS framework that industrial projects need before they can operate reliably. Development draws on direct experience with industrial operations and the requirements of ISO 55001 / ISO 55002-based asset management systems.</p>
+      <a class="founder-contact" href="mailto:hello@axiomsphereai.com">hello@axiomsphereai.com</a>
     </div>
   </div>
 </section>
@@ -932,6 +1042,53 @@
       <p>Target capacity model under validation: preparing a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate assumes approximately 10 minutes of human task formulation and 11 minutes of agent-assisted preparation per work product, based on an 8-hour working day and 22 working days per month.</p>
       <p class="cap-qual">This is a development-stage capacity model subject to pilot validation. It excludes additional qualified review, approval and assurance activities. Parallel discipline workflows and background agent processing may improve calendar turnaround, but are not presented as guaranteed delivery outcomes.</p>
     </div>
+
+    <!-- Validation roadmap -->
+    <div class="roadmap-wrap">
+      <div class="roadmap-heading">Validation Roadmap</div>
+      <div class="roadmap-steps">
+        <div class="rm-step rm-done">
+          <div class="rm-marker">✓</div>
+          <div class="rm-body">
+            <div class="rm-title">Multi-agent orchestration and work-product pipeline</div>
+            <div class="rm-desc">Agent coordination, task ledger, generation–review–register workflow — tested in internal development scenarios.</div>
+            <span class="rm-badge rm-completed">Completed</span>
+          </div>
+        </div>
+        <div class="rm-step rm-done">
+          <div class="rm-marker">✓</div>
+          <div class="rm-body">
+            <div class="rm-title">Privacy architecture — local inference and controlled external evaluation</div>
+            <div class="rm-desc">Source documents on private infrastructure; anonymized context to approved evaluators only.</div>
+            <span class="rm-badge rm-completed">Completed</span>
+          </div>
+        </div>
+        <div class="rm-step rm-done">
+          <div class="rm-marker">✓</div>
+          <div class="rm-body">
+            <div class="rm-title">OCR ingestion, document registry and evidence retention</div>
+            <div class="rm-desc">Structured knowledge base with traceable source references operational in development workflow.</div>
+            <span class="rm-badge rm-completed">Completed</span>
+          </div>
+        </div>
+        <div class="rm-step rm-current">
+          <div class="rm-marker">→</div>
+          <div class="rm-body">
+            <div class="rm-title">ISO 55001 / ISO 55002 scope expansion and benchmarking pipeline</div>
+            <div class="rm-desc">Extending work-product coverage across all five AIMS lifecycle stages; developing evaluation pipeline against ISO 55001 requirements and ISO 55002 guidance.</div>
+            <span class="rm-badge rm-current-badge">In Development</span>
+          </div>
+        </div>
+        <div class="rm-step">
+          <div class="rm-marker">5</div>
+          <div class="rm-body">
+            <div class="rm-title">Controlled industrial pilot</div>
+            <div class="rm-desc">Preparing a limited, controlled pilot with a qualified industrial partner. Pilot scope and evidence pack in preparation.</div>
+            <span class="rm-badge rm-funding">Preparing · Credits Enable This</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -978,12 +1135,51 @@
   </div>
 </section>
 
+<!-- ══ PATH TO DEPLOYMENT ════════════════════════════════════════════════ -->
+<section id="pathway">
+  <div class="container">
+    <p class="section-label">Commercial Pathway</p>
+    <h2>A conservative path from validation to pilot deployment.</h2>
+    <p class="section-lead">No external customers or signed deployments at this stage. This outlines the founder's intended development pathway — from current development status to a first controlled external use.</p>
+    <div class="pathway-steps">
+      <div class="path-step">
+        <div class="path-num">1</div>
+        <div>
+          <div class="path-title">Controlled internal validation — 90 days</div>
+          <p class="path-desc">Process a representative AIMS work-product set across all five lifecycle stages. Benchmark outputs against ISO 55001 requirements using approved external evaluators with anonymized context only. Measure traceability, alignment quality, reviewer usefulness and cost per workflow. <em>This stage requires credits.</em></p>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="path-num">2</div>
+        <div>
+          <div class="path-title">Prepare limited pilot scope</div>
+          <p class="path-desc">Based on validation findings, define a limited controlled pilot with a qualified industrial partner — scoped, time-bounded and governed by a formal data-handling agreement.</p>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="path-num">3</div>
+        <div>
+          <div class="path-title">Controlled pilot with one industrial partner</div>
+          <p class="path-desc">Run a supervised, time-limited AIMS work-product validation pilot. All outputs remain development-stage recommendations requiring qualified review. Collect evidence to assess platform capability in a real industrial context.</p>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="path-num">4</div>
+        <div>
+          <div class="path-title">Evaluate and define next steps</div>
+          <p class="path-desc">Review pilot findings, evidence quality and qualified reviewer assessments. Determine whether the platform is ready for broader access, further development or specialisation for a specific industrial domain.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══ RESPONSIBLE USE ════════════════════════════════════════════════════ -->
 <section class="responsible-callout">
   <div class="callout-inner">
     <div class="callout-icon">⚖️</div>
     <h2>Built for responsible industrial use.</h2>
-    <p>AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 / ISO 55002 principles. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.</p>
+    <p>AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 requirements and ISO 55002 guidance. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.</p>
     <p class="callout-small">Sensitive source information remains private by default. Approved external services receive anonymized context only unless separately authorised.</p>
   </div>
 </section>

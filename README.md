@@ -14,13 +14,21 @@
 
 AxiOMSphere is a development-stage multi-agent platform that coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations.
 
-The platform follows ISO 55001 / ISO 55002 as its AIMS management-system framework basis. It is structured around the GFMAM Asset Management Landscape as its broader process-framework reference.
+The platform follows ISO 55001 requirements and ISO 55002 guidance as its AIMS management-system framework basis. It is structured around the GFMAM Asset Management Landscape as its broader process-framework reference.
 
 **Brand meaning:**
 - **Axiom** — a foundational, self-evident principle; the platform produces structured, traceable management-system work products from first principles
 - **AIMS** — Asset Integrity Management System; the operating framework the platform is designed to build and sustain
 - **O&M** — Operations and Maintenance; the production and reliability context the AIMS framework governs
 - **Sphere** — a coherent, integrated operating environment where all AIMS processes function together
+
+---
+
+## Founder-Led Development
+
+AxiOMSphere is designed, built and maintained by **Evgeny Shokk** (Founder). The platform was built to address a real industrial problem — creating the connected AIMS framework that industrial projects need before they can operate reliably. Development draws on direct experience with industrial operations and the requirements of ISO 55001 / ISO 55002-based asset management systems.
+
+Contact: **hello@axiomsphereai.com**
 
 ---
 
@@ -46,11 +54,24 @@ All outputs are recommendations. Qualified human review and approval is required
 
 ---
 
+## Why This Is Different
+
+General-purpose AI services are not designed for the structured, multi-disciplinary, privacy-sensitive requirements of industrial management-system development.
+
+| Differentiator | AxiOMSphere approach |
+|---------------|---------------------|
+| AIMS-centred scope | Every agent, workflow and knowledge layer is designed around ISO 55001 / ISO 55002-based AIMS work products |
+| Private by default | Sensitive source materials remain on private infrastructure throughout — external services receive only anonymized context |
+| Coordinated agents | Specialised agents generate, review, align and register interconnected work products across disciplines — not individual documents in isolation |
+| Framework-grounded | Work products are structured in accordance with ISO 55001 requirements and ISO 55002 guidance with traceable evidence and mandatory human review |
+
+---
+
 ## Management-System Foundation
 
 The platform is structured in accordance with ISO 55001 (Asset Management — Management Systems — Requirements) and ISO 55002 (Asset Management — Management Systems — Guidelines for the Application of ISO 55001).
 
-AxiOMSphere follows ISO 55001 / ISO 55002 as its AIMS framework basis. Generated work products require qualified human review before operational use and do not by themselves constitute independent certification or formal compliance approval.
+AxiOMSphere follows ISO 55001 requirements and ISO 55002 guidance as its AIMS framework basis. Generated work products require qualified human review before operational use and do not by themselves constitute independent certification or formal compliance approval.
 
 The GFMAM Asset Management Landscape provides the broader process-framework reference covering all 39 subject groups across the asset management knowledge domain.
 
@@ -105,10 +126,22 @@ This is a development-stage capacity model subject to pilot validation. It exclu
 ## 90-Day Validation Plan
 
 - Process a representative AIMS work-product set across the five lifecycle stages under controlled conditions
-- Benchmark agent-assisted drafts against ISO 55001 / ISO 55002 requirements using anonymized context submitted to approved evaluators
+- Benchmark agent-assisted drafts against ISO 55001 requirements and ISO 55002 guidance using anonymized context submitted to approved evaluators
 - Measure source traceability, alignment quality, human usefulness rating and cost per workflow
 - Build verified learning cases to support continuous local-model improvement
 - Prepare a limited industrial pilot proposal based on validation findings
+
+---
+
+## Validation Roadmap
+
+| Milestone | Status |
+|-----------|--------|
+| Multi-agent orchestration and work-product pipeline | ✅ Completed |
+| Privacy architecture — local inference and controlled external evaluation | ✅ Completed |
+| OCR ingestion, document registry and evidence retention | ✅ Completed |
+| ISO 55001 / ISO 55002 scope expansion and benchmarking pipeline | 🔵 In Development |
+| Controlled industrial pilot | 🟡 Preparing — Credits Enable This |
 
 ---
 
@@ -122,6 +155,17 @@ This is a development-stage capacity model subject to pilot validation. It exclu
 | Monitoring / security tooling | Secure pilot infrastructure preparation |
 
 Credits support controlled validation — not unrestricted autonomous deployment. All external usage follows the privacy architecture described above.
+
+---
+
+## Path to Pilot Deployment
+
+No external customers or signed deployments at this stage. The intended development pathway:
+
+1. **Controlled internal validation (90 days)** — process a representative AIMS work-product set; benchmark against ISO 55001 requirements using approved evaluators with anonymized context. *Requires credits.*
+2. **Prepare limited pilot scope** — based on validation findings, define a time-bounded, scoped pilot with a qualified industrial partner.
+3. **Controlled pilot with one industrial partner** — supervised, time-limited validation under a formal data-handling agreement. All outputs remain development-stage recommendations.
+4. **Evaluate and define next steps** — assess pilot findings and determine readiness for broader access or further specialisation.
 
 ---
 
@@ -139,7 +183,7 @@ The platform runs on private GPU infrastructure using:
 
 ## Responsible Use
 
-AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 / ISO 55002 principles. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.
+AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 requirements and ISO 55002 guidance. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.
 
 - The platform does not claim to independently certify compliance with any standard
 - Copyrighted standards and guidance documents are referenced as benchmarks, not reproduced

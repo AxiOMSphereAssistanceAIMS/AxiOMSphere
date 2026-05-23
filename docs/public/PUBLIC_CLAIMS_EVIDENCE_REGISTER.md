@@ -90,6 +90,40 @@ Every claim in README.md and index.html must appear in this register with its ev
 
 ---
 
+### Founder and Differentiation Claims (Added 2026-05-23 — Final Grant-Ready Revision)
+
+| Claim | Location | Evidence basis | Confidence |
+|-------|----------|---------------|------------|
+| Founder: Evgeny Shokk | README, narrative, one-pager, website | Name confirmed in all project materials; single accountable founder-operator | INTERNALLY_VALIDATED |
+| AIMS-centred scope (not general document tool) | README, index, narrative | Platform architecture designed exclusively around AIMS work-product types; agents, knowledge layer, and benchmarks all AIMS-specific | INTERNALLY_VALIDATED |
+| Private by default — architectural design, not configuration | README, index, narrative | Source documents processed locally on private GPU; external path requires explicit anonymization and authorisation steps; design constraint, not option | INTERNALLY_VALIDATED |
+| Coordinated agents across full AIMS framework | README, index | Multiple specialised agents (generation, review, registry, retrieval) coordinated via orchestration layer | INTERNALLY_VALIDATED |
+| Framework-grounded — ISO 55001 requirements and ISO 55002 guidance | README, index, narrative | Work products aligned to management-system requirements; disclaimer present | INTERNALLY_VALIDATED |
+
+---
+
+### Validation Roadmap Claims (Added 2026-05-23 — Final Grant-Ready Revision)
+
+| Claim | Location | Status |
+|-------|----------|--------|
+| Multi-agent orchestration and work-product pipeline completed | README, index | INTERNALLY_VALIDATED |
+| Privacy architecture (local inference + controlled external) completed | README, index | INTERNALLY_VALIDATED |
+| OCR ingestion, document registry and evidence retention completed | README, index | INTERNALLY_VALIDATED |
+| ISO 55001 / ISO 55002 scope expansion and benchmarking pipeline in development | README, index | IN_DEVELOPMENT |
+| Controlled industrial pilot preparing (credits enable this) | README, index | PREPARING |
+
+---
+
+### Path to Pilot Claims (Added 2026-05-23 — Final Grant-Ready Revision)
+
+| Claim | Location | Evidence basis | Confidence |
+|-------|----------|---------------|------------|
+| Staged pathway from internal validation to controlled external pilot | README, index, narrative, one-pager | Logical development sequence; no external customers or signed deployments claimed | INTERNALLY_VALIDATED |
+| Stage 1 requires credits | narrative, index | External benchmark evaluation requires API access not available locally | INTERNALLY_VALIDATED |
+| No external customers or signed deployments at this stage | README, index | Explicit statement included in all pathway descriptions | INTERNALLY_VALIDATED |
+
+---
+
 ## Claims Removed in Grant-Readiness Rewrite (2026-05-23)
 
 The following claims appeared in the original repository and were removed for the grant-readiness version:

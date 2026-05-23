@@ -31,6 +31,18 @@ The following items were restored in the full AIMS scope restoration (2026-05-23
 | Capacity model (350 hr / ~2 months / 1,000 items) | ✅ | ✅ | ✅ Full development-stage qualification |
 | GFMAM Asset Management Landscape reference | ✅ | ✅ | ✅ "broader process-framework reference" |
 
+### Grant-Ready Additions (Final Revision 2026-05-23)
+
+The following items were added in the final grant-ready revision per STARTUP_CREDITS_REVIEWER_GAP_RESOLUTION.md:
+
+| Added element | README.md | index.html | Qualification present |
+|--------------|-----------|------------|----------------------|
+| Founder credibility (Evgeny Shokk, Founder) | ✅ | ✅ | ✅ Role stated accurately; no overclaims |
+| Why This Is Different (4 differentiation cards) | ✅ | ✅ | ✅ No competitor names; internally supported |
+| Validation Roadmap (5 milestones with status) | ✅ | ✅ | ✅ Statuses accurate: 3 completed, 1 in dev, 1 preparing |
+| Path to Deployment (4 conservative stages) | ✅ | ✅ | ✅ "No external customers or signed deployments" stated |
+| ISO wording corrected to full form in body text | ✅ | ✅ | ✅ "ISO 55001 requirements and ISO 55002 guidance" |
+
 ---
 
 ### Prohibited Claims — Confirmed Absent
@@ -110,6 +122,27 @@ Note: "TOKEN" matched CSS comment "Design tokens"; "ISO" matched only in qualifi
 | AXIOMSPHERE_STARTUP_ONE_PAGER.md — AIMS platform scope | ✅ Complete |
 | PUBLIC_PRESENTATION_AUDIT.md — updated | ✅ Complete |
 | Commit: `fix: restore full AIMS platform scope and ISO 55001 foundation` | ✅ Pushed to origin/main |
+
+### Final Grant-Ready Revision (2026-05-23)
+
+Gap resolution report (STARTUP_CREDITS_REVIEWER_GAP_RESOLUTION.md) created before implementation. All changes follow no-fabrication rules documented in that report.
+
+| Step | Result |
+|------|--------|
+| index.html — added Why This Is Different (4 differentiation cards) | ✅ Complete |
+| index.html — added Founder section (Evgeny Shokk, with contact) | ✅ Complete |
+| index.html — added Validation Roadmap (5 milestones with status) | ✅ Complete |
+| index.html — added Path to Deployment (4 conservative stages) | ✅ Complete |
+| index.html — ISO wording fixed: hero lead, standards heading, disclaimer, responsible use | ✅ Complete |
+| index.html — Founder nav link added | ✅ Complete |
+| landing/index.html — mirrors updated index.html | ✅ Complete |
+| README.md — extended to 15-section structure | ✅ Complete |
+| README.md — ISO wording fixes throughout | ✅ Complete |
+| AXIOMSPHERE_STARTUP_ONE_PAGER.md — founder line, path to pilot section added | ✅ Complete |
+| STARTUP_CREDITS_APPLICATION_NARRATIVE.md — founder credibility, differentiation, programme-ready credits table | ✅ Complete |
+| PUBLIC_CLAIMS_EVIDENCE_REGISTER.md — founder, differentiation, roadmap, pathway claims registered | ✅ Complete |
+| PUBLIC_PRESENTATION_AUDIT.md — revision record updated | ✅ Complete |
+| STARTUP_CREDITS_REVIEWER_GAP_RESOLUTION.md — gap report created | ✅ Complete |
 
 ---
 

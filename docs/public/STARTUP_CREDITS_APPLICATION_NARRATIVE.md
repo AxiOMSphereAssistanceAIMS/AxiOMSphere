@@ -1,6 +1,7 @@
 # AxiOMSphere — Startup Credits Application Narrative
 
 **Date:** 2026-05-23  
+**Founder:** Evgeny Shokk  
 **Contact:** hello@axiomsphereai.com
 
 ---
@@ -8,6 +9,12 @@
 ## One-Line Summary
 
 Privacy-first multi-agent platform for building and continuously improving the ISO 55001 / ISO 55002-based Asset Integrity Management System required to launch industrial projects and organise production operations.
+
+---
+
+## Founder Credibility
+
+AxiOMSphere is designed, built and operated by **Evgeny Shokk** (Founder). The platform was built to address a real industrial problem observed directly — creating the connected AIMS framework that industrial projects require before they can operate reliably. Evgeny leads all technical and product development, combining direct industrial operations experience with hands-on AI infrastructure development. The platform is developed, maintained and validated by the founder end-to-end, giving credits reviewers a single accountable contact for all technical and product questions.
 
 ---
 
@@ -41,6 +48,19 @@ The platform does not claim to independently certify compliance with ISO 55001 o
 
 ---
 
+## Why This Is Different
+
+General-purpose AI services and document tools are not designed for the structured, privacy-sensitive, management-system requirements of industrial AIMS development.
+
+| General AI tools | AxiOMSphere |
+|-----------------|-------------|
+| Designed for general documents | Purpose-built for ISO 55001 / ISO 55002-based AIMS work products |
+| Source documents transmitted to cloud | Source materials remain on private infrastructure by default |
+| Individual document responses | Coordinated agents maintain consistency across the whole AIMS framework |
+| No management-system structure | Work products structured in accordance with ISO 55001 requirements and ISO 55002 guidance |
+
+---
+
 ## Current Status
 
 The platform has completed internal development and initial testing of the multi-agent orchestration, OCR ingestion, document registry, and work-product drafting pipeline. These capabilities are operationally validated in internal test scenarios. ISO 55001 / ISO 55002-aligned benchmarking is in active development. External industrial pilot preparation is underway.
@@ -59,14 +79,14 @@ This is a development-stage capacity model subject to pilot validation. It exclu
 
 ## Why We Need Credits
 
-| Resource | Intended use | Why external |
-|---------|-------------|-------------|
-| API credits | External evaluation benchmarks using anonymized context; ISO 55001 / ISO 55002-aligned standards discovery | Quality benchmarking requires frontier model evaluation at scale; cannot be done locally without prohibitive cost |
-| GPU / cloud compute | Local-model inference scaling; controlled evaluation experiments across AIMS lifecycle stages | DGX Spark handles primary processing; scale validation requires additional compute |
-| Storage / search services | Document registry and retrieval scale testing at industrial AIMS work-product volumes | Testing at realistic industrial scale requires storage and search infrastructure |
-| Monitoring / security tooling | Secure pilot infrastructure preparation | External pilot requires hardened monitoring and audit infrastructure |
+| Resource | Validation use | Specific goal |
+|---------|---------------|--------------|
+| API credits (Anthropic / OpenAI / Google) | External benchmark evaluation using anonymized context; ISO 55001 / ISO 55002-aligned standards discovery | Establish independent quality score for agent-drafted AIMS work products at scale |
+| GPU / cloud compute (NVIDIA / AWS / Azure) | Local-model inference scaling; controlled evaluation experiments across all five AIMS lifecycle stages | Validate capacity model under realistic AIMS work-product load |
+| Storage / search services (AWS / Azure / GCP) | Document registry and retrieval scale testing at industrial AIMS work-product volumes | Confirm registry performance at industrial-scale document collections |
+| Monitoring / security tooling | Secure pilot infrastructure preparation; audit trail hardening | Achieve infrastructure readiness required for a formal controlled pilot |
 
-Credits support controlled validation — not unrestricted autonomous deployment. All external usage follows the privacy architecture described above.
+Credits support controlled validation — not unrestricted autonomous deployment. All external usage follows the privacy architecture described above. Target programmes: Google for Startups Cloud, Microsoft for Startups, AWS Activate, NVIDIA Inception, Anthropic startup support.
 
 ---
 

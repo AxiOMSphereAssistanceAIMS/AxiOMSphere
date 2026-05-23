@@ -70,7 +70,18 @@ Credits support controlled validation — not unrestricted autonomous deployment
 
 ---
 
-## 7. 90-Day Validation Plan
+## 7. Path to Pilot Deployment
+
+1. **Controlled internal validation (90 days)** — process a representative AIMS work-product set across all five lifecycle stages; benchmark against ISO 55001 requirements using approved evaluators with anonymized context only. *This stage requires credits.*
+2. **Prepare limited pilot scope** — define a time-bounded, scoped pilot with a qualified industrial partner based on validation findings.
+3. **Controlled pilot with one industrial partner** — supervised, time-limited pilot under a formal data-handling agreement; all outputs remain development-stage recommendations.
+4. **Evaluate and define next steps** — assess pilot findings, evidence quality and reviewer assessments to determine readiness for broader access.
+
+No external customers or signed deployments at this stage. All milestones are conservative and explicitly development-stage.
+
+---
+
+## 8. 90-Day Validation Plan
 
 - Process a representative AIMS work-product set across all five lifecycle stages under controlled conditions
 - Benchmark agent-assisted drafts against ISO 55001 / ISO 55002 requirements using anonymized context submitted to approved evaluators
