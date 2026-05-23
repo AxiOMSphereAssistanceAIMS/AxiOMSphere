@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AxiOMSphere — AI Platform for AIMS and Industrial Operations</title>
-  <meta name="description" content="AxiOMSphere is a privacy-first multi-agent platform for building and continuously improving the ISO 55001 / ISO 55002-based Asset Integrity Management System required for industrial project startup and production operations." />
+  <meta name="description" content="AxiOMSphere is a full-stack, closed-loop industrial AI platform for building, supervising, restoring and continuously improving an AIMS-based operating organisation — privacy-first, ISO 55001 / ISO 55002 framework-grounded, qualified human review required." />
   <link rel="canonical" href="https://axiomsphereai.com/" />
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
@@ -571,13 +571,71 @@
     .path-desc { font-size: 0.825rem; color: var(--muted); line-height: 1.55; }
     .path-desc em { color: var(--accent); font-style: normal; font-weight: 600; }
 
-    /* ── Focus states for accessibility ─────────────── */
+    /* ── Focus states for accessibility */
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
-    /* ── Reduced motion ────────────────────────────── */
+    /* ── Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition: none !important; transform: none !important; }
     }
+
+    /* ── Full-stack capability architecture */
+    .arch-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .arch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    @media (max-width: 900px) { .arch-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .arch-grid { grid-template-columns: 1fr; } }
+    .arch-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem; border-top: 2px solid transparent; transition: border-top-color 0.2s, transform 0.15s; }
+    .arch-card:hover { border-top-color: var(--accent); transform: translateY(-2px); }
+    .arch-card-num { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--subtle); margin-bottom: 0.5rem; }
+    .arch-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; line-height: 1.3; }
+    .arch-card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+    .arch-footer { background: rgba(14,165,233,0.04); border: 1px solid rgba(14,165,233,0.12); border-radius: var(--radius); padding: 1.1rem 1.4rem; font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+    .arch-caution { margin-top: 1rem; font-size: 0.78rem; color: var(--subtle); font-style: italic; }
+
+    /* ── Closed-loop diagram */
+    .loop-diagram { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem 1.5rem; margin: 2rem 0; position: relative; overflow: hidden; }
+    .loop-diagram::before { content: ''; position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(14,165,233,0.04) 0%, transparent 70%); pointer-events: none; }
+    .loop-inner { position: relative; z-index: 1; }
+    .loop-flow { display: flex; flex-direction: column; align-items: center; gap: 0; max-width: 540px; margin: 0 auto 1.25rem; }
+    .loop-box { width: 100%; background: rgba(13,17,23,0.85); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1.25rem; font-size: 0.875rem; font-weight: 600; color: var(--text); text-align: center; }
+    .loop-box.accent-top { border-top: 2px solid var(--accent); }
+    .loop-box.green-top { border-top: 2px solid var(--green); }
+    .loop-box.amber-top { border-top: 2px solid var(--amber); }
+    .loop-arrow { font-size: 1.1rem; color: var(--accent); line-height: 1.6; }
+    .loop-arrow.cycle { color: var(--green); font-size: 0.95rem; font-weight: 700; padding: 0.15rem 0; }
+    .loop-band { display: flex; align-items: center; justify-content: center; background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15); border-radius: 8px; padding: 0.65rem 1.25rem; font-size: 0.8rem; font-weight: 600; color: var(--amber); text-align: center; max-width: 540px; margin: 0 auto; }
+
+    /* ── Change-impact decision loop */
+    .ci-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .ci-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 0.5rem; }
+    .ci-flow { display: flex; align-items: stretch; gap: 0; min-width: 700px; }
+    .ci-step { display: flex; flex-direction: column; flex: 1; }
+    .ci-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 0.65rem; font-size: 0.8rem; font-weight: 600; color: var(--text); text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; line-height: 1.4; }
+    .ci-arrow { font-size: 1.4rem; color: var(--accent); align-self: center; flex-shrink: 0; padding: 0 0.2rem; }
+    .ci-value { background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.18); border-radius: var(--radius); padding: 1.1rem 1.5rem; font-size: 0.875rem; color: var(--muted); line-height: 1.65; margin-top: 1.75rem; }
+    .ci-value strong { color: var(--green); }
+
+    /* ── Validation scenario */
+    .scenario-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .scenario-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; max-width: 800px; }
+    .scenario-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text); }
+    .scenario-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; color: var(--subtle); margin-bottom: 0.4rem; margin-top: 1.1rem; }
+    .scenario-label:first-of-type { margin-top: 0; }
+    .scenario-steps { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.6rem; }
+    .scenario-steps li { display: flex; gap: 0.85rem; align-items: flex-start; font-size: 0.875rem; color: var(--muted); line-height: 1.55; }
+    .sn { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; background: rgba(14,165,233,0.10); border: 1px solid rgba(14,165,233,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; color: var(--accent); }
+    .scenario-output { margin-top: 1.25rem; padding: 0.9rem 1.25rem; background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 6px; font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+    .scenario-note { margin-top: 0.9rem; font-size: 0.78rem; color: var(--subtle); font-style: italic; }
+
+    /* ── Badge variant */
+    .s-structured { background: rgba(14,165,233,0.08); color: var(--accent); border: 1px solid rgba(14,165,233,0.15); }
+
+    /* ── Credits outcomes block */
+    .outcomes-block { background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15); border-radius: var(--radius); padding: 1.5rem 1.75rem; margin-bottom: 1.75rem; }
+    .outcomes-block h3 { font-size: 0.875rem; font-weight: 700; color: var(--green); margin-bottom: 0.85rem; }
+    .outcomes-block ul { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+    .outcomes-block li { display: flex; gap: 0.6rem; font-size: 0.875rem; color: var(--muted); align-items: flex-start; }
+    .outcomes-block li::before { content: '\2713'; color: var(--green); font-weight: 700; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -603,9 +661,10 @@
       <button class="menu-btn" onclick="toggleNav(this)" aria-expanded="false" aria-controls="main-nav" aria-label="Toggle navigation">☰</button>
       <nav id="main-nav" aria-label="Main navigation">
         <a href="#platform">Platform</a>
-        <a href="#aims-framework">AIMS Framework</a>
-        <a href="#lifecycle">Lifecycle</a>
-        <a href="#validation">Validation</a>
+        <a href="#full-stack">Architecture</a>
+        <a href="#scenario">Scenario</a>
+        <a href="#demo">Demo</a>
+        <a href="#validation">Status</a>
         <a href="#credits">Credits</a>
         <a href="#founder">Founder</a>
         <a class="nav-cta" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
@@ -621,7 +680,7 @@
       <div class="hero-content">
         <p class="hero-eyebrow">Industrial Operations · ISO 55001 / ISO 55002 · Coordinated AI Agents</p>
         <h1>Building the <em>AIMS framework</em> for industrial project startup and production operations.</h1>
-        <p class="hero-lead">AxiOMSphere coordinates specialised AI agents to develop, review, align and continuously improve the interconnected processes, procedures, plans, registers and controls required to establish industrial projects and organise production operations in accordance with ISO 55001 requirements and ISO 55002 guidance.</p>
+        <p class="hero-lead">AxiOMSphere coordinates specialised AI agents to develop project-startup work products, align departmental functions and interfaces, and support company specialists in developing and continuously updating the management system in alignment with company standards, applicable industry regulations and shareholder expectations.</p>
         <div class="cta-group">
           <a class="btn-primary" href="mailto:hello@axiomsphereai.com?subject=AxiOMSphere%20Pilot%20Discussion">Discuss a Pilot</a>
           <a class="btn-secondary" href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener noreferrer">View on GitHub</a>
@@ -710,28 +769,60 @@
   </div>
 </div>
 
-<!-- ══ PROBLEM / SOLUTION ═══════════════════════════════════════════════ -->
+<!-- ══ WHAT IS AXIOMSPHERE ═══════════════════════════════════════════════ -->
+<section id="what-is" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <p class="section-label">About the Platform</p>
+    <h2>What Is AxiOMSphere</h2>
+    <div style="max-width:760px;">
+      <p style="font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:1.25rem;">AxiOMSphere is a development-stage full-stack, closed-loop industrial AI platform that coordinates specialised agents to build, synchronise, restore and continuously improve the integrated AIMS operating framework required for industrial projects and production operations. The platform is designed to operate entirely on private infrastructure — source materials never leave the local environment during drafting.</p>
+      <p style="font-size:1rem;color:var(--muted);line-height:1.75;">The platform is structured in accordance with ISO 55001 requirements and ISO 55002 guidance as its AIMS management-system framework basis. It uses the GFMAM Asset Management Landscape as a broader process-framework reference. All outputs are recommendations — qualified human review is required before any generated work product is used operationally.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROBLEM ════════════════════════════════════════════════════════════ -->
 <section id="problem-solution">
   <div class="container">
-    <p class="section-label">Challenge & Approach</p>
-    <div class="ps-grid">
-      <div class="ps-panel problem">
-        <h3>Industrial projects need an operating system before they can operate reliably.</h3>
-        <ul>
-          <li>Launching an industrial project requires a connected system of roles, responsibilities, processes, procedures, plans, registers and controls.</li>
-          <li>These work products are developed across disciplines and can become fragmented, inconsistent or difficult to maintain.</li>
-          <li>The reliability of future production depends directly on the quality and alignment of this management-system foundation.</li>
-          <li>Sensitive source materials cannot be routinely submitted to external AI services during development.</li>
-        </ul>
+    <p class="section-label">The Challenge</p>
+    <h2>The Problem</h2>
+    <p style="font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:1.75rem;line-height:1.45;">Early project decisions shape the future operating organisation.</p>
+    <div style="max-width:760px;margin-bottom:2.5rem;">
+      <p style="font-size:0.975rem;color:var(--muted);line-height:1.75;margin-bottom:1.1rem;">Industrial projects must begin building their Asset Integrity Management System (AIMS) before production starts. The highest risk arises during <strong style="color:var(--text);">pilot development</strong> and before the <strong style="color:var(--text);">full-field investment decision</strong> — when scope, configuration, roles, processes and operating philosophy must be defined. These are decisions that are difficult and costly to revise once full capital is deployed.</p>
+      <p style="font-size:0.975rem;color:var(--muted);line-height:1.75;margin-bottom:1.1rem;">Without a structured AIMS framework in place from the outset, scope gaps, interface misalignments and procedure inconsistencies accumulate across disciplines and remain undetected. When they surface late, they drive <strong style="color:var(--text);">costly revision waves</strong> at the stage where changes carry the highest impact on schedule and capital.</p>
+      <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:var(--radius);padding:1.1rem 1.4rem;font-size:0.875rem;color:var(--muted);line-height:1.65;">
+        Sensitive source materials — technical standards, asset data, proprietary procedures, regulatory requirements — cannot be routinely submitted to external AI services during this process.
       </div>
-      <div class="ps-panel solution">
-        <h3>A coordinated agent platform for building the AIMS operating framework.</h3>
-        <ul>
-          <li>AxiOMSphere uses specialised agents to create, review, align and register management-system work products across the project and production lifecycle.</li>
-          <li>Evidence, interfaces and lessons learned are retained in a controlled knowledge layer.</li>
-          <li>ISO 55001 / ISO 55002 forms the stated management-system foundation for all AIMS work-product development.</li>
-          <li>Qualified human review remains mandatory before operational use at every stage.</li>
-        </ul>
+    </div>
+
+    <p class="section-label" style="margin-top:3rem;">The Approach</p>
+    <h2>The Solution</h2>
+    <p style="font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:1.75rem;line-height:1.45;">A private, coordinated environment for building and maintaining AIMS.</p>
+    <div style="max-width:760px;margin-bottom:2rem;">
+      <p style="font-size:0.975rem;color:var(--muted);line-height:1.75;margin-bottom:1.1rem;">AxiOMSphere is a development-stage full-stack, closed-loop industrial AI platform that coordinates specialised agents on private infrastructure to build, synchronise, restore and continuously improve the AIMS operating framework — from project startup through production operations.</p>
+      <p style="font-size:0.975rem;color:var(--muted);line-height:1.75;margin-bottom:1.1rem;">The platform operates privately by default: source materials stay on private infrastructure throughout the drafting workflow; approved external services receive only anonymized context for benchmark evaluation.</p>
+      <p style="font-size:0.975rem;color:var(--muted);line-height:1.75;">The target outcome of a controlled validation programme is a <strong style="color:var(--accent);">24-hour review cycle</strong> for a representative AIMS work-product package. This is a planning target subject to controlled validation — not a guaranteed delivery time. All outputs require qualified human review before operational use.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="wf-card">
+        <div class="wf-icon">🏗️</div>
+        <div class="wf-title">Build</div>
+        <div class="wf-desc">Draft, review and register AIMS work products aligned to ISO 55001 requirements and ISO 55002 guidance across all five lifecycle stages.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🔗</div>
+        <div class="wf-title">Synchronise</div>
+        <div class="wf-desc">Align interfaces, resolve scope gaps and maintain the integrated AIMS framework as a coherent whole as disciplines and requirements evolve.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🔄</div>
+        <div class="wf-title">Assess Change</div>
+        <div class="wf-desc">Trace the downstream impact of scope, design or regulatory changes before they propagate across the framework and compound into revision waves.</div>
+      </div>
+      <div class="wf-card">
+        <div class="wf-icon">🧠</div>
+        <div class="wf-title">Retain Knowledge</div>
+        <div class="wf-desc">Capture evidence, lessons learned and validated outputs in a controlled knowledge layer that continuously improves agent generation quality.</div>
       </div>
     </div>
   </div>
@@ -776,6 +867,172 @@
   </div>
 </section>
 
+<!-- ══ FULL-STACK CAPABILITY ARCHITECTURE ═══════════════════════════════ -->
+<section id="full-stack" class="arch-section">
+  <div class="container">
+    <p class="section-label">Platform Architecture</p>
+    <h2>Full-stack, closed-loop capability architecture.</h2>
+    <p class="section-lead">AxiOMSphere is designed as an integrated stack — every layer contributes to a closed loop of build, supervise, restore and improve. Layers 1–3 face the AIMS framework directly; layers 4–8 keep the system operating reliably under real project conditions.</p>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 1</div>
+        <div class="arch-card-title">Project Development</div>
+        <div class="arch-card-desc">Drafts, reviews and registers AIMS work products aligned to ISO 55001 requirements and ISO 55002 guidance across all five lifecycle stages.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 2</div>
+        <div class="arch-card-title">Master Knowledge &amp; Document Base</div>
+        <div class="arch-card-desc">Maintains a structured, searchable Single Source of Truth for AIMS work products, evidence records, reference standards and validated outputs.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 3</div>
+        <div class="arch-card-title">Orchestration &amp; Synchronisation</div>
+        <div class="arch-card-desc">Coordinates specialised agents across the framework, resolves interface conflicts, detects scope gaps and maintains consistency across the full document set.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 4</div>
+        <div class="arch-card-title">Execution Control &amp; Feedback</div>
+        <div class="arch-card-desc">Monitors workflow execution, tracks quality thresholds and routes outputs through structured human review gates before any operational use.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 5</div>
+        <div class="arch-card-title">Learning &amp; Training</div>
+        <div class="arch-card-desc">Captures validated outputs and preference pairs to continuously improve agent generation quality through an automated fine-tuning cycle.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 6</div>
+        <div class="arch-card-title">Recovery &amp; Repair</div>
+        <div class="arch-card-desc">Detects infrastructure failures, diagnoses root causes and applies targeted repairs — keeping the AIMS development workflow operational without manual intervention.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 7</div>
+        <div class="arch-card-title">Security, Policy &amp; Oversight</div>
+        <div class="arch-card-desc">Enforces access controls, change management gates and audit trails. No change passes to production without policy-layer approval.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-card-num">Layer 8</div>
+        <div class="arch-card-title">Resilience &amp; Redundancy</div>
+        <div class="arch-card-desc">Dual-node routing, failover logic and health monitoring ensure continuity of AIMS development workflows under hardware or network constraints.</div>
+      </div>
+    </div>
+
+    <!-- Closed-loop diagram -->
+    <div class="loop-diagram">
+      <div class="loop-inner">
+        <p style="text-align:center;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);margin-bottom:1.5rem;">Closed-Loop Operating Cycle</p>
+        <div class="loop-flow">
+          <div class="loop-box accent-top">Company Objectives &amp; Approved Strategic Boundaries</div>
+          <div class="loop-arrow">&#8595;</div>
+          <div class="loop-box accent-top">Project Development Capability</div>
+          <div class="loop-arrow">&#8595;</div>
+          <div class="loop-box accent-top">AIMS Work Products &amp; Master Knowledge Base</div>
+          <div class="loop-arrow">&#8595;</div>
+          <div class="loop-box green-top">Orchestration · Synchronisation · Execution Control</div>
+          <div class="loop-arrow">&#8595;</div>
+          <div class="loop-box amber-top">Qualified Human Review &amp; Approval</div>
+          <div class="loop-arrow">&#8595;</div>
+          <div class="loop-box green-top">Project Decisions &amp; Production Operations</div>
+          <div class="loop-arrow cycle">&#8635; continuous controlled improvement</div>
+          <div class="loop-box green-top">Feedback · Learning · Recovery · Improvement</div>
+        </div>
+        <div class="loop-band">&#9632; Security / Policy / Oversight &nbsp;·&nbsp; Resilience / Redundancy — applied across all layers</div>
+      </div>
+    </div>
+
+    <div class="arch-footer">
+      AxiOMSphere is in active development. The architecture described above reflects the platform's design intent and internal development status. Not all layers have been validated at full-scale industrial workloads. Capabilities are being progressively validated through internal scenarios and a planned controlled pilot programme.
+    </div>
+    <p class="arch-caution">No internal agent names, model identifiers, port assignments or infrastructure topology are disclosed in this description.</p>
+  </div>
+</section>
+
+<!-- ══ CHANGE-IMPACT DECISION SUPPORT ═══════════════════════════════════ -->
+<section id="change-impact" class="ci-section">
+  <div class="container">
+    <p class="section-label">Change-Impact Decision Support</p>
+    <h2>Assess the downstream impact of a change before it propagates.</h2>
+    <p class="section-lead">When scope, design or regulatory requirements change during pilot development, the platform is designed to trace the impact across the AIMS framework and surface affected work products for review — before costly revision waves accumulate.</p>
+    <div class="ci-scroll">
+      <div class="ci-flow">
+        <div class="ci-step">
+          <div class="ci-box">Changed Requirement or Strategic Decision</div>
+        </div>
+        <div class="ci-arrow">&#8594;</div>
+        <div class="ci-step">
+          <div class="ci-box">Affected Functions &amp; Interfaces Identified</div>
+        </div>
+        <div class="ci-arrow">&#8594;</div>
+        <div class="ci-step">
+          <div class="ci-box">Impacted AIMS Work Products Retrieved</div>
+        </div>
+        <div class="ci-arrow">&#8594;</div>
+        <div class="ci-step">
+          <div class="ci-box">Gaps, Revisions &amp; Evidence Prepared</div>
+        </div>
+        <div class="ci-arrow">&#8594;</div>
+        <div class="ci-step">
+          <div class="ci-box">Qualified Specialist Review</div>
+        </div>
+        <div class="ci-arrow">&#8594;</div>
+        <div class="ci-step">
+          <div class="ci-box">Approved Update &amp; Registered Learning Case</div>
+        </div>
+      </div>
+    </div>
+    <div class="ci-value">
+      <strong>Value proposition:</strong> Change-impact assessment is designed to reduce the accumulation of undetected scope gaps and interface conflicts during pilot development — addressing a root cause of costly late-stage revision waves before full-field investment is committed. Target outcome subject to controlled validation.
+    </div>
+  </div>
+</section>
+
+<!-- ══ VALIDATION SCENARIO ══════════════════════════════════════════════ -->
+<section id="scenario" class="scenario-section">
+  <div class="container">
+    <p class="section-label">Example Validation Scenario</p>
+    <h2>Pilot development before a full-field investment decision.</h2>
+    <p class="section-lead">The following scenario illustrates how AxiOMSphere is designed to support AIMS framework development during the highest-value decision window — before full-field capital is committed.</p>
+    <div class="scenario-box">
+      <div class="scenario-title">Scenario: AIMS framework development for a pilot project approaching investment gate</div>
+      <div class="scenario-label">Situation</div>
+      <p style="font-size:0.875rem;color:var(--muted);line-height:1.6;margin:0.4rem 0 0;">A pilot project is approaching a full-field investment decision. The AIMS operating framework — roles, processes, procedures, registers and controls — must be sufficiently developed to support investment confidence. The project team is operating under time and resource constraints, with source materials distributed across engineering disciplines and subject to ongoing scope change.</p>
+      <div class="scenario-label">Workflow</div>
+      <ul class="scenario-steps">
+        <li><span class="sn">1</span><span>Source materials (technical standards, asset specifications, regulatory requirements) are ingested into a controlled private knowledge layer — no raw content transmitted to external services.</span></li>
+        <li><span class="sn">2</span><span>Work product drafts are generated across priority AIMS lifecycle stages, structured in accordance with ISO 55001 requirements and ISO 55002 guidance, with interfaces between documents maintained consistently.</span></li>
+        <li><span class="sn">3</span><span>A change event is submitted — a revised equipment specification affecting maintenance philosophy and spare parts strategy. The platform identifies downstream impact across affected procedures, registers and plans, and prepares a structured impact summary with supporting evidence for specialist review.</span></li>
+        <li><span class="sn">4</span><span>The impact summary is reviewed and approved by the qualified specialist. Affected work products are revised, re-registered and the knowledge base is updated with the validated outcome and lessons learned.</span></li>
+        <li><span class="sn">5</span><span>The process repeats as further scope decisions are made — each iteration feeding approved outputs back into the knowledge base to improve subsequent drafts and impact assessments.</span></li>
+      </ul>
+      <div class="scenario-label">Expected Validation Output</div>
+      <div class="scenario-output">
+        A review-ready AIMS work-product package — scope-complete, interface-aligned, evidence-referenced and structured for qualified human review — produced without accumulated unresolved gaps. <strong style="color:var(--green);">Design outcome target:</strong> a 24-hour review cycle for a representative package. This is a target outcome of the planned controlled validation programme; it is not a guaranteed or currently demonstrated delivery time.
+      </div>
+      <p class="scenario-note">This scenario describes a design intent and planning-level validation target. No external pilot has been completed. Outcomes are subject to controlled validation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PLATFORM DEMO ════════════════════════════════════════════════════ -->
+<section id="demo" style="background:var(--bg); border-top:1px solid var(--border);">
+  <div class="container">
+    <p class="section-label">Platform Demo</p>
+    <h2>See the platform in action.</h2>
+    <p class="section-lead" style="max-width:680px;">The following recording demonstrates core platform capabilities under internal development conditions. All outputs shown are recommendations and require qualified human review before operational use.</p>
+    <div style="max-width:900px;margin:2rem auto 0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--card);">
+      <video
+        controls
+        preload="metadata"
+        style="width:100%;display:block;border-radius:var(--radius);"
+        poster=""
+      >
+        <source src="/docs/demo.mp4" type="video/mp4">
+        Your browser does not support the HTML5 video element.
+      </video>
+    </div>
+    <p style="font-size:0.78rem;color:var(--subtle);margin-top:0.9rem;font-style:italic;">Recording reflects internal development and test scenarios. Not a representation of production deployment or externally validated performance.</p>
+  </div>
+</section>
+
 <!-- ══ ABOUT / BRAND ════════════════════════════════════════════════════ -->
 <section id="about">
   <div class="container">
@@ -801,7 +1058,7 @@
       <div class="wf-card">
         <div class="wf-icon">🌐</div>
         <div class="wf-title">Sphere</div>
-        <div class="wf-desc">An interconnected ecosystem and maintained Single Source of Truth — where all agents, work products, evidence and interfaces are aligned and traceable.</div>
+        <div class="wf-desc">A coherent, integrated operating environment in which all AIMS processes function together as a goal-driven, self-orchestrating, self-regulating, self-learning and self-restoring system, operating within company objectives, approved tasks and qualified human governance.</div>
       </div>
     </div>
   </div>
@@ -991,27 +1248,31 @@
 <section id="validation">
   <div class="container">
     <p class="section-label">Development Status</p>
-    <h2>Built for validation. Preparing for controlled pilot use.</h2>
+    <h2>Full-stack platform in active development. Preparing for controlled pilot validation.</h2>
     <p class="section-lead">All capability statements reflect internal development and test scenarios unless explicitly stated otherwise.</p>
     <div class="status-wrap">
       <div class="status-row">
-        <span class="status-name">Agent orchestration and task-ledger controls</span>
+        <span class="status-name">AIMS work-product generation, review and registration pipeline</span>
         <span class="status-badge s-validated">Internally Validated</span>
       </div>
       <div class="status-row">
-        <span class="status-name">Management-system work-product generation pipeline</span>
-        <span class="status-badge s-implemented">Implemented — Internal Validation</span>
+        <span class="status-name">Master knowledge base, document registry and evidence retention</span>
+        <span class="status-badge s-validated">Internally Validated</span>
       </div>
       <div class="status-row">
-        <span class="status-name">OCR ingestion, document registry and retrieval</span>
-        <span class="status-badge s-implemented">Implemented</span>
+        <span class="status-name">Orchestration, synchronisation and interface alignment</span>
+        <span class="status-badge s-validated">Internally Validated</span>
       </div>
       <div class="status-row">
-        <span class="status-name">Evidence and learning-case collection</span>
-        <span class="status-badge s-implemented">Implemented in Development Workflow</span>
+        <span class="status-name">Execution control, feedback, recovery and policy oversight</span>
+        <span class="status-badge s-validated">Internally Validated</span>
       </div>
       <div class="status-row">
-        <span class="status-name">ISO 55001 / ISO 55002 AIMS scope expansion</span>
+        <span class="status-name">Full-stack closed-loop capability integration</span>
+        <span class="status-badge s-active">Under Structured Validation</span>
+      </div>
+      <div class="status-row">
+        <span class="status-name">Change-impact decision support and ISO 55001 / ISO 55002 benchmarking pipeline</span>
         <span class="status-badge s-active">In Active Development</span>
       </div>
       <div class="status-row">
@@ -1023,8 +1284,8 @@
 
     <!-- Capacity model -->
     <div class="capacity-block">
-      <div class="capacity-label">Under Validation</div>
-      <h3>Capacity model under validation</h3>
+      <div class="capacity-label">Planning Scenario</div>
+      <h3>Illustrative validation workload</h3>
       <div class="capacity-figure">
         <div class="cap-stat">
           <span class="cap-num">350</span>
@@ -1039,8 +1300,8 @@
           <span class="cap-unit">AIMS work products</span>
         </div>
       </div>
-      <p>Target capacity model under validation: preparing a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate assumes approximately 10 minutes of human task formulation and 11 minutes of agent-assisted preparation per work product, based on an 8-hour working day and 22 working days per month.</p>
-      <p class="cap-qual">This is a development-stage capacity model subject to pilot validation. It excludes additional qualified review, approval and assurance activities. Parallel discipline workflows and background agent processing may improve calendar turnaround, but are not presented as guaranteed delivery outcomes.</p>
+      <p>Illustrative planning scenario: a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate is derived from a structured workflow model and is used for planning and validation design purposes.</p>
+      <p class="cap-qual">This is a planning-level scenario, not a measured or guaranteed performance figure. It excludes qualified review, approval and assurance activities. Actual outcomes will be determined by the controlled validation programme.</p>
     </div>
 
     <!-- Validation roadmap -->
@@ -1050,41 +1311,41 @@
         <div class="rm-step rm-done">
           <div class="rm-marker">✓</div>
           <div class="rm-body">
-            <div class="rm-title">Multi-agent orchestration and work-product pipeline</div>
-            <div class="rm-desc">Agent coordination, task ledger, generation–review–register workflow — tested in internal development scenarios.</div>
+            <div class="rm-title">Platform Foundation</div>
+            <div class="rm-desc">Full-stack eight-layer architecture operational in development — build, synchronise, control, learn, repair and oversight layers integrated in a closed-loop workflow.</div>
             <span class="rm-badge rm-completed">Completed</span>
           </div>
         </div>
         <div class="rm-step rm-done">
           <div class="rm-marker">✓</div>
           <div class="rm-body">
-            <div class="rm-title">Privacy architecture — local inference and controlled external evaluation</div>
-            <div class="rm-desc">Source documents on private infrastructure; anonymized context to approved evaluators only.</div>
-            <span class="rm-badge rm-completed">Completed</span>
-          </div>
-        </div>
-        <div class="rm-step rm-done">
-          <div class="rm-marker">✓</div>
-          <div class="rm-body">
-            <div class="rm-title">OCR ingestion, document registry and evidence retention</div>
-            <div class="rm-desc">Structured knowledge base with traceable source references operational in development workflow.</div>
+            <div class="rm-title">AIMS Scope and Framework Integration</div>
+            <div class="rm-desc">ISO 55001 / ISO 55002 framework grounding, privacy architecture, document registry, OCR ingestion, evidence retention and continuous learning cycle operational in development scenarios.</div>
             <span class="rm-badge rm-completed">Completed</span>
           </div>
         </div>
         <div class="rm-step rm-current">
           <div class="rm-marker">→</div>
           <div class="rm-body">
-            <div class="rm-title">ISO 55001 / ISO 55002 scope expansion and benchmarking pipeline</div>
-            <div class="rm-desc">Extending work-product coverage across all five AIMS lifecycle stages; developing evaluation pipeline against ISO 55001 requirements and ISO 55002 guidance.</div>
-            <span class="rm-badge rm-current-badge">In Development</span>
+            <div class="rm-title">Full-Stack Capability Validation</div>
+            <div class="rm-desc">Closed-loop integration under structured validation — change-impact decision support, ISO 55001 / ISO 55002 benchmarking pipeline and end-to-end workflow validation across all five lifecycle stages.</div>
+            <span class="rm-badge rm-current-badge">In Progress</span>
+          </div>
+        </div>
+        <div class="rm-step">
+          <div class="rm-marker">4</div>
+          <div class="rm-body">
+            <div class="rm-title">Credits-Supported Benchmarking</div>
+            <div class="rm-desc">External quality benchmarking using approved evaluators with anonymized context; continuous learning improvement measurements; infrastructure resilience confirmation at representative scale. Credits support this milestone.</div>
+            <span class="rm-badge rm-funding">Preparing · Credits Enable This</span>
           </div>
         </div>
         <div class="rm-step">
           <div class="rm-marker">5</div>
           <div class="rm-body">
-            <div class="rm-title">Controlled industrial pilot</div>
-            <div class="rm-desc">Preparing a limited, controlled pilot with a qualified industrial partner. Pilot scope and evidence pack in preparation.</div>
-            <span class="rm-badge rm-funding">Preparing · Credits Enable This</span>
+            <div class="rm-title">Controlled Industrial Pilot</div>
+            <div class="rm-desc">Scoped, time-bounded pilot with a qualified industrial partner under a formal data-handling agreement. All outputs remain development-stage recommendations.</div>
+            <span class="rm-badge rm-funding">Planned</span>
           </div>
         </div>
       </div>
@@ -1096,8 +1357,21 @@
 <section id="credits" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
     <p class="section-label">Startup Support</p>
-    <h2>Seeking credits to validate an ISO 55001 / ISO 55002-based AIMS agent platform at scale.</h2>
-    <p class="section-lead">Credits will support controlled validation of coordinated agents that build, align and review AIMS management-system work products; benchmark local capability against approved external evaluators; develop a traceable knowledge base; and prepare a limited industrial pilot.</p>
+    <h2>Seeking credits to validate a full-stack AIMS agent platform at meaningful scale.</h2>
+    <p class="section-lead">Credits will support controlled validation of the full-stack platform — from AIMS work-product generation through change-impact decision support, continuous learning cycles and infrastructure resilience — at a representative industrial workload scale, and enable the first controlled pilot engagement.</p>
+
+    <!-- Credits-supported outcomes -->
+    <div class="outcomes-block">
+      <h3>What credits-supported validation will produce</h3>
+      <ul>
+        <li>Quality scores for AIMS work-product generation across all five lifecycle stages, benchmarked against ISO 55001 requirements and ISO 55002 guidance using approved external evaluators.</li>
+        <li>Evidence data on change-impact decision support against a representative pilot-development scenario, including interface tracing and downstream revision accuracy.</li>
+        <li>Continuous learning improvement measurements over a 90-day validation period — quantifying the benefit of the fine-tuning cycle on generation quality.</li>
+        <li>Infrastructure resilience and recovery confirmation under realistic AIMS workload conditions, including failover and repair automation performance.</li>
+        <li>An evidence-backed investment readiness pack sufficient to engage a qualified industrial partner for a scoped, time-bounded controlled pilot.</li>
+      </ul>
+    </div>
+
     <div class="credits-grid">
       <div class="credits-card">
         <div class="credits-card-icon">🔌</div>
@@ -1121,12 +1395,12 @@
       </div>
     </div>
     <div class="validation-block">
-      <h3>90-day validation plan</h3>
+      <h3>90-day validation programme</h3>
       <ul>
-        <li>Validate representative AIMS work-product workflows across project startup and production-operations scope.</li>
-        <li>Benchmark local agents against approved external evaluators using anonymized context only.</li>
-        <li>Assess alignment, traceability, reviewer usefulness and cost per workflow.</li>
-        <li>Prepare controlled pilot scope and evidence pack for industrial engagement.</li>
+        <li>Validate AIMS work-product generation and change-impact decision support across all five lifecycle stages.</li>
+        <li>Benchmark local agents against approved external evaluators using anonymized context only, measuring alignment, traceability and reviewer usefulness.</li>
+        <li>Measure continuous learning improvement over the validation period and confirm infrastructure resilience under representative workloads.</li>
+        <li>Produce the evidence pack required to engage a qualified industrial partner for a scoped controlled pilot.</li>
       </ul>
     </div>
     <div class="credits-cta">
