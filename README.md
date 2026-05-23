@@ -46,25 +46,15 @@ Projects therefore need a private, traceable way to help qualified specialists u
 
 ## The Solution
 
-Evaluate early decisions before their cost is multiplied across full-field development.
+AxiOMSphere creates a controlled digital working environment in which specialised AI agents support company experts across the development of an Asset Integrity Management System (AIMS).
 
-AxiOMSphere is a privacy-first multi-agent decision-support platform designed to help industrial projects understand the downstream consequences of early decisions before misalignment is embedded in full-field development and future production operations. It reduces the time and specialist resources required to navigate complex requirements, while increasing the depth, traceability and speed of analysis within approved strategic boundaries.
+The platform begins with project-startup work products: it helps develop policies, plans, procedures, registers, controls, responsibility matrices and interface records within a single connected framework. As the project develops, AxiOMSphere synchronises related functions and interfaces across departments, identifies work products affected by changing requirements, and supports structured review and updating of the emerging management system.
 
-Running on private GPU infrastructure, specialised AI agents help project teams consolidate company standards, applicable industry regulations, regional legal obligations, shareholder expectations, asset data, calculated and empirical indicators, departmental functions and interfaces into a coherent Asset Integrity Management System (AIMS).
+Its private knowledge layer consolidates approved standards, industry and regional regulatory requirements, company procedures, asset data, calculations, empirical indicators and validated project experience. Agents use this context to prepare traceable outputs, retain evidence, highlight dependencies and support decision-impact assessment without routinely exposing sensitive source information to external AI services.
 
-Rather than treating procedures, plans, registers and controls as isolated documents, AxiOMSphere is designed to build and maintain them as an interconnected operating framework. When project conditions or requirements change, the platform helps identify affected work products, responsibilities, interfaces and controls — enabling qualified specialists to assess likely consequences within a target 24-hour review cycle instead of discovering their cumulative impact after months of fragmented work.
+AxiOMSphere follows ISO 55001 requirements and ISO 55002 guidance as the foundation of its AIMS workflows, with the GFMAM Asset Management Landscape providing the broader process-framework reference. Approved external evaluators may be used only with anonymised context where required. Qualified specialists remain responsible for review, approval and operational decisions.
 
-The platform is designed to:
-
-- Develop and update AIMS work products in alignment with company standards, applicable industry regulations and shareholder expectations.
-- Structure AIMS workflows using ISO 55001 requirements and ISO 55002 guidance as the management-system foundation.
-- Organise and synchronise departmental functions, responsibilities and interfaces.
-- Consolidate standards, regulatory obligations, asset data and validated project knowledge into a traceable decision-support environment.
-- Identify how changing requirements propagate across connected processes, plans, procedures, registers and controls.
-- Retain evidence for qualified review, assurance and continuous improvement.
-- Keep sensitive source information on private infrastructure by default, using only anonymized context with approved external evaluators where required.
-
-AxiOMSphere does not replace specialists, formal assurance or certification activities. It is designed to multiply the effectiveness of qualified project teams by giving them a faster, deeper and more connected basis for decisions that shape the future operating organisation.
+AxiOMSphere does not replace specialists, formal assurance or certification activities. It is designed to multiply the effectiveness of qualified Operation stage AIMS desin teams by giving them a faster, deeper and more connected basis for decisions that shape the future operating organisation.
 
 ---
 
