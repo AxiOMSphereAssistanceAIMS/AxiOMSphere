@@ -71,15 +71,74 @@ The following terms were confirmed absent from all public files:
 
 ---
 
+## Deployment Verification
+
+The following external surfaces were verified by live HTTP request on 2026-05-23.
+
+### GitHub Pages — https://axiomsphereassistanceaims.github.io/AxiOMSphere/
+
+| Check | Result |
+|-------|--------|
+| Pages source branch | main (root `/`) |
+| Pages build type | legacy |
+| Pages status | built |
+| Commit deployed | 1b909d0 — docs: prepare public site and README for startup credit applications |
+| Title element | `AxiOMSphere — Privacy-first Industrial AI` ✅ |
+| Hero text | "Privacy-first industrial AI for engineering document workflows" ✅ |
+| Safety statement | present ✅ |
+| Privacy statement | present ✅ |
+| Contact | hello@axiomsphereai.com ✅ |
+
+**Old content confirmed absent from live site:**
+
+| Banned term | Live site |
+|-------------|-----------|
+| ISO-compliant | ABSENT ✅ |
+| ISO Compliance Score | ABSENT ✅ |
+| deepseek-r1 | ABSENT ✅ |
+| qwen2.5:72b | ABSENT ✅ |
+| Gemini Flash | ABSENT ✅ |
+| under 10 minutes | ABSENT ✅ |
+| 1,5 year | ABSENT ✅ |
+| currently working in production | ABSENT ✅ |
+
+### Public README — https://raw.githubusercontent.com/AxiOMSphereAssistanceAIMS/AxiOMSphere/main/README.md
+
+| Check | Result |
+|-------|--------|
+| Default branch | main |
+| Size | 154 lines / 7117 bytes |
+| Opening line | "Privacy-first industrial AI for source-backed engineering document workflows." ✅ |
+| Safety statement | present ✅ |
+| ISO compliance verified | ABSENT ✅ |
+| currently working in production | ABSENT ✅ |
+| 1,5 year | ABSENT ✅ |
+| Gemini | ABSENT ✅ |
+
+### Root Cause of Earlier Mismatch
+
+The previous session wrote `README.md` and `index.html` to the local clone at `/tmp/axiomsphere-public/` but the conversation context ran out before the `git commit` and `git push` were executed. The user's external verification was done during this window — the files were correct on disk but had not yet been pushed to GitHub. The commit and push were completed at the start of the following session.
+
+**Note:** There is also an `origin/master` branch on the repository containing old content. This branch does not affect the public README display (default branch is `main`) or GitHub Pages (source branch is `main`), but it should be deleted or updated to avoid confusion.
+
+---
+
 ## Audit Outcome
 
-**Result: PASS — files are suitable for startup credit application submission.**
+**Result: PASS — externally verified on 2026-05-23.**
+
+| Surface | Status |
+|---------|--------|
+| Live GitHub Pages (index.html) | ✅ VERIFIED — new privacy-first content live |
+| Public README (main branch) | ✅ VERIFIED — no banned terms present |
+| landing/index.html | ✅ VERIFIED — same content as index.html |
+| docs/public/ support documents | ✅ CREATED — audit, evidence register, narrative |
 
 All public-facing claims are either:
 - Internally validated and stated conservatively, or
 - Framed as "in development" / "preparing"
 
-No compliance certifications, production claims, or internal infrastructure details remain.
+No compliance certifications, production claims, or internal infrastructure details remain in any deployed public surface.
 
 ---
 
