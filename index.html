@@ -656,28 +656,28 @@
     </div>
     <div class="card">
       <div class="card-icon">🔍</div>
-      <h3>Compliance Review &amp; Scoring</h3>
-      <p>Every draft is scored for ISO compliance via NVIDIA NIM OmniRoute. The system identifies gaps and generates targeted revision passes until the document meets the quality threshold.</p>
+      <h3>Framework-Alignment Review</h3>
+      <p>Every draft is reviewed for alignment with applicable ISO 55001 requirements and ISO 55002 guidance. Gaps are identified and structured revision guidance is generated for each review cycle.</p>
     </div>
     <div class="card">
       <div class="card-icon">🔄</div>
       <h3>Structured Revision Loop</h3>
-      <p>Score-gated revision cycle: draft → score → revise → re-score. Outputs are retained only when they meet the minimum compliance threshold. Engineers review and approve before use.</p>
+      <p>Structured revision cycle: draft → review → revise → re-review. Outputs progress through multiple passes. Engineers review and approve before operational use — no autonomous acceptance decisions.</p>
     </div>
     <div class="card">
       <div class="card-icon">📂</div>
       <h3>Document Registry &amp; Traceability</h3>
-      <p>Accepted documents are registered in a local SQLite registry with full generation metadata — model version, compliance score, revision count, timestamp — enabling audit trail and traceability.</p>
+      <p>Accepted documents are registered in a local registry with generation metadata — revision count, timestamp, review record — enabling audit trail and traceability.</p>
     </div>
     <div class="card">
       <div class="card-icon">🔒</div>
       <h3>Privacy-First Infrastructure</h3>
-      <p>Runs on a private NVIDIA DGX Spark. All document content stays on-premise. No project data is sent to external APIs during draft generation. Cloud scoring is optional and configurable.</p>
+      <p>Runs on private GPU infrastructure. All document content stays on-premise. No project data is sent to external services during draft generation. Evaluation service access is optional and configurable.</p>
     </div>
     <div class="card">
       <div class="card-icon">🧠</div>
-      <h3>Continuous Fine-Tuning Loop</h3>
-      <p>Every approved generation automatically saves a training pair. An autonomous nightly pipeline fine-tunes the local 14B action-classifier model, improving routing and intent classification over time.</p>
+      <h3>Evidence Retention for Development</h3>
+      <p>Validated outputs are retained as structured evidence. This evidence base is intended to support future controlled improvement cycles — a development objective under M2 (Controlled Knowledge and Self-Learning).</p>
     </div>
   </div>
 </div>
@@ -706,37 +706,32 @@
     <div class="pipe-step">
       <div class="pipe-icon">🧠</div>
       <h3>Draft</h3>
-      <div class="pipe-model">qwen3:32b-q8_0</div>
+      <div class="pipe-model">Local reasoning model</div>
       <div class="pipe-desc">ISO-aware structural reasoning, section scaffold, domain terminology</div>
-      <div class="pipe-time">~3 min</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">✍️</div>
       <h3>Rewrite</h3>
-      <div class="pipe-model">qwen3:32b-q8_0</div>
-      <div class="pipe-desc">Professional formatting, cross-references, .docx output</div>
-      <div class="pipe-time">~2 min</div>
+      <div class="pipe-model">Local reasoning model</div>
+      <div class="pipe-desc">Professional formatting, cross-references, structured document output</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🔍</div>
-      <h3>Score</h3>
-      <div class="pipe-model">NVIDIA NIM OmniRoute</div>
-      <div class="pipe-desc">ISO compliance scoring, gap identification, revision guidance</div>
-      <div class="pipe-time">~15 sec</div>
+      <h3>Review</h3>
+      <div class="pipe-model">Evaluation service</div>
+      <div class="pipe-desc">Framework-alignment review, gap identification, revision guidance</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🔄</div>
       <h3>Revise</h3>
-      <div class="pipe-model">qwen3:32b-q8_0</div>
-      <div class="pipe-desc">Targeted revision using scoring feedback. Re-scored until threshold met</div>
-      <div class="pipe-time">~2 min</div>
+      <div class="pipe-model">Local reasoning model</div>
+      <div class="pipe-desc">Targeted revision using review feedback. Multiple passes supported</div>
     </div>
     <div class="pipe-step" style="border-color: var(--green);">
       <div class="pipe-icon">✅</div>
       <h3>Deliver</h3>
-      <div class="pipe-model">Telegram / Registry</div>
-      <div class="pipe-desc">.docx delivered to engineer for review and approval</div>
-      <div class="pipe-time">instant</div>
+      <div class="pipe-model">Operator interface / Registry</div>
+      <div class="pipe-desc">Document delivered to engineer for review and approval before use</div>
     </div>
   </div>
 </section>
@@ -798,7 +793,7 @@
 <!-- STANDARDS -->
 <section class="section" id="standards">
   <h2>Standards Coverage</h2>
-  <p class="section-sub">Document structure standards applied to every output. Domain compliance scored per task context — 150+ standards in scope.</p>
+  <p class="section-sub">Document structure standards referenced for every output. Domain-specific requirements referenced per applicable task context.</p>
   <div class="standards-grid">
     <div class="std-group-label">Document Structure &amp; Format — applied to every document</div>
     <div class="std">
@@ -988,7 +983,7 @@
     <a href="LICENSE">Apache-2.0</a>
   </p>
   <p style="margin-top:0.5rem; font-size:0.78rem; opacity:0.6;">
-    Powered by qwen3:32b-q8_0 &middot; NVIDIA NIM OmniRoute &middot; python-telegram-bot &middot; python-docx &middot; Ollama
+    Development stage · Privacy-first · Human-governed · Qualified human review required before operational use
   </p>
 </footer>
 

@@ -23,13 +23,13 @@ The system is built on coordinated LLM agents, each responsible for a specific f
 What is validated and operating today in our development environment:
 
 - **Draft generation** — engineer submits a plain-language request via Telegram; system generates a structured AIMS work-product draft aligned to the applicable ISO standard
-- **Compliance scoring** — every draft is scored via NVIDIA NIM OmniRoute; gaps identified, revision guidance generated
-- **Score-gated revision loop** — draft → score → revise → re-score; outputs retained only when compliance threshold is met
-- **Document registry** — accepted documents registered in a local SQLite registry with full generation metadata (model version, score, revision count, timestamp)
-- **Privacy-first infrastructure** — runs on a private NVIDIA DGX Spark; all document content stays on-premise
-- **Continuous fine-tuning** — every approved generation saves a training pair; nightly pipeline fine-tunes the local 14B action-classifier
+- **Framework-alignment review** — every draft is reviewed against applicable ISO 55001 requirements and ISO 55002 guidance; gaps identified, revision guidance generated
+- **Structured revision loop** — draft → review → revise → re-review; outputs progress through multiple passes; human review and approval required before use
+- **Document registry** — accepted documents registered in a local registry with generation metadata (revision count, timestamp, review record)
+- **Privacy-first infrastructure** — runs on private GPU infrastructure; all document content stays on-premise; no project data transmitted to external services during draft generation
+- **Evidence retention** — validated outputs are retained as structured evidence to support future controlled improvement cycles (M2 development objective)
 
-Document types currently supported: JSA, Management of Change, Emergency Response Procedure, Project Charter, Technical Manual, Asset Integrity Report.
+Representative work-product types: safety procedures, management-of-change documentation, technical work products and AIMS registers — structured according to applicable standards requirements.
 
 ---
 
@@ -91,9 +91,9 @@ This is not a current capability. It is the direction our staged development roa
 ## Privacy-First and Human-Review Boundary
 
 **What stays private:**
-- All document content is processed on-premise on a private NVIDIA DGX Spark
-- No project data is sent to external APIs during draft generation
-- Cloud scoring (NVIDIA NIM OmniRoute) is optional and configurable; only scoring prompts are sent, not the full document content
+- All document content is processed on-premise on private GPU infrastructure
+- No project data is sent to external services during draft generation
+- External evaluation service access is optional and configurable; only anonymised, context-limited prompts are sent, not full document content
 
 **Human review boundary:**
 - Every generated document requires engineer review and approval before operational use
@@ -110,9 +110,7 @@ The AIMS work-product pipeline is structured around:
 - **ISO 55002:2018** — Asset management: guidelines for the application of ISO 55001
 - **GFMAM Asset Management Landscape** — 39 subjects across 6 subject groups
 
-Document structure standards applied to every output include ISO 10013:2021, ISO 2145:1978, IEC/IEEE 82079-1:2019, ISO 15489-1:2016, and ISO 9000:2015.
-
-Domain compliance standards (scored per task context) include ISO 45001, ISO 21502:2020, OSHA 29 CFR 1910.147, and 150+ others applied by context.
+AIMS work-product structure references ISO 10013:2021, ISO 2145:1978, and applicable records management standards. Domain-specific requirements (safety, project management, operations) are referenced per applicable task context. All generated outputs require qualified human review against applicable standards before operational use.
 
 ---
 
@@ -120,10 +118,10 @@ Domain compliance standards (scored per task context) include ISO 45001, ISO 215
 
 AxiOMSphere is at the compute-intensive transition from M1 to M2. The bottlenecks that credits would directly address:
 
-- **GPU compute for fine-tuning** — nightly QLoRA training runs on a single DGX Spark; scaling the training dataset and adding a second local model slot requires more GPU memory and compute hours
-- **Vector infrastructure** — M2 requires a persistent, high-recall vector knowledge base (Qdrant); scaling beyond the development dataset requires additional infrastructure
-- **NVIDIA NIM API calls** — compliance scoring currently runs at development-tier rate limits; production-scale document throughput requires higher quota
-- **Anthropic API** — used for Claude Code-based repair and review automation; current usage is manually throttled due to cost constraints
+- **GPU compute** — pipeline validation and M2 model improvement cycles require sustained private GPU capacity beyond current development allocation
+- **Vector infrastructure** — M2 controlled knowledge layer requires a persistent, high-recall vector retrieval service; scaling beyond the development dataset requires additional infrastructure
+- **Evaluation API credits** — framework-alignment review currently runs at development-tier rate limits; full-stack validation requires higher quota
+- **Repair and review automation** — used for bounded repair and controlled review automation; current usage is manually throttled due to cost constraints
 
 We are applying to: Google for Startups Cloud, Microsoft Founders Hub, NVIDIA Inception, Anthropic Credits.
 
