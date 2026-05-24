@@ -153,8 +153,13 @@ async def demo_reply(body: ReplyRequest):
 
 # ── Entry point for direct run ─────────────────────────────────────────────────
 
-def start_demo_reply_api(host: str = "127.0.0.1", port: int = 8020) -> None:
-    """Start the server in an already-running asyncio event loop (via uvicorn)."""
+def start_demo_reply_api(host: str = "0.0.0.0", port: int = 8020) -> None:
+    """Start the server in an already-running asyncio event loop (via uvicorn).
+
+    Binds to 0.0.0.0 so Docker's port mapping can forward traffic.
+    Host-side exposure is restricted to 127.0.0.1 by the compose ports mapping:
+      127.0.0.1:8020:8020
+    """
     config = uvicorn.Config(app, host=host, port=port, log_level="warning")
     server = uvicorn.Server(config)
     import asyncio
@@ -163,4 +168,4 @@ def start_demo_reply_api(host: str = "127.0.0.1", port: int = 8020) -> None:
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8020)
+    uvicorn.run(app, host="0.0.0.0", port=8020)
