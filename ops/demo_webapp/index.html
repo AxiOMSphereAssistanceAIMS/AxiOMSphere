@@ -33,25 +33,19 @@
 
       const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
-      const queryId = tg.initDataUnsafe && tg.initDataUnsafe.query_id;
       const initData = tg.initData;
 
-      if (!token || !queryId || !initData) {
+      if (!token || !initData) {
         document.getElementById("status").textContent = "Missing parameters.";
         return;
       }
 
-      // BACKEND_URL is replaced at deploy time with the real HTTPS endpoint.
-      // Example: https://demo.axiomsphereai.com
-      const BACKEND_URL = "%%BACKEND_URL%%";
-
-      fetch(BACKEND_URL + "/demo/reply", {
+      fetch("/demo/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token: token,
           init_data: initData,
-          web_app_query_id: queryId,
         }),
       })
         .then(function (r) {

@@ -1,0 +1,1638 @@
+name: axiomsphere
+services:
+  axi-bot:
+    profiles:
+    - legacy-axi-bot
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.axi-bot
+    container_name: axiomsphere-axi-bot
+    depends_on:
+      ocr-watcher:
+        condition: service_started
+        required: true
+      task-registry:
+        condition: service_started
+        required: false
+      aims-redis:
+        condition: service_healthy
+        required: false
+    # Токен Axi: корневой .env и отдельный ops/.env.axi-bot (второй перезаписывает AXI_BOT_TOKEN).
+    # Не задавайте AXI_BOT_TOKEN в environment с ${AXI_BOT_TOKEN:-} — пустая подстановка затирает токен.
+    env_file:
+      - path: .env
+        required: false
+      - path: ops/.env.axi-bot
+        required: false
+    environment:
+      # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AXI_ALLOWED_USER_IDS: '8077374184,8003780560'
+      AXI_OWNER_CHAT_IDS: ${AXI_OWNER_CHAT_IDS:-8077374184}
+      AXI_BOT_CONFIG_DIR: /data/axi_config
+      AXI_AIMS_KNOWLEDGE_MODE: 'on'
+      AXI_DATA_ROOT: /data
+      # Omnirouter fallback (replaces AXI_GEMINI_ENABLED)
+      AXI_OMNIROUTER_FALLBACK_ENABLED: ${AXI_OMNIROUTER_FALLBACK_ENABLED:-1}
+      AXI_OMNIROUTER_MODEL: ${AXI_OMNIROUTER_MODEL:-local-nemotron}
+      AXI_FT_LOG_ENABLED: '1'
+      AXI_FT_LOG_DIR: /data/axi_ft_log
+      AXI_LLM_MAX_CONCURRENT: '1'
+      
+            # OmniRoute teacher combo integration
+      OMNIROUTE_BASE_URL: ${OMNIROUTE_DOCKER_BASE_URL:-http://host.docker.internal:20129/v1}
+      AIMS_OMNIROUTE_BASE_URL: ${OMNIROUTE_DOCKER_BASE_URL:-http://host.docker.internal:20129/v1}
+      OMNIROUTE_MODEL: ${OMNIROUTE_MODEL:-project1}
+
+      OMNIROUTE_EXTRACT_MODEL: doc-extract-combo
+      OMNIROUTE_EXPERT_MODEL: doc-standard-expert-combo
+      OMNIROUTE_TEACHER_MODEL: doc-training-standards-best
+      OMNIROUTE_AUDIT_MODEL: doc-training-pair-audit-combo
+
+      AIMS_DOCTUNING_MODEL: doc-training-pair-audit-combo
+      AIMS_DOCTUNING_EXTRACT_MODEL: doc-extract-combo
+      AIMS_DOCTUNING_VALIDATE_MODEL: doc-training-pair-audit-combo
+      AIMS_AUDIT_PAIRS_SHADOW: '0'
+
+      AIMS_LLM_AUDIT_RETRIES: '2'
+      AIMS_LLM_AUDIT_RETRY_SLEEP_SEC: '30'
+      
+      
+      AXI_ID: ID8507628575
+      AXI_MASTER_MIN_SIMILARITY_PCT: '90'
+      AXI_MASTER_ROOT: /data/master
+      AXI_NAME: Axi
+      AXI_OCR_AFTER_UPLOAD: '1'
+      AXI_OCR_QUALITY_ENABLED: '1'
+      AXI_OCR_QUALITY_MIN_PCT: '90'
+      AXI_OCR_QUALITY_MIN_SOURCE_CHARS: '50'
+      AXI_OMI_REGISTRATION_HANDOFF: '1'
+      AXI_OPENAI_DOC_EXCERPT_CHARS: '60000'
+      AXI_OPENAI_HIER_JSON_MAX_CHARS: '120000'
+      AXI_OPENAI_ISO_ANALYSIS: '1'
+      AXI_OPENAI_MODEL: gpt-4o-mini
+      AXI_RESULTS_DIR: /data/result
+      # CV / merge резюме: не генерировать anonymized.docx после OCR (логика: ops/axi_cv_pipeline_flags.py; вызов из axi_bot.py).
+      AXI_OCR_ANONYMIZE_ENABLED: '1'
+      AXI_OCR_SKIP_ANONYMIZE_FOR_CV: '1'
+      AXI_SHOW_ISO_HINTS: '0'
+      AXI_VISION_IMAGE_OCR: '1'
+      AXI_WEB_SEARCH_ENABLED: '1'
+      AXI_LIBREOFFICE_ENABLED: '1'
+      AXI_LIBREOFFICE_TIMEOUT_SEC: '120'
+      AXI_SOFFICE_PATH: /usr/bin/soffice
+      OMI_DB_PATH: /data/omi_registry.db
+      OMI_ID: ID8664749589
+      OMI_NAME: Omi
+      OMI_OUTBOX_DIR: /data/outbox
+      OPENAI_API_KEY: ''
+      TASK_REGISTRY_URL: http://task-registry:8765
+      TASK_REGISTRY_MONITOR_INTERVAL: '900'
+      QWEN_PC_ASSIST_STACK: ${QWEN_PC_ASSIST_STACK:-1}
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      DGX_OLLAMA_URL_WIFI: ${DGX_OLLAMA_URL_WIFI:-}
+      DGX_HEAVY_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_32_NAME:-}
+      PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
+      DOC_AGENT_API_URL: http://doc-agent:8767
+      AIMS_WORKSPACE: /data
+      AIMS_REDIS_URL: redis://aims-redis:6379
+      PYTHONPATH: /ops
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN:-}
+      TZ: Asia/Dubai
+      TELEGRAM_DOC_INTAKE_DIR: /data/telegram_intake/cases
+      DOCS_AGENT_INBOX_DIR: /data/docs_agent/inbox
+      DOCS_AGENT_TELEGRAM_SYNC_ENABLED: ${DOCS_AGENT_TELEGRAM_SYNC_ENABLED:-0}
+    image: axiomsphere-axi-bot:local
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/data/telegram_intake
+      target: /data/telegram_intake
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/data/docs_agent
+      target: /data/docs_agent
+    ports:
+    - "127.0.0.1:8020:8020"
+    extra_hosts:
+    - host.docker.internal=host-gateway
+  inbox-cleanup:
+    command:
+    - /bin/sh
+    - /inbox_cleanup.sh
+    container_name: axiomsphere-inbox-cleanup
+    environment:
+      INBOX_CLEANUP_DAYS: '14'
+      INBOX_CLEANUP_INTERVAL_SEC: '172800'
+      INBOX_DIR: /data/inbox/income
+    image: alpine:3.19
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops/inbox_cleanup.sh
+      target: /inbox_cleanup.sh
+      read_only: true
+  ocr-watcher:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: Dockerfile.ocr-eng
+    command:
+    - /bin/sh /ops/ocr_watcher_loop.sh
+    container_name: axiomsphere-ocr-watcher
+    entrypoint:
+    - /bin/sh
+    - -lc
+    environment:
+      OCR_MAX_FAILS: '3'
+      IN: /data/inbox
+      OUT: /data/outbox
+      # OCR backend: tesseract (default) | nim
+      # Включить после: docker compose --profile nim up -d nim-ocr
+      OCR_BACKEND: ${OCR_BACKEND:-tesseract}
+      NIM_OCR_URL: ${NIM_OCR_URL:-http://nim-ocr:8000}
+      NGC_API_KEY: ${NGC_API_KEY:-}
+    image: axiomsphere-ocr:with-eng
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+  omi-api:
+    command:
+    - python
+    - -m
+    - uvicorn
+    - omi_api:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8765'
+    container_name: axiomsphere-omi-api
+    environment:
+      AIMS_WORKSPACE: /data
+      OMI_DB_PATH: /data/aims_registry.db
+      PYTHONPATH: /ops:/omi_telegram
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OMI_MODEL_SLOT: ${OMI_MODEL_SLOT:-14}
+      # Внутри Docker-контейнера Argus ходит к локальному Ollama через host-gateway.
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      DGX_OLLAMA_URL_WIFI: ${DGX_OLLAMA_URL_WIFI:-}
+      OLLAMA_LOCAL_URL: ${ARGUS_OLLAMA_LOCAL_URL:-http://host.docker.internal:11434}
+      PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    image: axiomsphere-omi-bot:local
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops/omi_telegram
+      target: /omi_telegram
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+    working_dir: /omi_telegram
+  # Если при старте panic про shard/json — смена версии или битые данные: docker compose stop qdrant && docker volume rm axiomsphere_qdrant_data && up -d qdrant
+  qdrant:
+    container_name: axiomsphere-qdrant
+    image: qdrant/qdrant:v1.12.5
+    networks:
+      axiomsphere_net: null
+    ports:
+      - "6333:6333"
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: qdrant_data
+      target: /qdrant/storage
+      volume: {}
+  omi-bot:
+    profiles:
+    - telegram-bots
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.omi-bot
+    command:
+    - python
+    - /omi_telegram/omi_bot.py
+    container_name: axiomsphere-omi-bot
+    environment:
+      AIMS_WORKSPACE: /data
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-}
+      N8N_UPLOAD_WEBHOOK_URL: http://localhost:5678/webhook/c351102f-268d-4af9-8867-27236982aed8
+      OCR_REGISTRY_DB: /data/omi_registry.db
+      # DGX: тяжёлая/общий effective_ollama; малая Qwen — effective_small_qwen (DGX → ПК)
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      # omi_agent читает OMI_MODEL / OMI_OLLAMA_MODEL (не OLLAMA_MODEL)
+      OMI_MODEL_SLOT: ${OMI_MODEL_SLOT:-14}
+      OMI_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      # Omnirouter fallback (replaces GEMINI_UNTIL_OLLAMA_READY)
+      OMI_OMNIROUTER_UNTIL_OLLAMA_READY: ${OMI_OMNIROUTER_UNTIL_OLLAMA_READY:-0}
+      AXI_CHAT_OMNIROUTER_UNTIL_OLLAMA_READY: ${AXI_CHAT_OMNIROUTER_UNTIL_OLLAMA_READY:-0}
+      OMI_ALLOWED_CHAT_IDS: -5266680971,-1003609238392,-1003745546504
+      OMI_ALLOWED_USER_IDS: '8077374184,8003780560'
+      OMI_GROUP_UPLOAD_NOTIFICATIONS: "0"
+      OMI_GROUP_SILENT_MODE: "1"
+      OMI_DB_PATH: /data/aims_registry.db
+      OMI_LLM_BACKEND: httpx
+      # omi_bot.py reads TELEGRAM_BOT_TOKEN — override with OMI_BOT_TOKEN so it doesn't get the axi-bot token
+      TELEGRAM_BOT_TOKEN: ${OMI_BOT_TOKEN:-${OMI_TELEGRAM_BOT_TOKEN:-${TELEGRAM_TOKEN:-}}}
+      OMI_TELEGRAM_BOT_TOKEN: ${OMI_TELEGRAM_BOT_TOKEN:-${OMI_BOT_TOKEN:-${TELEGRAM_TOKEN:-}}}
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-}
+      PYTHONPATH: /ops:/omi_telegram
+      TELEGRAM_GROUP_ID: -1003609238392,-5266680971,-1003745546504
+      DGX_QWEN_UNLOAD_AFTER_HEAVY_WARM: ${DGX_QWEN_UNLOAD_AFTER_HEAVY_WARM:-1}
+      DGX_QWEN_UNLOAD_SMALL_AFTER_HEAVY_WARM_END_SEC: ${DGX_QWEN_UNLOAD_SMALL_AFTER_HEAVY_WARM_END_SEC:-1}
+      TASK_REGISTRY_URL: http://task-registry:8765
+      OMI_API_URL: http://omi-api:8765
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: '6333'
+      # Для argus-bot предпочитаем локальный Ollama через host-gateway.
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      DGX_OLLAMA_URL_WIFI: ${DGX_OLLAMA_URL_WIFI:-}
+      OLLAMA_LOCAL_URL: ${ARGUS_OLLAMA_LOCAL_URL:-http://host.docker.internal:11434}
+      PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
+      PC_ANDREY_OLLAMA_URL_FALLBACK: ${PC_ANDREY_OLLAMA_URL_FALLBACK:-}
+      QWEN_PC_ASSIST_STACK: ${QWEN_PC_ASSIST_STACK:-0}
+      OMI_OLLAMA_TEMPERATURE: ${OMI_OLLAMA_TEMPERATURE:-0}
+      # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Omnirouter model for fallback (replaces OMI_GEMINI_MODEL)
+      OMI_OMNIROUTER_MODEL: ${OMI_OMNIROUTER_MODEL:-local-nemotron}
+      OMI_LLM_FALLBACK_OMNIROUTER: ${OMI_LLM_FALLBACK_OMNIROUTER:-1}
+      # OmniRoute direct (omi_agent.py reads OMNIROUTE_BASE_URL + OMI_LLM_FALLBACK_NIM)
+      OMNIROUTE_BASE_URL: ${OMNIROUTE_DOCKER_BASE_URL:-http://host.docker.internal:20129/v1}
+      OMNIROUTE_MODEL: ${OMNIROUTE_MODEL:-project1}
+      OMNI_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-}
+      OMI_LLM_FALLBACK_NIM: ${OMI_LLM_FALLBACK_OMNIROUTER:-1}
+      AXI_RESULTS_DIR: /data/result
+      DGX_HEAVY_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_32_NAME:-}
+      DOC_AGENT_API_URL: http://doc-agent:8767
+      AIMS_REDIS_URL: redis://aims-redis:6379
+      # Бэкапы БД: /data/backups → AIMS_BACKUP_HOST_DIR на хосте Spark. Для ПК Andrei: sshfs (ops/scripts/mount_andrei_aims_backup.sh), затем compose up.
+      AIMS_BACKUP_DIR: /data/backups
+    depends_on:
+      aims-redis:
+        condition: service_healthy
+        required: false
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    image: axiomsphere-omi-bot:local
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: ${AIMS_BACKUP_HOST_DIR:-/home/axi_omi_sphere/aims-workspace/backups}
+      target: /data/backups
+      # По умолчанию — локальные копии на Spark; для Andrei@192.168.72.134 задайте AIMS_BACKUP_HOST_DIR=/mnt/andrei_aims_backup и смонтируйте sshfs до запуска compose.
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops/omi_telegram
+      target: /omi_telegram
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+    working_dir: /omi_telegram
+  omi-quality-gate:
+    command:
+    - python
+    - /ops/omi_quality_gate.py
+    container_name: axiomsphere-omi-quality-gate
+    depends_on:
+      ocr-watcher:
+        condition: service_started
+        required: true
+    environment:
+      AIMS_WORKSPACE: /data
+      OCR_REGISTRY_DB: /data/omi_registry.db
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      OMI_MODEL_SLOT: ${OMI_MODEL_SLOT:-14}
+      OMI_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      # Omnirouter fallback (replaces GEMINI_UNTIL_OLLAMA_READY)
+      OMI_OMNIROUTER_UNTIL_OLLAMA_READY: ${OMI_OMNIROUTER_UNTIL_OLLAMA_READY:-0}
+      AXI_CHAT_OMNIROUTER_UNTIL_OLLAMA_READY: ${AXI_CHAT_OMNIROUTER_UNTIL_OLLAMA_READY:-0}
+      OMI_ALLOWED_CHAT_IDS: -5266680971,-1003609238392,-1003745546504
+      OMI_ALLOWED_USER_IDS: '8077374184,8003780560'
+      OMI_DB_PATH: /data/omi_registry.db
+      OMI_INBOX_DIR: /data/inbox
+      OMI_INCOME_DIR: /data/inbox/income
+      OMI_LLM_BACKEND: httpx
+      OMI_OUTBOX_DIR: /data/outbox
+      OMI_QUALITY_GATE_POLL_SEC: '3'
+      OMI_QUALITY_MIN_PCT: '90'
+      OMI_QUALITY_MIN_SOURCE_CHARS: '50'
+      OMI_SKIPPED_DIR: /data/inbox/Skipped
+      TELEGRAM_BOT_TOKEN: ${OMI_BOT_TOKEN:-${OMI_TELEGRAM_BOT_TOKEN:-${TELEGRAM_TOKEN:-}}}
+      OMI_TELEGRAM_BOT_TOKEN: ${OMI_TELEGRAM_BOT_TOKEN:-${OMI_BOT_TOKEN:-${TELEGRAM_TOKEN:-}}}
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-}
+      OMNIROUTE_BASE_URL: ${OMNIROUTE_DOCKER_BASE_URL:-http://host.docker.internal:20129/v1}
+      OMNIROUTE_MODEL: ${OMNIROUTE_MODEL:-project1}
+      OMNI_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-}
+      TELEGRAM_GROUP_ID: -1003609238392,-5266680971
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    image: axiomsphere-omi-register:local
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+  omi-register:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.omi-register
+    command:
+    - /bin/sh
+    - -lc
+    - "if [ \"0\" = \"1\" ]; then\n  python /ops/omi_register.py --once;\nelse\n \
+      \ echo \"omi-register standalone disabled (OMI_REGISTER_STANDALONE=0).\";\n\
+      fi\n"
+    container_name: axiomsphere-omi-register
+    depends_on:
+      ocr-watcher:
+        condition: service_started
+        required: true
+    environment:
+      OMI_DB_PATH: /data/omi_registry.db
+      OMI_ID: ID8664749589
+      OMI_MODEL_SLOT: '14'
+      OMI_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      OMI_NAME: Omi
+      OMI_OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OMI_OLLAMA_EMPTY_RETRIES: '4'
+      OMI_OLLAMA_ENABLED: '1'
+      OMI_OLLAMA_MAX_TEXT_CHARS: '400000'
+      OMI_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      OMI_OLLAMA_NUM_CTX: '16384'
+      OMI_OLLAMA_NUM_PREDICT: '3200'
+      OMI_OLLAMA_TIMEOUT_SEC: '1800'
+      OMI_OUTBOX_DIR: /data/outbox
+      OMI_REGISTER_EXTENSIONS: .txt,.docx
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    image: axiomsphere-omi-register:local
+    networks:
+      axiomsphere_net: null
+    restart: 'no'
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+  flaresolverr:
+    container_name: axiomsphere-flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8191
+      published: '8191'
+      protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8191/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+  aims-redis:
+    image: redis:7-alpine
+    container_name: axiomsphere-aims-redis
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --appendonly yes
+      --appendfsync everysec
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  queue-api:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-queue-api:local
+    container_name: axiomsphere-queue-api
+    command: ["python", "-m", "uvicorn", "ops.workers.queue_api:app", "--host", "0.0.0.0", "--port", "8766"]
+    ports:
+      - "8766:8766"
+    environment:
+      AIMS_REDIS_URL: redis://aims-redis:6379
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /workspace
+    depends_on:
+      aims-redis:
+        condition: service_healthy
+        required: true
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+        target: /data
+      - type: bind
+        source: /home/axi_omi_sphere/aims-workspace
+        target: /workspace
+        read_only: true
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8766/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  firecrawl-redis:
+    profiles:
+    - firecrawl
+    container_name: axiomsphere-firecrawl-redis
+    image: redis:alpine
+    command: redis-server --bind 0.0.0.0
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+  firecrawl-puppeteer:
+    profiles:
+    - firecrawl
+    container_name: axiomsphere-firecrawl-puppeteer
+    image: trieve/puppeteer-service-ts
+    environment:
+      PORT: '3000'
+      PROXY_SERVER: ${PROXY_SERVER:-}
+      PROXY_USERNAME: ${PROXY_USERNAME:-}
+      PROXY_PASSWORD: ${PROXY_PASSWORD:-}
+      MAX_CONCURRENCY: ${FIRECRAWL_MAX_CONCURRENCY:-10}
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+  firecrawl-api:
+    profiles:
+    - firecrawl
+    container_name: axiomsphere-firecrawl-api
+    image: trieve/firecrawl
+    depends_on:
+      firecrawl-redis:
+        condition: service_started
+        required: true
+      firecrawl-puppeteer:
+        condition: service_started
+        required: true
+    environment:
+      HOST: 0.0.0.0
+      PORT: '3002'
+      REDIS_URL: redis://firecrawl-redis:6379
+      REDIS_RATE_LIMIT_URL: redis://firecrawl-redis:6379
+      PLAYWRIGHT_MICROSERVICE_URL: http://firecrawl-puppeteer:3000
+      BULL_AUTH_KEY: ${FIRECRAWL_BULL_AUTH_KEY:-changeme}
+      TEST_API_KEY: ${FIRECRAWL_TEST_API_KEY:-}
+      LOGGING_LEVEL: ${FIRECRAWL_LOGGING_LEVEL:-info}
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 3002
+      published: '3002'
+      protocol: tcp
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+  firecrawl-worker:
+    profiles:
+    - firecrawl
+    container_name: axiomsphere-firecrawl-worker
+    image: trieve/firecrawl
+    command:
+    - pnpm
+    - run
+    - workers
+    depends_on:
+      firecrawl-api:
+        condition: service_started
+        required: true
+      firecrawl-redis:
+        condition: service_started
+        required: true
+      firecrawl-puppeteer:
+        condition: service_started
+        required: true
+    environment:
+      REDIS_URL: redis://firecrawl-redis:6379
+      REDIS_RATE_LIMIT_URL: redis://firecrawl-redis:6379
+      PLAYWRIGHT_MICROSERVICE_URL: http://firecrawl-puppeteer:3000
+      PORT: '3002'
+      BULL_AUTH_KEY: ${FIRECRAWL_BULL_AUTH_KEY:-changeme}
+      TEST_API_KEY: ${FIRECRAWL_TEST_API_KEY:-}
+      LOGGING_LEVEL: ${FIRECRAWL_LOGGING_LEVEL:-info}
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+  job-filter-bot:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.axi-bot
+    image: axiomsphere-axi-bot:local
+    command:
+    - python
+    - /ops/job_filter_bot.py
+    container_name: axiomsphere-job-filter-bot
+    depends_on:
+      flaresolverr:
+        condition: service_healthy
+        required: true
+      firecrawl-api:
+        condition: service_started
+        required: false
+    environment:
+      AIMS_WORKSPACE: /data
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      DGX_OLLAMA_URL_WIFI: ${DGX_OLLAMA_URL_WIFI:-}
+      FLARESOLVERR_URL: http://flaresolverr:8191/v1
+      FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:-}
+      FIRECRAWL_BASE_URL: ${FIRECRAWL_BASE_URL:-http://firecrawl-api:3002}
+      JOB_FILTER_ALLOWED_SENDERS: ${JOB_FILTER_ALLOWED_SENDERS:-}
+      JOB_FILTER_ALLOWED_USER_IDS: ${JOB_FILTER_ALLOWED_USER_IDS:-8077374184,8003780560}
+      JOB_FILTER_AUTO_POLL_MODE: ${JOB_FILTER_AUTO_POLL_MODE:-morning}
+      JOB_FILTER_BOT_NAME: ${JOB_FILTER_BOT_NAME:-JobLocator}
+      # Только отдельный токен JobLocator. Без fallback на AXI_BOT_TOKEN, чтобы исключить два агента на одном боте.
+      JOB_FILTER_BOT_TOKEN: ${JOB_FILTER_BOT_TOKEN:-}
+      JOB_FILTER_CHECK_INTERVAL_MIN: ${JOB_FILTER_CHECK_INTERVAL_MIN:-10}
+      JOB_FILTER_CV_BATCH_SIZE: ${JOB_FILTER_CV_BATCH_SIZE:-20}
+      JOB_FILTER_CV_ENABLED: ${JOB_FILTER_CV_ENABLED:-0}
+      JOB_FILTER_CV_MODEL: ${JOB_FILTER_CV_MODEL:-}
+      JOB_FILTER_CV_TIMEOUT_SEC: ${JOB_FILTER_CV_TIMEOUT_SEC:-120}
+      JOB_FILTER_EMAIL_ENABLED: ${JOB_FILTER_EMAIL_ENABLED:-0}
+      JOB_FILTER_EMAIL_MAILBOX: ${JOB_FILTER_EMAIL_MAILBOX:-INBOX}
+      JOB_FILTER_EMAIL_PASSWORD: ${JOB_FILTER_EMAIL_PASSWORD:-}
+      JOB_FILTER_EMAIL_USER: ${JOB_FILTER_EMAIL_USER:-}
+      JOB_FILTER_IMAP_HOST: ${JOB_FILTER_IMAP_HOST:-}
+      JOB_FILTER_IMAP_PORT: ${JOB_FILTER_IMAP_PORT:-993}
+      JOB_FILTER_MOVE_TO_FOLDER: ${JOB_FILTER_MOVE_TO_FOLDER:-[Gmail]/Trash}
+      JOB_FILTER_MORNING_START_HOUR: ${JOB_FILTER_MORNING_START_HOUR:-8}
+      JOB_FILTER_MORNING_END_HOUR: ${JOB_FILTER_MORNING_END_HOUR:-10}
+      JOB_FILTER_LLM_BASE_URL: ${JOB_FILTER_LLM_BASE_URL:-}
+      JOB_FILTER_LLM_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      JOB_FILTER_FIRECRAWL_ENABLED: ${JOB_FILTER_FIRECRAWL_ENABLED:-1}
+      JOB_FILTER_FIRECRAWL_HEALTHCHECK_ENABLED: ${JOB_FILTER_FIRECRAWL_HEALTHCHECK_ENABLED:-1}
+      JOB_FILTER_FIRECRAWL_HEALTHCHECK_HOUR: ${JOB_FILTER_FIRECRAWL_HEALTHCHECK_HOUR:-23}
+      JOB_FILTER_FIRECRAWL_HEALTHCHECK_MINUTE: ${JOB_FILTER_FIRECRAWL_HEALTHCHECK_MINUTE:-55}
+      JOB_FILTER_FIRECRAWL_USE_SDK: ${JOB_FILTER_FIRECRAWL_USE_SDK:-0}
+      JOB_FILTER_FIRECRAWL_MAX_JOBS: ${JOB_FILTER_FIRECRAWL_MAX_JOBS:-25}
+      JOB_FILTER_FIRECRAWL_TIMEOUT_SEC: ${JOB_FILTER_FIRECRAWL_TIMEOUT_SEC:-35}
+      JOB_FILTER_SOURCE_DAYS: ${JOB_FILTER_SOURCE_DAYS:-1}
+      JOB_FILTER_SOURCE_INDEED: ${JOB_FILTER_SOURCE_INDEED:-0}
+      JOB_FILTER_SOURCES_ENABLED: ${JOB_FILTER_SOURCES_ENABLED:-1}
+      JOB_FILTER_VACANCY_BATCH_ONCE_PER_DAY: ${JOB_FILTER_VACANCY_BATCH_ONCE_PER_DAY:-1}
+      JOB_SCRAPER_EMAIL: ${JOB_SCRAPER_EMAIL:-}
+      JOB_SCRAPER_PASSWORD: ${JOB_SCRAPER_PASSWORD:-}
+      OLLAMA_LOCAL_URL: ${ARGUS_OLLAMA_LOCAL_URL:-http://host.docker.internal:11434}
+      PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
+      PC_ANDREY_OLLAMA_URL_FALLBACK: ${PC_ANDREY_OLLAMA_URL_FALLBACK:-}
+      PYTHONPATH: /ops
+      TZ: Asia/Dubai
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    networks:
+      axiomsphere_net: null
+    # Managed by schedule container — starts 07:55 Dubai, stops 10:05 Dubai; see ops/schedule.yaml
+    restart: 'no'
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+    working_dir: /ops
+  task-registry:
+    command:
+    - python
+    - /ops/task_registry_api.py
+    container_name: axiomsphere-task-registry
+    environment:
+      TASK_REGISTRY_PORT: '8765'
+      TASK_REGISTRY_DB: /data/aims_tasks.db
+    image: python:3.11-slim
+    networks:
+      axiomsphere_net: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8765
+      published: '8765'
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+
+  omi-sync:
+    command:
+    - python
+    - /omi_telegram/sync_ocr_to_aims.py
+    container_name: axiomsphere-omi-sync
+    environment:
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /ops:/omi_telegram
+      OCR_REGISTRY_DB: /data/omi_registry.db
+      OMI_DB_PATH: /data/aims_registry.db
+    image: python:3.11-slim
+    networks:
+      axiomsphere_net: null
+    restart: 'no'
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops/omi_telegram
+      target: /omi_telegram
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+  omi-batch-ingest:
+    image: axiomsphere-omi-bot:local
+    container_name: axiomsphere-omi-batch-ingest
+    command:
+    - python
+    - /ops/omi_batch_ingest.py
+    depends_on:
+      omi-api:
+        condition: service_started
+        required: false
+      ocr-watcher:
+        condition: service_started
+        required: false
+    environment:
+      AIMS_WORKSPACE: /data
+      OMI_DB_PATH: /data/aims_registry.db
+      OMI_API_URL: http://omi-api:8765
+      BATCH_INBOX_DIR: /data/batch_inbox
+      BATCH_DONE_DIR: /data/batch_done
+      BATCH_FAILED_DIR: /data/batch_failed
+      BATCH_POLL_SEC: '5'
+      BATCH_DOCS_PER_HOUR: '120'
+      BATCH_ANON_ENABLED: '1'
+      PYTHONPATH: /ops:/omi_telegram
+      TZ: Asia/Dubai
+      # Ollama (slot14 — small model)
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OMI_MODEL_SLOT: '14'
+      OMI_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      # OmniRoute fallback
+      OMNIROUTE_BASE_URL: ${OMNIROUTE_DOCKER_BASE_URL:-http://host.docker.internal:20129/v1}
+      OMNIROUTE_MODEL: ${OMNIROUTE_MODEL:-project1}
+      OMNI_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-}
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops/omi_telegram
+      target: /omi_telegram
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+  argus-bot:
+    profiles:
+    - telegram-bots
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.argus-bot
+    command:
+    - python
+    - /workspace/ops/argus/argus_bot.py
+    container_name: axiomsphere-argus-bot
+    cpus: "0.90"
+    environment:
+      ARGUS_BOT_TOKEN: ${ARGUS_BOT_TOKEN:-}
+      ARGUS_ALLOWED_USER_IDS: ${ARGUS_ALLOWED_USER_IDS:-8077374184,8003780560}
+      ARGUS_OWNER_CHAT_IDS: ${ARGUS_OWNER_CHAT_IDS:-8077374184}
+      ARGUS_COMPOSE_FILE: /workspace/docker-compose.yml
+      ARGUS_COMPOSE_PROJECT: axiomsphere
+      ARGUS_DB_PATH: /data/argus.db
+      ARGUS_ENV_FILE: /workspace/.env
+      ARGUS_LOCAL_DIAG_MODEL: ${AIMS_MODEL_SLOT_32_NAME:-}
+      ARGUS_DIAG_BACKEND: ${ARGUS_DIAG_BACKEND:-auto}
+      ARGUS_AUTO_RESTART: ${ARGUS_AUTO_RESTART:-1}
+      ARGUS_AUTO_RESTART_MAX: ${ARGUS_AUTO_RESTART_MAX:-3}
+      ARGUS_MONITOR_CONTAINER_SEC: "30"
+      ARGUS_MONITOR_OLLAMA_SEC: "60"
+      ARGUS_MONITOR_TASKS_SEC: "300"
+      ARGUS_STUCK_TASK_MINUTES: "15"
+      ARGUS_ALERT_COOLDOWN_SEC: "300"
+      # Ollama nodes
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      #DGX_OLLAMA_URL_WIFI: ${DGX_OLLAMA_URL_WIFI:-}
+      OLLAMA_LOCAL_URL: ${OLLAMA_LOCAL_URL:-}
+      PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
+      # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # DB paths for monitoring
+      TASK_REGISTRY_DB: /data/aims_tasks.db
+      TASK_REGISTRY_URL: http://task-registry:8765
+      OMI_DB_PATH: /data/aims_registry.db
+      # Model names for VRAM monitoring
+      OMI_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_14_NAME:-}
+      DGX_HEAVY_OLLAMA_MODEL: ${AIMS_MODEL_SLOT_32_NAME:-}
+      # Orchestrator (plan-driven scheduler + catch-up)
+      ARGUS_PLANS_DIR: /workspace/ops/argus/plans
+      ARGUS_ORCHESTRATOR_STATE: /data/argus_orch_state.json
+      ARGUS_CATCH_UP_HOURS: "20"
+      ARGUS_ORCHESTRATOR_SEC: "60"
+      ARGUS_DIGEST_HOUR: "7"
+      AIMS_WORKSPACE: /workspace
+      # Fine-tune v7 из Argus (ops/scripts/argus_launch_ft_v7.sh) — задать в .env:
+      # ARGUS_FT_SSH_HOST, ARGUS_FT_SSH_USER, ARGUS_FT_REMOTE_REPO, опционально ARGUS_FT_LOCAL_NOHUP=1
+      ARGUS_FT_SSH_HOST: ${ARGUS_FT_SSH_HOST:-192.168.72.225}
+      ARGUS_FT_SSH_USER: ${ARGUS_FT_SSH_USER:-axi_omi_sphere}
+      ARGUS_FT_REMOTE_REPO: ${ARGUS_FT_REMOTE_REPO:-/home/axi_omi_sphere/aims-workspace}
+      ARGUS_FT_REMOTE_TRAIN_LOG: ${ARGUS_FT_REMOTE_TRAIN_LOG:-ops/ft/logs/train_v7_argus.log}
+      ARGUS_FT_TRAIN_CONFIG: ${ARGUS_FT_TRAIN_CONFIG:-ops/ft/configs/train_config.json}
+      ARGUS_FT_LOCAL_NOHUP: ${ARGUS_FT_LOCAL_NOHUP:-1}
+      ARGUS_FT_REGISTRY_TICKET: ${ARGUS_FT_REGISTRY_TICKET:-1}
+      # Watchdog stability monitor
+      ARGUS_WATCHDOG_URL: http://watchdog-agent:8016
+      ARGUS_MONITOR_WATCHDOG_SEC: "60"
+      ARGUS_STABILITY_WARN: "0.8"
+      ARGUS_STABILITY_CRIT: "0.0"
+      PYTHONPATH: /workspace/ops:/argus
+      # Thermal guard: GPU temperature hard stop (default 82°C); warm/rise thresholds (default 75°C)
+      ARGUS_GPU_TEMP_HOT_C: ${ARGUS_GPU_TEMP_HOT_C:-82}
+      ARGUS_GPU_TEMP_RISE_MIN_C: ${ARGUS_GPU_TEMP_RISE_MIN_C:-75}
+      ARGUS_CPU_TEMP_RISE_MIN_C: ${ARGUS_CPU_TEMP_RISE_MIN_C:-75}
+      # FT (train_qlora) may run inside this container when ARGUS_FT_LOCAL_NOHUP=1 on Spark/DGX.
+      NVIDIA_VISIBLE_DEVICES: ${ARGUS_FT_NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    gpus:
+    - count: -1
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import os, sys; sys.exit(0 if any('argus_bot' in l for l in open('/proc/1/cmdline','r',errors='replace').read().split('\\x00')) else 1)"]
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    image: axiomsphere-argus-bot:local
+    networks:
+      axiomsphere_net: null
+    restart: always
+    working_dir: /workspace
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace
+      target: /workspace
+    - /var/run/docker.sock:/var/run/docker.sock
+    # Mount host docker CLI + compose plugin (read-only)
+    - /usr/bin/docker:/usr/bin/docker:ro
+    - /usr/libexec/docker/cli-plugins:/usr/libexec/docker/cli-plugins:ro
+    # SSH keys for FT launch on DGX
+    - /home/axi_omi_sphere/.ssh:/root/.ssh:ro
+
+  schedule:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.schedule
+    container_name: axiomsphere-schedule
+    restart: always
+    environment:
+      SCHEDULE_FILE: /workspace/ops/schedule.yaml
+      WORKSPACE: /workspace
+    volumes:
+      - type: bind
+        source: /home/axi_omi_sphere/aims-workspace
+        target: /workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+      - /usr/libexec/docker/cli-plugins:/usr/libexec/docker/cli-plugins:ro
+    networks:
+      axiomsphere_net: null
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: axiomsphere-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+    volumes:
+      - type: bind
+        source: /home/axi_omi_sphere/aims-workspace/ops/monitoring/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+      - prometheus_data:/prometheus
+    ports:
+      - 9090:9090
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    extra_hosts:
+      - host.docker.internal=host-gateway
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: axiomsphere-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-aims2024}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - 3000:3000
+    networks:
+      axiomsphere_net: null
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  doc-agent:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.doc-agent
+    container_name: axiomsphere-doc-agent
+    environment:
+      DOC_AGENT_API_PORT: '8767'
+      DOC_AGENT_OUT_DIR: /data/generated
+      QDRANT_BASE_URL: http://qdrant:6333
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      DGX_OLLAMA_URL_WIFI: ${DGX_OLLAMA_URL_WIFI:-}
+      DOC_AGENT_MODEL_SLOT: ${DOC_AGENT_MODEL_SLOT:-32}
+      DOC_AGENT_R1_MODEL_SLOT: ${DOC_AGENT_R1_MODEL_SLOT:-32}
+      AIMS_WORKSPACE: /data
+      # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    image: axiomsphere-doc-agent:local
+    networks:
+      axiomsphere_net: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8767
+      published: '8767'
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+
+  # ── AIMS Internal API (Phase 4) ──────────────────────────────────────────────
+  aims-api:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-aims-api
+    command: ["python", "-m", "uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      AIMS_REDIS_URL: redis://aims-redis:6379
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /ops
+    depends_on:
+      aims-redis:
+        condition: service_started
+        required: true
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  # ── AIMS Worker Pool (Phase 4) ────────────────────────────────────────────────
+  aims-worker:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-aims-worker
+    command: ["python", "-m", "core.worker"]
+    environment:
+      AIMS_REDIS_URL: redis://aims-redis:6379
+      AIMS_WORKER_COUNT: "4"
+      AIMS_WORKSPACE: /data
+      OMI_DB_PATH: /data/aims_registry.db
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      REASONING_MODEL_SLOT: ${REASONING_MODEL_SLOT:-32}
+      QUALITY_MODEL_SLOT: ${QUALITY_MODEL_SLOT:-32}
+      CORRECTION_MODEL_SLOT: ${CORRECTION_MODEL_SLOT:-32}
+      ENGINEER_MODEL_SLOT: ${ENGINEER_MODEL_SLOT:-32}
+      PYTHONPATH: /ops
+    depends_on:
+      aims-redis:
+        condition: service_started
+        required: true
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+
+  # ── AIMS Orchestrator Daemon (Phase 4) ────────────────────────────────────────
+  aims-orchestrator:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-aims-orchestrator
+    command: ["python", "-u", "/ops/aims_orchestrator_daemon.py"]
+    environment:
+      AIMS_REDIS_URL: redis://aims-redis:6379
+      AIMS_WORKSPACE: /data
+      OMI_DB_PATH: /data/aims_registry.db
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ORCHESTRATOR_MODEL: ${ORCHESTRATOR_MODEL:-claude-haiku-4-5-20251001}
+      DGX_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      PYTHONPATH: /ops
+    depends_on:
+      aims-redis:
+        condition: service_started
+        required: true
+      aims-api:
+        condition: service_started
+        required: false
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+
+  # ── NVIDIA NIM — OCR ─────────────────────────────────────────────────────────
+  nim-ocr:
+    image: nvcr.io/nim/nvidia/nemoretriever-ocr-v1:latest
+    profiles:
+      - nim
+    container_name: axiomsphere-nim-ocr
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:-}
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8000
+        published: "9010"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./nim-cache/ocr
+        target: /opt/nim/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      axiomsphere_net: null
+
+  # ── NVIDIA NIM — Qwen3-32B (synthesis/formatting route) ───
+  # Задача: форматирование документов, synthesis в Omi
+  # Порт 9020 → /v1/chat/completions
+  nim-qwen3-32b:
+    image: nvcr.io/nim/qwen/qwen3-32b-dgx-spark:1.1.0-variant
+    profiles:
+      - nim
+    container_name: axiomsphere-nim-qwen3-32b
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:-}
+      NIM_MAX_MODEL_LEN: "16384"
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8000
+        published: "9020"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./nim-cache/qwen3-32b
+        target: /opt/nim/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      axiomsphere_net: null
+
+  # ── NVIDIA NIM — Qwen3-Coder (код, логика, починка — заменяет qwen2.5-coder:32b)
+  # Задача: Argus code/chat model, генерация кода, debug
+  # Порт 9030 → /v1/chat/completions
+  nim-qwen3-coder:
+    image: nvcr.io/nim/qwen/qwen3-coder:latest
+    profiles:
+      - nim
+    container_name: axiomsphere-nim-qwen3-coder
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:-}
+      NIM_MAX_MODEL_LEN: "32768"
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8000
+        published: "9030"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./nim-cache/qwen3-coder
+        target: /opt/nim/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      axiomsphere_net: null
+
+  # ── NVIDIA NIM — DeepSeek-R1 (структура документов, планировщик) ─────────
+  # Задача: Stage 1 DocAgent (структурный анализ), затем fine-tune → aim-planner
+  # Порт 9040 → /v1/chat/completions
+  nim-deepseek-r1:
+    image: nvcr.io/nim/deepseek-ai/deepseek-r1:1.7.3
+    profiles:
+      - nim
+    container_name: axiomsphere-nim-deepseek-r1
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:-}
+      NIM_MAX_MODEL_LEN: "8192"
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8000
+        published: "9040"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./nim-cache/deepseek-r1
+        target: /opt/nim/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      axiomsphere_net: null
+
+  # ── NVIDIA NIM — Nemotron-Nano-8B (быстрый чат, Argus диагностика) ───────────
+  # Задача: быстрые ответы в чате, диагностика инфраструктуры
+  # На DGX — резерв; основной деплой на PC Andrei (отдельный compose)
+  # Порт 9050 → /v1/chat/completions
+  nim-nemotron-nano:
+    image: nvcr.io/nim/nvidia/llama-3.1-nemotron-nano-8b-v1:latest
+    profiles:
+      - nim
+    container_name: axiomsphere-nim-nemotron-nano
+    environment:
+      NGC_API_KEY: ${NGC_API_KEY:-}
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8000
+        published: "9050"
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./nim-cache/nemotron-nano
+        target: /opt/nim/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      axiomsphere_net: null
+
+  # ── Logi Bot — cross-dept AIMS orchestrator (Phase 3) ───────────────────────
+  logi-bot:
+    profiles:
+    - telegram-bots
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-logi-bot
+    command: ["python", "/ops/telegram/logi_bot.py"]
+    environment:
+      LOGI_BOT_TOKEN: ${LOGI_BOT_TOKEN:-${LOGI_ORCHESTRATOR_BOT_TOKEN:-}}
+      LOGI_ALLOWED_USERS: ${LOGI_ALLOWED_USERS:-8077374184,8003780560}
+      LOGI_AGENT_MODEL_SLOT: ${LOGI_AGENT_MODEL_SLOT:-14}
+      OLLAMA_BASE_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /ops
+      PYTHONUNBUFFERED: "1"
+      KNOMI_URL: http://knomi-agent:8002
+      POLI_URL: http://poli-agent:8004
+      DOCI_URL: http://doc-agent:8767
+      OMI_API_URL: http://omi-api:8765
+      OMNIROUTE_BASE_URL: ${OMNIROUTE_BASE_URL:-http://host.docker.internal:20129/v1}
+      OMNIROUTE_MODEL: ${OMNIROUTE_MODEL:-project1}
+      OMNI_TOKEN: ${OMNI_TOKEN:-}
+      AIMS_SERVICE_TOKEN: ${AIMS_SERVICE_TOKEN:-aims-service-token}
+      REPAIRMAN_API_URL: http://repairman-api:8010
+      AIMS_ENABLE_TELEGRAM_PLAN_DAY_READ_ONLY: ${AIMS_ENABLE_TELEGRAM_PLAN_DAY_READ_ONLY:-0}
+    depends_on:
+      aims-redis:
+        condition: service_started
+        required: false
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    networks:
+      axiomsphere_net: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+
+  # ── Poli Agent — policy gate / MoC access control (Phase 3) ─────────────────
+  poli-agent:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-poli-agent
+    command: ["python", "/ops/agents/poli_agent.py"]
+    environment:
+      AIMS_WORKSPACE: /data
+      POLI_AUDIT_LOG: /data/poli_audit.log
+      PYTHONPATH: /ops
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8004/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8004:8004"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  # ── Mainy Repair Agent — self-healing executor (Phase 3) ─────────────────────
+  mainy-repair-agent:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-mainy-repair-agent
+    command: ["python", "/ops/agents/mainy_repair_agent.py"]
+    environment:
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /ops
+      POLI_URL: http://poli-agent:8004
+    depends_on:
+      poli-agent:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8005/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8005:8005"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  # ── Review Gate Agents (Phase 2) — deterministic repair proposal reviewers ──
+  # Profile: self-healing  |  Ports 8011-8015 (127.0.0.1 only)
+  architect-agent:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-architect-agent
+    command: ["python", "/ops/agents/architect_agent.py"]
+    environment:
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      PYTHONPATH: /ops
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8011/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8011:8011"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  security-agent:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-security-agent
+    command: ["python", "/ops/agents/security_agent.py"]
+    environment:
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      PYTHONPATH: /ops
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8012/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8012:8012"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  qa-agent:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-qa-agent
+    command: ["python", "/ops/agents/qa_agent.py"]
+    environment:
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      PYTHONPATH: /ops
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8013/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8013:8013"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  release-agent:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-release-agent
+    command: ["python", "/ops/agents/release_agent.py"]
+    environment:
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      PYTHONPATH: /ops
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8014/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8014:8014"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  docs-agent:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-docs-agent
+    command: ["python", "/ops/agents/docs_agent.py"]
+    environment:
+      PYTHONPATH: /ops
+      DOCS_AGENT_INBOX_DIR: /data/docs_agent/inbox
+      DOCS_AGENT_PROCESSED_DIR: /data/docs_agent/processed
+      DOCS_AGENT_FAILED_DIR: /data/docs_agent/failed
+      DOCS_AGENT_SCAN_INTERVAL_SEC: "10"
+      DOCS_AGENT_RAW_UPLOAD_REGISTRATION_FORBIDDEN: "1"
+      TELEGRAM_DOC_INTAKE_DIR: /data/telegram_intake/cases
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8015/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8015:8015"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/data/telegram_intake
+      target: /data/telegram_intake
+      read_only: true
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/data/docs_agent
+      target: /data/docs_agent
+
+  # ── Watchdog Agent (Phase 3) — system health + stability score ───────────────
+  watchdog-agent:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-watchdog-agent
+    command: ["python", "/ops/agents/watchdog_agent.py"]
+    environment:
+      PYTHONPATH: /ops
+    depends_on:
+      architect-agent:
+        condition: service_started
+        required: false
+      security-agent:
+        condition: service_started
+        required: false
+      qa-agent:
+        condition: service_started
+        required: false
+      release-agent:
+        condition: service_started
+        required: false
+      docs-agent:
+        condition: service_started
+        required: false
+      poli-agent:
+        condition: service_started
+        required: false
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8016/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8016:8016"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  # ── Repairman API — automated repair trigger / self-healing orchestrator ──────
+  repairman-api:
+    profiles:
+    - self-healing
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-repairman-api
+    command: ["python", "/ops/telegram/repairman_api.py"]
+    environment:
+      AIMS_WORKSPACE: /data
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      POLI_URL: http://poli-agent:8004
+      PYTHONPATH: /ops
+    depends_on:
+      poli-agent:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8010/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8010:8010"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+  # ── Knomi Agent — semantic knowledge search (Phase 3) ────────────────────────
+  traini-agent:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-traini-agent
+    command: ["python", "/ops/agents/traini_agent.py"]
+    environment:
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /ops
+      FT_TIMEOUT_SECONDS: "21600"
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8007/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8007:8007"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace
+      target: /workspace
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+
+  knomi-agent:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: ops/Dockerfile.aims-services
+    image: axiomsphere-aims-services:local
+    container_name: axiomsphere-knomi-agent
+    command: ["python", "/ops/agents/knomi_agent.py"]
+    environment:
+      AIMS_WORKSPACE: /data
+      PYTHONPATH: /ops:/ops/knomi
+      OLLAMA_BASE_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+      KNOMI_OLLAMA_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8002/health', timeout=5)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:8002:8002"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace
+      target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+
+networks:
+  axiomsphere_net:
+    name: axiomsphere_net
+volumes:
+  qdrant_data:
+    name: axiomsphere_qdrant_data
+  prometheus_data:
+    name: axiomsphere_prometheus_data
+  grafana_data:
+    name: axiomsphere_grafana_data

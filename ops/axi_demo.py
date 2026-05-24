@@ -50,6 +50,7 @@ class DemoSession:
     stop_event: asyncio.Event = field(default_factory=asyncio.Event)
     reply_event: asyncio.Event = field(default_factory=asyncio.Event)
     current_reply_token: Optional[str] = None
+    initiating_user_id: Optional[int] = None
     started_at: float = field(default_factory=time.monotonic)
 
 
@@ -57,6 +58,7 @@ class DemoSession:
 class _ReplySlot:
     chat_id: int
     answer_text: str
+    user_id: int = 0          # Telegram user ID of the demo initiator; 0 = not bound
     created_at: float = field(default_factory=time.monotonic)
 
 
@@ -151,27 +153,50 @@ async def _wait_for_reply(session: DemoSession) -> bool:
     return session.stop_event.is_set()
 
 
-async def handle_webapp_reply(token: str, web_app_query_id: str) -> bool:
+async def handle_webapp_reply(token: str, query_id: str, validated_user_id: int) -> bool:
     """
-    Called by demo_reply_api when a validated Mini App reply arrives.
-    Looks up the pending reply slot, posts the answer as a genuine user message
-    via answerWebAppQuery, then signals the waiting _run_demo coroutine.
-    Returns True on success, False if token unknown/expired or bot unavailable.
+    Called by demo_reply_api after initData is validated and query_id/user_id extracted.
+
+    Security ordering:
+      1. Peek slot — unknown token returns False without touching state.
+      2. TTL expiry — expired token is cleaned up, returns False.
+      3. Identity — user_id mismatch returns False WITHOUT consuming the token
+         so the legitimate initiator's Reply button is not burned by a third party.
+      4. Bot availability — server error, returns False without consuming.
+      5. Consume token (atomically) only after every check passes.
+      6. Call answerWebAppQuery with the server-selected answer from the slot.
+      7. Signal the waiting _run_demo coroutine.
     """
-    slot = _pending_replies.pop(token, None)
+    # 1. Peek — do not consume yet
+    slot = _pending_replies.get(token)
     if slot is None:
-        log.warning("demo reply: unknown or expired token %s", token)
+        log.warning("demo reply: unknown token")
         return False
 
+    # 2. TTL — expired tokens are cleaned up regardless
     if time.monotonic() - slot.created_at > _REPLY_TOKEN_TTL:
-        log.warning("demo reply: token %s expired", token)
+        _pending_replies.pop(token, None)
+        log.warning("demo reply: token expired")
         return False
 
+    # 3. Identity — if user_id was captured at session start, it must match
+    if slot.user_id != 0 and slot.user_id != validated_user_id:
+        log.warning(
+            "demo reply: user_id mismatch (expected %s, got %s) — token preserved",
+            slot.user_id, validated_user_id,
+        )
+        return False
+
+    # 4. Bot availability
     bot = _demo_bot
     if bot is None:
-        log.warning("demo reply: bot not registered")
+        log.warning("demo reply: bot not registered — token preserved")
         return False
 
+    # 5. All checks passed — consume the token
+    _pending_replies.pop(token, None)
+
+    # 6. Post the server-selected answer as a genuine right-side user message
     try:
         from telegram import InlineQueryResultArticle, InputTextMessageContent
         result = InlineQueryResultArticle(
@@ -180,13 +205,14 @@ async def handle_webapp_reply(token: str, web_app_query_id: str) -> bool:
             input_message_content=InputTextMessageContent(slot.answer_text),
         )
         await bot.answer_web_app_query(
-            web_app_query_id=web_app_query_id,
+            web_app_query_id=query_id,
             result=result,
         )
     except Exception as exc:
         log.warning("demo reply: answerWebAppQuery failed: %s", exc)
         return False
 
+    # 7. Signal the waiting _run_demo coroutine to advance
     session = _sessions.get(slot.chat_id)
     if session and session.current_reply_token == token:
         session.current_reply_token = None
@@ -739,6 +765,7 @@ async def _run_demo(session: DemoSession, bot) -> None:
                     _pending_replies[token] = _ReplySlot(
                         chat_id=chat_id,
                         answer_text=step["text"],
+                        user_id=session.initiating_user_id or 0,
                     )
                     session.current_reply_token = token
 
@@ -885,6 +912,8 @@ async def demo_start_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) ->
     except Exception:
         pass
 
+    if update.effective_user:
+        session.initiating_user_id = update.effective_user.id
     session.state = DemoState.RUNNING
     session.stop_event.clear()
     session.task = asyncio.create_task(_run_demo(session, ctx.bot))

@@ -4,9 +4,13 @@ Uses asyncio.run() for async tests.
 """
 
 import asyncio
+import hashlib as _hashlib
+import hmac as _hmac_mod
+import json as _json
 import sys
 import time
 import types
+import urllib.parse as _urlparse
 import uuid
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
@@ -366,7 +370,7 @@ def test_reply_slot_created_with_chat_and_text():
 
 def test_handle_webapp_reply_unknown_token():
     _pending_replies.clear()
-    result = asyncio.run(handle_webapp_reply("bad-token", "qid123"))
+    result = asyncio.run(handle_webapp_reply("bad-token", "qid123", 0))
     assert result is False
 
 
@@ -376,10 +380,10 @@ def test_handle_webapp_reply_no_bot():
     token = str(uuid.uuid4())
     _pending_replies[token] = _ReplySlot(chat_id=9002, answer_text="test")
 
-    result = asyncio.run(handle_webapp_reply(token, "qid"))
+    result = asyncio.run(handle_webapp_reply(token, "qid", 0))
     assert result is False
-    # Token should have been consumed even on failure (slot popped)
-    assert token not in _pending_replies
+    # Peek-before-pop: token is preserved when bot is unavailable (not consumed)
+    assert token in _pending_replies
 
 
 def test_handle_webapp_reply_success_signals_session():
@@ -391,14 +395,14 @@ def test_handle_webapp_reply_success_signals_session():
     _sessions[chat_id] = session
 
     token = str(uuid.uuid4())
-    _pending_replies[token] = _ReplySlot(chat_id=chat_id, answer_text="answer text")
+    _pending_replies[token] = _ReplySlot(chat_id=chat_id, answer_text="answer text", user_id=0)
     session.current_reply_token = token
 
     bot = AsyncMock()
     bot.answer_web_app_query = AsyncMock()
     set_demo_bot(bot)
 
-    result = asyncio.run(handle_webapp_reply(token, "qid9003"))
+    result = asyncio.run(handle_webapp_reply(token, "qid9003", 0))
     assert result is True
     assert token not in _pending_replies
     assert session.reply_event.is_set()
@@ -416,7 +420,7 @@ def test_handle_webapp_reply_expired_token():
     bot = AsyncMock()
     set_demo_bot(bot)
 
-    result = asyncio.run(handle_webapp_reply(token, "qid"))
+    result = asyncio.run(handle_webapp_reply(token, "qid", 0))
     assert result is False
     axi_demo._demo_bot = None
 
@@ -480,3 +484,276 @@ def test_pending_replies_cleared_after_stop():
     orphaned = [t for t, s in _pending_replies.items() if s.chat_id == chat_id]
     assert not orphaned, f"Orphaned reply tokens found: {orphaned}"
     axi_demo.DEMO_WEBAPP_URL = ""
+
+
+# ── Demo Reply API — FastAPI endpoint tests ────────────────────────────────────
+
+import demo_reply_api  # noqa: E402
+from demo_reply_api import _parse_validated_init_data, ReplyRequest  # noqa: E402
+
+_TEST_BOT_TOKEN = "test_bot_token_for_testing_12345"
+
+
+def _make_signed_init_data(
+    bot_token: str = _TEST_BOT_TOKEN,
+    user_id: int = 11111,
+    query_id: str = "test_query_id_123",
+) -> str:
+    user_json = _json.dumps({"id": user_id, "first_name": "TestUser"})
+    params = {"query_id": query_id, "user": user_json, "auth_date": "1700000000"}
+    data_check = "\n".join(f"{k}={v}" for k, v in sorted(params.items()))
+    sk = _hmac_mod.new(b"WebAppData", bot_token.encode(), _hashlib.sha256).digest()
+    params["hash"] = _hmac_mod.new(sk, data_check.encode(), _hashlib.sha256).hexdigest()
+    return _urlparse.urlencode(params)
+
+
+def _api_client():
+    from fastapi.testclient import TestClient
+    return TestClient(demo_reply_api.app, raise_server_exceptions=False)
+
+
+# -- A: HTML route (4 tests) --------------------------------------------------
+
+def test_html_route_returns_200():
+    resp = _api_client().get("/demo/webapp/index.html")
+    assert resp.status_code == 200
+
+
+def test_html_route_content_type_is_html():
+    resp = _api_client().get("/demo/webapp/index.html")
+    assert "text/html" in resp.headers.get("content-type", "")
+
+
+def test_html_route_contains_token_param():
+    resp = _api_client().get("/demo/webapp/index.html")
+    assert "token" in resp.text
+
+
+def test_html_route_no_backend_url_placeholder():
+    resp = _api_client().get("/demo/webapp/index.html")
+    assert "%%BACKEND_URL%%" not in resp.text
+
+
+# -- B: Public surface (4 tests) ----------------------------------------------
+
+def test_docs_url_disabled():
+    resp = _api_client().get("/docs")
+    assert resp.status_code == 404
+
+
+def test_redoc_url_disabled():
+    resp = _api_client().get("/redoc")
+    assert resp.status_code == 404
+
+
+def test_openapi_url_disabled():
+    resp = _api_client().get("/openapi.json")
+    assert resp.status_code == 404
+
+
+def test_health_endpoint_returns_ok():
+    resp = _api_client().get("/health")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+
+# -- C: Identity binding (10 tests) -------------------------------------------
+
+def test_parse_validated_init_data_valid():
+    result = _parse_validated_init_data(_make_signed_init_data(), _TEST_BOT_TOKEN)
+    assert result is not None
+    assert result["query_id"] == "test_query_id_123"
+
+
+def test_parse_validated_init_data_tampered_rejected():
+    tampered = _make_signed_init_data() + "&injected=evil"
+    result = _parse_validated_init_data(tampered, _TEST_BOT_TOKEN)
+    assert result is None
+
+
+def test_parse_validated_init_data_no_hash_rejected():
+    result = _parse_validated_init_data("query_id=abc&user=%7B%7D&auth_date=1", _TEST_BOT_TOKEN)
+    assert result is None
+
+
+def test_parse_validated_init_data_wrong_token_rejected():
+    result = _parse_validated_init_data(_make_signed_init_data(), "wrong_token_xyz")
+    assert result is None
+
+
+def test_parse_validated_init_data_empty_bot_token_rejected():
+    result = _parse_validated_init_data(_make_signed_init_data(), "")
+    assert result is None
+
+
+def test_reply_api_missing_init_data_returns_403():
+    orig = demo_reply_api._BOT_TOKEN
+    demo_reply_api._BOT_TOKEN = _TEST_BOT_TOKEN
+    try:
+        resp = _api_client().post("/demo/reply", json={"token": "t", "init_data": ""})
+        assert resp.status_code == 403
+    finally:
+        demo_reply_api._BOT_TOKEN = orig
+
+
+def test_reply_api_no_query_id_returns_403():
+    orig = demo_reply_api._BOT_TOKEN
+    demo_reply_api._BOT_TOKEN = _TEST_BOT_TOKEN
+    try:
+        params = {"user": '{"id":11111}', "auth_date": "1700000000"}
+        data_check = "\n".join(f"{k}={v}" for k, v in sorted(params.items()))
+        sk = _hmac_mod.new(b"WebAppData", _TEST_BOT_TOKEN.encode(), _hashlib.sha256).digest()
+        params["hash"] = _hmac_mod.new(sk, data_check.encode(), _hashlib.sha256).hexdigest()
+        init_data = _urlparse.urlencode(params)
+        resp = _api_client().post("/demo/reply", json={"token": "t", "init_data": init_data})
+        assert resp.status_code == 403
+        assert "query_id" in resp.json()["detail"].lower()
+    finally:
+        demo_reply_api._BOT_TOKEN = orig
+
+
+def test_reply_api_no_user_returns_403():
+    orig = demo_reply_api._BOT_TOKEN
+    demo_reply_api._BOT_TOKEN = _TEST_BOT_TOKEN
+    try:
+        params = {"query_id": "qid123", "auth_date": "1700000000"}
+        data_check = "\n".join(f"{k}={v}" for k, v in sorted(params.items()))
+        sk = _hmac_mod.new(b"WebAppData", _TEST_BOT_TOKEN.encode(), _hashlib.sha256).digest()
+        params["hash"] = _hmac_mod.new(sk, data_check.encode(), _hashlib.sha256).hexdigest()
+        init_data = _urlparse.urlencode(params)
+        resp = _api_client().post("/demo/reply", json={"token": "t", "init_data": init_data})
+        assert resp.status_code == 403
+        assert "user" in resp.json()["detail"].lower()
+    finally:
+        demo_reply_api._BOT_TOKEN = orig
+
+
+def test_reply_api_unknown_token_returns_400():
+    orig = demo_reply_api._BOT_TOKEN
+    demo_reply_api._BOT_TOKEN = _TEST_BOT_TOKEN
+    try:
+        _pending_replies.clear()
+        resp = _api_client().post(
+            "/demo/reply",
+            json={"token": "nonexistent-" + str(uuid.uuid4()), "init_data": _make_signed_init_data()},
+        )
+        assert resp.status_code == 400
+    finally:
+        demo_reply_api._BOT_TOKEN = orig
+
+
+def test_reply_api_user_id_mismatch_preserves_token():
+    orig = demo_reply_api._BOT_TOKEN
+    demo_reply_api._BOT_TOKEN = _TEST_BOT_TOKEN
+    try:
+        _pending_replies.clear()
+        token = str(uuid.uuid4())
+        # Slot bound to user 99999; initData signed for user 11111
+        _pending_replies[token] = _ReplySlot(chat_id=9900, answer_text="ans", user_id=99999)
+        init_data = _make_signed_init_data(user_id=11111)
+        resp = _api_client().post("/demo/reply", json={"token": token, "init_data": init_data})
+        assert resp.status_code == 400
+        # Peek-before-pop: token must NOT have been consumed on identity mismatch
+        assert token in _pending_replies
+    finally:
+        demo_reply_api._BOT_TOKEN = orig
+
+
+# -- D: Regression (3 tests) --------------------------------------------------
+
+def test_reply_request_has_no_web_app_query_id_field():
+    fields = (
+        ReplyRequest.model_fields
+        if hasattr(ReplyRequest, "model_fields")
+        else ReplyRequest.__fields__
+    )
+    assert "web_app_query_id" not in fields
+
+
+def test_frontend_no_queryid_in_post_body():
+    html = (Path(__file__).parent.parent / "demo_webapp" / "index.html").read_text()
+    assert "web_app_query_id" not in html
+
+
+def test_frontend_no_backend_url_placeholder():
+    html = (Path(__file__).parent.parent / "demo_webapp" / "index.html").read_text()
+    assert "%%BACKEND_URL%%" not in html
+
+
+# -- E: Process-boundary integration (1 test) ---------------------------------
+#
+# Proves that _pending_replies, _sessions, and _demo_bot created on the
+# "bot side" are directly visible to the FastAPI endpoint in the same process.
+#
+# Mirrors the actual deployment topology:
+#   axi_bot._post_init() calls set_demo_bot(bot) then start_demo_reply_api()
+#   Both run inside the same Python process / asyncio event loop.
+#   The endpoint's lazy "from axi_demo import handle_webapp_reply" resolves to
+#   the already-imported module, sharing all module globals.
+#
+# Verdict when this test passes: SAME_PROCESS_STATE_CONFIRMED
+
+def test_process_boundary_state_shared_in_same_process():
+    """
+    End-to-end proof: slot registered on bot-side is found and consumed by the
+    FastAPI endpoint, reply_event is signalled, and answerWebAppQuery is called.
+    """
+    orig_token = demo_reply_api._BOT_TOKEN
+    demo_reply_api._BOT_TOKEN = _TEST_BOT_TOKEN
+    try:
+        _pending_replies.clear()
+        _sessions.clear()
+
+        # Bot side: register mock bot (mirrors _post_init → set_demo_bot)
+        mock_bot = MagicMock()
+        mock_bot.answer_web_app_query = AsyncMock(return_value=None)
+        set_demo_bot(mock_bot)
+
+        # Bot side: create session with reply_event (mirrors _run_demo reaching CUSTOMER_WORD_TYPE)
+        chat_id = 42424242
+        test_user_id = 11111
+        token = str(uuid.uuid4())
+
+        session = DemoSession(chat_id=chat_id)
+        session.initiating_user_id = test_user_id
+        session.current_reply_token = token
+        session.reply_event.clear()
+        _sessions[chat_id] = session
+
+        # Bot side: register pending reply slot
+        _pending_replies[token] = _ReplySlot(
+            chat_id=chat_id,
+            answer_text="Yes, proceed.",
+            user_id=test_user_id,
+        )
+
+        # API side: POST /demo/reply with fully-signed initData (same query_id key)
+        init_data = _make_signed_init_data(user_id=test_user_id, query_id="qid_boundary")
+        resp = _api_client().post(
+            "/demo/reply",
+            json={"token": token, "init_data": init_data},
+        )
+
+        # Endpoint must return 200
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+        assert resp.json() == {"status": "ok"}
+
+        # Token was consumed after all checks passed
+        assert token not in _pending_replies
+
+        # reply_event was signalled — demo coroutine would resume
+        assert session.reply_event.is_set()
+
+        # Session token cleared
+        assert session.current_reply_token is None
+
+        # answerWebAppQuery was called with the server-extracted query_id
+        mock_bot.answer_web_app_query.assert_called_once()
+        call_kwargs = mock_bot.answer_web_app_query.call_args
+        assert call_kwargs.kwargs.get("web_app_query_id") == "qid_boundary"
+
+    finally:
+        demo_reply_api._BOT_TOKEN = orig_token
+        _pending_replies.clear()
+        _sessions.clear()
+        set_demo_bot(None)
