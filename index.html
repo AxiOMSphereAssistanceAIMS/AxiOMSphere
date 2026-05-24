@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AIMS Platform — Industrial AI Document Automation</title>
-  <meta name="description" content="Multi-agent AI platform for ISO-compliant industrial documentation. From engineering request to production-ready document in under 10 minutes." />
+  <title>AxiOMSphere — AI-Assisted AIMS Work-Product Development</title>
+  <meta name="description" content="Privacy-first industrial AI for AIMS work-product development and review, evolving toward controlled knowledge, orchestration and project-support capabilities." />
   <style>
     :root {
       --bg: #0a0a0f;
@@ -70,7 +70,7 @@
     h1 em { font-style: normal; color: var(--accent); }
     .hero-sub {
       color: var(--muted); font-size: 1.15rem;
-      max-width: 580px; margin: 0 auto 2.5rem;
+      max-width: 620px; margin: 0 auto 2.5rem;
     }
     .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
     .btn {
@@ -91,7 +91,7 @@
       display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
     }
     .stat { text-align: center; }
-    .stat-n { font-size: 2rem; font-weight: 800; color: var(--accent2); }
+    .stat-n { font-size: 1.5rem; font-weight: 800; color: var(--accent2); }
     .stat-l { font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
 
     /* PIPELINE */
@@ -172,42 +172,51 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* CODE */
-    .code-block {
-      background: #0d0d14;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem 1.8rem;
-      font-family: 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.85rem;
-      overflow-x: auto;
-      line-height: 1.7;
+    /* MILESTONE TABLE */
+    .milestone-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
     }
-    .code-block .c { color: #6b7280; }
-    .code-block .k { color: #c084fc; }
-    .code-block .s { color: #86efac; }
-    .code-block .f { color: #93c5fd; }
-    .code-block .n { color: #fde68a; }
-    .code-block .cm { color: #10b981; font-style: italic; }
+    .milestone-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .milestone-table td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .milestone-table tr:last-child td { border-bottom: none; }
+    .milestone-table tr:hover td { background: rgba(124,58,237,0.04); }
+    .ms-id { font-weight: 700; color: var(--accent); }
+    .ms-title { font-weight: 600; color: var(--text); }
+    .ms-desc { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
+    .ms-status {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+      padding: 0.2rem 0.6rem; border-radius: 4px;
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .ms-current  { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .ms-active   { background: rgba(6,182,212,0.15);  color: #06b6d4; border: 1px solid rgba(6,182,212,0.3); }
+    .ms-planned  { background: rgba(124,58,237,0.12); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.3); }
+    .ms-future   { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
 
-    /* PHASES */
-    .phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-    .phase {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
+    /* VISION BLOCK */
+    .vision-block {
+      background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(6,182,212,0.06) 100%);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 16px;
+      padding: 2.5rem;
+      margin-top: 2rem;
     }
-    .phase-num {
-      font-size: 0.75rem; font-weight: 700;
-      color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em;
-      margin-bottom: 0.5rem;
-    }
-    .phase h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
-    .phase p { font-size: 0.85rem; color: var(--muted); }
-    .phase ul { list-style: none; margin-top: 0.8rem; }
-    .phase ul li { font-size: 0.85rem; color: var(--muted); padding: 0.2rem 0; }
-    .phase ul li::before { content: "→ "; color: var(--accent); }
+    .vision-block h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent2); }
+    .vision-block p { color: var(--muted); font-size: 0.95rem; line-height: 1.8; margin-bottom: 0.8rem; }
+    .vision-block p:last-child { margin-bottom: 0; }
 
     /* CTA */
     .cta-section {
@@ -251,11 +260,20 @@
       background: #000;
       box-shadow: 0 0 60px rgba(124,58,237,0.18);
     }
+    .demo-disclaimer {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+      opacity: 0.75;
+    }
 
     @media (max-width: 640px) {
       .pipeline { flex-direction: column; }
       .pipe-step + .pipe-step { margin-left: 0; margin-top: 2rem; }
       .pipe-step + .pipe-step::before { content: "↓"; left: 50%; top: -1.5rem; transform: translateX(-50%); }
+      .milestone-table thead { display: none; }
+      .milestone-table td { display: block; padding: 0.5rem 0.75rem; }
     }
   </style>
 </head>
@@ -263,9 +281,10 @@
 
 <!-- NAV -->
 <nav>
-  <div class="logo"><span>AIMS</span> Platform</div>
+  <div class="logo">Axi<span>OM</span>Sphere</div>
   <div>
-    <a href="#pipeline">How it works</a>
+    <a href="#current-stage">Current Stage</a>
+    <a href="#pipeline">How it Works</a>
     <a href="#standards">Standards</a>
     <a href="#roadmap">Roadmap</a>
     <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank">GitHub</a>
@@ -275,33 +294,33 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="badge">🚀 Dual-pipeline · AI-powered · ISO-aligned</div>
-  <h1>Industrial documentation,<br><em>automated by AI agents</em></h1>
+  <div class="badge">Development Stage &middot; Privacy-First &middot; Human-Governed</div>
+  <h1>AI-assisted AIMS work-product development<br><em>for industrial project readiness</em></h1>
   <p class="hero-sub">
-    From a plain-language engineering request to a production-ready,
-    ISO-compliant document — in under 10 minutes.
+    We are validating a privacy-first, human-governed workflow for AI-assisted creation, review, and traceability
+    of AIMS work products — running on private GPU infrastructure with no data leaving the facility.
   </p>
   <div class="hero-btns">
-    <a href="https://t.me/AxiOMsphere_bot" class="btn btn-primary" target="_blank">🤖 Try the Bot</a>
-    <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" class="btn btn-secondary" target="_blank">⭐ GitHub</a>
-    <a href="#demo" class="btn btn-secondary">📺 Watch Demo</a>
+    <a href="https://t.me/AxiOMsphere_bot" class="btn btn-primary" target="_blank">Try the Demo Bot</a>
+    <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" class="btn btn-secondary" target="_blank">GitHub</a>
+    <a href="#demo" class="btn btn-secondary">Watch Demo</a>
   </div>
   <div class="hero-stat">
     <div class="stat">
-      <div class="stat-n">&lt;10 min</div>
-      <div class="stat-l">Request → ISO Document</div>
+      <div class="stat-n">Current Stage</div>
+      <div class="stat-l">AI-Assisted Doc Development &amp; Review</div>
     </div>
     <div class="stat">
-      <div class="stat-n">≥80%</div>
-      <div class="stat-l">ISO Compliance Score</div>
+      <div class="stat-n">ISO 55001/55002</div>
+      <div class="stat-l">AIMS Standards Framework</div>
     </div>
     <div class="stat">
-      <div class="stat-n">6</div>
-      <div class="stat-l">International Standards</div>
+      <div class="stat-n">Private GPU</div>
+      <div class="stat-l">No Data Leaves the Facility</div>
     </div>
     <div class="stat">
-      <div class="stat-n">3</div>
-      <div class="stat-l">AI Models in Pipeline</div>
+      <div class="stat-n">Human Review</div>
+      <div class="stat-l">All Outputs Engineer-Approved</div>
     </div>
   </div>
 </section>
@@ -312,11 +331,52 @@
 <section id="demo">
   <div class="demo-section">
     <h2>Platform Demo</h2>
-    <p class="section-sub">End-to-end walkthrough: from onboarding to ISO-compliant document generation.</p>
-    <video class="demo-video" controls preload="metadata" poster="">
+    <p class="section-sub">Walkthrough of the current applied stage: AI-assisted AIMS work-product development via Telegram bot interface.</p>
+    <video class="demo-video" controls preload="metadata">
       <source src="docs/demo.mp4" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
+    <p class="demo-disclaimer">Demo shows the current development-stage workflow. All generated documents require human expert review before operational use. No production deployment claims implied.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- CURRENT APPLIED CAPABILITY -->
+<section class="section" id="current-stage">
+  <h2>Current Applied Stage</h2>
+  <p class="section-sub">What the system does today — validated in our development environment on private GPU infrastructure.</p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <h3>Work-Product Draft Generation</h3>
+      <p>Engineer submits a plain-language request via Telegram. The system generates a structured AIMS work-product draft — JSA, MOC, procedure, or asset report — aligned to the applicable ISO standard.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>Compliance Review &amp; Scoring</h3>
+      <p>Every draft is scored for ISO compliance via NVIDIA NIM OmniRoute. The system identifies gaps and generates targeted revision passes until the document meets the quality threshold.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <h3>Structured Revision Loop</h3>
+      <p>Score-gated revision cycle: draft → score → revise → re-score. Outputs are retained only when they meet the minimum compliance threshold. Engineers review and approve before use.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📂</div>
+      <h3>Document Registry &amp; Traceability</h3>
+      <p>Accepted documents are registered in a local SQLite registry with full generation metadata — model version, compliance score, revision count, timestamp — enabling audit trail and traceability.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔒</div>
+      <h3>Privacy-First Infrastructure</h3>
+      <p>Runs on a private NVIDIA DGX Spark. All document content stays on-premise. No project data is sent to external APIs during draft generation. Cloud scoring is optional and configurable.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🧠</div>
+      <h3>Continuous Fine-Tuning Loop</h3>
+      <p>Every approved generation automatically saves a training pair. An autonomous nightly pipeline fine-tunes the local 14B action-classifier model, improving routing and intent classification over time.</p>
+    </div>
   </div>
 </section>
 
@@ -324,13 +384,13 @@
 
 <!-- THE PROBLEM -->
 <section class="section" id="problem">
-  <h2>The Problem</h2>
-  <p class="section-sub">The gap is not knowledge — it is access.</p>
+  <h2>The Problem We Are Solving</h2>
+  <p class="section-sub">The gap is not knowledge — it is access and consistency.</p>
   <div style="max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:1.4rem; color:var(--muted); font-size:1.05rem; line-height:1.8;">
     <p>At the project justification stage, there is a critical need for empirical data, guiding documentation, and foundational decisions that will shape the project's development. These early choices can ultimately determine either the failure or the economic success of the enterprise.</p>
-    <p>In practice, organizations often proceed with launching low-budget pilot versions of projects. However, limited resources frequently result in poor-quality documentation and suboptimal outcomes. While project execution methodologies have long been established, success largely depends on how consistently and accurately teams follow clear procedural steps to build an integrated project management system.</p>
+    <p>In practice, organizations often proceed with launching low-budget pilot versions of projects. Limited resources frequently result in poor-quality documentation and suboptimal outcomes. While project execution methodologies have long been established, success largely depends on how consistently and accurately teams follow clear procedural steps to build an integrated project management system.</p>
     <p>Despite the existence of fully standardized processes, there is still no interactive system capable of supporting key specialists in real time — providing intelligent guidance and acting as a companion that can efficiently navigate extensive, widely published yet fragmented standardization sources.</p>
-    <p style="color:var(--text);"><strong>Artificial intelligence can address this gap</strong> by serving as a network of specialized, fine-tuned agents, each designed for a specific purpose and trained on organization-specific documentation stored on corporate servers or within secure enterprise platforms.</p>
+    <p style="color:var(--text);"><strong>Artificial intelligence can address this gap</strong> by serving as a network of specialized agents, each designed for a specific purpose and trained on organization-specific documentation stored on corporate servers or within secure enterprise platforms.</p>
   </div>
 </section>
 
@@ -338,42 +398,42 @@
 
 <!-- PIPELINE -->
 <section class="section" id="pipeline">
-  <h2>The Dual-Model Pipeline</h2>
-  <p class="section-sub">Every document passes through three AI stages — draft, format, verify. Automatically.</p>
+  <h2>How it Works</h2>
+  <p class="section-sub">Every work-product passes through a score-gated pipeline running on private GPU infrastructure.</p>
   <div class="pipeline">
     <div class="pipe-step">
       <div class="pipe-icon">🧠</div>
       <h3>Draft</h3>
-      <div class="pipe-model">deepseek-r1:70b</div>
-      <div class="pipe-desc">Structural reasoning, ISO-aware outline, section scaffold</div>
-      <div class="pipe-time">~5 min</div>
+      <div class="pipe-model">qwen3:32b-q8_0</div>
+      <div class="pipe-desc">ISO-aware structural reasoning, section scaffold, domain terminology</div>
+      <div class="pipe-time">~3 min</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">✍️</div>
-      <h3>Format</h3>
-      <div class="pipe-model">qwen2.5:72b</div>
-      <div class="pipe-desc">Professional formatting, tables, cross-references, .docx output</div>
-      <div class="pipe-time">~3 min</div>
+      <h3>Rewrite</h3>
+      <div class="pipe-model">qwen3:32b-q8_0</div>
+      <div class="pipe-desc">Professional formatting, cross-references, .docx output</div>
+      <div class="pipe-time">~2 min</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🔍</div>
       <h3>Score</h3>
-      <div class="pipe-model">Gemini Flash/Pro</div>
-      <div class="pipe-desc">ISO compliance scoring 0–100%, gap identification</div>
+      <div class="pipe-model">NVIDIA NIM OmniRoute</div>
+      <div class="pipe-desc">ISO compliance scoring, gap identification, revision guidance</div>
       <div class="pipe-time">~15 sec</div>
     </div>
     <div class="pipe-step">
       <div class="pipe-icon">🔄</div>
       <h3>Revise</h3>
-      <div class="pipe-model">qwen2.5:72b</div>
-      <div class="pipe-desc">Targeted revision using Gemini feedback. Retry until ≥80%</div>
+      <div class="pipe-model">qwen3:32b-q8_0</div>
+      <div class="pipe-desc">Targeted revision using scoring feedback. Re-scored until threshold met</div>
       <div class="pipe-time">~2 min</div>
     </div>
     <div class="pipe-step" style="border-color: var(--green);">
       <div class="pipe-icon">✅</div>
       <h3>Deliver</h3>
-      <div class="pipe-model">Telegram / API</div>
-      <div class="pipe-desc">Approved .docx delivered to engineer for sign-off</div>
+      <div class="pipe-model">Telegram / Registry</div>
+      <div class="pipe-desc">.docx delivered to engineer for review and approval</div>
       <div class="pipe-time">instant</div>
     </div>
   </div>
@@ -381,20 +441,20 @@
 
 <hr class="divider" />
 
-<!-- USE CASES -->
-<section class="section" id="usecases">
-  <h2>What It Produces</h2>
-  <p class="section-sub">Real industrial documents, not generic templates.</p>
+<!-- AIMS WORK PRODUCTS -->
+<section class="section" id="work-products">
+  <h2>AIMS Work Products</h2>
+  <p class="section-sub">Document types supported in the current applied stage.</p>
   <div class="cards">
     <div class="card">
       <div class="card-icon">🦺</div>
       <h3>Job Safety Analysis (JSA)</h3>
-      <p>Hazard identification table, controls hierarchy, permit conditions. ISO 45001 compliant.</p>
+      <p>Hazard identification table, controls hierarchy, permit conditions. ISO 45001 structure.</p>
     </div>
     <div class="card">
       <div class="card-icon">🚨</div>
       <h3>Emergency Response Procedure</h3>
-      <p>Trigger criteria, evacuation zones, muster points, all-clear conditions. API RP 505.</p>
+      <p>Trigger criteria, evacuation zones, muster points, all-clear conditions. API RP 505 reference.</p>
     </div>
     <div class="card">
       <div class="card-icon">📋</div>
@@ -416,28 +476,6 @@
       <h3>Asset Integrity Report</h3>
       <p>Inspection findings, risk register, maintenance recommendations. ISO 55001 aligned.</p>
     </div>
-  </div>
-</section>
-
-<hr class="divider" />
-
-<!-- CODE -->
-<section class="section" id="code">
-  <h2>Simple to Integrate</h2>
-  <p class="section-sub">One function call. Full dual-pipeline. ISO-compliant output.</p>
-  <div class="code-block">
-<span class="k">from</span> <span class="f">doc_agent</span> <span class="k">import</span> <span class="n">DocAgent</span>, <span class="n">DocGenerationRequest</span><br><br>
-<span class="n">agent</span> = <span class="n">DocAgent</span>()<br><br>
-<span class="n">path</span>, <span class="n">preview</span>, <span class="n">score</span>, <span class="n">feedback</span> = <span class="n">agent</span>.<span class="f">generate</span>(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">DocGenerationRequest</span>(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">user_request</span>=<span class="s">"Create a JSA for confined space entry at an underground mine. "</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"Reference ISO 45001. Include hazard table and controls hierarchy."</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">dual_pipeline</span>=<span class="k">True</span>,  <span class="c"># R1-70B → Qwen-72B → Gemini quality gate</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;)<br>
-)<br><br>
-<span class="f">print</span>(<span class="s">f"Document: </span><span class="n">{path}</span><span class="s">"</span>)  &nbsp;&nbsp;&nbsp;<span class="cm"># → JSA_confined_space_entry.docx</span><br>
-<span class="f">print</span>(<span class="s">f"ISO score: </span><span class="n">{score:.0%}</span><span class="s">"</span>)  &nbsp;<span class="cm"># → 84%</span><br>
-<span class="f">print</span>(<span class="s">f"Feedback: </span><span class="n">{feedback}</span><span class="s">"</span>)  &nbsp;<span class="cm"># → Covers all required JSA sections.</span>
   </div>
 </section>
 
@@ -507,44 +545,70 @@
 
 <hr class="divider" />
 
-<!-- PHASES / BOT FACTORY -->
+<!-- ROADMAP -->
 <section class="section" id="roadmap">
-  <h2>From Hook to Bot Factory</h2>
-  <p class="section-sub">Three phases: individual engineer → agent mesh → enterprise platform.</p>
-  <div class="phases">
-    <div class="phase">
-      <div class="phase-num">Phase 1 · Now</div>
-      <h3>🪝 The Hook — Engineer Assistant</h3>
-      <p>A specialized AI bot that turns natural-language requests into ISO-compliant documents.</p>
-      <ul>
-        <li>Dual-model pipeline (R1 + Qwen)</li>
-        <li>Gemini quality gate</li>
-        <li>Telegram delivery</li>
-        <li>Continuous fine-tuning loop</li>
-      </ul>
-    </div>
-    <div class="phase">
-      <div class="phase-num">Phase 2 · 2026</div>
-      <h3>🕸️ Agent Mesh — Multi-Discipline</h3>
-      <p>Interconnected specialized agents share one knowledge base.</p>
-      <ul>
-        <li>Budget Agent</li>
-        <li>Risk &amp; Safety Agent</li>
-        <li>Technical Standards Agent</li>
-        <li>Registry &amp; OCR Agent</li>
-      </ul>
-    </div>
-    <div class="phase">
-      <div class="phase-num">Phase 3 · 2027</div>
-      <h3>🏭 Bot Factory — Enterprise Platform</h3>
-      <p>Corporate-grade orchestrator with on-premise deployment and API gateway.</p>
-      <ul>
-        <li>Single Source of Truth</li>
-        <li>On-premise / cloud hybrid</li>
-        <li>Enterprise security &amp; audit trail</li>
-        <li>Custom agent deployment</li>
-      </ul>
-    </div>
+  <h2>Development Roadmap</h2>
+  <p class="section-sub">Six milestones from current applied stage to long-term platform vision. Sequenced by technical dependency and operational readiness.</p>
+  <table class="milestone-table">
+    <thead>
+      <tr>
+        <th>Milestone</th>
+        <th>Capability</th>
+        <th>Description</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="ms-id">M1</div></td>
+        <td><div class="ms-title">AI-Assisted Work-Product Development</div></td>
+        <td><div class="ms-desc">Score-gated draft, review, and revision pipeline. Telegram interface. Private GPU. Human approval on all outputs.</div></td>
+        <td><span class="ms-status ms-current">Current</span></td>
+      </tr>
+      <tr>
+        <td><div class="ms-id">M2</div></td>
+        <td><div class="ms-title">Controlled Knowledge &amp; Self-Learning</div></td>
+        <td><div class="ms-desc">OCR ingestion of approved documents into a vector knowledge base. RAG-augmented generation from organization-specific precedents. Nightly fine-tuning on approved outputs.</div></td>
+        <td><span class="ms-status ms-active">In Development</span></td>
+      </tr>
+      <tr>
+        <td><div class="ms-id">M3</div></td>
+        <td><div class="ms-title">Self-Repair &amp; Resilience</div></td>
+        <td><div class="ms-desc">Automated fault detection and repair loop across the agent pipeline. Self-healing infrastructure with human confirmation gate before applying fixes.</div></td>
+        <td><span class="ms-status ms-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td><div class="ms-id">M4</div></td>
+        <td><div class="ms-title">Multi-Agent Orchestration</div></td>
+        <td><div class="ms-desc">Coordinated specialist agents (safety, budget, procurement, standards) sharing a single document registry and knowledge base. Cross-discipline consistency enforcement.</div></td>
+        <td><span class="ms-status ms-planned">Planned</span></td>
+      </tr>
+      <tr>
+        <td><div class="ms-id">M5</div></td>
+        <td><div class="ms-title">Client-Facing AIMS Assistant</div></td>
+        <td><div class="ms-desc">Interactive assistant for engineering teams — query project history, identify document gaps, surface regulatory requirements, support audit preparation.</div></td>
+        <td><span class="ms-status ms-future">Future</span></td>
+      </tr>
+      <tr>
+        <td><div class="ms-id">M6</div></td>
+        <td><div class="ms-title">AIMS-Guided Project Development Support</div></td>
+        <td><div class="ms-desc">Platform-level support for full project lifecycle — from justification through commissioning. Understands project history, cross-department linkages, and resource utilization patterns.</div></td>
+        <td><span class="ms-status ms-future">Long-Term Vision</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="divider" />
+
+<!-- LONG-TERM VISION -->
+<section class="section" id="vision">
+  <h2>Long-Term Platform Vision</h2>
+  <p class="section-sub">Where M6 leads — an AIMS assistant that understands the full project context.</p>
+  <div class="vision-block">
+    <h3>From document automation to project intelligence</h3>
+    <p>The long-term value of AxiOMSphere is not document generation speed — it is accumulated project understanding. An assistant that has ingested all documents created during a project's lifecycle, knows the decisions made at each stage, understands the connections between departments, and can help teams reduce duplication, improve resource use, and maintain continuity across personnel changes.</p>
+    <p>This is not a current capability. It is the direction that our staged development roadmap is building toward — one validated milestone at a time, starting with the applied work-product development stage that is operating today.</p>
   </div>
 </section>
 
@@ -553,14 +617,14 @@
 <!-- CTA -->
 <section class="section" id="contact">
   <div class="cta-section">
-    <h2>Build the future of industrial AI</h2>
-    <p>We're applying to Google for Startups, Microsoft Founders Hub, and NVIDIA Inception.<br>
-       Partners, investors, and early enterprise users — we'd love to talk.</p>
+    <h2>Building the foundation for industrial AIMS intelligence</h2>
+    <p>We are at the development stage, validating privacy-first AI-assisted workflows for AIMS work-product development.<br>
+       We are applying to Google for Startups, Microsoft Founders Hub, NVIDIA Inception, and Anthropic Credits to accelerate this work.<br>
+       Researchers, domain partners, and early collaborators — we welcome conversation.</p>
     <div class="hero-btns">
-      <a href="mailto:nasty.monk779@gmail.com" class="btn btn-primary">📬 Get in Touch</a>
-      <a href="https://github.com/AxiOMSphereAssistanceAIMS/AIMS-Agent-Orchestrator" class="btn btn-secondary" target="_blank">⭐ Star on GitHub</a>
-      <a href="https://www.linkedin.com/in/evgeny-shokk-54781716" class="btn btn-secondary" target="_blank">💼 LinkedIn</a>
-      <a href="mailto:nasty.monk779@gmail.com?subject=AIMS%20Waitlist" class="btn btn-secondary">📝 Join Waitlist</a>
+      <a href="mailto:hello@axiomsphereai.com" class="btn btn-primary">Get in Touch</a>
+      <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" class="btn btn-secondary" target="_blank">GitHub</a>
+      <a href="https://www.linkedin.com/in/evgeny-shokk-54781716" class="btn btn-secondary" target="_blank">LinkedIn</a>
     </div>
   </div>
 </section>
@@ -568,13 +632,13 @@
 <!-- FOOTER -->
 <footer>
   <p>
-    <strong>AIMS Platform</strong> · Built by
-    <a href="mailto:nasty.monk779@gmail.com">Evgeny Shokk</a> ·
-    <a href="https://github.com/AxiOMSphereAssistanceAIMS/AIMS-Agent-Orchestrator" target="_blank">GitHub</a> ·
+    <strong>AxiOMSphere</strong> · Built by
+    <a href="mailto:hello@axiomsphereai.com">Evgeny Shokk</a> ·
+    <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank">GitHub</a> ·
     <a href="LICENSE">Apache-2.0</a>
   </p>
   <p style="margin-top:0.5rem; font-size:0.78rem; opacity:0.6;">
-    Powered by deepseek-r1 · Qwen2.5 · Google Gemini · python-telegram-bot · python-docx · Ollama
+    Powered by qwen3:32b-q8_0 &middot; NVIDIA NIM OmniRoute &middot; python-telegram-bot &middot; python-docx &middot; Ollama
   </p>
 </footer>
 
