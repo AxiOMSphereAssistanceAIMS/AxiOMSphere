@@ -121,8 +121,6 @@ services:
     - type: bind
       source: /home/axi_omi_sphere/aims-workspace/data/docs_agent
       target: /data/docs_agent
-    ports:
-    - "127.0.0.1:8020:8020"
     extra_hosts:
     - host.docker.internal=host-gateway
   inbox-cleanup:

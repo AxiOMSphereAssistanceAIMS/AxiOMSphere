@@ -12,9 +12,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
+import re
 import time
-import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
@@ -24,11 +23,6 @@ from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
 log = logging.getLogger(__name__)
-
-# Mini App URL for the Web App Reply transport.
-# Must be an HTTPS URL served by ops/demo_reply_api.py behind a TLS reverse proxy.
-# When empty, CUSTOMER_WORD_TYPE steps are skipped (development / no-HTTPS mode).
-DEMO_WEBAPP_URL: str = os.environ.get("DEMO_WEBAPP_URL", "")
 
 # ── Session state ──────────────────────────────────────────────────────────────
 
@@ -48,27 +42,17 @@ class DemoSession:
     lobby_message_id: Optional[int] = None
     task: Optional[asyncio.Task] = None
     stop_event: asyncio.Event = field(default_factory=asyncio.Event)
-    reply_event: asyncio.Event = field(default_factory=asyncio.Event)
-    current_reply_token: Optional[str] = None
-    initiating_user_id: Optional[int] = None
+    awaiting_manual_input: bool = False
+    expected_answer: str = ""
+    manual_input_event: asyncio.Event = field(default_factory=asyncio.Event)
+    last_received_answer: str = ""
     started_at: float = field(default_factory=time.monotonic)
-
-
-@dataclass
-class _ReplySlot:
-    chat_id: int
-    answer_text: str
-    user_id: int = 0          # Telegram user ID of the demo initiator; 0 = not bound
-    created_at: float = field(default_factory=time.monotonic)
 
 
 _sessions: dict[int, DemoSession] = {}
 _last_completed: dict[int, float] = {}
-_pending_replies: dict[str, _ReplySlot] = {}
-_demo_bot = None  # registered via set_demo_bot() in _post_init
 
 COOLDOWN_SECONDS = 60
-_REPLY_TOKEN_TTL = 300.0  # seconds before a pending reply token expires
 
 # ── Static content ─────────────────────────────────────────────────────────────
 
@@ -131,94 +115,45 @@ async def _send_typing(bot, chat_id: int, stop: asyncio.Event, duration: float =
     return await _interruptible_sleep(duration, stop)
 
 
-def set_demo_bot(bot) -> None:
-    """Register the bot instance so handle_webapp_reply() can call answerWebAppQuery."""
-    global _demo_bot
-    _demo_bot = bot
+def is_demo_active(chat_id: int) -> bool:
+    """Return True if chat_id currently has a live demo session."""
+    return chat_id in _sessions
 
 
-async def _wait_for_reply(session: DemoSession) -> bool:
+def _normalize_answer(text: str) -> str:
+    """Strip whitespace and collapse internal runs for loose answer matching."""
+    return re.sub(r"\s+", " ", text.strip())
+
+
+def handle_demo_message(chat_id: int, text: str) -> bool:
     """
-    Wait until the Web App reply arrives (reply_event set by handle_webapp_reply)
-    or the session stop_event fires.  Returns True if stopped/cancelled.
+    Offer an incoming text message to the demo state machine.
+
+    Returns True if the message was the expected scripted answer and the demo
+    has been advanced.  Returns False if no demo is awaiting input for this
+    chat, or if the answer does not match (caller should send a safe prompt).
     """
-    session.reply_event.clear()
+    session = _sessions.get(chat_id)
+    if session is None or not session.awaiting_manual_input:
+        return False
+    if _normalize_answer(text) == _normalize_answer(session.expected_answer):
+        session.last_received_answer = text
+        session.manual_input_event.set()
+        return True
+    return False
+
+
+async def _wait_for_manual_input(session: DemoSession) -> bool:
+    """Wait for manual founder input or stop signal. Returns True if stopped/cancelled."""
+    session.manual_input_event.clear()
     done, _ = await asyncio.wait(
         [
             asyncio.ensure_future(session.stop_event.wait()),
-            asyncio.ensure_future(session.reply_event.wait()),
+            asyncio.ensure_future(session.manual_input_event.wait()),
         ],
         return_when=asyncio.FIRST_COMPLETED,
     )
     return session.stop_event.is_set()
-
-
-async def handle_webapp_reply(token: str, query_id: str, validated_user_id: int) -> bool:
-    """
-    Called by demo_reply_api after initData is validated and query_id/user_id extracted.
-
-    Security ordering:
-      1. Peek slot — unknown token returns False without touching state.
-      2. TTL expiry — expired token is cleaned up, returns False.
-      3. Identity — user_id mismatch returns False WITHOUT consuming the token
-         so the legitimate initiator's Reply button is not burned by a third party.
-      4. Bot availability — server error, returns False without consuming.
-      5. Consume token (atomically) only after every check passes.
-      6. Call answerWebAppQuery with the server-selected answer from the slot.
-      7. Signal the waiting _run_demo coroutine.
-    """
-    # 1. Peek — do not consume yet
-    slot = _pending_replies.get(token)
-    if slot is None:
-        log.warning("demo reply: unknown token")
-        return False
-
-    # 2. TTL — expired tokens are cleaned up regardless
-    if time.monotonic() - slot.created_at > _REPLY_TOKEN_TTL:
-        _pending_replies.pop(token, None)
-        log.warning("demo reply: token expired")
-        return False
-
-    # 3. Identity — if user_id was captured at session start, it must match
-    if slot.user_id != 0 and slot.user_id != validated_user_id:
-        log.warning(
-            "demo reply: user_id mismatch (expected %s, got %s) — token preserved",
-            slot.user_id, validated_user_id,
-        )
-        return False
-
-    # 4. Bot availability
-    bot = _demo_bot
-    if bot is None:
-        log.warning("demo reply: bot not registered — token preserved")
-        return False
-
-    # 5. All checks passed — consume the token
-    _pending_replies.pop(token, None)
-
-    # 6. Post the server-selected answer as a genuine right-side user message
-    try:
-        from telegram import InlineQueryResultArticle, InputTextMessageContent
-        result = InlineQueryResultArticle(
-            id=token,
-            title="Reply",
-            input_message_content=InputTextMessageContent(slot.answer_text),
-        )
-        await bot.answer_web_app_query(
-            web_app_query_id=query_id,
-            result=result,
-        )
-    except Exception as exc:
-        log.warning("demo reply: answerWebAppQuery failed: %s", exc)
-        return False
-
-    # 7. Signal the waiting _run_demo coroutine to advance
-    session = _sessions.get(slot.chat_id)
-    if session and session.current_reply_token == token:
-        session.current_reply_token = None
-        session.reply_event.set()
-
-    return True
 
 
 # ── Script ─────────────────────────────────────────────────────────────────────
@@ -227,8 +162,8 @@ async def handle_webapp_reply(token: str, query_id: str, validated_user_id: int)
 #   BOT_MESSAGE              — send Markdown message from the bot
 #   BOT_MESSAGE_WITH_BUTTONS — send Markdown message + inline keyboard; stores msg_id in refs[ref]
 #   BOT_EDIT_BUTTONS         — edit refs[ref] with updated text / buttons
-#   CUSTOMER_WORD_TYPE       — genuine right-side user message via Telegram Web App answerWebAppQuery
-#                              (shows a single "Reply" button; answer_text is server-selected)
+#   CUSTOMER_WORD_TYPE       — pause and wait for founder to paste the scripted answer manually
+#                              (no button; answer checked with whitespace normalisation)
 #   TYPING_INDICATOR         — send typing action then pause
 #
 # delay_before / delay_after: float seconds (0 = skip)
@@ -757,45 +692,14 @@ async def _run_demo(session: DemoSession, bot) -> None:
                         log.warning("demo BOT_EDIT_BUTTONS failed: %s", exc)
 
             elif stype == "CUSTOMER_WORD_TYPE":
-                if not DEMO_WEBAPP_URL:
-                    # No HTTPS backend — skip customer reply steps silently.
-                    pass
-                else:
-                    token = str(uuid.uuid4())
-                    _pending_replies[token] = _ReplySlot(
-                        chat_id=chat_id,
-                        answer_text=step["text"],
-                        user_id=session.initiating_user_id or 0,
-                    )
-                    session.current_reply_token = token
-
-                    try:
-                        from telegram import WebAppInfo
-                        reply_kb = InlineKeyboardMarkup([[
-                            InlineKeyboardButton(
-                                "Reply",
-                                web_app=WebAppInfo(
-                                    url=f"{DEMO_WEBAPP_URL.rstrip('/')}?token={token}"
-                                ),
-                            )
-                        ]])
-                        await bot.send_message(
-                            chat_id=chat_id,
-                            text="↩",
-                            reply_markup=reply_kb,
-                        )
-                    except Exception as exc:
-                        log.warning("demo CUSTOMER_WORD_TYPE send Reply button failed: %s", exc)
-                        _pending_replies.pop(token, None)
-                        session.current_reply_token = None
-                        if stop.is_set():
-                            break
-                        continue
-
-                    interrupted = await _wait_for_reply(session)
-                    _pending_replies.pop(token, None)
-                    if interrupted:
-                        break
+                # Wait for the founder to paste the scripted answer manually.
+                # No Reply button; answer checked with whitespace normalisation.
+                session.awaiting_manual_input = True
+                session.expected_answer = step["text"]
+                interrupted = await _wait_for_manual_input(session)
+                session.awaiting_manual_input = False
+                if interrupted:
+                    break
 
             elif stype == "TYPING_INDICATOR":
                 duration = step.get("duration", 1.2)

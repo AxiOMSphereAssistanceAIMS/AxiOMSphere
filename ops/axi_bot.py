@@ -82,6 +82,8 @@ try:
         demo_cancel_callback,
         demo_about_callback,
         demo_noop_callback,
+        is_demo_active,
+        handle_demo_message,
     )
     _DEMO_AVAILABLE = True
 except Exception:
@@ -8395,6 +8397,18 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     # Explicit commands are handled by CommandHandler before handle_chat.
     # This branch routes only normal private text to the same safe behavior as /engineer:
     # create engineering artifacts and keep repairman execution disabled.
+    # Demo sessions intercept all incoming text first; nothing should fall through
+    # to engineering-assist, repairman, or document generation while demo is active.
+    if _DEMO_AVAILABLE and _chat_id is not None and is_demo_active(_chat_id):
+        text = (update.message.text or "").strip() if update.message else ""
+        accepted = handle_demo_message(_chat_id, text)
+        if not accepted:
+            await update.message.reply_text(
+                "This walkthrough is waiting for the prepared response for the current step. "
+                "Please paste the scripted demo answer or use /demo_stop to cancel."
+            )
+        return
+
     try:
         chat_type = getattr(update.effective_chat, "type", "") if update.effective_chat else ""
         if chat_type == "private":
@@ -8732,18 +8746,6 @@ async def _post_init(application: Application) -> None:
         application.create_task(_di_docs_agent_result_notifier(application))
     except Exception as e:
         log.warning("docs-agent notifier start failed: %s", e)
-
-    if _DEMO_AVAILABLE:
-        try:
-            from axi_demo import set_demo_bot
-            set_demo_bot(application.bot)
-        except Exception as e:
-            log.warning("demo set_demo_bot failed: %s", e)
-        try:
-            from demo_reply_api import start_demo_reply_api
-            start_demo_reply_api()
-        except Exception as e:
-            log.warning("demo_reply_api start failed: %s", e)
 
     commands = [
         BotCommand("start",          "Запуск / приветствие"),

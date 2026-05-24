@@ -34,6 +34,7 @@ compose.rendered.yml
 # Secrets / env
 .env
 *.env
+ops/.env.axi-bot
 *.key
 *.pem
 
@@ -54,3 +55,6 @@ ngccli_arm64*
 omi_diagnostic_report.json
 openclaw_canvas_index.html
 openclaw_gateway_log.txt
+
+# Nested git repos (subdirectory releases)
+docs/github-release/.git/
