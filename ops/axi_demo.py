@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 import time
 from dataclasses import dataclass, field
 from enum import Enum
@@ -43,9 +42,7 @@ class DemoSession:
     task: Optional[asyncio.Task] = None
     stop_event: asyncio.Event = field(default_factory=asyncio.Event)
     awaiting_manual_input: bool = False
-    expected_answer: str = ""
     manual_input_event: asyncio.Event = field(default_factory=asyncio.Event)
-    last_received_answer: str = ""
     started_at: float = field(default_factory=time.monotonic)
 
 
@@ -120,27 +117,21 @@ def is_demo_active(chat_id: int) -> bool:
     return chat_id in _sessions
 
 
-def _normalize_answer(text: str) -> str:
-    """Strip whitespace and collapse internal runs for loose answer matching."""
-    return re.sub(r"\s+", " ", text.strip())
-
-
 def handle_demo_message(chat_id: int, text: str) -> bool:
     """
     Offer an incoming text message to the demo state machine.
 
-    Returns True if the message was the expected scripted answer and the demo
-    has been advanced.  Returns False if no demo is awaiting input for this
-    chat, or if the answer does not match (caller should send a safe prompt).
+    Returns True if the message is non-empty and the demo step has been
+    advanced.  Returns False if no demo is awaiting input, or if text is
+    empty/whitespace-only (caller sends a safe prompt).
     """
     session = _sessions.get(chat_id)
     if session is None or not session.awaiting_manual_input:
         return False
-    if _normalize_answer(text) == _normalize_answer(session.expected_answer):
-        session.last_received_answer = text
-        session.manual_input_event.set()
-        return True
-    return False
+    if not text.strip():
+        return False
+    session.manual_input_event.set()
+    return True
 
 
 async def _wait_for_manual_input(session: DemoSession) -> bool:
@@ -692,10 +683,8 @@ async def _run_demo(session: DemoSession, bot) -> None:
                         log.warning("demo BOT_EDIT_BUTTONS failed: %s", exc)
 
             elif stype == "CUSTOMER_WORD_TYPE":
-                # Wait for the founder to paste the scripted answer manually.
-                # No Reply button; answer checked with whitespace normalisation.
+                # Pause and wait for founder to send any non-empty text message.
                 session.awaiting_manual_input = True
-                session.expected_answer = step["text"]
                 interrupted = await _wait_for_manual_input(session)
                 session.awaiting_manual_input = False
                 if interrupted:

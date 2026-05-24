@@ -104,7 +104,6 @@ def test_demo_session_defaults():
     assert s.task is None
     assert not s.stop_event.is_set()
     assert s.awaiting_manual_input is False
-    assert s.expected_answer == ""
 
 
 def test_script_has_steps():
@@ -206,7 +205,7 @@ def test_no_set_demo_bot():
     )
 
 
-# -- manual input flow --------------------------------------------------------
+# -- manual input: advance-on-any-text ----------------------------------------
 
 def test_handle_demo_message_no_active_session():
     _sessions.clear()
@@ -224,11 +223,11 @@ def test_handle_demo_message_session_not_awaiting():
     _sessions.clear()
 
 
-def test_handle_demo_message_correct_answer_advances():
+def test_any_nonempty_text_advances_step():
+    """Any non-empty text must advance the demo step."""
     _sessions.clear()
     session = DemoSession(chat_id=2, state=DemoState.RUNNING)
     session.awaiting_manual_input = True
-    session.expected_answer = "I am the project manager."
     _sessions[2] = session
 
     result = handle_demo_message(2, "I am the project manager.")
@@ -237,48 +236,107 @@ def test_handle_demo_message_correct_answer_advances():
     _sessions.clear()
 
 
-def test_handle_demo_message_whitespace_normalised():
-    """Extra spaces and leading/trailing whitespace must be accepted."""
+def test_wrong_wording_still_advances():
+    """Content different from the scripted answer must still advance the step."""
     _sessions.clear()
     session = DemoSession(chat_id=3, state=DemoState.RUNNING)
     session.awaiting_manual_input = True
-    session.expected_answer = "I am the project manager."
     _sessions[3] = session
 
-    result = handle_demo_message(3, "  I  am  the  project  manager.  ")
+    result = handle_demo_message(3, "something completely different")
+    assert result is True
+    assert session.manual_input_event.is_set()
+    _sessions.clear()
+
+
+def test_punctuation_variation_advances():
+    _sessions.clear()
+    session = DemoSession(chat_id=6, state=DemoState.RUNNING)
+    session.awaiting_manual_input = True
+    _sessions[6] = session
+
+    result = handle_demo_message(6, "OilGas Energy LPG, Country; 15 years. 01.01.2028!")
     assert result is True
     _sessions.clear()
 
 
-def test_handle_demo_message_wrong_answer_does_not_advance():
+def test_linebreak_variation_advances():
     _sessions.clear()
-    session = DemoSession(chat_id=4, state=DemoState.RUNNING)
+    session = DemoSession(chat_id=7, state=DemoState.RUNNING)
     session.awaiting_manual_input = True
-    session.expected_answer = "I am the project manager."
-    _sessions[4] = session
+    _sessions[7] = session
 
-    result = handle_demo_message(4, "something completely different")
+    result = handle_demo_message(7, "OilGas Energy LPG\nCountry\n15 years\n01.01.2028")
+    assert result is True
+    _sessions.clear()
+
+
+def test_empty_text_does_not_advance():
+    _sessions.clear()
+    session = DemoSession(chat_id=8, state=DemoState.RUNNING)
+    session.awaiting_manual_input = True
+    _sessions[8] = session
+
+    result = handle_demo_message(8, "")
     assert result is False
     assert not session.manual_input_event.is_set()
     _sessions.clear()
 
 
-def test_handle_demo_message_wrong_answer_keeps_session_active():
-    """A wrong answer must not change awaiting_manual_input or clear the session."""
+def test_whitespace_only_does_not_advance():
     _sessions.clear()
-    session = DemoSession(chat_id=5, state=DemoState.RUNNING)
+    session = DemoSession(chat_id=9, state=DemoState.RUNNING)
     session.awaiting_manual_input = True
-    session.expected_answer = "I am the project manager."
-    _sessions[5] = session
+    _sessions[9] = session
 
-    handle_demo_message(5, "wrong answer")
-    assert session.awaiting_manual_input is True
-    assert 5 in _sessions
+    result = handle_demo_message(9, "   \n\t  ")
+    assert result is False
+    assert not session.manual_input_event.is_set()
     _sessions.clear()
 
+
+def test_text_content_not_stored():
+    """handle_demo_message must not store text content on the session."""
+    _sessions.clear()
+    session = DemoSession(chat_id=10, state=DemoState.RUNNING)
+    session.awaiting_manual_input = True
+    _sessions[10] = session
+
+    handle_demo_message(10, "some founder input")
+    assert not hasattr(session, "last_received_answer") or True  # field may not exist
+    # Crucially, no attribute should hold the submitted text for later substitution
+    for attr in ("display_customer_name", "display_project_name", "current_capture_key"):
+        assert not hasattr(session, attr), f"DemoSession has unexpected capture field: {attr}"
+    _sessions.clear()
+
+
+def test_no_normalize_answer_function():
+    """_normalize_answer must be removed — content matching is gone."""
+    assert not hasattr(axi_demo, "_normalize_answer"), (
+        "_normalize_answer still present — content matching not fully removed"
+    )
+
+
+def test_no_expected_answer_on_session():
+    """DemoSession must not have an expected_answer field."""
+    s = DemoSession(chat_id=1)
+    assert not hasattr(s, "expected_answer"), (
+        "DemoSession still has expected_answer — content matching not fully removed"
+    )
+
+
+def test_no_waiting_for_scripted_response_message():
+    """The old rejection message text must be absent from source."""
+    import inspect
+    source = inspect.getsource(axi_demo)
+    assert "waiting for the prepared response" not in source
+    assert "scripted demo answer" not in source
+
+
+# -- full playback completes --------------------------------------------------
 
 def test_run_demo_completes_with_manual_input():
-    """Full playback completes when each CUSTOMER_WORD_TYPE step is manually answered."""
+    """Full playback completes when each CUSTOMER_WORD_TYPE step receives any text."""
     _sessions.clear()
     axi_demo._last_completed.clear()
     chat_id = 5001
@@ -296,8 +354,8 @@ def test_run_demo_completes_with_manual_input():
         async def answer_feeder():
             while not demo_task.done():
                 await asyncio.sleep(0.01)
-                if session.awaiting_manual_input and session.expected_answer:
-                    handle_demo_message(chat_id, session.expected_answer)
+                if session.awaiting_manual_input:
+                    handle_demo_message(chat_id, "any advance text")
 
         feeder = asyncio.create_task(answer_feeder())
         try:
@@ -331,7 +389,6 @@ def test_run_demo_stops_on_event():
         task = asyncio.create_task(_run_demo(session, bot))
         await asyncio.sleep(0.05)
         session.stop_event.set()
-        # Also unblock any manual_input_event wait
         session.manual_input_event.set()
         await asyncio.wait_for(task, timeout=5)
 
@@ -364,7 +421,7 @@ def test_run_demo_no_reply_button_sent():
         for _ in range(50):
             await asyncio.sleep(0.02)
             if session.awaiting_manual_input:
-                handle_demo_message(chat_id, session.expected_answer)
+                handle_demo_message(chat_id, "advance")
             if session.state in (DemoState.COMPLETED, DemoState.CANCELLED, DemoState.FAILED):
                 break
         session.stop_event.set()

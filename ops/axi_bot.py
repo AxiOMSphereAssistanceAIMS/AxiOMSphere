@@ -8402,10 +8402,9 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if _DEMO_AVAILABLE and _chat_id is not None and is_demo_active(_chat_id):
         text = (update.message.text or "").strip() if update.message else ""
         accepted = handle_demo_message(_chat_id, text)
-        if not accepted:
+        if not accepted and update.message:
             await update.message.reply_text(
-                "This walkthrough is waiting for the prepared response for the current step. "
-                "Please paste the scripted demo answer or use /demo_stop to cancel."
+                "Please send a text response to continue the walkthrough, or use /demo_stop to cancel."
             )
         return
 
