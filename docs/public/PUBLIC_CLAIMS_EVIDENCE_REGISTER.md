@@ -114,6 +114,34 @@ Every claim in README.md and index.html must appear in this register with its ev
 
 ---
 
+### Target Capability Architecture — Per-Layer Status Claims (Added 2026-05-24 — Staged Narrative Alignment)
+
+| Claim | Location | Evidence basis | Confidence |
+|-------|----------|---------------|------------|
+| Layer 1 — Project Development (AIMS work-product generation, review and registration): Current Applied Capability | index, one-pager, narrative | Implemented and run in internal development and test scenarios | INTERNALLY_VALIDATED |
+| Layer 2 — Master Knowledge and Document Base (AIMS Single Source of Truth): Current Applied Capability | index, one-pager, narrative | OCR ingestion, Qdrant registry, and evidence retention operational | INTERNALLY_VALIDATED |
+| Layer 3 — Orchestration and Synchronisation (interface alignment and gap resolution): In Development | index, one-pager, narrative | Architecture designed; components in active development; not yet validated end-to-end | IN_DEVELOPMENT |
+| Layer 4 — Execution Control and Feedback (quality thresholds and human review gates): In Development | index, one-pager, narrative | Quality thresholds and gate logic in active development | IN_DEVELOPMENT |
+| Layer 5 — Learning and Training (continuous fine-tuning from validated outputs): In Development | index, one-pager, narrative | Fine-tuning pipeline operational for internal model; continuous loop in development | IN_DEVELOPMENT |
+| Layer 6 — Recovery and Repair (failure detection and targeted automated repair): In Development | index, one-pager, narrative | Monitoring and repair architecture in active development | IN_DEVELOPMENT |
+| Layer 7 — Security, Policy and Oversight (access controls and change management gates): Planned | index, one-pager, narrative | Planned; not yet started | PREPARING |
+| Layer 8 — Resilience and Redundancy (dual-node routing and failover logic): Planned | index, one-pager, narrative | Planned; not yet started | PREPARING |
+
+---
+
+### Six-Milestone Staged Roadmap Claims (Added 2026-05-24 — Staged Narrative Alignment)
+
+| Claim | Location | Evidence basis | Confidence |
+|-------|----------|---------------|------------|
+| M1 — Current Applied Capability (work-product drafting, review, registration): Completed | index | Layers 1–2 validated in internal development scenarios | INTERNALLY_VALIDATED |
+| M2 — Learning Loop (benchmarking pipeline, continuous fine-tuning): In Development | index | Pipeline architecture in active development; not yet validated end-to-end | IN_DEVELOPMENT |
+| M3 — Repair and Recovery (infrastructure monitoring, diagnosis, targeted repair): In Architecture | index | Architecture designed; implementation in early development | IN_DEVELOPMENT |
+| M4 — Orchestration at Scale (framework synchronisation, change-impact tracing): Planned | index | Planned following M2 and M3; not yet started | PREPARING |
+| M5 — Client-Facing Support (controlled pilot with qualified industrial partner): Future | index | Follows successful M1–M4 completion; no external customers or signed deployments | PREPARING |
+| M6 — AIMS-Guided Industrial Platform (long-term vision): Long-Term Vision | index | Long-term design intent; explicitly not a current product offering | PREPARING |
+
+---
+
 ### Path to Pilot Claims (Added 2026-05-23 — Final Grant-Ready Revision)
 
 | Claim | Location | Evidence basis | Confidence |
@@ -121,6 +149,21 @@ Every claim in README.md and index.html must appear in this register with its ev
 | Staged pathway from internal validation to controlled external pilot | README, index, narrative, one-pager | Logical development sequence; no external customers or signed deployments claimed | INTERNALLY_VALIDATED |
 | Stage 1 requires credits | narrative, index | External benchmark evaluation requires API access not available locally | INTERNALLY_VALIDATED |
 | No external customers or signed deployments at this stage | README, index | Explicit statement included in all pathway descriptions | INTERNALLY_VALIDATED |
+
+---
+
+## Claims Removed or Updated in Staged Narrative Alignment (2026-05-24)
+
+The following claims were present in public materials prior to the staged narrative alignment and have been updated or removed:
+
+| Updated/Removed claim | Change made | Reason |
+|----------------------|------------|--------|
+| "Full-stack, closed-loop industrial AI platform" | Removed as current-state label | Platform is development-stage; closed-loop is a design intent, not validated delivery |
+| "Build, synchronise, restore and continuously improve" as current delivery | Removed from all instances | These capabilities span Layers 3–8 which are In Development or Planned, not current applied capability |
+| "24-hour review cycle" as planning target in public materials | Removed from all public-facing files | Unvalidated performance target; inappropriate for public claims without controlled validation data |
+| Capacity model (1,000 items / 350 hours) as "Planning Scenario" | Relabelled "Illustrative comparison only — not a delivery commitment or measured product performance" | Clearer qualification to prevent misreading as a delivery commitment |
+| "All eight architecture layers completed/validated" | Updated to per-layer status (Layers 1–2: Current Applied; Layers 3–6: In Development; Layers 7–8: Planned) | Accurate per-layer status representation |
+| 5-milestone roadmap (completed/preparing/in dev framing) | Replaced with 6-milestone staged roadmap M1–M6 with explicit stage labels | Clearer staged progression from current applied capability to long-term vision |
 
 ---
 

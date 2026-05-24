@@ -1,8 +1,9 @@
 # AxiOMSphere — Public Presentation Audit
 
-**Date:** 2026-05-23  
+**Date:** 2026-05-24 (last updated)  
+**Original audit date:** 2026-05-23  
 **Scope:** README.md, index.html, landing/index.html, docs/public/*.md  
-**Purpose:** Pre-publication compliance review — full AIMS scope restoration for startup credit applications
+**Purpose:** Pre-publication compliance review — staged product narrative alignment for startup credit applications
 
 ---
 
@@ -43,6 +44,22 @@ The following items were added in the final grant-ready revision per STARTUP_CRE
 | Path to Deployment (4 conservative stages) | ✅ | ✅ | ✅ "No external customers or signed deployments" stated |
 | ISO wording corrected to full form in body text | ✅ | ✅ | ✅ "ISO 55001 requirements and ISO 55002 guidance" |
 
+### Staged Narrative Alignment (2026-05-24)
+
+The following items were updated or added to align all public materials with a staged 3-tier product narrative (Current Applied / Development Roadmap / Long-Term Vision):
+
+| Updated/Added element | README.md | index.html | docs/public | Qualification present |
+|----------------------|-----------|------------|-------------|----------------------|
+| "Current Applied Capability" section (new) | — | ✅ | ✅ one-pager, narrative | ✅ "internally validated"; "development-stage" |
+| Architecture relabelled "Target Capability Architecture" | — | ✅ | ✅ one-pager, narrative | ✅ per-layer status badges (Layers 1–2 current; 3–6 in dev; 7–8 planned) |
+| 6-milestone staged roadmap M1–M6 (new) | — | ✅ | — | ✅ M5 "Future", M6 "Long-Term Vision" |
+| "Long-Term Platform Vision" section (new) | — | ✅ | — | ✅ Explicit "not a current product offering" qualification box |
+| Capacity model relabelled "Illustrative comparison only" | ✅ | ✅ | ✅ one-pager, narrative | ✅ "not a delivery commitment or measured product performance" |
+| "Full-stack, closed-loop" removed as current-state label | ✅ | ✅ | ✅ all docs | ✅ No replacement label; "development-stage" framing used |
+| "Build, synchronise, restore and continuously improve" removed as current delivery | — | ✅ | ✅ narrative | ✅ Restricted to Target Operating Cycle diagram, labelled "Design Intent" |
+| "24-hour review cycle" removed | ✅ | ✅ | ✅ all docs | ✅ No replacement performance claim |
+| Nav links updated: added "Capability" and "Vision" | — | ✅ | — | ✅ Link to new sections |
+
 ---
 
 ### Prohibited Claims — Confirmed Absent
@@ -57,6 +74,8 @@ The following categories of claims remain absent from all public-facing files:
 | Internal infrastructure details | Port numbers, model names, API keys, internal endpoints | ✅ ABSENT |
 | Third-party model names | Gemini, Nemotron, DeepSeek, qwen, llama | ✅ ABSENT |
 | Secrets / tokens | nvapi-, ghp_, API_KEY, PASSWORD, TOKEN | ✅ ABSENT |
+| "24-hour" performance claims | "24-hour review cycle", "within 24 hours", "24 hour" | ✅ ABSENT (removed 2026-05-24) |
+| "Full-stack, closed-loop" as current-state label | "full-stack, closed-loop", "full-stack closed-loop" | ✅ ABSENT (removed 2026-05-24) |
 
 Note: "TOKEN" matched CSS comment "Design tokens"; "ISO" matched only in qualified scope (framework basis, not certification). Neither is a prohibited usage.
 
@@ -143,6 +162,31 @@ Gap resolution report (STARTUP_CREDITS_REVIEWER_GAP_RESOLUTION.md) created befor
 | PUBLIC_CLAIMS_EVIDENCE_REGISTER.md — founder, differentiation, roadmap, pathway claims registered | ✅ Complete |
 | PUBLIC_PRESENTATION_AUDIT.md — revision record updated | ✅ Complete |
 | STARTUP_CREDITS_REVIEWER_GAP_RESOLUTION.md — gap report created | ✅ Complete |
+
+### Staged Product Narrative Alignment (2026-05-24)
+
+All public materials aligned to a staged 3-tier narrative: Current Applied Capability / Development Roadmap (M1–M6) / Long-Term Platform Vision. All "full-stack, closed-loop" labels removed as current-state claims; all "24-hour" performance targets removed. Architecture layers given honest per-layer status badges.
+
+| Step | Result |
+|------|--------|
+| index.html — "full-stack, closed-loop" removed from meta description and body | ✅ Complete |
+| index.html — "Current Applied Capability" section added | ✅ Complete |
+| index.html — Architecture section relabelled "Target Capability Architecture" with per-layer badges | ✅ Complete |
+| index.html — Loop diagram relabelled "Target Operating Cycle (Design Intent)" | ✅ Complete |
+| index.html — "24-hour review cycle" paragraph removed from The Solution | ✅ Complete |
+| index.html — Capacity model relabelled "Illustrative comparison only" | ✅ Complete |
+| index.html — 5-milestone roadmap expanded to 6-milestone staged roadmap M1–M6 | ✅ Complete |
+| index.html — Credits section lead updated (removed "full-stack platform" language) | ✅ Complete |
+| index.html — "Long-Term Platform Vision" section added | ✅ Complete |
+| index.html — Nav bar updated: added Capability and Vision links | ✅ Complete |
+| landing/index.html — mirrors updated index.html | ✅ Complete |
+| README.md — "24-hour review cycle" removed from capacity model | ✅ Complete |
+| README.md — Capacity model blockquote label updated | ✅ Complete |
+| AXIOMSPHERE_STARTUP_ONE_PAGER.md — title updated; all 8 layer statuses corrected; Solution section rewritten | ✅ Complete |
+| STARTUP_CREDITS_APPLICATION_NARRATIVE.md — one-line summary, Our Approach, Current Status, Differentiation table all rewritten | ✅ Complete |
+| PUBLIC_CLAIMS_EVIDENCE_REGISTER.md — per-layer architecture claims and 6-milestone roadmap claims registered; removed/updated claims section added | ✅ Complete |
+| PUBLIC_PRESENTATION_AUDIT.md — audit updated; banned terms expanded; staged alignment revision record added | ✅ Complete |
+| Commit: `docs: align public site with staged AIMS product roadmap` | ✅ Complete |
 
 ---
 

@@ -40,7 +40,7 @@ Industrial projects must begin building their Asset Integrity Management System 
 
 As requirements change, their impact can spread across interconnected processes, procedures, plans, registers and assurance records, creating costly revision waves and delayed understanding of operational consequences. At the same time, the standards, regulatory obligations, asset data and proprietary procedures needed for sound decisions are sensitive and cannot be routinely submitted to external AI services.
 
-Projects therefore need a private, traceable way to help qualified specialists understand the consequences of key decisions within a target 24-hour review cycle — before early misalignment is scaled into full-field development and future production operations.
+Projects therefore need a private, traceable way to help qualified specialists understand the consequences of key decisions — before early misalignment is scaled into full-field development and future production operations.
 
 ---
 
@@ -121,9 +121,11 @@ The GFMAM Asset Management Landscape provides the broader process-framework refe
 
 ## Development-Stage Capacity Model
 
+> **Illustrative comparison only — not a delivery commitment or measured product performance.**
+
 Preparing a representative 1,000-item AIMS work-product package is estimated at approximately 350 workflow hours, or about 2 working months on a single-stream equivalent basis. This estimate assumes approximately 10 minutes of human task formulation and 11 minutes of agent-assisted preparation per work product, based on an 8-hour working day and 22 working days per month.
 
-This is a development-stage capacity model subject to pilot validation. It excludes additional qualified review, approval and assurance activities, which must be planned separately. Final figures will be established during controlled pilot validation.
+This is an illustrative planning scenario, not a measured or guaranteed performance figure. It excludes additional qualified review, approval and assurance activities, which must be planned separately. Actual outcomes will be determined by the controlled validation programme.
 
 ---
 

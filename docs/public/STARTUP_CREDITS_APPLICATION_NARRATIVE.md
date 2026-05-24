@@ -8,7 +8,7 @@
 
 ## One-Line Summary
 
-Full-stack, closed-loop industrial AI platform for building, supervising, restoring and continuously improving an AIMS-based operating organisation — privacy-first, ISO 55001 / ISO 55002 framework-grounded, qualified human review required.
+Development-stage industrial AI platform for building and reviewing ISO 55001 / ISO 55002-based AIMS work products on private infrastructure — privacy-first, framework-grounded, qualified human review required.
 
 ---
 
@@ -36,22 +36,27 @@ The core challenges:
 
 ## Our Approach
 
-AxiOMSphere is a full-stack, closed-loop industrial AI platform that coordinates specialised agents on private GPU infrastructure to build, synchronise, restore and continuously improve the AIMS operating framework for industrial projects. The platform is structured in accordance with ISO 55001 (Asset Management — Management Systems — Requirements) and ISO 55002 (Asset Management — Management Systems — Guidelines for the Application of ISO 55001).
+AxiOMSphere is a development-stage industrial AI platform that coordinates specialised agents on private GPU infrastructure to support qualified specialists in developing, reviewing and aligning AIMS work products for industrial projects. The platform is structured in accordance with ISO 55001 (Asset Management — Management Systems — Requirements) and ISO 55002 (Asset Management — Management Systems — Guidelines for the Application of ISO 55001).
 
-The platform operates as a closed loop:
+**Current applied capability** — validated in internal development scenarios:
 
-- **Build** — draft, review and register AIMS work products across all five lifecycle stages aligned to ISO 55001 requirements and ISO 55002 guidance
-- **Synchronise** — align interfaces, resolve scope gaps and maintain consistency across the full framework as disciplines and requirements evolve
-- **Assess Change** — trace the downstream impact of scope, design or regulatory changes before they propagate across the framework
-- **Retain Knowledge** — capture evidence, lessons learned and validated outputs in a controlled knowledge layer that improves with every workflow cycle
+- **Draft** — generate AIMS work products across all five lifecycle stages aligned to ISO 55001 requirements and ISO 55002 guidance
+- **Review** — check draft work products for internal consistency, interface alignment and framework coverage
+- **Register** — maintain a structured, searchable knowledge base with traceable evidence records
+- **Retain Knowledge** — capture validated outputs and evidence in a controlled knowledge layer
 
-Additional design principles:
+**Development roadmap** — being built toward controlled pilot deployment:
+
+- **Learning loop** — continuous fine-tuning from validated outputs; benchmark evaluation pipeline (M2, in development)
+- **Repair and recovery** — automated infrastructure monitoring, diagnosis and targeted repair (M3, in architecture)
+- **Orchestration at scale** — full framework synchronisation and change-impact tracing (M4, planned)
+- **Controlled external pilot** — scoped, time-bounded pilot with a qualified industrial partner (M5, future)
+
+Design principles applied throughout:
 
 - **Private by default** — source documents and asset data stay on private infrastructure throughout; no transmission during the drafting workflow
 - **Controlled external evaluation** — anonymized context submitted to approved evaluators for benchmarking quality; raw source content never transmitted
 - **Human review gate** — all agent outputs are recommendations; qualified review and approval is required before operational use
-
-The target outcome of a controlled validation programme is a 24-hour review cycle for a representative AIMS work-product package. This is a planning target subject to validation, not a guaranteed delivery time.
 
 The platform does not claim to independently certify compliance with ISO 55001 or any other standard. Generated work products require qualified human review before operational use.
 
@@ -67,18 +72,20 @@ General-purpose AI services and document tools are not designed for the structur
 | Source documents transmitted to cloud | Source materials remain on private infrastructure by default |
 | Individual document responses | Coordinated agents maintain consistency across the whole AIMS framework |
 | No management-system structure | Work products structured in accordance with ISO 55001 requirements and ISO 55002 guidance |
-| No change-impact awareness | Traces downstream impact of scope, design or regulatory changes before they compound |
-| Single-pass generation only | Closed-loop operation: build, synchronise, restore and improve continuously |
+| No change-impact awareness | Change-impact tracing in active development — M4 roadmap milestone |
+| Single-pass generation only | Progressive capability roadmap: current drafting and review → learning → repair → orchestration at scale |
 
 ---
 
 ## Current Status
 
-The platform has completed internal development of all eight architecture layers: AIMS work-product generation pipeline, master knowledge base, orchestration and synchronisation, execution control and feedback, continuous learning loop, recovery and repair automation, security and policy oversight, and resilience and redundancy routing. These capabilities are validated in internal development scenarios.
+Current applied capability (Layers 1–2, internally validated): AIMS work-product drafting, review and registration pipeline; master knowledge base, document registry, OCR ingestion and evidence retention. Privacy architecture confirmed: source documents processed on private infrastructure throughout.
 
-Change-impact decision support and ISO 55001 / ISO 55002-aligned benchmarking are in active development. External industrial pilot preparation is underway.
+In active development (Layers 3–6): learning and fine-tuning loop from validated outputs; ISO 55001 / ISO 55002-aligned benchmark evaluation pipeline; infrastructure monitoring, repair and recovery automation; change-impact tracing and framework synchronisation.
 
-The next stage is a controlled 90-day validation programme processing a representative AIMS work-product set across all five lifecycle stages — project definition, organisational setup, functional framework, operational readiness, and production operations — including change-impact tracing and continuous learning measurement.
+Planned (Layers 7–8): security and policy oversight gates; resilience and redundancy routing at pilot scale.
+
+The next stage is a controlled 90-day validation programme processing a representative AIMS work-product set across all five lifecycle stages, including benchmark evaluation and continuous learning measurement.
 
 ---
 

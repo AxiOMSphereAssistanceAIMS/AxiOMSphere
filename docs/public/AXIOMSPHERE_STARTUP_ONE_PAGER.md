@@ -1,5 +1,5 @@
 # AxiOMSphere
-## Full-Stack, Closed-Loop Industrial AI Platform for AIMS and Industrial Operations
+## Development-Stage Industrial AI Platform for AIMS Work Products and Industrial Operations
 
 **Evgeny Shokk, Founder**  
 hello@axiomsphereai.com · https://axiomsphereai.com  
@@ -19,30 +19,28 @@ Source materials — technical standards, proprietary procedures, asset data, re
 
 ## 2. Solution
 
-AxiOMSphere is a development-stage full-stack, closed-loop industrial AI platform that coordinates specialised AI agents on private GPU infrastructure to build, synchronise, restore and continuously improve the AIMS operating framework for industrial projects. The platform is structured in accordance with ISO 55001 requirements and ISO 55002 guidance.
+AxiOMSphere is a development-stage industrial AI platform that coordinates specialised AI agents on private GPU infrastructure to support qualified specialists in developing, reviewing and aligning AIMS work products for industrial projects. The platform is structured in accordance with ISO 55001 requirements and ISO 55002 guidance.
 
-The platform operates as a closed loop: **Build** (draft and register work products) → **Synchronise** (align interfaces and resolve gaps) → **Assess Change** (trace downstream impact of scope changes) → **Retain Knowledge** (capture evidence and validated outputs) → continuous improvement.
-
-The target outcome of a controlled validation programme is a 24-hour review cycle for a representative AIMS work-product package. This is a planning target subject to validation, not a guaranteed delivery time.
+Current applied capability: AI-assisted AIMS work-product drafting, review, registration and evidence retention on private infrastructure. Development roadmap: learning loop, repair and recovery, orchestration at scale, and controlled external pilot.
 
 All outputs are recommendations. Qualified human review is required before any work product is used operationally.
 
 ---
 
-## 3. Full-Stack Architecture (8 Layers)
+## 3. Target Capability Architecture (8 Layers)
 
 | Layer | Capability | Status |
 |-------|-----------|--------|
-| 1 | Project Development — AIMS work-product generation, review and registration | Internally Validated |
-| 2 | Master Knowledge & Document Base — structured AIMS Single Source of Truth | Internally Validated |
-| 3 | Orchestration & Synchronisation — interface alignment and gap resolution | Internally Validated |
-| 4 | Execution Control & Feedback — quality thresholds and human review gates | Internally Validated |
-| 5 | Learning & Training — continuous fine-tuning from validated outputs | Internally Validated |
-| 6 | Recovery & Repair — failure detection and targeted automated repair | Internally Validated |
-| 7 | Security, Policy & Oversight — access controls and change management gates | Internally Validated |
-| 8 | Resilience & Redundancy — dual-node routing and failover logic | Internally Validated |
+| 1 | Project Development — AIMS work-product generation, review and registration | Current Applied Capability |
+| 2 | Master Knowledge & Document Base — structured AIMS Single Source of Truth | Current Applied Capability |
+| 3 | Orchestration & Synchronisation — interface alignment and gap resolution | In Development |
+| 4 | Execution Control & Feedback — quality thresholds and human review gates | In Development |
+| 5 | Learning & Training — continuous fine-tuning from validated outputs | In Development |
+| 6 | Recovery & Repair — failure detection and targeted automated repair | In Development |
+| 7 | Security, Policy & Oversight — access controls and change management gates | Planned |
+| 8 | Resilience & Redundancy — dual-node routing and failover logic | Planned |
 
-Not all layers validated at full-scale industrial workloads. Change-impact decision support and ISO benchmarking pipeline in active development.
+Layers 1–2 represent current applied capability validated in internal development scenarios. Layers 3–8 represent planned and in-development capability being built toward controlled pilot deployment. Not all layers validated at full-scale industrial workloads.
 
 ---
 
