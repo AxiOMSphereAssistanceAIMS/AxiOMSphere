@@ -151,6 +151,8 @@ This is a development-stage capacity model subject to pilot validation. It exclu
 
 ## Why We Are Seeking Startup Credits
 
+AxiOMSphere begins with a practical, document-intensive industrial problem: helping specialists develop and review connected AIMS work products in a controlled private environment. Credits are sought to validate this applied capability at meaningful scale and to develop the next controlled layers — learning, repair, orchestration and resilient execution — required before the platform can responsibly support broader AIMS project-development workflows.
+
 | Resource | Intended use |
 |---------|-------------|
 | API credits | External benchmark evaluation and ISO 55001 / ISO 55002-aligned standards discovery using anonymized context |
