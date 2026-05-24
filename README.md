@@ -10,7 +10,7 @@
 
 ## What AxiOMSphere Is
 
-AxiOMSphere is a development-stage AI system for industrial Asset Integrity Management. It provides AI-assisted creation, review, and traceability of AIMS work products — running on private GPU infrastructure with no project data leaving the facility.
+AxiOMSphere is a development-stage AI system for industrial Asset Integrity Management. It provides AI-assisted creation, review, and traceability of AIMS work products — running on private infrastructure. Project source documents remain private; authorised external evaluation uses only anonymised or de-identified context for structure and framework-alignment assessment.
 
 The system is built on coordinated LLM agents, each responsible for a specific function in the document pipeline. All generated outputs require human expert review and approval before use.
 
@@ -110,7 +110,7 @@ The AIMS work-product pipeline is structured around:
 - **ISO 55002:2018** — Asset management: guidelines for the application of ISO 55001
 - **GFMAM Asset Management Landscape** — 39 subjects across 6 subject groups
 
-AIMS work-product structure references ISO 10013:2021, ISO 2145:1978, and applicable records management standards. Domain-specific requirements (safety, project management, operations) are referenced per applicable task context. All generated outputs require qualified human review against applicable standards before operational use.
+All generated outputs require qualified human review against applicable standards before operational use.
 
 ---
 

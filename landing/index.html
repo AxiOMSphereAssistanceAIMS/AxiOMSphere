@@ -689,7 +689,7 @@
   <h1>AI-assisted AIMS work-product development<br><em>for industrial project readiness</em></h1>
   <p class="hero-sub">
     We are validating a privacy-first, human-governed workflow for AI-assisted creation, review, and traceability
-    of AIMS work products — running on private GPU infrastructure with no data leaving the facility.
+    of AIMS work products — running on private infrastructure. Project source documents remain private; authorised external evaluation uses only anonymised or de-identified context for structure and framework-alignment assessment.
   </p>
   <div class="hero-btns">
     <a href="https://t.me/AxiOMsphere_bot" class="btn btn-primary" target="_blank">Try the Demo Bot</a>
@@ -707,7 +707,7 @@
     </div>
     <div class="stat">
       <div class="stat-n">Private GPU</div>
-      <div class="stat-l">No Data Leaves the Facility</div>
+      <div class="stat-l">Source Docs Stay Private</div>
     </div>
     <div class="stat">
       <div class="stat-n">Human Review</div>
@@ -741,7 +741,7 @@
     <div class="card">
       <div class="card-icon">📝</div>
       <h3>Work-Product Draft Generation</h3>
-      <p>Engineer submits a plain-language request via Telegram. The system generates a structured AIMS work-product draft — JSA, MOC, procedure, or asset report — aligned to the applicable ISO standard.</p>
+      <p>Engineer submits a plain-language request via Telegram. The system generates a structured AIMS work-product draft — a procedure, register, plan, or other applicable work product — aligned to applicable ISO 55001 requirements and ISO 55002 guidance.</p>
     </div>
     <div class="card">
       <div class="card-icon">🔍</div>
@@ -829,39 +829,19 @@
 
 <!-- AIMS WORK PRODUCTS -->
 <section class="section" id="work-products">
-  <h2>AIMS Work Products</h2>
-  <p class="section-sub">Document types supported in the current applied stage.</p>
-  <div class="cards">
-    <div class="card">
-      <div class="card-icon">🦺</div>
-      <h3>Job Safety Analysis (JSA)</h3>
-      <p>Hazard identification table, controls hierarchy, permit conditions. ISO 45001 structure.</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">🚨</div>
-      <h3>Emergency Response Procedure</h3>
-      <p>Trigger criteria, evacuation zones, muster points, all-clear conditions. API RP 505 reference.</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">📋</div>
-      <h3>Management of Change (MOC)</h3>
-      <p>MOC form, approval matrix with sign-off levels, PSSR checklist. ISO 45001 §8.1.3.</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">📁</div>
-      <h3>Project Charter</h3>
-      <p>Scope, stakeholders, milestones, resource plan. ISO 21502:2020 structure.</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">📖</div>
-      <h3>Technical Manual</h3>
-      <p>User documentation structure, warnings, procedures. IEC/IEEE 82079-1:2019.</p>
-    </div>
-    <div class="card">
-      <div class="card-icon">🏗️</div>
-      <h3>Asset Integrity Report</h3>
-      <p>Inspection findings, risk register, maintenance recommendations. ISO 55001 aligned.</p>
-    </div>
+  <h2>Representative AIMS Work-Product Types</h2>
+  <p class="section-sub">Illustrative categories only. The applicable work-product set depends on project scope, company requirements and the approved AIMS framework.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:0.65rem;margin:1.75rem 0 0.5rem;">
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Philosophies</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Procedures</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Provisions</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Guidelines</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Regulations</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Instructions</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Job Descriptions</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Registers</span>
+    <span style="padding:0.4rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--text);background:var(--surface);">Plans</span>
+    <span style="padding:0.4rem 0.9rem;border:1px dashed var(--border);border-radius:var(--radius);font-size:0.875rem;color:var(--muted);background:var(--surface);">Other connected AIMS work products</span>
   </div>
 </section>
 
@@ -881,62 +861,20 @@
 
 <!-- STANDARDS -->
 <section class="section" id="standards">
-  <h2>Standards Coverage</h2>
-  <p class="section-sub">Document structure standards referenced for every output. Domain-specific requirements referenced per applicable task context.</p>
+  <h2>Framework References</h2>
+  <p class="section-sub">The AIMS work-product pipeline is structured around three core framework references.</p>
   <div class="standards-grid">
-    <div class="std-group-label">Document Structure &amp; Format — applied to every document</div>
     <div class="std">
-      <div class="std-code">ISO 10013:2021</div>
-      <div class="std-name">QMS document structure guidelines</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO 2145:1978</div>
-      <div class="std-name">Section numbering in documents</div>
+      <div class="std-code">ISO 55001:2024</div>
+      <div class="std-name">Asset management — requirements</div>
     </div>
     <div class="std">
-      <div class="std-code">ISO 9000:2015</div>
-      <div class="std-name">Quality terminology &amp; definitions</div>
+      <div class="std-code">ISO 55002:2018</div>
+      <div class="std-name">Asset management — guidelines for the application of ISO 55001</div>
     </div>
     <div class="std">
-      <div class="std-code">IEC/IEEE 82079-1:2019</div>
-      <div class="std-name">Technical documentation preparation</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO 19005-1:2005</div>
-      <div class="std-name">Long-term archiving (PDF/A)</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO 15489-1:2016</div>
-      <div class="std-name">Records management — concepts &amp; principles</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO 80000-1:2022</div>
-      <div class="std-name">Quantities &amp; units notation</div>
-    </div>
-    <div class="std">
-      <div class="std-code">ISO/IEC Directives Pt.2</div>
-      <div class="std-name">Structure &amp; drafting of standards documents</div>
-    </div>
-    <div class="std-group-label">Domain Compliance — scored per task, context-dependent</div>
-    <div class="std compliance">
-      <div class="std-code">ISO 55001:2024 / 55002:2018</div>
-      <div class="std-name">Asset management requirements &amp; guidelines</div>
-    </div>
-    <div class="std compliance">
-      <div class="std-code">OSHA 29 CFR 1910.147</div>
-      <div class="std-name">Control of hazardous energy (LOTO)</div>
-    </div>
-    <div class="std compliance">
-      <div class="std-code">ISO 21502:2020</div>
-      <div class="std-name">Project management guidance</div>
-    </div>
-    <div class="std compliance">
-      <div class="std-code">IEC/IEEE 82079-1</div>
-      <div class="std-name">Technical documentation preparation</div>
-    </div>
-    <div class="std compliance" style="border-style: dashed;">
-      <div class="std-code">150+ standards</div>
-      <div class="std-name">Applied by context — HSE, O&amp;M, engineering, legal</div>
+      <div class="std-code">GFMAM Asset Management Landscape</div>
+      <div class="std-name">39 subjects across 6 subject groups — applied as a reference for scope and completeness</div>
     </div>
   </div>
 </section>
