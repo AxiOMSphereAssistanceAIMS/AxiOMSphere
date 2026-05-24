@@ -15,11 +15,11 @@ All usage described is for validation and measurement work only. No external cus
 
 ## Why Personal Infrastructure Is Not Sufficient
 
-AxiOMSphere runs on private GPU infrastructure (NVIDIA DGX Spark) for primary inference and local document processing. This infrastructure is sufficient for development and short certification runs.
+AxiOMSphere runs on private GPU infrastructure for primary inference and local document processing. This infrastructure is sufficient for development and single-session validation runs.
 
 It is not sufficient for:
 
-- **sustained multi-day validation runs** — 24h/72h long-running stability certification requires uninterrupted compute that cannot be reliably guaranteed on a single personal machine running other development workloads;
+- **sustained multi-session validation runs** — sustained agent-team workload validation requires uninterrupted compute that cannot be reliably guaranteed on a single personal machine running other development workloads;
 - **full-scale AIMS workflow validation** — representative scenario runs across five lifecycle stages, with all agents active, create concurrent GPU demand that approaches practical limits on a single-node system;
 - **external benchmark evaluation at scenario volumes** — controlled external evaluations using anonymised context require API credits the platform does not currently have access to;
 - **vector retrieval at AIMS work-product volumes** — the master knowledge layer requires sufficient vector storage and retrieval service capacity to support realistic scenario scale without degrading recall quality;
@@ -53,10 +53,10 @@ It is not sufficient for:
 |-----|--------|
 | Full-stack scenario runs | Execute five representative AIMS lifecycle workflow scenarios through the complete multi-agent pipeline |
 | Change-impact scenario runs | Execute at least two multi-step change-impact assessment scenarios with full traceability chain |
-| 24-hour stability certification | Sustained run of the Autonomy Control Plane v1 under representative load |
-| 72-hour stability certification (if 24h passes) | Extended stability evidence for pilot readiness |
+| Sustained agent-team workload validation | Sustained multi-session run of the agent-team pipeline under representative task load |
+| Extended stability validation | Extended workload evidence for controlled autonomy readiness assessment |
 
-**Estimated requirement:** Supplementary compute capacity for sustained 24–72 hour validation windows without competing with primary development workloads.
+**Estimated requirement:** Supplementary compute capacity for sustained multi-session validation windows without competing with primary development workloads.
 
 ---
 

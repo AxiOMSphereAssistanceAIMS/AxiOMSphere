@@ -40,13 +40,13 @@ The following capabilities are internally validated and operating in our develop
 
 | Capability | Internal Status |
 |-----------|----------------|
-| Score-gated AIMS work-product generation pipeline | Internally validated |
-| ISO compliance scoring via NVIDIA NIM OmniRoute | Implemented |
-| Structured revision loop (draft → score → revise → re-score) | Implemented |
+| AIMS work-product generation pipeline with structured revision loop | Internally validated |
+| Framework-alignment review against ISO 55001 requirements and ISO 55002 guidance | Implemented |
+| Structured revision loop (draft → review → revise → re-review) | Implemented |
 | Document registry with generation metadata and traceability | Implemented |
 | Privacy-first infrastructure — local inference on private GPU | Implemented |
-| Nightly fine-tuning on approved generation outputs | Implemented |
-| OCR ingestion pipeline and searchable document registry | Implemented |
+| Evidence retention for controlled development (M2 objective) | In Development |
+| OCR ingestion pipeline and searchable document registry | In Development |
 
 All capabilities reflect internal development and test scenarios. No external industrial pilot has been completed.
 
@@ -100,7 +100,7 @@ Progressing from the current applied stage (M1) to controlled knowledge manageme
 | Resource category | Purpose |
 |------------------|---------|
 | **API / evaluator credits** | External benchmark evaluation using anonymised context — measuring output quality, traceability and framework alignment |
-| **GPU / cloud compute** | Full-stack validation runs and sustained stability certification (24h / 72h) |
+| **GPU / cloud compute** | Full-stack validation runs and sustained agent-team workload validation |
 | **Retrieval / storage services** | Controlled master knowledge and evidence retrieval experiments at AIMS work-product volumes |
 | **Security / monitoring support** | Validate privacy boundaries, oversight gates, evidence retention and recovery behaviour for pilot readiness |
 

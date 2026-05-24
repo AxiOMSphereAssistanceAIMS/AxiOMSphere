@@ -16,11 +16,11 @@ This document summarises the internally validated technical capabilities of the 
 | Capability | Internal Status | Evidence Basis |
 |-----------|----------------|----------------|
 | Multi-agent orchestration for AIMS work products | Internally validated | Coordinated agent execution across document generation, review, registration and feedback cycle |
-| Task-ledger / control-plane execution with readiness gates | Internally validated — 5/5 certification runs passed | Autonomy Control Plane v1 certification: structured ledger artifacts with steps, statuses, retries, validations; Telegram delivery confirmed per run |
-| Process integrity orchestration (plan → dispatch → collect → compare → correct → validate → report) | Internally validated — 6/6 certification runs passed | Logi Process Integrity Orchestrator v1 certification; TaskLedger write/read/finalize smoke: PASS; S1 process goal: PASS |
+| Task-ledger / control-plane execution with readiness gates | Internally validated | Structured ledger artifacts with steps, statuses, retries, validations; Telegram delivery confirmed per internal test runs |
+| Process integrity orchestration (plan → dispatch → collect → compare → correct → validate → report) | Internally validated | Process integrity orchestrator: TaskLedger write/read/finalize validated; end-to-end process goal validated in internal test scenarios |
 | ISO 55001 / ISO 55002-aligned work-product generation and review | Implemented — internal test scenarios | Document drafting and review workflows structured in accordance with applicable management-system requirements |
 | OCR ingestion and searchable AIMS document registry | Implemented | Document ingestion pipeline with SQLite registry; OCR-processed content indexed for retrieval |
-| Evidence and learning-case collection | Implemented in development workflow | Automated training pair capture from production generation runs; gold and DPO pair generation |
+| Evidence and learning-case collection | Implemented in development workflow | Validated outputs retained as structured evidence to support future controlled development cycles |
 | Controlled external evaluation with anonymised context | Implemented | External benchmark calls receive only anonymised context; source documents remain on private infrastructure |
 | Privacy controls — local inference, anonymised external calls | Implemented | Private GPU infrastructure for primary inference; external calls bounded to anonymised context only |
 | Recovery and repair behaviour | Implemented — bounded retry with human oversight | Control Plane v1: repair/retry semantics at step level; readiness gate and validation checkpoints enforced before task success |
@@ -63,7 +63,7 @@ The following are explicitly not claimed and will not be represented as achieved
 
 | Component | Role |
 |-----------|------|
-| Private GPU infrastructure (NVIDIA DGX Spark) | Primary inference — local models; no external transmission of sensitive source materials |
+| Private GPU infrastructure | Primary inference — local models; no external transmission of sensitive source materials |
 | Autonomy Control Plane v1 | Task-ledger execution, readiness gates, bounded repair/retry |
 | Logi Process Integrity Orchestrator v1 | End-to-end process loop management and integrity validation |
 | Knomi Agent | Semantic search and private knowledge retrieval |

@@ -1,7 +1,11 @@
 # AxiOMSphere — 90-Day Validation Plan
 
+> **SUPERSEDED — 2026-05-24**  
+> This document is superseded by [`AXIOMSPHERE_90_DAY_AGENT_TEAM_AND_CONTROLLED_AUTONOMY_VALIDATION_PLAN.md`](AXIOMSPHERE_90_DAY_AGENT_TEAM_AND_CONTROLLED_AUTONOMY_VALIDATION_PLAN.md).  
+> The superseding document contains updated workstreams aligned with the `AGENT_TASK_CONTRACT_AND_CLOSED_LOOP_EXECUTION_ARCHITECTURE` validation framework, removes references to provider-specific scoring services, removes "24-hour / 72-hour certification" claims, and removes "5/5 short-run certification passes" language. Do not use this document for credit applications or external submission.
+
 **Date:** 2026-05-23
-**Status:** Draft — for founder review before any submission
+**Status:** SUPERSEDED — see above
 
 ---
 

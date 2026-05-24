@@ -85,7 +85,7 @@ In active development (Layers 3–6): learning and fine-tuning loop from validat
 
 Planned (Layers 7–8): security and policy oversight gates; resilience and redundancy routing at pilot scale.
 
-The next stage is a controlled 90-day validation programme processing a representative AIMS work-product set across all five lifecycle stages, including benchmark evaluation and continuous learning measurement.
+The next stage is a controlled 90-day agent-team and controlled autonomy validation programme — structured as six progressive validation levels, from single-capability isolation to a controlled autonomy readiness assessment. The day-90 output is a structured evidence package and a go/no-go recommendation. Full plan: `docs/startup-credits/AXIOMSPHERE_90_DAY_AGENT_TEAM_AND_CONTROLLED_AUTONOMY_VALIDATION_PLAN.md`.
 
 ---
 
@@ -109,7 +109,7 @@ This is a planning-level scenario, not a measured or guaranteed performance figu
 **Credits-supported outcomes:**
 - Quality scores for AIMS work-product generation across all five lifecycle stages, benchmarked against ISO 55001 requirements and ISO 55002 guidance
 - Evidence data on change-impact decision support against a representative pilot-development scenario
-- Continuous learning improvement measurements over the 90-day validation period
+- Structured failure-category data and capacity model from agent-team validation runs
 - Infrastructure resilience and recovery confirmation under realistic workloads
 - Evidence-backed readiness pack for engaging a qualified industrial partner for a controlled pilot
 

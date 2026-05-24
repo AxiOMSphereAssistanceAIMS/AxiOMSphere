@@ -50,10 +50,10 @@ This document is a preparation reference only. No application has been submitted
 
 | Component | Description |
 |-----------|-------------|
-| Primary inference | Private GPU infrastructure (NVIDIA DGX Spark) — local models; no sensitive data transmitted externally |
-| Agent framework | Custom multi-agent pipeline with score-gated revision loop and document registry |
+| Primary inference | Private GPU infrastructure — local models; no sensitive data transmitted externally |
+| Agent framework | Custom multi-agent pipeline with framework-alignment review loop and document registry |
 | Document pipeline | OCR ingestion, SQLite registry, structured generation and review workflows |
-| Compliance scoring | NVIDIA NIM OmniRoute — anonymised context only |
+| Framework-alignment review | External evaluation service — anonymised context only |
 | Knowledge layer | Private vector retrieval over standards and approved project evidence (M2 in development) |
 | Interface | Telegram bot (operator interaction and run summaries) |
 
