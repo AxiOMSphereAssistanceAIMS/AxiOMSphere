@@ -58,3 +58,26 @@ openclaw_gateway_log.txt
 
 # Nested git repos (subdirectory releases)
 docs/github-release/.git/
+
+# Local-only governance and internal documents — never commit
+# These files exist on disk for local Claude Code use but must not be tracked
+CLAUDE.md
+PROJECT_CONSTITUTION.md
+RECOVERY.md
+AXIOMSPHERE_CANONICAL_DOCUMENT_STATUS_REGISTER.md
+AXIOMSPHERE_CANONICAL_PRODUCT_ARCHITECTURE_AND_DEVELOPMENT_SOURCE_OF_TRUTH.md
+
+# Internal ops credentials
+ops/claude_code/env.repairman
+
+# Internal architecture and planning documents
+docs/agents/axi_logi_project_context_vault_and_aims_guided_delivery_architecture.md
+docs/AIMS_CODE_SKILLS_CURRICULUM_V1.md
+
+# Internal Claude Code commands
+.claude/commands/
+
+# Internal task implementation reports and personal data
+aims_workspace/public_grant_readiness/
+aims_workspace/agent_architecture_status/
+aims_workspace/result/cv_master_fixed_20260425/
