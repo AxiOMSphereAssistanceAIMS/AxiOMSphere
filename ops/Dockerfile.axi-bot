@@ -1,0 +1,40 @@
+# Образ с зависимостями Axi — без pip install при каждом рестарте контейнера.
+# Код монтируется в /ops (см. docker-compose.yml).
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy; \
+    apt-get -o Acquire::http::Proxy=false -o Acquire::https::Proxy=false \
+        -o Acquire::Retries=5 -o Acquire::http::Timeout=120 update \
+    && apt-get -o Acquire::http::Proxy=false -o Acquire::https::Proxy=false \
+        -o Acquire::Retries=5 install -y --no-install-recommends \
+    python3.11 python3.11-dev python3-pip \
+    libreoffice-writer libreoffice-calc libreoffice-impress \
+    libreoffice-common fonts-liberation \
+    tzdata \
+    && ln -sf /usr/share/zoneinfo/Asia/Dubai /etc/localtime \
+    && echo "Asia/Dubai" > /etc/timezone \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -sf python3.11 /usr/bin/python \
+    && python3.11 -m pip install --upgrade pip
+
+RUN python3.11 -m pip install --no-cache-dir \
+    "python-telegram-bot[job-queue]==22.7" \
+    python-docx \
+    pypdf \
+    python-pptx \
+    openpyxl \
+    httpx \
+    curl_cffi \
+    playwright \
+    firecrawl-py \
+    "redis>=5.0.1" \
+    "fastapi>=0.111.0" \
+    "uvicorn>=0.29.0"
+
+# Install Playwright Chromium browser + system deps (apt внутри — без прокси)
+RUN unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy; \
+    python3.11 -m playwright install chromium --with-deps
+
+WORKDIR /ops
+CMD ["python", "/ops/axi_bot.py"]
