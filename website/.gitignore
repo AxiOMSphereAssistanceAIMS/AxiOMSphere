@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.local
 .env
+public/demo.mp4

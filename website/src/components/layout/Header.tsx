@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+
 const NAV_LINKS = [
   { label: "Opportunity",    href: "#opportunity" },
   { label: "Platform",       href: "#platform" },
@@ -34,7 +35,8 @@ export function Header() {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2 text-site-text no-underline hover:text-site-text">
+        <a href="#" className="flex items-center gap-2.5 text-site-text no-underline hover:text-site-text">
+          <img src="/logo.png" alt="AxiOMSphere logo" className="h-8 w-8 flex-shrink-0 rounded-lg" />
           <span className="text-lg font-bold tracking-tight">
             Axi<span className="text-site-accent">OM</span>Sphere
           </span>

@@ -21,7 +21,7 @@ export function Hero() {
 
         {/* Lead paragraph */}
         <motion.p
-          className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-site-muted md:text-lg"
+          className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-[#adbac6] md:text-lg"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5 }}
@@ -55,7 +55,7 @@ export function Hero() {
 
         {/* Status line */}
         <motion.p
-          className="text-xs text-site-subtle"
+          className="text-xs text-[#748498]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.9 }}

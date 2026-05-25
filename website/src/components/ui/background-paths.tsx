@@ -23,20 +23,19 @@ function FloatingPaths({ position }: { position: number }) {
             d={path.d}
             stroke={path.color}
             strokeWidth={path.width}
-            initial={{ pathLength: 0.3, opacity: 0 }}
+            initial={{ pathLength: 0, opacity: 0 }}
             animate={{
               pathLength: 1,
-              opacity: [0, 1, 0.8, 1],
-              pathOffset: [0, 1],
+              opacity: [0, 1, 1, 0],
             }}
             transition={{
-              pathOffset: {
-                duration: 18 + path.id * 0.4,
-                repeat: Infinity,
-                ease: "linear",
+              pathLength: { duration: 2.5, delay: path.id * 0.04, ease: "easeOut" },
+              opacity: {
+                duration: 5,
+                delay: path.id * 0.04,
+                times: [0, 0.24, 0.65, 1],
+                ease: "easeInOut",
               },
-              pathLength: { duration: 2, delay: path.id * 0.05 },
-              opacity:    { duration: 2, delay: path.id * 0.05 },
             }}
           />
         ))}
