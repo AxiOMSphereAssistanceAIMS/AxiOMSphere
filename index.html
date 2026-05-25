@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AxiOMSphere — AI-Assisted AIMS Work-Product Development</title>
-  <meta name="description" content="Privacy-first industrial AI for AIMS work-product development and review, evolving toward controlled knowledge, orchestration and project-support capabilities." />
+  <title>AxiOMSphere · AIMS Work-Product Development Platform</title>
+  <meta name="description" content="Privacy-first industrial AI for AIMS project readiness — helping specialists develop and review connected AIMS work products in a controlled, human-governed environment." />
   <style>
     /* ── Design tokens ─────────────────────────────── */
     :root {
@@ -74,9 +74,7 @@
       font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em;
       color: var(--text); flex-shrink: 0;
     }
-    .logo-mark {
-      width: 28px; height: 28px; flex-shrink: 0;
-    }
+    .logo-mark { width: 28px; height: 28px; flex-shrink: 0; }
     .logo span { color: var(--accent); }
     nav { display: flex; align-items: center; gap: 0.25rem; }
     nav a {
@@ -111,26 +109,25 @@
     /* ── Hero ──────────────────────────────────────── */
     .hero {
       padding: 5rem 0 4rem;
-      background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(14,165,233,0.06) 0%, transparent 65%);
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(14,165,233,0.06) 0%, transparent 65%);
     }
-    .hero-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; align-items: center;
-    }
-    @media (max-width: 820px) {
-      .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-      .hero-visual { order: -1; }
+    .hero-single { max-width: 780px; margin: 0 auto; text-align: center; }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 1.25rem;
     }
     .hero h1 {
       font-size: clamp(1.75rem, 4vw, 2.6rem);
       font-weight: 700; line-height: 1.2;
       letter-spacing: -0.03em; margin-bottom: 1.25rem;
     }
-    h1 em, .hero h1 em { font-style: normal; color: var(--accent); }
     .hero-lead {
-      font-size: 1.05rem; color: var(--muted); max-width: 520px;
+      font-size: 1.05rem; color: var(--muted);
       margin-bottom: 2rem; line-height: 1.7;
     }
-    .cta-group { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .cta-group { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; justify-content: center; }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 0.4rem;
       background: var(--accent); color: #fff; padding: 0.65rem 1.4rem;
@@ -145,72 +142,9 @@
       border: 1px solid var(--border2); transition: border-color 0.15s, background 0.15s;
     }
     .btn-secondary:hover { border-color: var(--accent); background: rgba(14,165,233,0.06); color: var(--text); }
-    .hero-trust {
-      font-size: 0.8rem; color: var(--subtle);
-      display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+    .hero-status {
+      font-size: 0.82rem; color: var(--subtle); margin-top: 0.5rem;
     }
-    .hero-visual {
-      background: var(--card);
-      border: 1px solid var(--border2);
-      border-radius: 14px;
-      padding: 1.75rem;
-      box-shadow: var(--shadow);
-    }
-    .pipeline-title {
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--subtle); margin-bottom: 1.25rem;
-    }
-    .pipeline-steps { display: flex; flex-direction: column; gap: 0; }
-    .pipeline-step {
-      display: flex; align-items: flex-start; gap: 0.85rem;
-      padding: 0.7rem 0;
-      border-bottom: 1px solid var(--border);
-      position: relative;
-    }
-    .pipeline-step:last-child { border-bottom: none; }
-    .step-icon {
-      width: 34px; height: 34px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 0.95rem;
-    }
-    .step-icon.locked  { background: rgba(16,185,129,0.12); color: var(--green); }
-    .step-icon.local   { background: rgba(14,165,233,0.12); color: var(--accent); }
-    .step-icon.bench   { background: rgba(14,165,233,0.08); color: var(--accent); }
-    .step-icon.human   { background: rgba(245,158,11,0.10); color: var(--amber); }
-    .step-body { flex: 1; }
-    .step-label { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-    .step-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
-    .step-badge {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
-      text-transform: uppercase; padding: 0.15rem 0.55rem;
-      border-radius: 20px; flex-shrink: 0; align-self: center;
-    }
-    .badge-private { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-    .badge-local   { background: rgba(14,165,233,0.10); color: var(--accent); border: 1px solid rgba(14,165,233,0.18); }
-    .badge-anon    { background: rgba(245,158,11,0.08); color: var(--amber); border: 1px solid rgba(245,158,11,0.15); }
-    .badge-human   { background: rgba(245,158,11,0.08); color: var(--amber); border: 1px solid rgba(245,158,11,0.15); }
-    .pipeline-note {
-      margin-top: 1rem; font-size: 0.73rem; color: var(--subtle);
-      padding: 0.5rem 0.75rem; background: rgba(14,165,233,0.04);
-      border-left: 2px solid rgba(14,165,233,0.25); border-radius: 0 4px 4px 0;
-    }
-
-    /* ── Trust strip ───────────────────────────────── */
-    .trust-strip {
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      padding: 2.25rem 0;
-    }
-    .trust-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
-    }
-    @media (max-width: 820px) { .trust-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 420px) { .trust-grid { grid-template-columns: 1fr; } }
-    .trust-card { display: flex; flex-direction: column; gap: 0.4rem; }
-    .trust-icon { font-size: 1.25rem; margin-bottom: 0.1rem; }
-    .trust-label { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-    .trust-text { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
 
     /* ── Sections ──────────────────────────────────── */
     section { padding: 4.5rem 0; }
@@ -223,73 +157,31 @@
       font-weight: 700; line-height: 1.25;
       letter-spacing: -0.025em; margin-bottom: 1rem;
     }
-    .section-lead { font-size: 1rem; color: var(--muted); max-width: 640px; margin-bottom: 2.5rem; }
-    .section-sub { font-size: 1rem; color: var(--muted); max-width: 640px; margin: 0 auto 1.5rem; }
+    .section-lead { font-size: 1rem; color: var(--muted); max-width: 700px; margin-bottom: 2rem; line-height: 1.75; }
+    .section-para { font-size: 1rem; color: var(--muted); max-width: 760px; margin-bottom: 1.25rem; line-height: 1.75; }
 
-    /* ── Problem / Solution ────────────────────────── */
-    .ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-    @media (max-width: 720px) { .ps-grid { grid-template-columns: 1fr; } }
-    .ps-panel {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 2rem;
-    }
-    .ps-panel.problem { border-left: 3px solid rgba(239,68,68,0.35); }
-    .ps-panel.solution { border-left: 3px solid var(--green); }
-    .ps-panel h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 1.25rem; line-height: 1.35; }
-    .ps-panel ul { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
-    .ps-panel li {
-      display: flex; gap: 0.7rem; align-items: flex-start;
-      font-size: 0.9rem; color: var(--muted); line-height: 1.55;
-    }
-    .ps-panel.problem li::before { content: '—'; color: rgba(239,68,68,0.6); flex-shrink: 0; font-weight: 700; }
-    .ps-panel.solution li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-weight: 700; }
-
-    /* ── AIMS lifecycle stages ─────────────────────── */
-    .stages-grid {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;
-    }
-    @media (max-width: 820px) { .stages-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 520px) { .stages-grid { grid-template-columns: 1fr 1fr; } }
-    .stage-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.35rem 1.1rem;
-      border-top: 3px solid var(--accent);
-    }
-    .stage-num {
-      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em;
-      color: var(--accent); margin-bottom: 0.55rem;
-    }
-    .stage-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.3; }
-    .stage-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
-    .stages-note {
-      margin-top: 2rem; font-size: 0.85rem; color: var(--muted);
-      padding: 1rem 1.25rem; background: rgba(14,165,233,0.04);
-      border: 1px solid rgba(14,165,233,0.12); border-radius: var(--radius);
+    /* ── Status qualification callout ─────────────── */
+    .status-qualification {
+      background: rgba(14,165,233,0.04); border: 1px solid rgba(14,165,233,0.12);
+      border-radius: var(--radius); padding: 1rem 1.25rem;
+      font-size: 0.875rem; color: var(--muted); margin-top: 1.5rem; line-height: 1.65;
     }
 
-    /* ── Standards ─────────────────────────────────── */
-    .standards-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.75rem;
+    /* ── Emphasis line ─────────────────────────────── */
+    .emphasis-line {
+      font-size: 1rem; color: var(--text); font-weight: 600;
+      border-left: 3px solid var(--accent);
+      padding: 0.75rem 1.25rem;
+      background: rgba(14,165,233,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-top: 2rem; max-width: 760px; line-height: 1.65;
     }
-    @media (max-width: 640px) { .standards-grid { grid-template-columns: 1fr; } }
-    .std-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.5rem;
-    }
-    .std-tag {
-      display: inline-block; font-size: 0.7rem; font-weight: 800;
-      letter-spacing: 0.06em; text-transform: uppercase;
-      padding: 0.15rem 0.6rem; border-radius: 20px; margin-bottom: 0.75rem;
-      background: rgba(14,165,233,0.10); color: var(--accent);
-      border: 1px solid rgba(14,165,233,0.18);
-    }
-    .std-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.45rem; }
-    .std-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
 
-    /* ── Capability grid ───────────────────────────── */
-    .cap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-    @media (max-width: 820px) { .cap-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 540px) { .cap-grid { grid-template-columns: 1fr; } }
+    /* ── Card grids ────────────────────────────────── */
+    .three-col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+    @media (max-width: 820px) { .three-col-grid { grid-template-columns: 1fr; } }
+    .two-col-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    @media (max-width: 640px) { .two-col-grid { grid-template-columns: 1fr; } }
     .wf-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1.5rem;
@@ -299,52 +191,44 @@
     .wf-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
     .wf-title { font-size: 0.925rem; font-weight: 700; margin-bottom: 0.5rem; }
     .wf-desc { font-size: 0.825rem; color: var(--muted); line-height: 1.55; }
+    .closing-note {
+      margin-top: 1.5rem; font-size: 0.875rem; color: var(--subtle);
+      font-style: italic; max-width: 680px;
+    }
 
-    /* ── Status panel ──────────────────────────────── */
-    .status-wrap {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden; margin-top: 2rem;
-    }
-    .status-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border);
-      gap: 1rem;
-    }
-    .status-row:last-child { border-bottom: none; }
-    .status-name { font-size: 0.9rem; color: var(--text); font-weight: 500; }
-    .status-badge {
-      font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.65rem;
-      border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-      letter-spacing: 0.03em;
-    }
-    .s-validated   { background: rgba(16,185,129,0.12); color: var(--green);  border: 1px solid rgba(16,185,129,0.2); }
-    .s-implemented { background: rgba(14,165,233,0.10); color: var(--accent); border: 1px solid rgba(14,165,233,0.18); }
-    .s-active      { background: rgba(245,158,11,0.10); color: var(--amber);  border: 1px solid rgba(245,158,11,0.18); }
-    .s-preparing   { background: rgba(148,163,184,0.08); color: var(--muted); border: 1px solid rgba(148,163,184,0.15); }
-    .status-note { margin-top: 1.25rem; font-size: 0.78rem; color: var(--subtle); font-style: italic; }
+    /* ── Work product categories ───────────────────── */
+    .wp-subheading { font-size: 0.875rem; font-weight: 700; color: var(--text); margin: 2rem 0 0.75rem; }
+    .wp-categories { font-size: 0.875rem; color: var(--muted); line-height: 1.8; margin-bottom: 0.75rem; }
+    .wp-qualifier { font-size: 0.8rem; color: var(--subtle); font-style: italic; }
 
     /* ── Demo ──────────────────────────────────────── */
-    .demo-section {
-      padding: 4rem 1.5rem;
-      max-width: 960px;
-      margin: 0 auto;
-      text-align: center;
+    .demo-wrap {
+      max-width: 960px; margin: 0 auto; text-align: center;
     }
-    .demo-section h2 { margin-bottom: 0.5rem; }
-    .demo-section .section-sub { margin-bottom: 2rem; }
+    .demo-wrap h2 { margin-bottom: 0.75rem; }
+    .demo-lead { font-size: 0.95rem; color: var(--muted); margin-bottom: 1.75rem; line-height: 1.65; }
     .demo-video {
-      width: 100%;
-      border-radius: 14px;
+      width: 100%; border-radius: 14px;
       border: 1px solid var(--border);
       background: #000;
-      box-shadow: 0 0 60px rgba(124,58,237,0.18);
+      box-shadow: 0 0 60px rgba(14,165,233,0.12);
     }
     .demo-disclaimer {
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-style: italic;
-      opacity: 0.75;
+      margin-top: 1rem; font-size: 0.8rem;
+      color: var(--muted); font-style: italic; opacity: 0.75;
+    }
+
+    /* ── Framework section ─────────────────────────── */
+    .framework-line {
+      font-size: 1rem; font-weight: 600; color: var(--accent2);
+      margin-bottom: 1.25rem; letter-spacing: 0.01em;
+    }
+    .framework-para { font-size: 0.9rem; color: var(--muted); max-width: 760px; line-height: 1.7; margin-bottom: 1rem; }
+    .framework-note {
+      font-size: 0.875rem; color: var(--muted);
+      padding: 0.9rem 1.25rem;
+      background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15);
+      border-radius: var(--radius); max-width: 760px; line-height: 1.65;
     }
 
     /* ── Milestone table ───────────────────────────── */
@@ -359,7 +243,7 @@
       padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top;
     }
     .milestone-table tr:last-child td { border-bottom: none; }
-    .milestone-table tr:hover td { background: rgba(124,58,237,0.04); }
+    .milestone-table tr:hover td { background: rgba(14,165,233,0.03); }
     .ms-id { font-weight: 700; color: var(--accent); }
     .ms-title { font-weight: 600; color: var(--text); }
     .ms-desc { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
@@ -385,67 +269,38 @@
       .ms-status { display: inline-block; margin-top: 0.5rem; }
     }
 
-    /* ── Credits ───────────────────────────────────── */
-    .outcomes-block {
-      background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15);
-      border-radius: var(--radius); padding: 1.5rem 1.75rem; margin-bottom: 1.75rem;
-    }
-    .outcomes-block h3 { font-size: 0.875rem; font-weight: 700; color: var(--green); margin-bottom: 0.85rem; }
-    .outcomes-block ul { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
-    .outcomes-block li { display: flex; gap: 0.6rem; font-size: 0.875rem; color: var(--muted); align-items: flex-start; }
-    .outcomes-block li::before { content: '\2713'; color: var(--green); font-weight: 700; flex-shrink: 0; }
-    .credit-programs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.75rem; }
+    /* ── Credits / 90-day ──────────────────────────── */
+    .credit-programs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1.75rem 0; }
     @media (max-width: 540px) { .credit-programs { grid-template-columns: 1fr; } }
     .credit-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1.25rem 1.5rem;
     }
+    .ninety-day-block {
+      background: linear-gradient(135deg, rgba(14,165,233,0.06) 0%, rgba(6,182,212,0.04) 100%);
+      border: 1px solid rgba(14,165,233,0.2);
+      border-radius: var(--radius); padding: 2rem;
+      margin-top: 2rem;
+    }
+    .ninety-day-block h3 { font-size: 1rem; font-weight: 700; color: var(--accent2); margin-bottom: 0.9rem; }
+    .ninety-day-block p { font-size: 0.9rem; color: var(--muted); line-height: 1.75; margin-bottom: 0.9rem; }
+    .ninety-day-block p:last-child { margin-bottom: 0; }
 
-    /* ── Vision block ──────────────────────────────── */
+    /* ── Long-term vision ──────────────────────────── */
     .vision-block {
       background: linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(6,182,212,0.06) 100%);
       border: 1px solid rgba(124,58,237,0.2);
-      border-radius: 16px;
-      padding: 2.5rem;
-      margin-top: 2rem;
+      border-radius: 16px; padding: 2.5rem; max-width: 860px;
     }
-    .vision-block h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent2); }
-    .vision-block p { color: var(--muted); font-size: 0.95rem; line-height: 1.8; margin-bottom: 0.8rem; }
-    .vision-block p:last-child { margin-bottom: 0; }
+    .vision-block p { color: var(--muted); font-size: 0.95rem; line-height: 1.8; }
 
-    /* ── Pathway steps ─────────────────────────────── */
-    .pathway-steps { display: flex; flex-direction: column; gap: 1rem; }
-    .path-step {
-      display: flex; align-items: flex-start; gap: 1.25rem;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.5rem;
+    /* ── Deployment options ────────────────────────── */
+    .deployment-qualifier {
+      font-size: 0.8rem; color: var(--subtle); font-style: italic;
+      margin-top: 1.25rem; max-width: 760px;
     }
-    .path-num {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(14,165,233,0.10); border: 2px solid rgba(14,165,233,0.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.875rem; font-weight: 800; color: var(--accent); flex-shrink: 0;
-    }
-    .path-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.35rem; }
-    .path-desc { font-size: 0.825rem; color: var(--muted); line-height: 1.55; }
-    .path-desc em { color: var(--accent); font-style: normal; font-weight: 600; }
 
-    /* ── Responsible use callout ───────────────────── */
-    .responsible-callout {
-      background: var(--surface);
-      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      padding: 0;
-    }
-    .callout-inner {
-      max-width: 740px; margin: 0 auto; text-align: center;
-      padding: 3.5rem 1.5rem;
-    }
-    .callout-inner .callout-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .callout-inner h2 { font-size: 1.35rem; margin-bottom: 1rem; }
-    .callout-inner p { font-size: 0.95rem; color: var(--muted); line-height: 1.7; margin-bottom: 0.75rem; }
-    .callout-inner .callout-small { font-size: 0.825rem; color: var(--subtle); }
-
-    /* ── Founder block ─────────────────────────────── */
+    /* ── Founder ───────────────────────────────────── */
     .founder-block {
       max-width: 680px; background: var(--card);
       border: 1px solid var(--border); border-left: 3px solid var(--accent);
@@ -456,29 +311,24 @@
     .founder-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.65; margin-bottom: 0.75rem; }
     .founder-contact { display: inline-block; color: var(--accent); font-size: 0.875rem; font-weight: 600; }
 
-    /* ── Contact / CTA ─────────────────────────────── */
-    .cta-section {
-      text-align: center; max-width: 680px; margin: 0 auto;
-    }
-    .cta-section h2 { margin-bottom: 1.25rem; }
-    .cta-section p { color: var(--muted); line-height: 1.75; margin-bottom: 2rem; }
+    /* ── Contact ───────────────────────────────────── */
+    .contact-block { max-width: 580px; margin-top: 3rem; }
+    .contact-block h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .contact-block p { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.65; }
+    .contact-email { font-size: 1.05rem; font-weight: 700; color: var(--accent); }
+    .contact-links { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+    .contact-links a { font-size: 0.875rem; color: var(--muted); }
+    .contact-links a:hover { color: var(--text); }
 
     /* ── Footer ────────────────────────────────────── */
     footer {
       padding: 2.5rem 0;
       border-top: 1px solid var(--border);
     }
-    .footer-inner {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      gap: 2rem; flex-wrap: wrap;
-    }
-    .footer-brand .logo { font-size: 1rem; margin-bottom: 0.4rem; }
-    .footer-desc { font-size: 0.8rem; color: var(--muted); max-width: 300px; line-height: 1.55; margin-bottom: 0.5rem; }
-    .footer-note { font-size: 0.75rem; color: var(--subtle); }
-    .footer-links { display: flex; flex-direction: column; gap: 0.4rem; align-items: flex-end; }
-    .footer-links a { font-size: 0.875rem; color: var(--muted); }
-    .footer-links a:hover { color: var(--text); }
-    @media (max-width: 540px) { .footer-inner { flex-direction: column; } .footer-links { align-items: flex-start; } }
+    .footer-text { font-size: 0.8rem; color: var(--subtle); line-height: 1.65; }
+    .footer-links-row { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .footer-links-row a { font-size: 0.8rem; color: var(--subtle); }
+    .footer-links-row a:hover { color: var(--muted); }
 
     /* ── Divider ───────────────────────────────────── */
     .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
@@ -521,334 +371,190 @@
 <!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
 <section class="hero">
   <div class="container">
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <h1>AI-assisted AIMS work-product development<br><em>for industrial project readiness</em></h1>
-        <p class="hero-lead">
-          Privacy-first, human-governed workflow for AI-assisted creation, review, and traceability
-          of AIMS work products — running on private GPU infrastructure. Source documents remain
-          on-premise throughout.
-        </p>
-        <div class="cta-group">
-          <a href="https://t.me/AxiOMsphere_bot" class="btn-primary" target="_blank" rel="noopener">Try the Demo Bot</a>
-          <a href="#demo" class="btn-secondary">Watch Demo</a>
-          <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" class="btn-secondary" target="_blank" rel="noopener">GitHub</a>
-        </div>
-        <div class="hero-trust">
-          <span>Development stage</span>
-          <span>·</span>
-          <span>Privacy-first</span>
-          <span>·</span>
-          <span>Human-governed</span>
-          <span>·</span>
-          <span>Engineer-approved outputs</span>
-        </div>
+    <div class="hero-single">
+      <span class="hero-eyebrow">Privacy-first industrial AI for AIMS project readiness</span>
+      <h1>Build the operating foundation before early decisions become costly rework.</h1>
+      <p class="hero-lead">Industrial projects depend on a connected Asset Integrity Management System long before production begins. AxiOMSphere starts with a practical applied layer: helping specialists develop and review connected AIMS work products in a private, human-governed environment — establishing the evidence foundation for a future industrial knowledge and coordination platform.</p>
+      <div class="cta-group">
+        <a href="#demo" class="btn-primary">View Product Walkthrough</a>
+        <a href="#credits" class="btn-secondary">Why Credits Now</a>
       </div>
-      <div class="hero-visual">
-        <div class="pipeline-title">M1 Applied Capability — Pipeline</div>
-        <div class="pipeline-steps">
-          <div class="pipeline-step">
-            <div class="step-icon locked">🔒</div>
-            <div class="step-body">
-              <div class="step-label">Source Document</div>
-              <div class="step-sub">Engineer submits plain-language work-product request</div>
-            </div>
-            <div class="step-badge badge-private">Private</div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-icon local">🧠</div>
-            <div class="step-body">
-              <div class="step-label">Draft Generation</div>
-              <div class="step-sub">Local reasoning model — on-premise GPU infrastructure</div>
-            </div>
-            <div class="step-badge badge-local">Local</div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-icon bench">🔍</div>
-            <div class="step-body">
-              <div class="step-label">Framework-Alignment Review</div>
-              <div class="step-sub">ISO 55001/55002 gap identification and revision guidance</div>
-            </div>
-            <div class="step-badge badge-anon">Anon</div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-icon local">🔄</div>
-            <div class="step-body">
-              <div class="step-label">Structured Revision</div>
-              <div class="step-sub">Multiple passes — local model, score-gated</div>
-            </div>
-            <div class="step-badge badge-local">Local</div>
-          </div>
-          <div class="pipeline-step">
-            <div class="step-icon human">✅</div>
-            <div class="step-body">
-              <div class="step-label">Human Review &amp; Registry</div>
-              <div class="step-sub">Engineer approves before operational use</div>
-            </div>
-            <div class="step-badge badge-human">Human</div>
-          </div>
-        </div>
-        <div class="pipeline-note">All source documents remain on-premise. No project data sent to external services during draft generation.</div>
-      </div>
+      <p class="hero-status">Current applied stage: AIMS work-product development and review &middot; Seeking startup credits for controlled validation</p>
     </div>
   </div>
 </section>
 
-<!-- ══ TRUST STRIP ════════════════════════════════════════════════════════ -->
-<div class="trust-strip">
+<hr class="divider" />
+
+<!-- ══ WHAT IS AXIOMOSPHERE ══════════════════════════════════════════════ -->
+<section id="what-is" style="background:var(--surface); border-bottom:1px solid var(--border);">
   <div class="container">
-    <div class="trust-grid">
-      <div class="trust-card">
-        <div class="trust-icon">🔒</div>
-        <div class="trust-label">Source Documents Stay Private</div>
-        <div class="trust-text">All project content remains on-premise. External evaluation services receive only anonymised context when used.</div>
-      </div>
-      <div class="trust-card">
-        <div class="trust-icon">🧠</div>
-        <div class="trust-label">Private GPU Infrastructure</div>
-        <div class="trust-text">Draft and revision cycles run entirely on private GPU hardware — no cloud dependency for core document generation.</div>
-      </div>
-      <div class="trust-card">
-        <div class="trust-icon">✅</div>
-        <div class="trust-label">Human Review on All Outputs</div>
-        <div class="trust-text">Every generated work product is reviewed and approved by a qualified engineer before operational use. No autonomous acceptance decisions.</div>
-      </div>
-      <div class="trust-card">
-        <div class="trust-icon">📐</div>
-        <div class="trust-label">ISO 55001/55002 Aligned</div>
-        <div class="trust-text">Work products structured around ISO 55001 requirements and ISO 55002 guidance for the application of ISO 55001.</div>
-      </div>
-    </div>
+    <p class="section-label">What Is AxiOMSphere</p>
+    <p class="section-para">AxiOMSphere is a development-stage multi-agent platform that coordinates specialised AI agents throughout the evolution of an industrial operating organisation: first, to develop the structured documents and work products required for project startup; then, to organise and synchronise departmental functions, responsibilities and interfaces; and, as the organisation matures, to support company specialists in developing, reviewing and updating the management system in alignment with company standards, applicable industry regulations and shareholder expectations.</p>
+    <p class="section-para">AxiOMSphere coordinates specialised AI agents to develop project-startup work products, align departmental functions and interfaces, and support company specialists in continuously developing and updating the management system in accordance with company standards, applicable industry regulations and shareholder expectations.</p>
+    <p class="section-para">The platform follows ISO 55001 requirements and ISO 55002 guidance as its AIMS management-system framework basis. It is structured around the GFMAM Asset Management Landscape as its broader process-framework reference.</p>
+    <div class="status-qualification">Current validation boundary: the present applied product stage focuses on AI-assisted AIMS work-product development and review. Departmental synchronisation, mature management-system support and broader project-development guidance remain staged development objectives as shown in the roadmap below.</div>
   </div>
-</div>
+</section>
 
 <hr class="divider" />
 
-<!-- ══ OPPORTUNITY ════════════════════════════════════════════════════════ -->
+<!-- ══ THE INDUSTRIAL PROBLEM ════════════════════════════════════════════ -->
 <section id="opportunity">
   <div class="container">
-    <p class="section-label">The Opportunity</p>
-    <h2>The problem we are solving.</h2>
-    <p class="section-lead">Industrial projects must begin building their Asset Integrity Management System before production starts — at the stage where scope, roles, processes and operating philosophy must be defined and where the consequences of gaps are most severe.</p>
-    <div class="ps-grid">
-      <div class="ps-panel problem">
-        <h3>The gap today</h3>
-        <ul>
-          <li>Early AIMS decisions are made without structured AI assistance, creating gaps that are costly to close once capital is committed</li>
-          <li>Scope misalignments and procedure inconsistencies accumulate across disciplines and surface late — when changes carry the highest impact on schedule and capital</li>
-          <li>Sensitive source materials — technical standards, asset data, proprietary procedures, regulatory requirements — cannot be submitted to external AI services</li>
-          <li>No interactive system supports key specialists in real time with intelligent guidance through fragmented standardisation sources</li>
-        </ul>
-      </div>
-      <div class="ps-panel solution">
-        <h3>What AxiOMSphere provides</h3>
-        <ul>
-          <li>AI-assisted creation, review and traceability of AIMS work products — running entirely on private GPU infrastructure</li>
-          <li>Source documents remain on-premise throughout; external evaluation services receive only anonymised context</li>
-          <li>Every output is reviewed for ISO 55001/55002 alignment before an engineer approves it for operational use</li>
-          <li>Staged development roadmap from current applied capability toward a full project lifecycle support platform</li>
-        </ul>
-      </div>
-    </div>
+    <p class="section-label">The Industrial Problem</p>
+    <p class="section-para">Industrial projects cannot operate reliably without an AIMS operating framework connecting processes, procedures, plans, registers, controls, responsibilities and functional interfaces. During early development and before full-field investment decisions, lean teams must make decisions that shape the future operating system while specialist capacity, information maturity and resources are still constrained. Inconsistent early decisions can propagate across connected work products and departmental interfaces, later becoming costly to identify and correct.</p>
+    <p class="section-para">Building this framework is multidisciplinary, information-intensive and sensitive. Specialists must work with applicable standards, regulatory requirements, company procedures, asset information, calculated and empirical indicators, functional responsibilities and cross-department interfaces. As requirements change, the impact can spread across multiple connected work products and generate repeated revision cycles, inconsistent assumptions and avoidable rework.</p>
+    <div class="emphasis-line">The opportunity is not simply to produce documents faster. It is to help specialists build a more connected, traceable and reusable management-system foundation from the start.</div>
   </div>
 </section>
 
 <hr class="divider" />
 
-<!-- ══ PLATFORM ═══════════════════════════════════════════════════════════ -->
+<!-- ══ THE PLATFORM POTENTIAL ════════════════════════════════════════════ -->
 <section id="platform" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
-    <p class="section-label">Platform Foundation</p>
-    <h2>AIMS: from project startup to organised production operations.</h2>
-    <p class="section-lead">Asset Integrity Management System (AIMS) is the integrated framework connecting project startup, operational readiness, asset integrity, reliability, maintenance, assurance, and continuous improvement.</p>
-    <div class="stages-grid">
-      <div class="stage-card">
-        <div class="stage-num">01</div>
-        <div class="stage-title">Project Definition</div>
-        <div class="stage-desc">Strategy, scope, objectives and stakeholder requirements.</div>
+    <p class="section-label">The Platform Potential</p>
+    <p class="section-lead">AxiOMSphere starts with the practical applied task of developing and reviewing connected AIMS work products. The broader objective is to build an industrial knowledge and coordination environment that can help specialists understand what has already been created for the project, use approved company knowledge, identify dependencies across parallel departmental functions and interfaces, consolidate and analyse required information, reduce duplicated effort and improve the use of specialist time and project resources.</p>
+    <div class="three-col-grid">
+      <div class="wf-card">
+        <div class="wf-icon">📚</div>
+        <div class="wf-title">Project Knowledge</div>
+        <div class="wf-desc">Retain and retrieve approved project knowledge so specialists can understand what has already been created, reviewed and connected.</div>
       </div>
-      <div class="stage-card">
-        <div class="stage-num">02</div>
-        <div class="stage-title">Organisational Setup</div>
-        <div class="stage-desc">Roles, responsibilities, interfaces and governance structures.</div>
+      <div class="wf-card">
+        <div class="wf-icon">🔗</div>
+        <div class="wf-title">Departmental Coordination</div>
+        <div class="wf-desc">Support future visibility of relationships between functions, interfaces and related work products as project requirements evolve.</div>
       </div>
-      <div class="stage-card">
-        <div class="stage-num">03</div>
-        <div class="stage-title">Functional Framework</div>
-        <div class="stage-desc">Policies, plans, procedures, registers and operational controls.</div>
-      </div>
-      <div class="stage-card">
-        <div class="stage-num">04</div>
-        <div class="stage-title">Operational Readiness</div>
-        <div class="stage-desc">Asset integrity, reliability, maintenance, assurance and handover preparation.</div>
-      </div>
-      <div class="stage-card">
-        <div class="stage-num">05</div>
-        <div class="stage-title">Production Operations</div>
-        <div class="stage-desc">Controlled execution, monitoring, feedback and continuous improvement.</div>
+      <div class="wf-card">
+        <div class="wf-icon">📊</div>
+        <div class="wf-title">Resource Decisions</div>
+        <div class="wf-desc">Build the basis for improved analysis of information required for functional planning, cost assessment and reduced duplication of effort.</div>
       </div>
     </div>
-    <div class="stages-note">AxiOMSphere is designed to connect these stages through specialised agents and a maintained single source of truth for the project's AIMS documentation.</div>
-
-    <p class="section-label" style="margin-top:3rem;">Framework References</p>
-    <h2>Built on recognised AIMS standards.</h2>
-    <p class="section-lead">The AIMS work-product pipeline is structured around three core framework references.</p>
-    <div class="standards-grid">
-      <div class="std-card">
-        <div class="std-tag">ISO 55001:2024</div>
-        <div class="std-title">Asset management — requirements</div>
-        <div class="std-desc">The international requirements standard for asset management systems. Defines the mandatory elements of an AIMS and the evidence required for conformance.</div>
-      </div>
-      <div class="std-card">
-        <div class="std-tag">ISO 55002:2018</div>
-        <div class="std-title">Asset management — guidelines</div>
-        <div class="std-desc">Guidance on the application of ISO 55001. Informs work-product structure, content requirements, and review criteria used throughout the pipeline.</div>
-      </div>
-      <div class="std-card">
-        <div class="std-tag">GFMAM Landscape</div>
-        <div class="std-title">Asset Management Landscape</div>
-        <div class="std-desc">39 subjects across 6 subject groups — applied as a reference for scope and completeness assessment across AIMS work-product categories.</div>
-      </div>
-    </div>
+    <p class="closing-note">Broader AIMS-guided project-development support is a long-term objective and depends on validated, responsibly governed capability layers.</p>
   </div>
 </section>
 
-<!-- ══ CURRENT STAGE ══════════════════════════════════════════════════════ -->
+<hr class="divider" />
+
+<!-- ══ CURRENT APPLIED STAGE ══════════════════════════════════════════════ -->
 <section id="current-stage">
   <div class="container">
-    <p class="section-label">M1 — Current Applied Stage</p>
-    <h2>What the system does today.</h2>
-    <p class="section-lead">Validated in our development environment on private GPU infrastructure. All outputs require qualified engineer review before operational use.</p>
-    <div class="cap-grid">
+    <p class="section-label">Current Applied Stage</p>
+    <p class="section-lead">Today, AxiOMSphere is validating AI-assisted workflows for developing, reviewing and coordinating connected AIMS work products and supporting documents in a controlled, privacy-first environment.</p>
+    <div class="two-col-grid">
       <div class="wf-card">
         <div class="wf-icon">📝</div>
-        <div class="wf-title">Work-Product Draft Generation</div>
-        <div class="wf-desc">Engineer submits a plain-language request via Telegram. The system generates a structured AIMS work-product draft — a procedure, register, plan, or other applicable work product — aligned to ISO 55001 requirements and ISO 55002 guidance.</div>
+        <div class="wf-title">Develop</div>
+        <div class="wf-desc">Prepare structured AIMS work products and supporting document drafts for specialist review.</div>
       </div>
       <div class="wf-card">
         <div class="wf-icon">🔍</div>
-        <div class="wf-title">Framework-Alignment Review</div>
-        <div class="wf-desc">Every draft is reviewed for alignment with ISO 55001 requirements and ISO 55002 guidance. Gaps are identified and structured revision guidance is generated for each review cycle.</div>
+        <div class="wf-title">Review</div>
+        <div class="wf-desc">Support framework-alignment review using approved references and qualified human judgement.</div>
       </div>
       <div class="wf-card">
-        <div class="wf-icon">🔄</div>
-        <div class="wf-title">Structured Revision Loop</div>
-        <div class="wf-desc">Score-gated revision cycle: draft → review → revise → re-review. Outputs progress through multiple passes. Engineers review and approve before operational use — no autonomous acceptance decisions.</div>
-      </div>
-      <div class="wf-card">
-        <div class="wf-icon">📂</div>
-        <div class="wf-title">Document Registry &amp; Traceability</div>
-        <div class="wf-desc">Accepted documents are registered in a local registry with generation metadata — revision count, timestamp, review record — enabling audit trail and traceability.</div>
+        <div class="wf-icon">🔗</div>
+        <div class="wf-title">Connect</div>
+        <div class="wf-desc">Improve traceability and consistency across related work products and supporting records.</div>
       </div>
       <div class="wf-card">
         <div class="wf-icon">🔒</div>
-        <div class="wf-title">Privacy-First Infrastructure</div>
-        <div class="wf-desc">Runs on private GPU infrastructure. All document content stays on-premise. No project data is sent to external services during draft generation. Evaluation service access is optional and configurable.</div>
-      </div>
-      <div class="wf-card">
-        <div class="wf-icon">🧠</div>
-        <div class="wf-title">Evidence Retention for Development</div>
-        <div class="wf-desc">Validated outputs are retained as structured evidence. This evidence base is intended to support future controlled improvement cycles — a development objective under M2.</div>
+        <div class="wf-title">Protect</div>
+        <div class="wf-desc">Keep project source documents on private infrastructure and control any authorised external evaluation context.</div>
       </div>
     </div>
-    <div class="status-wrap">
-      <div class="status-row">
-        <span class="status-name">AI-assisted work-product draft generation</span>
-        <span class="status-badge s-validated">Validated</span>
-      </div>
-      <div class="status-row">
-        <span class="status-name">Framework-alignment review (ISO 55001/55002)</span>
-        <span class="status-badge s-validated">Validated</span>
-      </div>
-      <div class="status-row">
-        <span class="status-name">Score-gated structured revision loop</span>
-        <span class="status-badge s-validated">Validated</span>
-      </div>
-      <div class="status-row">
-        <span class="status-name">Document registry with generation metadata</span>
-        <span class="status-badge s-implemented">Implemented</span>
-      </div>
-      <div class="status-row">
-        <span class="status-name">Privacy-first private GPU infrastructure</span>
-        <span class="status-badge s-validated">Validated</span>
-      </div>
-      <div class="status-row">
-        <span class="status-name">RAG-augmented generation from approved documents</span>
-        <span class="status-badge s-active">In Development</span>
-      </div>
-    </div>
-    <p class="status-note">All capability claims reflect development-environment validation. No production deployment claims are made.</p>
+    <p class="wp-subheading">Representative AIMS Work-Product Types</p>
+    <p class="wp-categories">Philosophies &middot; Procedures &middot; Provisions &middot; Guidelines &middot; Regulations &middot; Instructions &middot; Job Descriptions &middot; Registers &middot; Plans &middot; Other connected AIMS work products</p>
+    <p class="wp-qualifier">Illustrative categories only. The applicable work-product set depends on project scope, company requirements and the approved AIMS framework.</p>
   </div>
 </section>
 
 <hr class="divider" />
 
-<!-- ══ DEMO ════════════════════════════════════════════════════════════════ -->
-<section id="demo">
-  <div class="demo-section">
-    <h2>Platform Demo</h2>
-    <p class="section-sub">Walkthrough of the current applied stage: AI-assisted AIMS work-product development via Telegram bot interface.</p>
-    <video class="demo-video" controls preload="metadata">
-      <source src="docs/demo.mp4" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-    <p class="demo-disclaimer">Demo shows the current development-stage workflow. All generated documents require human expert review before operational use. No production deployment claims implied.</p>
+<!-- ══ PRODUCT WALKTHROUGH ════════════════════════════════════════════════ -->
+<section id="demo" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div class="demo-wrap">
+      <p class="section-label">Product Walkthrough</p>
+      <h2>A recorded walkthrough of the current applied stage.</h2>
+      <p class="demo-lead">A recorded development-stage walkthrough of the current AIMS work-product interaction surface.</p>
+      <video class="demo-video" controls preload="metadata">
+        <source src="docs/demo.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      <p class="demo-disclaimer">Demonstration scenario only. Outputs require qualified human review before operational use.</p>
+    </div>
   </div>
 </section>
 
 <hr class="divider" />
 
-<!-- ══ ROADMAP ════════════════════════════════════════════════════════════ -->
-<section id="roadmap">
+<!-- ══ MANAGEMENT-SYSTEM FRAMEWORK ════════════════════════════════════════ -->
+<section id="framework">
+  <div class="container">
+    <p class="section-label">Management-System Framework and Responsible Data Boundary</p>
+    <p class="framework-line">ISO 55001 requirements &middot; ISO 55002 guidance &middot; GFMAM Asset Management Landscape reference</p>
+    <p class="framework-para">Project source documents remain on private infrastructure. Where external evaluation is authorised, only anonymised generated outputs or de-identified evaluation context may be submitted for assessment of structure and framework alignment, without project-identifying information.</p>
+    <div class="framework-note">All generated outputs remain recommendations until reviewed and approved by qualified specialists for their intended use.</div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ══ DEVELOPMENT ROADMAP ════════════════════════════════════════════════ -->
+<section id="roadmap" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
     <p class="section-label">Development Roadmap</p>
-    <h2>Six milestones from current stage to long-term platform vision.</h2>
-    <p class="section-lead">Sequenced by technical dependency and operational readiness. Each milestone builds on validated evidence from the previous stage.</p>
+    <h2>Controlled development through staged milestones.</h2>
+    <p class="section-lead">AxiOMSphere is being developed through controlled stages. The current applied document layer creates the evidence base required before broader capability can be responsibly pursued.</p>
     <table class="milestone-table">
       <thead>
         <tr>
           <th>Milestone</th>
-          <th>Capability</th>
-          <th>Description</th>
+          <th>Title</th>
           <th>Status</th>
+          <th>Description</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><div class="ms-id">M1</div></td>
-          <td><div class="ms-title">AI-Assisted Work-Product Development</div></td>
-          <td><div class="ms-desc">Score-gated draft, review, and revision pipeline. Telegram interface. Private GPU. Human approval on all outputs.</div></td>
-          <td><span class="ms-status ms-current">Current</span></td>
+          <td><div class="ms-title">Applied AIMS Work-Product Workflows</div></td>
+          <td><span class="ms-status ms-current">Current Applied Stage / Internal Validation</span></td>
+          <td><div class="ms-desc">Develop, review, align and trace connected AIMS work products.</div></td>
         </tr>
         <tr>
           <td><div class="ms-id">M2</div></td>
-          <td><div class="ms-title">Controlled Knowledge &amp; Self-Learning</div></td>
-          <td><div class="ms-desc">OCR ingestion of approved documents into a vector knowledge base. RAG-augmented generation from organisation-specific precedents. Nightly fine-tuning on approved outputs.</div></td>
-          <td><span class="ms-status ms-active">In Development</span></td>
+          <td><div class="ms-title">Controlled Knowledge and Self-Learning</div></td>
+          <td><span class="ms-status ms-active">In Development / Validation Required</span></td>
+          <td><div class="ms-desc">Build governed knowledge and validated improvement foundations.</div></td>
         </tr>
         <tr>
           <td><div class="ms-id">M3</div></td>
-          <td><div class="ms-title">Self-Repair &amp; Resilience</div></td>
-          <td><div class="ms-desc">Automated fault detection and repair loop across the agent pipeline. Self-healing infrastructure with human confirmation gate before applying fixes.</div></td>
-          <td><span class="ms-status ms-planned">Planned</span></td>
+          <td><div class="ms-title">Self-Repair and Recovery</div></td>
+          <td><span class="ms-status ms-planned">Planned / Internal Architecture in Development</span></td>
+          <td><div class="ms-desc">Prepare controlled failure detection, correction and recovery capability.</div></td>
         </tr>
         <tr>
           <td><div class="ms-id">M4</div></td>
-          <td><div class="ms-title">Multi-Agent Orchestration</div></td>
-          <td><div class="ms-desc">Coordinated specialist agents sharing a single document registry and knowledge base. Cross-discipline consistency enforcement across safety, budget, procurement and standards domains.</div></td>
+          <td><div class="ms-title">Self-Management and Orchestration</div></td>
           <td><span class="ms-status ms-planned">Planned</span></td>
+          <td><div class="ms-desc">Develop coordination, execution control, feedback and resilience mechanisms.</div></td>
         </tr>
         <tr>
           <td><div class="ms-id">M5</div></td>
-          <td><div class="ms-title">Client-Facing AIMS Assistant</div></td>
-          <td><div class="ms-desc">Interactive assistant for engineering teams — query project history, identify document gaps, surface regulatory requirements, support audit preparation.</div></td>
-          <td><span class="ms-status ms-future">Future</span></td>
+          <td><div class="ms-title">Client-Facing Industrial Assistant</div></td>
+          <td><span class="ms-status ms-future">Future Development</span></td>
+          <td><div class="ms-desc">Extend validated capabilities into context-aware specialist support.</div></td>
         </tr>
         <tr>
           <td><div class="ms-id">M6</div></td>
           <td><div class="ms-title">AIMS-Guided Project Development Support</div></td>
-          <td><div class="ms-desc">Platform-level support for the full project lifecycle — from justification through commissioning. Understands project history, cross-department linkages, and resource utilisation patterns.</div></td>
           <td><span class="ms-status ms-future">Long-Term Vision</span></td>
+          <td><div class="ms-desc">Support structured project-startup and production-organisation development only after preceding layers are mature.</div></td>
         </tr>
       </tbody>
     </table>
@@ -857,93 +563,65 @@
 
 <hr class="divider" />
 
-<!-- ══ CREDITS ════════════════════════════════════════════════════════════ -->
-<section id="credits" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+<!-- ══ WHY STARTUP CREDITS NOW ════════════════════════════════════════════ -->
+<section id="credits">
   <div class="container">
-    <p class="section-label">Startup Credit Applications</p>
-    <h2>What compute credits enable.</h2>
-    <p class="section-lead">We are applying to Google for Startups, Microsoft Founders Hub, NVIDIA Inception, and Anthropic Credits to accelerate the 90-day validation programme.</p>
-    <div class="outcomes-block">
-      <h3>90-Day Validation Outcomes — Credits Enable</h3>
-      <ul>
-        <li>Sustained multi-agent generation and revision cycles at validation throughput — above development-allocation GPU capacity</li>
-        <li>Persistent, high-recall vector retrieval service at scale above the current development dataset (M2 knowledge layer)</li>
-        <li>Evaluation API quota for framework-alignment review at validation throughput — above development-tier rate limits</li>
-        <li>Structured evidence package at day 90: task contract definitions, validation pass/fail records, failure category analysis, capacity model</li>
-        <li>Documented governance recommendation: which capabilities are validated for expanded scope and what human governance checkpoints are required</li>
-      </ul>
-    </div>
+    <p class="section-label">Why Startup Credits Now</p>
+    <h2>What credits enable at this stage.</h2>
+    <p class="section-lead">AxiOMSphere begins with a practical, document-intensive industrial problem: helping specialists develop and review connected AIMS work products in a controlled private environment. Credits are sought to validate this applied capability at meaningful scale and to develop the next controlled layers — learning, repair, orchestration and resilient execution — required before the platform can responsibly support broader AIMS project-development workflows.</p>
     <div class="credit-programs">
       <div class="credit-card">
-        <div class="wf-title">Google for Startups</div>
-        <div class="wf-desc" style="margin-top:0.5rem;">Cloud infrastructure credits to support GPU compute and vector database capacity for sustained multi-agent validation work and M2 knowledge retrieval layer development.</div>
+        <div class="wf-title">AI / Evaluation Access</div>
+        <div class="wf-desc" style="margin-top:0.5rem;">Assess anonymised or de-identified outputs for structure, framework alignment and reviewer usefulness where authorised.</div>
       </div>
       <div class="credit-card">
-        <div class="wf-title">Microsoft Founders Hub</div>
-        <div class="wf-desc" style="margin-top:0.5rem;">Azure compute credits to supplement on-premise GPU capacity and enable higher-throughput validation cycles during the 90-day programme.</div>
+        <div class="wf-title">GPU / Compute Capacity</div>
+        <div class="wf-desc" style="margin-top:0.5rem;">Execute controlled development-stage validation scenarios at representative workload scale.</div>
       </div>
       <div class="credit-card">
-        <div class="wf-title">NVIDIA Inception</div>
-        <div class="wf-desc" style="margin-top:0.5rem;">Access to NIM API quota and GPU compute resources to support evaluation pipeline throughput at validation scale during sustained workload periods.</div>
+        <div class="wf-title">Retrieval / Knowledge Services</div>
+        <div class="wf-desc" style="margin-top:0.5rem;">Evaluate traceability, controlled retrieval and the foundations of approved project knowledge handling.</div>
       </div>
       <div class="credit-card">
-        <div class="wf-title">Anthropic Credits</div>
-        <div class="wf-desc" style="margin-top:0.5rem;">API quota for framework-alignment review at validation throughput — above development-tier rate limits required for multi-agent orchestration validation.</div>
+        <div class="wf-title">Security / Monitoring</div>
+        <div class="wf-desc" style="margin-top:0.5rem;">Support auditability, privacy-boundary verification and controlled validation evidence.</div>
       </div>
     </div>
-    <div class="vision-block">
-      <h3>90-Day Validation Plan</h3>
-      <p>Contingent on compute credit approval — building on the M1 operational baseline. The validation work targets the transition from a single-operator development workflow to a coordinated agent-team model, in which multiple specialist agents share a task registry, accept defined task packages, execute within their capability scope, and return structured outputs under qualified human governance.</p>
-      <p>The output at day 90 is a structured evidence package and a documented governance recommendation — not a claim of autonomous operation.</p>
-      <p style="font-size:0.875rem;"><a href="docs/startup-credits/AXIOMSPHERE_90_DAY_AGENT_TEAM_AND_CONTROLLED_AUTONOMY_VALIDATION_PLAN.md" style="color:var(--accent2);">Full plan: 90-Day Agent-Team and Controlled Autonomy Validation Plan →</a></p>
+    <div class="ninety-day-block">
+      <h3>90-Day Validation Focus</h3>
+      <p>Validate the current applied AIMS work-product workflow, generate measurable evidence of structure, traceability and specialist-review usefulness, and establish a controlled readiness recommendation for the next governed platform layer.</p>
+      <p><a href="docs/startup-credits/AXIOMSPHERE_90_DAY_AGENT_TEAM_AND_CONTROLLED_AUTONOMY_VALIDATION_PLAN.md" style="color:var(--accent2); font-size:0.9rem;">View 90-Day Validation Plan →</a></p>
     </div>
   </div>
 </section>
 
-<!-- ══ VISION ════════════════════════════════════════════════════════════ -->
-<section id="vision">
+<hr class="divider" />
+
+<!-- ══ LONG-TERM PLATFORM VISION ══════════════════════════════════════════ -->
+<section id="vision" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
-    <p class="section-label">Staged Development Path</p>
-    <h2>From current stage toward long-term platform vision.</h2>
-    <p class="section-lead">Each milestone builds on validated evidence from the previous stage. Progression is gated on evidence, not time elapsed.</p>
-    <div class="pathway-steps">
-      <div class="path-step">
-        <div class="path-num">1</div>
-        <div>
-          <div class="path-title">M1 — Current Applied Stage</div>
-          <div class="path-desc">AI-assisted AIMS work-product development and review is <em>validated and operating</em> in our development environment on private GPU infrastructure. Score-gated pipeline, Telegram interface, human approval on all outputs.</div>
-        </div>
-      </div>
-      <div class="path-step">
-        <div class="path-num">2</div>
-        <div>
-          <div class="path-title">M2–M3 — Knowledge and Resilience</div>
-          <div class="path-desc">Controlled knowledge base built from approved documents, RAG-augmented generation drawing on organisation-specific precedents, and self-repair infrastructure — <em>in active development</em>. Credits accelerate this work.</div>
-        </div>
-      </div>
-      <div class="path-step">
-        <div class="path-num">3</div>
-        <div>
-          <div class="path-title">M4–M6 — Platform Expansion</div>
-          <div class="path-desc">Multi-agent orchestration, client-facing AIMS assistant, and full project lifecycle support — <em>staged milestones</em> sequenced by technical dependency and governed by evidence-based progression criteria at each boundary.</div>
-        </div>
-      </div>
+    <p class="section-label">Long-Term Platform Vision</p>
+    <div class="vision-block">
+      <p>The long-term objective is an industrial knowledge and coordination environment able to help specialists work with project history, approved company knowledge, connected departmental processes, interfaces and large information sets required for functional development, cost assessment and resource optimisation. Only after the supporting capabilities are validated and responsibly governed is AxiOMSphere intended to support broader AIMS-guided project-development workflows.</p>
     </div>
   </div>
 </section>
 
-<!-- ══ RESPONSIBLE USE ════════════════════════════════════════════════════ -->
-<div class="responsible-callout">
-  <div class="callout-inner">
-    <div class="callout-icon">⚖️</div>
-    <h2>Built for responsible industrial use.</h2>
-    <p>AxiOMSphere develops and reviews AIMS management-system work products in accordance with ISO 55001 requirements and ISO 55002 guidance. Generated outputs and recommendations require qualified human review before operational use and do not replace formal assurance or certification activities.</p>
-    <p class="callout-small">Sensitive source information remains private by default. Approved external services receive anonymised context only unless separately authorised. Learning is not automatic — no agent updates its behaviour without a human development decision.</p>
-  </div>
-</div>
+<hr class="divider" />
 
-<!-- ══ FOUNDER ════════════════════════════════════════════════════════════ -->
-<section id="founder">
+<!-- ══ FUTURE COMMERCIAL DEPLOYMENT OPTIONS ═══════════════════════════════ -->
+<section id="deployment">
+  <div class="container">
+    <p class="section-label">Future Commercial Deployment Options</p>
+    <p class="section-para">Once validated and ready for deployment, AxiOMSphere is intended to be configurable to each client's scale, confidentiality requirements and operating model. Future delivery options may include deployment on client-owned private infrastructure, dedicated hosted environments or controlled pilot use of approved cloud computing resources. Platform configuration and commercial scope may scale with the number of authorised users, projects, departments and required workloads, while protected project identity and source-document boundaries remain controlled within the client environment.</p>
+    <p class="deployment-qualifier">Post-validation product perspective only. No commercial deployment or customer pilot is claimed at the current development stage.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ══ FOUNDER AND CONTACT ════════════════════════════════════════════════ -->
+<section id="founder" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
   <div class="container">
     <p class="section-label">Founder</p>
     <h2>Who is building this.</h2>
@@ -952,23 +630,14 @@
       <div class="founder-role">Founder &amp; Lead Engineer — AxiOMSphere</div>
       <p class="founder-desc">Industrial engineer and AI developer with direct experience in asset integrity management system development for major capital projects. Building AxiOMSphere to close the gap between published AIMS standards and the structured, evidence-based work products that industrial projects need at the front end — where early decisions shape the entire operating organisation.</p>
       <p class="founder-desc">AxiOMSphere is a focused technical project: no external funding, no team beyond the founder. The goal is a validated, evidence-based development trajectory — from current M1 applied capability toward a governed platform that can support the full AIMS project lifecycle.</p>
-      <a href="mailto:hello@axiomsphereai.com" class="founder-contact">hello@axiomsphereai.com →</a>
     </div>
-  </div>
-</section>
-
-<hr class="divider" />
-
-<!-- ══ CONTACT ════════════════════════════════════════════════════════════ -->
-<section id="contact">
-  <div class="container">
-    <div class="cta-section">
-      <h2>Building the foundation for industrial AIMS intelligence.</h2>
-      <p>We are at the development stage, validating privacy-first AI-assisted workflows for AIMS work-product development. We are applying to Google for Startups, Microsoft Founders Hub, NVIDIA Inception, and Anthropic Credits to accelerate this work. Researchers, domain partners, and early collaborators — we welcome conversation.</p>
-      <div class="cta-group" style="justify-content:center;">
-        <a href="mailto:hello@axiomsphereai.com" class="btn-primary">Get in Touch</a>
-        <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" class="btn-secondary" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://www.linkedin.com/in/evgeny-shokk-54781716" class="btn-secondary" target="_blank" rel="noopener">LinkedIn</a>
+    <div class="contact-block" id="contact">
+      <h3>Get in Touch</h3>
+      <p>For startup-credit programme review, collaboration enquiries and application follow-up:</p>
+      <a href="mailto:hello@axiomsphereai.com" class="contact-email">hello@axiomsphereai.com</a>
+      <div class="contact-links">
+        <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/evgeny-shokk-54781716" target="_blank" rel="noopener">LinkedIn</a>
       </div>
     </div>
   </div>
@@ -977,25 +646,13 @@
 <!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
 <footer>
   <div class="container">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <div class="logo" style="margin-bottom:0.4rem;">
-          <svg class="logo-mark" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <polygon points="14,2 25,8 25,20 14,26 3,20 3,8" fill="none" stroke="#0ea5e9" stroke-width="1.5"/>
-            <circle cx="14" cy="14" r="4" fill="#0ea5e9" opacity="0.55"/>
-          </svg>
-          Axi<span>OM</span>Sphere
-        </div>
-        <p class="footer-desc">Privacy-first industrial AI for AIMS work-product development and review — running on private GPU infrastructure.</p>
-        <p class="footer-note">Development stage · Human-governed · Qualified human review required before operational use</p>
-      </div>
-      <div class="footer-links">
-        <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://t.me/AxiOMsphere_bot" target="_blank" rel="noopener">Demo Bot</a>
-        <a href="https://www.linkedin.com/in/evgeny-shokk-54781716" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="mailto:hello@axiomsphereai.com">hello@axiomsphereai.com</a>
-        <a href="LICENSE">Apache-2.0</a>
-      </div>
+    <p class="footer-text">AxiOMSphere &middot; Development-stage industrial AI for AIMS work-product validation &middot; Privacy-first &middot; Human-governed &middot; Qualified human review required before operational use</p>
+    <div class="footer-links-row">
+      <a href="https://github.com/AxiOMSphereAssistanceAIMS/AxiOMSphere" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://t.me/AxiOMsphere_bot" target="_blank" rel="noopener">Demo Bot</a>
+      <a href="https://www.linkedin.com/in/evgeny-shokk-54781716" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="mailto:hello@axiomsphereai.com">hello@axiomsphereai.com</a>
+      <a href="LICENSE">Apache-2.0</a>
     </div>
   </div>
 </footer>
