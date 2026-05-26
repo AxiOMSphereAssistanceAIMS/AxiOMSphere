@@ -1,162 +1,160 @@
-import { motion } from "framer-motion"
+import { createContext, useContext, useState } from "react"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
+import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import {
+  roadmapSectionTitle,
+  roadmapMilestones,
+  type MilestoneStatusType,
+  type RoadmapMilestone,
+} from "@/data/public-content"
 
-type MilestoneStatus = "current" | "active" | "planned" | "future"
-
-interface Milestone {
-  id: string
-  title: string
-  status: MilestoneStatus
-  statusLabel: string
-  description: string
-}
-
-const MILESTONES: Milestone[] = [
-  {
-    id: "M1",
-    title: "Applied AIMS Work-Product Workflows",
-    status: "current",
-    statusLabel: "Current Applied Stage / Internal Validation",
-    description: "Develop, review, align and trace connected AIMS work products.",
-  },
-  {
-    id: "M2",
-    title: "Controlled Knowledge and Self-Learning",
-    status: "active",
-    statusLabel: "In Development / Validation Required",
-    description: "Build governed knowledge and validated improvement foundations.",
-  },
-  {
-    id: "M3",
-    title: "Self-Repair and Recovery",
-    status: "planned",
-    statusLabel: "Planned / Internal Architecture in Development",
-    description:
-      "Prepare controlled failure detection, correction and recovery capability.",
-  },
-  {
-    id: "M4",
-    title: "Self-Management and Orchestration",
-    status: "planned",
-    statusLabel: "Planned",
-    description:
-      "Develop coordination, execution control, feedback and resilience mechanisms.",
-  },
-  {
-    id: "M5",
-    title: "Client-Facing Industrial Assistant",
-    status: "future",
-    statusLabel: "Future Development",
-    description:
-      "Extend validated capabilities into context-aware specialist support.",
-  },
-  {
-    id: "M6",
-    title: "AIMS-Guided Project Development Support",
-    status: "future",
-    statusLabel: "Long-Term Vision",
-    description:
-      "Support structured project-startup and production-organisation development only after preceding layers are mature.",
-  },
-]
-
-const statusStyles: Record<MilestoneStatus, string> = {
+const statusStyles: Record<MilestoneStatusType, string> = {
   current:
     "border-[rgba(14,165,233,0.35)] bg-[rgba(14,165,233,0.1)] text-site-accent",
-  active:
+  "in-development":
     "border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.08)] text-site-green",
   planned:
     "border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.07)] text-site-amber",
-  future:
+  "long-term":
     "border-[rgba(100,130,200,0.2)] bg-[rgba(100,130,200,0.05)] text-site-subtle",
 }
 
-const rowVariants = {
-  hidden: { opacity: 0, x: -12 },
-  show: (i: number) => ({
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.45, delay: i * 0.07 },
-  }),
+interface RoadmapCtxType {
+  openId: string | null
+  setOpenId: (id: string | null) => void
+  prefersReducedMotion: boolean
 }
 
+const RoadmapCtx = createContext<RoadmapCtxType>({
+  openId: null,
+  setOpenId: () => {},
+  prefersReducedMotion: false,
+})
+
 export function Roadmap() {
+  const [openId, setOpenId] = useState<string | null>(null)
+  const prefersReducedMotion = useReducedMotion() ?? false
+
   return (
     <section
       id="roadmap"
-      className="border-y border-[rgba(100,130,200,0.1)] bg-site-surface py-20"
+      className="border-b border-[rgba(100,130,200,0.1)] bg-site-bg py-20"
     >
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-8"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-site-accent">
-            Development Roadmap
-          </p>
-          <h2 className="mb-3 text-2xl font-bold leading-tight tracking-tight text-site-text md:text-3xl">
-            Controlled development through staged milestones.
+          <h2 className="max-w-3xl text-2xl font-bold leading-tight tracking-tight text-site-text md:text-3xl">
+            {roadmapSectionTitle}
           </h2>
-          <p className="max-w-2xl text-base leading-relaxed text-site-muted">
-            AxiOMSphere is being developed through controlled stages. The current applied document
-            layer creates the evidence base required before broader capability can be responsibly
-            pursued.
-          </p>
         </motion.div>
 
-        {/* Milestone rows */}
-        <div className="overflow-hidden rounded-2xl border border-[rgba(100,130,200,0.12)]">
-          {MILESTONES.map((ms, i) => (
-            <motion.div
-              key={ms.id}
-              custom={i}
-              variants={rowVariants}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-40px" }}
-              className={cn(
-                "flex flex-col gap-3 border-b border-[rgba(100,130,200,0.08)] p-5 last:border-0 sm:flex-row sm:items-start sm:gap-5",
-                ms.status === "current" && "bg-[rgba(14,165,233,0.03)]",
-              )}
-            >
-              {/* ID badge */}
-              <div className="shrink-0">
-                <span
-                  className={cn(
-                    "inline-flex h-8 w-10 items-center justify-center rounded-lg text-xs font-bold",
-                    ms.status === "current"
-                      ? "bg-[rgba(14,165,233,0.15)] text-site-accent"
-                      : "bg-[rgba(100,130,200,0.08)] text-site-muted",
-                  )}
-                >
-                  {ms.id}
-                </span>
-              </div>
-
-              {/* Content */}
-              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-site-text">{ms.title}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-site-muted">{ms.description}</p>
-                </div>
-                <div className="shrink-0">
-                  <span
-                    className={cn(
-                      "inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                      statusStyles[ms.status],
-                    )}
-                  >
-                    {ms.statusLabel}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <RoadmapCtx.Provider value={{ openId, setOpenId, prefersReducedMotion }}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="overflow-hidden rounded-2xl border border-[rgba(100,130,200,0.12)]"
+          >
+            {roadmapMilestones.map((ms) => (
+              <MilestoneRow key={ms.id} milestone={ms} />
+            ))}
+          </motion.div>
+        </RoadmapCtx.Provider>
       </div>
     </section>
+  )
+}
+
+function MilestoneRow({ milestone }: { milestone: RoadmapMilestone }) {
+  const { openId, setOpenId, prefersReducedMotion } = useContext(RoadmapCtx)
+  const isOpen = openId === milestone.id
+  const toggle = () => setOpenId(isOpen ? null : milestone.id)
+
+  return (
+    <div
+      className={cn(
+        "border-b border-[rgba(100,130,200,0.08)] last:border-0",
+        milestone.statusType === "current" && "bg-[rgba(14,165,233,0.025)]",
+      )}
+    >
+      {/* Trigger */}
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={`${milestone.id}-desc`}
+        id={`${milestone.id}-trigger`}
+        onClick={toggle}
+        className={cn(
+          "flex w-full items-start gap-3 px-5 py-4 text-left",
+          "transition-colors duration-150 hover:bg-[rgba(255,255,255,0.02)]",
+          "focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-site-accent",
+        )}
+      >
+        {/* Milestone ID badge */}
+        <span
+          className={cn(
+            "mt-0.5 flex h-7 w-9 shrink-0 items-center justify-center rounded-md text-xs font-bold",
+            milestone.statusType === "current"
+              ? "bg-[rgba(14,165,233,0.15)] text-site-accent"
+              : "bg-[rgba(100,130,200,0.08)] text-site-muted",
+          )}
+          aria-hidden="true"
+        >
+          {milestone.id}
+        </span>
+
+        {/* Title + status badge — stacked, always visible */}
+        <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <span className="text-sm font-semibold leading-snug text-site-text sm:text-base">
+            {milestone.title}
+          </span>
+          <span
+            className={cn(
+              "self-start rounded-full border px-2.5 py-0.5 text-xs font-medium",
+              statusStyles[milestone.statusType],
+            )}
+          >
+            {milestone.statusLabel}
+          </span>
+        </span>
+
+        {/* Expand chevron */}
+        <ChevronDown
+          size={18}
+          className={cn(
+            "mt-1 shrink-0 text-site-subtle transition-transform duration-300",
+            isOpen && "rotate-180",
+          )}
+          aria-hidden="true"
+        />
+      </button>
+
+      {/* Collapsible description */}
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            id={`${milestone.id}-desc`}
+            role="region"
+            aria-labelledby={`${milestone.id}-trigger`}
+            initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <p className="border-t border-[rgba(100,130,200,0.08)] px-5 pb-5 pt-4 pl-[4.25rem] text-sm leading-relaxed text-site-muted">
+              {milestone.description}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }

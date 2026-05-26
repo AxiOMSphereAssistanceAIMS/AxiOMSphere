@@ -21,7 +21,7 @@ export function Hero() {
 
         {/* Lead paragraph */}
         <motion.p
-          className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-[#adbac6] md:text-lg"
+          className="mx-auto mb-4 max-w-2xl text-base leading-relaxed text-[#adbac6] md:text-lg"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5 }}
@@ -33,12 +33,23 @@ export function Hero() {
           integrated decision and document base for the future production management platform.
         </motion.p>
 
+        {/* Audience statement */}
+        <motion.p
+          className="mx-auto mb-8 max-w-xl text-sm italic text-[#748498]"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.65 }}
+        >
+          For industrial project teams and engineers establishing Asset Integrity Management Systems
+          (AIMS) before production begins.
+        </motion.p>
+
         {/* CTAs */}
         <motion.div
           className="mb-6 flex flex-wrap items-center justify-center gap-3"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
+          transition={{ duration: 0.6, delay: 0.82 }}
         >
           <Button size="lg" asChild>
             <a href="#demo">See the Demo</a>
@@ -58,7 +69,7 @@ export function Hero() {
           className="text-xs text-[#748498]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.9 }}
+          transition={{ duration: 0.6, delay: 1.05 }}
         >
           Current applied stage: AIMS work-product development and review &middot; Seeking startup
           credits for controlled validation

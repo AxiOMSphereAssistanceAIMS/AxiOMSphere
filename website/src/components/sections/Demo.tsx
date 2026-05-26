@@ -1,10 +1,11 @@
 import { motion } from "framer-motion"
+import { demoShowcase } from "@/data/public-content"
 
 export function Demo() {
   return (
     <section
       id="demo"
-      className="border-y border-[rgba(100,130,200,0.1)] bg-site-surface py-20"
+      className="border-b border-[rgba(100,130,200,0.1)] bg-site-surface py-20"
     >
       <div className="container mx-auto px-6">
         <motion.div
@@ -12,35 +13,34 @@ export function Demo() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6 }}
-          className="mx-auto max-w-3xl"
+          className="mx-auto max-w-4xl"
         >
-          <p className="mb-2 text-xs font-bold uppercase tracking-widest text-site-accent">
-            Product Walkthrough
-          </p>
-          <h2 className="mb-3 text-2xl font-bold leading-tight tracking-tight text-site-text md:text-3xl">
-            A recorded walkthrough of the current applied stage.
-          </h2>
-          <p className="mb-6 text-base leading-relaxed text-site-muted">
-            A recorded development-stage walkthrough of the current AIMS work-product interaction
-            surface.
+          {/* Status label */}
+          <p className="mb-3 text-center text-xs font-bold uppercase tracking-widest text-site-accent">
+            {demoShowcase.statusLabel}
           </p>
 
-          {/* Video */}
+          {/* Title */}
+          <h2 className="mb-8 text-center text-2xl font-bold leading-tight tracking-tight text-site-text md:text-3xl">
+            {demoShowcase.title}
+          </h2>
+
+          {/* Video showcase */}
           <div className="overflow-hidden rounded-2xl border border-[rgba(100,130,200,0.15)] bg-site-card shadow-[0_4px_40px_rgba(0,0,0,0.4)]">
             <video
               className="w-full"
               controls
               preload="metadata"
-              aria-label="AxiOMSphere demo walkthrough"
+              aria-label="AxiOMSphere demo — on-demand AIMS document preparation and review"
             >
               <source src="docs/demo.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
 
-          <p className="mt-4 text-xs text-site-subtle">
-            Demonstration scenario only. Outputs require qualified human review before operational
-            use.
+          {/* Explanatory text below video */}
+          <p className="mt-6 text-base leading-relaxed text-site-muted">
+            {demoShowcase.belowVideoText}
           </p>
         </motion.div>
       </div>
