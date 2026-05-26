@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -114,22 +114,26 @@ export function AccordionContent({ children, className }: AccordionContentProps)
   const { isOpen, itemId, prefersReducedMotion } = useContext(AccordionItemContext)
 
   return (
-    <AnimatePresence initial={false}>
-      {isOpen && (
-        <motion.div
-          id={`${itemId}-content`}
-          role="region"
-          aria-labelledby={`${itemId}-trigger`}
-          initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-          animate={prefersReducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
-          exit={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-          transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-          style={{ overflow: "hidden" }}
-          className={className}
-        >
-          {children}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div
+      id={`${itemId}-content`}
+      role="region"
+      aria-labelledby={`${itemId}-trigger`}
+      aria-hidden={!isOpen}
+      initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+      animate={
+        isOpen
+          ? prefersReducedMotion
+            ? { opacity: 1 }
+            : { height: "auto", opacity: 1 }
+          : prefersReducedMotion
+            ? { opacity: 0 }
+            : { height: 0, opacity: 0 }
+      }
+      transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+      style={{ overflow: "hidden" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
   )
 }

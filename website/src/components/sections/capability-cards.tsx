@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 import { capabilityCards, type CapabilityCard } from "@/data/public-content"
 import {
@@ -117,32 +117,36 @@ function CoversDisclosure({ cardId, covers }: { cardId: string; covers: string[]
         />
       </button>
 
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            id={`${cardId}-covers`}
-            role="region"
-            aria-labelledby={`${cardId}-covers-trigger`}
-            initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
-            exit={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            style={{ overflow: "hidden" }}
-          >
-            <ul className="space-y-2.5 border-t border-[rgba(100,130,200,0.08)] px-4 pb-4 pt-3">
-              {covers.map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-site-muted">
-                  <span
-                    className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-site-accent/40"
-                    aria-hidden="true"
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div
+        id={`${cardId}-covers`}
+        role="region"
+        aria-labelledby={`${cardId}-covers-trigger`}
+        aria-hidden={!open}
+        initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+        animate={
+          open
+            ? prefersReducedMotion
+              ? { opacity: 1 }
+              : { height: "auto", opacity: 1 }
+            : prefersReducedMotion
+              ? { opacity: 0 }
+              : { height: 0, opacity: 0 }
+        }
+        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        style={{ overflow: "hidden" }}
+      >
+        <ul className="space-y-2.5 border-t border-[rgba(100,130,200,0.08)] px-4 pb-4 pt-3">
+          {covers.map((item, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-site-muted">
+              <span
+                className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-site-accent/40"
+                aria-hidden="true"
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </motion.div>
     </div>
   )
 }

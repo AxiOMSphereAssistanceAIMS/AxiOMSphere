@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react"
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -137,24 +137,28 @@ function MilestoneRow({ milestone }: { milestone: RoadmapMilestone }) {
       </button>
 
       {/* Collapsible description */}
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            id={`${milestone.id}-desc`}
-            role="region"
-            aria-labelledby={`${milestone.id}-trigger`}
-            initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            animate={prefersReducedMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
-            exit={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-            style={{ overflow: "hidden" }}
-          >
-            <p className="border-t border-[rgba(100,130,200,0.08)] px-5 pb-5 pt-4 pl-[4.25rem] text-sm leading-relaxed text-site-muted">
-              {milestone.description}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div
+        id={`${milestone.id}-desc`}
+        role="region"
+        aria-labelledby={`${milestone.id}-trigger`}
+        aria-hidden={!isOpen}
+        initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
+        animate={
+          isOpen
+            ? prefersReducedMotion
+              ? { opacity: 1 }
+              : { height: "auto", opacity: 1 }
+            : prefersReducedMotion
+              ? { opacity: 0 }
+              : { height: 0, opacity: 0 }
+        }
+        transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+        style={{ overflow: "hidden" }}
+      >
+        <p className="border-t border-[rgba(100,130,200,0.08)] px-5 pb-5 pt-4 pl-[4.25rem] text-sm leading-relaxed text-site-muted">
+          {milestone.description}
+        </p>
+      </motion.div>
     </div>
   )
 }

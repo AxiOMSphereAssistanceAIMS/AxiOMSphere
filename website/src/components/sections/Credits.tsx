@@ -101,12 +101,9 @@ export function Credits() {
             of structure, traceability and specialist-review usefulness, and establish a controlled
             readiness recommendation for the next governed platform layer.
           </p>
-          <a
-            href="docs/startup-credits/AXIOMSPHERE_90_DAY_AGENT_TEAM_AND_CONTROLLED_AUTONOMY_VALIDATION_PLAN.md"
-            className="text-sm font-medium text-site-accent2 hover:underline"
-          >
-            View 90-Day Validation Plan →
-          </a>
+          <p className="text-sm font-medium text-site-accent2">
+            90-Day Validation Plan — available on request.
+          </p>
         </motion.div>
       </div>
     </section>

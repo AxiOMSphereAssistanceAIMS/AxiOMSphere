@@ -50,6 +50,10 @@ export function Footer() {
             © 2026 AxiOMSphere · Development-stage product · All capabilities subject to validation and
             availability
           </p>
+          <p className="mt-1 text-xs text-site-subtle/60">
+            © 2026 AxiOMSphere. All rights reserved. AxiOMSphere and associated product materials are
+            proprietary.
+          </p>
         </div>
       </div>
     </footer>
