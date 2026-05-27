@@ -122,17 +122,13 @@ function CoversDisclosure({ cardId, covers }: { cardId: string; covers: string[]
         role="region"
         aria-labelledby={`${cardId}-covers-trigger`}
         aria-hidden={!open}
-        initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-        animate={
-          open
-            ? prefersReducedMotion
-              ? { opacity: 1 }
-              : { height: "auto", opacity: 1 }
-            : prefersReducedMotion
-              ? { opacity: 0 }
-              : { height: 0, opacity: 0 }
+        initial={{ height: 0, opacity: 0 }}
+        animate={open ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+        transition={
+          prefersReducedMotion
+            ? { duration: 0 }
+            : { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
         }
-        transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
         style={{ overflow: "hidden" }}
       >
         <ul className="space-y-2.5 border-t border-[rgba(100,130,200,0.08)] px-4 pb-4 pt-3">

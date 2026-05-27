@@ -11,7 +11,7 @@ export function Footer() {
               Axi<span className="text-site-accent">OM</span>Sphere
             </span>
             <span className="text-xs text-site-subtle">
-              Privacy-first industrial AI · AIMS work-product development
+              AI assistance for AIMS development · Human-governed · Development-stage product
             </span>
           </div>
 

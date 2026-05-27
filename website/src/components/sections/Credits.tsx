@@ -48,16 +48,15 @@ export function Credits() {
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-site-accent">
             Why Startup Credits Now
           </p>
-          <h2 className="mb-3 text-2xl font-bold leading-tight tracking-tight text-site-text md:text-3xl">
-            What credits enable at this stage.
-          </h2>
           <p className="max-w-2xl text-base leading-relaxed text-site-muted">
-            AxiOMSphere begins with a practical, document-intensive industrial problem: helping
-            specialists develop and review connected AIMS work products in a controlled private
-            environment. Credits are sought to validate this applied capability at meaningful scale
-            and to develop the next controlled layers — learning, repair, orchestration and
-            resilient execution — required before the platform can responsibly support broader AIMS
-            project-development workflows.
+            AxiOMSphere has established its current applied capability in on-demand AIMS document
+            preparation and review. Startup credits are sought to validate this foundation at
+            meaningful scale and to develop the next controlled capability layers: learning from
+            validated engineering work, controlled issue correction and autonomous operational
+            recovery, and coordinated execution across connected AxiOMSphere workflows. This
+            programme is intended to build evidence for future engineer- and client-facing support
+            during AIMS development and project readiness, without presenting planned capabilities
+            as already operational.
           </p>
         </motion.div>
 

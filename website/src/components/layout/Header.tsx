@@ -4,8 +4,6 @@ import { cn } from "@/lib/utils"
 
 
 const NAV_LINKS = [
-  { label: "Opportunity",    href: "#opportunity" },
-  { label: "Platform",       href: "#platform" },
   { label: "Current Stage",  href: "#current-stage" },
   { label: "Demo",           href: "#demo" },
   { label: "Roadmap",        href: "#roadmap" },

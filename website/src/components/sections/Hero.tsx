@@ -1,4 +1,4 @@
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { BackgroundPaths } from "@/components/ui/background-paths"
 import { Button } from "@/components/ui/button"
 
@@ -82,34 +82,42 @@ export function Hero() {
 function H1Animated() {
   const text = "Establish an operational foundation before early decisions lead to costly rework."
   const words = text.split(" ")
+  const prefersReducedMotion = useReducedMotion() ?? false
 
   return (
     <motion.h1
       className="mx-auto mb-6 max-w-3xl text-3xl font-bold leading-tight tracking-tight text-site-text md:text-4xl lg:text-5xl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.1 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.1 }}
     >
-      {words.map((word, wi) => (
-        <span key={wi} className="mr-[0.3em] inline-block last:mr-0">
-          {word.split("").map((char, ci) => (
-            <motion.span
-              key={`${wi}-${ci}`}
-              className="inline-block"
-              initial={{ y: 14, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{
-                delay: 0.15 + wi * 0.06 + ci * 0.018,
-                type: "spring",
-                stiffness: 160,
-                damping: 22,
-              }}
-            >
-              {char}
-            </motion.span>
-          ))}
-        </span>
-      ))}
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {words.map((word, wi) => (
+          <span key={wi} className="mr-[0.3em] inline-block last:mr-0">
+            {word.split("").map((char, ci) => (
+              <motion.span
+                key={`${wi}-${ci}`}
+                className="inline-block"
+                initial={prefersReducedMotion ? { y: 0, opacity: 1 } : { y: 14, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={
+                  prefersReducedMotion
+                    ? { duration: 0 }
+                    : {
+                        delay: 0.15 + wi * 0.06 + ci * 0.018,
+                        type: "spring",
+                        stiffness: 160,
+                        damping: 22,
+                      }
+                }
+              >
+                {char}
+              </motion.span>
+            ))}
+          </span>
+        ))}
+      </span>
     </motion.h1>
   )
 }

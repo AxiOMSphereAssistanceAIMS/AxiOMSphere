@@ -119,17 +119,13 @@ export function AccordionContent({ children, className }: AccordionContentProps)
       role="region"
       aria-labelledby={`${itemId}-trigger`}
       aria-hidden={!isOpen}
-      initial={prefersReducedMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-      animate={
-        isOpen
-          ? prefersReducedMotion
-            ? { opacity: 1 }
-            : { height: "auto", opacity: 1 }
-          : prefersReducedMotion
-            ? { opacity: 0 }
-            : { height: 0, opacity: 0 }
+      initial={{ height: 0, opacity: 0 }}
+      animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
+      transition={
+        prefersReducedMotion
+          ? { duration: 0 }
+          : { duration: 0.28, ease: [0.4, 0, 0.2, 1] }
       }
-      transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
       style={{ overflow: "hidden" }}
       className={className}
     >

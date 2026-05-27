@@ -1,29 +1,4 @@
 import { motion } from "framer-motion"
-import { FileText, Search, Link, Lock } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-const STAGE_CARDS = [
-  {
-    icon: <FileText size={20} />,
-    title: "Develop",
-    desc: "Prepare structured AIMS work products and supporting document drafts for specialist review.",
-  },
-  {
-    icon: <Search size={20} />,
-    title: "Review",
-    desc: "Support framework-alignment review using approved references and qualified human judgement.",
-  },
-  {
-    icon: <Link size={20} />,
-    title: "Connect",
-    desc: "Improve traceability and consistency across related work products and supporting records.",
-  },
-  {
-    icon: <Lock size={20} />,
-    title: "Protect",
-    desc: "Keep project source documents on private infrastructure and control any authorised external evaluation context.",
-  },
-]
 
 const WORK_PRODUCTS = [
   "Philosophies",
@@ -38,15 +13,6 @@ const WORK_PRODUCTS = [
   "Other connected AIMS work products",
 ]
 
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
-}
-const item = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
-}
-
 export function CurrentStage() {
   return (
     <section id="current-stage" className="py-20">
@@ -59,44 +25,20 @@ export function CurrentStage() {
           className="mb-8"
         >
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-site-accent">
-            Current Applied Stage
+            Current Applied Capability
           </p>
+          <h2 className="mb-4 text-2xl font-bold leading-tight tracking-tight text-site-text md:text-3xl">
+            On-Demand AIMS Document Preparation and Review
+          </h2>
           <p className="max-w-2xl text-base leading-relaxed text-site-muted">
-            Today, AxiOMSphere is validating AI-assisted workflows for developing, reviewing and
-            coordinating connected AIMS work products and supporting documents in a controlled,
-            privacy-first environment.
+            AxiOMSphere currently begins with on-demand support for specialists preparing and
+            reviewing AIMS governing documents and related work products. This applied layer helps
+            structure documents against applicable documentation requirements and organisational
+            rules, improve clarity and completeness, and support professional review while technical
+            content and approval remain with the accountable specialist.
           </p>
         </motion.div>
 
-        {/* 2×2 cards */}
-        <motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-60px" }}
-          className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2"
-        >
-          {STAGE_CARDS.map((card) => (
-            <motion.article
-              key={card.title}
-              variants={item}
-              className={cn(
-                "flex flex-col gap-3 rounded-2xl border border-[rgba(100,130,200,0.12)] bg-site-card p-6",
-                "transition-all duration-300 hover:border-[rgba(14,165,233,0.28)] hover:shadow-[0_0_24px_rgba(14,165,233,0.07)]",
-              )}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[rgba(14,165,233,0.1)] text-site-accent">
-                {card.icon}
-              </div>
-              <div>
-                <h3 className="mb-1 text-sm font-semibold text-site-text">{card.title}</h3>
-                <p className="text-sm leading-relaxed text-site-muted">{card.desc}</p>
-              </div>
-            </motion.article>
-          ))}
-        </motion.div>
-
-        {/* Work product types */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}

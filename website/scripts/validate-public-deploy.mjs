@@ -217,7 +217,7 @@ console.log("\n[ 7 ] Required public content strings in index.html")
 if (indexHtml) {
   const PUBLIC_CONTENT = [
     "AxiOMSphere",
-    "Privacy-first industrial AI",
+    "AI assistance for AIMS development",
     "AIMS work-product",
     "Asset Integrity",
     "90-Day Validation",
