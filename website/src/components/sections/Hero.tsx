@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 
 export function Hero() {
   return (
-    <BackgroundPaths>
+    <BackgroundPaths videoSrc="/hero-bg.mp4">
       <div className="relative z-10 container mx-auto px-6 py-28 text-center">
         {/* Eyebrow */}
         <motion.p

@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react"
 import { motion } from "framer-motion"
 
 function FloatingPaths({ position }: { position: number }) {
@@ -47,13 +48,44 @@ function FloatingPaths({ position }: { position: number }) {
 interface BackgroundPathsProps {
   title?: string
   children?: React.ReactNode
+  videoSrc?: string
 }
 
-export function BackgroundPaths({ title = "Background Paths", children }: BackgroundPathsProps) {
+export function BackgroundPaths({ title = "Background Paths", children, videoSrc }: BackgroundPathsProps) {
   const words = title.split(" ")
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    // muted must be set via DOM property — React SSR does not serialize the muted attribute
+    video.muted = true
+    video.play().catch(() => {/* autoplay blocked — stays on static bg */})
+  }, [])
 
   return (
     <div className="relative w-full flex items-center justify-center overflow-hidden bg-site-bg">
+      {/* Background video — hero only, inserted when videoSrc is provided */}
+      {videoSrc && (
+        <>
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            src={videoSrc}
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            aria-hidden="true"
+          />
+          {/* Soft darkening overlay — keeps text readable while video stays visible */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "rgba(0,0,0,0.45)" }}
+          />
+        </>
+      )}
+
       {/* Animated path layers */}
       <div className="absolute inset-0">
         <FloatingPaths position={1} />
