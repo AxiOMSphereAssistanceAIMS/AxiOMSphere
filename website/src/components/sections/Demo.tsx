@@ -33,7 +33,7 @@ export function Demo() {
               preload="metadata"
               aria-label="AxiOMSphere demo — on-demand AIMS document preparation and review"
             >
-              <source src="docs/demo.mp4?v=2" type="video/mp4" />
+              <source src="docs/demo.mp4?v=3" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
