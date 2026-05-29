@@ -5,23 +5,23 @@ import { cn } from "@/lib/utils"
 const CREDIT_CARDS = [
   {
     icon: <Brain size={20} />,
-    title: "AI / Evaluation Access",
-    desc: "Assess anonymised or de-identified outputs for structure, framework alignment and reviewer usefulness where authorised.",
+    title: "AI Capability Selection and Reliable Automation",
+    desc: "Identify the AI capabilities best suited to specific AIMS tasks, prepare controlled tuning and evaluation programmes, assemble the required toolset, and develop reliable automated workflows that can detect failures, recover safely and improve through validated experience.",
   },
   {
     icon: <Cpu size={20} />,
-    title: "GPU / Compute Capacity",
-    desc: "Execute controlled development-stage validation scenarios at representative workload scale.",
+    title: "Efficient equipment utilization and optimized workload management",
+    desc: "Evaluate how server and GPU capacity can be used effectively across development and validation workloads: distributing tasks, reducing peak GPU demand, removing processing bottlenecks and increasing throughput without reducing the quality of engineering review support.",
   },
   {
     icon: <Database size={20} />,
-    title: "Retrieval / Knowledge Services",
-    desc: "Evaluate traceability, controlled retrieval and the foundations of approved project knowledge handling.",
+    title: "Project Knowledge and Continuous Improvement",
+    desc: "Where authorised, process AIMS documents and related work products as they are prepared, reviewed and revised, helping improve their structure, clarity, completeness, consistency and alignment with approved requirements. Build controlled, master-aligned knowledge bases from developing and completed projects; identify and correct inherited inconsistencies; capture validated document improvements, failure history and lessons learned; and use this evidence to improve assistant skills, learning capability and operational recovery.",
   },
   {
     icon: <ShieldCheck size={20} />,
-    title: "Security / Monitoring",
-    desc: "Support auditability, privacy-boundary verification and controlled validation evidence.",
+    title: "Security, Traceability and Information Reliability",
+    desc: "Identify and reduce risks of data leakage, unauthorised requests and the circulation of unreliable documentation, while maintaining traceable evidence of system actions, validation results and responsible handling of authorised project information.",
   },
 ]
 
