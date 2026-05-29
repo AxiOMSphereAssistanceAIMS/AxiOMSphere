@@ -10,8 +10,8 @@ const CREDIT_CARDS = [
   },
   {
     icon: <Cpu size={20} />,
-    title: "Efficient equipment utilization and optimized workload management",
-    desc: "Evaluate how server and GPU capacity can be used effectively across development and validation workloads: distributing tasks, reducing peak GPU demand, removing processing bottlenecks and increasing throughput without reducing the quality of engineering review support.",
+    title: "Efficient server/GPU utilisation and optimized workload management",
+    desc: "Evaluate how server and GPU capacity can be allocated effectively across development, validation and controlled model-improvement workloads: distributing tasks, reducing peak GPU demand, removing processing bottlenecks and increasing throughput without reducing engineering-support quality. This work will also help define the architecture and capacity requirements for a future dedicated compute cluster supporting controlled in-house development, evaluation and training of AxiOMSphere models.",
   },
   {
     icon: <Database size={20} />,
