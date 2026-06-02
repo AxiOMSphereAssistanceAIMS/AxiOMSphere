@@ -7,3 +7,11 @@ __pycache__/
 *.docx
 *.db
 /data/
+
+# AIMS local secrets / credentials
+.aims/secrets/
+~/.aims/secrets/
+aws_bedrock_auditor.env
+*.env
+*.env.local
+*.env.secret
