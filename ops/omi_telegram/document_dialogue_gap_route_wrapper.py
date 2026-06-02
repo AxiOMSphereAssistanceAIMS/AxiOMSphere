@@ -50,6 +50,15 @@ def _emit_omi_gap_check_telemetry(
             false_positive_review_flag=False,
             rollback_flag=False,
         )
+
+        # Safe ingestion to Control Plane Incident Ledger (fail-safe, never breaks routing)
+        from control_plane.telemetry_ledger_bridge import safe_ingest_event_to_control_plane
+        safe_ingest_event_to_control_plane({
+            "type": "omi_gap_check",
+            "status": telemetry_status,
+            "pipeline": "document_classification",
+            "evidence": {"check_id": f"omi_gap_check_{id(route_result)}"},
+        })
     except Exception as exc:
         # Telemetry failures must never break routing behavior
         log.debug("Omi gap-check telemetry emission failed (non-fatal): %s", exc)
