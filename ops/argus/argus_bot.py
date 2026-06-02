@@ -662,6 +662,18 @@ def _emit_argus_telemetry_event(ev: MonitorEvent) -> None:
                 urgency=ev.severity,
                 subscription_or_limit=None,
             )
+
+        # Safe ingestion to Control Plane Incident Ledger (fail-safe, gated)
+        from control_plane.telemetry_ledger_bridge import safe_ingest_event_to_control_plane
+        safe_ingest_event_to_control_plane({
+            "type": "runtime_incident",
+            "agent": "argus-bot",
+            "service": ev.service,
+            "pipeline": "monitoring",
+            "severity": severity,
+            "description": ev.message[:200],
+            "evidence": {"incident_id": f"argus_{ev.inc_id}_{int(time.time())}"},
+        })
     except Exception as exc:
         # Telemetry failures must not break Argus health checks
         log.debug("Argus telemetry emission failed (non-fatal): %s", exc)
