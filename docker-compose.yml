@@ -221,13 +221,14 @@ services:
     networks:
       axiomsphere_net: null
     ports:
-      - "6333:6333"
+      - "127.0.0.1:6333:6333"
     restart: unless-stopped
     volumes:
-    - type: volume
-      source: qdrant_data
+    # bind to existing on-disk storage (preserves intl_standards collection
+    # previously served by the standalone qdrant-aims container)
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/aims_workspace/qdrant_storage
       target: /qdrant/storage
-      volume: {}
   omi-bot:
     profiles:
     - telegram-bots
@@ -1207,6 +1208,9 @@ services:
     - type: bind
       source: /home/axi_omi_sphere/aims-workspace/aims_workspace
       target: /data
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /workspace/ops
     - type: bind
       source: /home/axi_omi_sphere/aims-workspace/ops
       target: /ops
