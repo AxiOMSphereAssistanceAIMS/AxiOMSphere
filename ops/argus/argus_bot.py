@@ -93,6 +93,13 @@ from argus.crash_incident_lifecycle import (
     should_escalate_to_repairman,
     update_incident_status,
 )
+# Phase 3 Skill: incident-correlation
+try:
+    from ops.ecc_skills.phase_3_incidents.incident_correlation import IncidentCorrelator
+    ECC_INCIDENT_CORRELATION_AVAILABLE = True
+except ImportError:
+    ECC_INCIDENT_CORRELATION_AVAILABLE = False
+
 from argus.incident_doctor import (
     ROUTE_HERMES_ANALYSIS,
     ROUTE_HUMAN_ESCALATION,
@@ -129,6 +136,69 @@ from ft_lifecycle import (
     version_paths as ft_version_paths,
 )
 import argus_diagnose as _diag
+
+# ── Phase 5: EventBus bridge (Logi orchestration) ──────────────────────────────
+try:
+    from argus_eventbus_bridge import publish_monitor_event as _publish_to_eventbus
+    PHASE5_EVENTBUS_AVAILABLE = os.environ.get("AIMS_PHASE5_EVENTBUS_ENABLED", "true").lower() in ("true", "1", "yes")
+except ImportError:
+    _publish_to_eventbus = None
+    PHASE5_EVENTBUS_AVAILABLE = False
+
+# ── Phase 3 Skill: incident-correlation initialization ─────────────────────────
+
+_incident_correlator = None
+
+
+def _init_incident_correlation() -> None:
+    """Initialize Phase 3 incident-correlation skill."""
+    global _incident_correlator
+    if ECC_INCIDENT_CORRELATION_AVAILABLE:
+        try:
+            _incident_correlator = IncidentCorrelator()
+        except Exception:
+            _incident_correlator = None
+
+
+def _correlate_incidents_with_skill(incidents: list[dict]) -> dict:
+    """Apply Phase 3 incident-correlation skill to analyze incident patterns.
+
+    Args:
+        incidents: List of incident records
+
+    Returns:
+        Correlation analysis with root causes and clusters
+    """
+    if not _incident_correlator or not incidents:
+        return {}
+
+    try:
+        correlations = _incident_correlator.correlate_incidents(incidents)
+        clusters = _incident_correlator.cluster_related_incidents(incidents)
+        result = {
+            "correlations": correlations,
+            "clusters": clusters,
+            "incident_correlation_enabled": True,
+        }
+        return result
+    except Exception:
+        # Graceful degradation: return empty if correlation fails
+        return {}
+
+
+def get_phase3_skill_status() -> dict:
+    """Get status of Phase 3 deployed skills.
+
+    Returns:
+        Dictionary with skill statuses
+    """
+    return {
+        "incident_correlation": {
+            "available": _incident_correlator is not None,
+            "enabled": ECC_INCIDENT_CORRELATION_AVAILABLE,
+        }
+    }
+
 
 # ── Argument parsing helpers ───────────────────────────────────────────────────
 
@@ -683,6 +753,20 @@ def _on_monitor_event(ev: MonitorEvent) -> None:
     """Called from background threads — put into async queue."""
     # Emit passive telemetry (safe to fail)
     _emit_argus_telemetry_event(ev)
+
+    # Phase 5: Publish to EventBus for orchestration (safe to fail)
+    if PHASE5_EVENTBUS_AVAILABLE and _publish_to_eventbus and _main_loop is not None and not _main_loop.is_closed():
+        try:
+            coro = _publish_to_eventbus(
+                event_type=ev.severity,
+                service=ev.service or "unknown",
+                error=ev.message or "Unknown error",
+                log_snippet=ev.log_snippet,
+                incident_id=getattr(ev, "incident_id", None),
+            )
+            _dispatch_coro_to_main_loop(coro, f"eventbus_publish:{ev.service}")
+        except Exception as e:
+            log.debug(f"EventBus publish failed: {e}")
 
     if _main_loop is not None and not _main_loop.is_closed():
         _main_loop.call_soon_threadsafe(_alert_queue.put_nowait, ev)
@@ -1508,6 +1592,34 @@ async def _trigger_repairman(ev: MonitorEvent) -> None:
         log.warning("repairman trigger failed: %s", exc)
 
 
+async def _trigger_traini_loop(ev: MonitorEvent, baseline_score: float = 0.75) -> None:
+    """Fire-and-forget: trigger Traini loop runner on critical incidents for automatic model improvement.
+
+    When Argus detects a CRITICAL incident, this starts the Traini Claude review loop
+    to analyze what went wrong and automatically improve the model.
+    """
+    if ev.severity != "critical":
+        return
+
+    incident_id = f"argus_{ev.service}_{int(time.time())}"
+
+    try:
+        # Publish TUNING_REQUESTED event to EventBus
+        from ops.logi.traini_eventbus_bridge import publish_loop_started
+
+        await publish_loop_started(
+            run_id=f"traini_loop_{incident_id}",
+            baseline_name=f"model_slot_32",
+            candidate_name=f"candidate_for_{ev.service}",
+            objective=f"Fix: {ev.message[:100]}",
+            max_iterations=3,
+        )
+
+        log.info("traini_loop triggered: incident=%s service=%s", incident_id, ev.service)
+    except Exception as exc:
+        log.warning("traini_loop trigger failed: %s", exc)
+
+
 async def _send_alert(app: Application, ev: MonitorEvent) -> None:
     if ev.severity == "info":
         return
@@ -1716,6 +1828,10 @@ async def _send_alert(app: Application, ev: MonitorEvent) -> None:
 
     if ev.severity in ("critical", "warning") and mode_now != "tuningmode" and not should_suppress_routine:
         asyncio.ensure_future(_trigger_repairman(ev))
+
+    # Auto-trigger Traini loop on CRITICAL incidents (model improvement)
+    if ev.severity == "critical" and mode_now in ("tuningmode", "learning"):
+        asyncio.ensure_future(_trigger_traini_loop(ev))
 
 
 async def _alert_consumer(app: Application) -> None:
@@ -5161,6 +5277,10 @@ def main() -> None:
 
     log.info("Starting Argus bot (polling)…")
     app.run_polling(drop_pending_updates=True)
+
+
+# Initialize Phase 3 incident-correlation skill at module load
+_init_incident_correlation()
 
 
 if __name__ == "__main__":

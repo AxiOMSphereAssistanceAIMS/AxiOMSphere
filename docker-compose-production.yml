@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: aims-redis-production
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_production_data:/data
+    command: redis-server --appendonly yes --loglevel warning --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: always
+    networks:
+      - aims-production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  logi-api-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.logi
+    container_name: aims-logi-api-prod-1
+    ports:
+      - "8101:8100"
+    environment:
+      REDIS_URL: redis://redis:6379
+      AIMS_PHASE5_EVENTBUS_ENABLED: "true"
+      AWS_REGION: us-east-1
+      BEDROCK_ENABLED: "true"
+      LOG_LEVEL: INFO
+      PYTHONUNBUFFERED: "1"
+      INSTANCE_ID: "prod-1"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ops:/app/ops
+      - ./data:/app/data
+      - ./aims_workspace:/app/aims_workspace
+    command: python3 -m uvicorn ops.logi.logi_api:app --host 0.0.0.0 --port 8100
+    restart: always
+    networks:
+      - aims-production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  logi-api-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.logi
+    container_name: aims-logi-api-prod-2
+    ports:
+      - "8102:8100"
+    environment:
+      REDIS_URL: redis://redis:6379
+      AIMS_PHASE5_EVENTBUS_ENABLED: "true"
+      AWS_REGION: us-east-1
+      BEDROCK_ENABLED: "true"
+      LOG_LEVEL: INFO
+      PYTHONUNBUFFERED: "1"
+      INSTANCE_ID: "prod-2"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ops:/app/ops
+      - ./data:/app/data
+      - ./aims_workspace:/app/aims_workspace
+    command: python3 -m uvicorn ops.logi.logi_api:app --host 0.0.0.0 --port 8100
+    restart: always
+    networks:
+      - aims-production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aims-prometheus-production
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus-staging.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_production_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+    restart: always
+    networks:
+      - aims-production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:alpine
+    container_name: aims-nginx-production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-production.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - logi-api-1
+      - logi-api-2
+    restart: always
+    networks:
+      - aims-production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  redis_production_data:
+    driver: local
+  prometheus_production_data:
+    driver: local
+
+networks:
+  aims-production:
+    driver: bridge

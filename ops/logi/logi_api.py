@@ -15,14 +15,20 @@ from typing import Dict, List, Any, Optional
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
-from logi.project_state_manager import (
+import asyncio
+from fastapi.responses import Response
+
+from ops.logi.project_state_manager import (
     ProjectStateManager,
     Task,
     TaskStatus,
     TaskType,
     get_manager,
 )
-from logi.event_bus import EventBus, get_bus, EventType
+from ops.logi.event_bus import EventBus, get_bus, EventType
+from ops.logi.telegram_alerts import TelegramAlertManager, get_alert_manager
+from ops.logi.escalation_policy import create_escalation_monitor
+from ops.logi.metrics_collector import create_metrics_collector
 
 
 # ============ Pydantic Models for API ============
@@ -94,19 +100,30 @@ app = FastAPI(
 # Global managers (lazily initialized)
 _manager: Optional[ProjectStateManager] = None
 _bus: Optional[EventBus] = None
+_alert_manager: Optional[TelegramAlertManager] = None
+_escalation_monitor = None
+_metrics_collector = None
 
 
 @app.on_event("startup")
 async def startup():
     """Initialize managers on startup."""
-    global _manager, _bus
+    global _manager, _bus, _alert_manager, _escalation_monitor, _metrics_collector
     _manager = await get_manager()
     _bus = await get_bus()
+    _alert_manager = await get_alert_manager()
+    _metrics_collector = await create_metrics_collector()
+    _escalation_monitor = await create_escalation_monitor()
+
+    # Start background monitoring
+    asyncio.create_task(_escalation_monitor.start())
 
 
 @app.on_event("shutdown")
 async def shutdown():
     """Cleanup on shutdown."""
+    if _escalation_monitor:
+        _escalation_monitor.running = False
     if _manager:
         await _manager.disconnect()
     if _bus:
@@ -282,6 +299,19 @@ async def get_project_metrics():
     )
 
 
+@app.get("/api/logi/metrics/prometheus")
+async def get_metrics_prometheus():
+    """Export metrics in Prometheus format."""
+    global _metrics_collector
+    if _metrics_collector:
+        await _metrics_collector.collect()
+        return Response(
+            content=_metrics_collector.export_prometheus(),
+            media_type="text/plain",
+        )
+    return Response(content="", media_type="text/plain")
+
+
 @app.get("/api/logi/dependencies/{task_id}", response_model=DependencyGraphResponse)
 async def get_task_dependencies(task_id: str):
     """Get full dependency graph for a task."""
@@ -337,7 +367,7 @@ async def create_task(req: CreateTaskRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     # Publish event
-    from logi.event_bus import Event, EventSeverity
+    from ops.logi.event_bus import Event, EventSeverity
     event = Event(
         event_type=EventType.TASK_CREATED,
         source="logi-api",
@@ -374,7 +404,7 @@ async def update_task(task_id: str, req: UpdateTaskRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     # Publish event
-    from logi.event_bus import Event, EventSeverity
+    from ops.logi.event_bus import Event, EventSeverity
     event = Event(
         event_type=EventType.TASK_UPDATED,
         source="logi-api",
@@ -409,6 +439,84 @@ async def get_event_stats():
     bus = await get_or_init_bus()
     stats = await bus.get_event_stats()
     return stats
+
+
+# ============ Dashboard & Alert Testing ============
+
+class TestAlertRequest(BaseModel):
+    """Request to send test alert."""
+    alert_type: str
+    severity: Optional[str] = "CRITICAL"
+    service: Optional[str] = "test-service"
+
+
+@app.post("/api/logi/test/alert")
+async def test_alert(req: TestAlertRequest):
+    """Send test alert to Telegram (for dashboard testing)."""
+    global _alert_manager
+    if not _alert_manager:
+        raise HTTPException(status_code=500, detail="Alert manager not initialized")
+
+    if req.alert_type == "incident":
+        result = await _alert_manager.send_incident_alert(
+            incident_type="test_incident",
+            severity=req.severity,
+            service=req.service,
+            error="This is a test alert",
+            incident_id="test-001",
+        )
+    elif req.alert_type == "repair":
+        result = await _alert_manager.send_repair_update(
+            status="succeeded",
+            repair_id="test-repair-001",
+            fix="Test repair completed",
+            duration_seconds=120,
+        )
+    elif req.alert_type == "escalation":
+        result = await _alert_manager.send_escalation_alert(
+            task_id="test-task-001",
+            task_type="repair",
+            priority=90,
+            deadline_exceeded_seconds=3600,
+        )
+    elif req.alert_type == "status":
+        status = await get_or_init_manager()
+        stats = await status.get_stats()
+        result = await _alert_manager.send_status_update(
+            title="Test Status Update",
+            total_tasks=stats.get("total_tasks", 0),
+            runnable=0,
+            blocked=0,
+            success_rate=100.0,
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown alert type: {req.alert_type}")
+
+    return {
+        "success": result,
+        "alert_type": req.alert_type,
+        "message": f"Alert {'sent' if result else 'not sent (check configuration)'}",
+    }
+
+
+@app.get("/api/logi/dashboard/status")
+async def dashboard_status():
+    """Get dashboard summary."""
+    global _metrics_collector
+    manager = await get_or_init_manager()
+    stats = await manager.get_stats()
+
+    metrics = {}
+    if _metrics_collector:
+        metrics = await _metrics_collector.collect()
+
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "project": stats,
+        "metrics": metrics,
+        "alerts_enabled": bool(_alert_manager and _alert_manager.enabled),
+        "escalation_active": _escalation_monitor is not None,
+    }
 
 
 if __name__ == "__main__":
