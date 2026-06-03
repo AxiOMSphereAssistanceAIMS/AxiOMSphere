@@ -15,3 +15,10 @@ aws_bedrock_auditor.env
 *.env
 *.env.local
 *.env.secret
+
+# Python virtualenvs (prevent runaway git add -A scanning 100k+ files)
+.venv/
+.venv*/
+venv/
+venv*/
+*/.venv/
