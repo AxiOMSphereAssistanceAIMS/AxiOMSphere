@@ -217,7 +217,7 @@ services:
   # Если при старте panic про shard/json — смена версии или битые данные: docker compose stop qdrant && docker volume rm axiomsphere_qdrant_data && up -d qdrant
   qdrant:
     container_name: axiomsphere-qdrant
-    image: qdrant/qdrant:v1.12.5
+    image: qdrant/qdrant:v1.17.1
     networks:
       axiomsphere_net: null
     ports:
