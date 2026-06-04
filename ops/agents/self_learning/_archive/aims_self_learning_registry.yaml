@@ -1,0 +1,304 @@
+schema_version: "1.0"
+description: >
+  AIMS Agent Self-Learning Skill Registry — skeleton.
+  Tracks hermes sandbox skills through the AIMS lifecycle.
+  All entries start at OBSERVED_PATTERN; manual promotion gates required.
+
+safety_invariants:
+  self_approval_allowed: false
+  runtime_activation_allowed: false
+  direct_deletion_allowed: false
+  secrets_in_registry_allowed: false
+  model_slot_conflict_allowed: false
+
+# 9 registered AIMS agents
+agents:
+  - axi
+  - omi
+  - argus
+  - logi
+  - traini
+  - knomi
+  - doci
+  - mainy_repairman
+  - hermes_external_worker
+
+# Promotion gate definitions (informational — enforced by promotion_gates.py)
+gate_definitions:
+  argus_gate:
+    always_required: true
+    description: "Argus infra stability — no active P0/P1 incidents."
+  logi_gate:
+    always_required: true
+    description: "Logi coordination — no cross-dept workflow conflicts."
+  qa_gate:
+    always_required: true
+    description: "QA gate — test coverage and dry-run evidence required."
+  traini_gate:
+    always_required: false
+    conditional_flag: model_related
+    description: "Traini model-safety gate — required for model_related skills."
+  poli_gate:
+    always_required: false
+    required_for_states:
+      - ACTIVE_RUNTIME_SKILL
+    conditional_flag: production_related
+    description: "Poli access-control gate — required before production activation."
+
+# Seed entries — one per focus skill, all starting at OBSERVED_PATTERN
+entries:
+
+  - skill_id: hermes-agent-skill-authoring
+    owner_agent_id: axi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: hermes-agent-skill-authoring
+    description: "Skill authoring patterns for Hermes agent skills in AIMS context."
+    observed_count: 2
+    confidence: 0.7
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: subagent-driven-development
+    owner_agent_id: axi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: subagent-driven-development
+    description: "Decompose complex tasks into subagent delegation patterns."
+    observed_count: 3
+    confidence: 0.8
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: systematic-debugging
+    owner_agent_id: argus
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: systematic-debugging
+    description: "Structured root-cause analysis and repair loop patterns."
+    observed_count: 5
+    confidence: 0.85
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: test-driven-development
+    owner_agent_id: argus
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: test-driven-development
+    description: "TDD workflow patterns for AIMS agent skill validation."
+    observed_count: 4
+    confidence: 0.8
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: writing-plans
+    owner_agent_id: axi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: writing-plans
+    description: "Structured planning patterns for AIMS document and repair workflows."
+    observed_count: 6
+    confidence: 0.9
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: plan-skill
+    owner_agent_id: axi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: plan
+    description: "Markdown-based plan skill for structured task decomposition."
+    observed_count: 2
+    confidence: 0.7
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: requesting-code-review
+    owner_agent_id: knomi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: software-development
+    source_hermes_name: requesting-code-review
+    description: "Code review request patterns integrated with AIMS RAG layer."
+    observed_count: 2
+    confidence: 0.65
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: codebase-inspection
+    owner_agent_id: logi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: github
+    source_hermes_name: codebase-inspection
+    description: "Systematic codebase traversal and structure analysis patterns."
+    observed_count: 3
+    confidence: 0.75
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: github-code-review
+    owner_agent_id: logi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: github
+    source_hermes_name: github-code-review
+    description: "GitHub PR code review patterns for AIMS workflow coordination."
+    observed_count: 2
+    confidence: 0.65
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: github-pr-workflow
+    owner_agent_id: logi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: github
+    source_hermes_name: github-pr-workflow
+    description: "End-to-end GitHub PR lifecycle management patterns."
+    observed_count: 2
+    confidence: 0.65
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: ocr-and-documents
+    owner_agent_id: omi
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: productivity
+    source_hermes_name: ocr-and-documents
+    description: "OCR extraction and document indexing patterns for AIMS registry."
+    observed_count: 4
+    confidence: 0.85
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: dogfood-meta-skill
+    owner_agent_id: hermes_external_worker
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: dogfood
+    source_hermes_name: ""
+    description: "Meta-skill for dogfooding the hermes skill authoring process itself."
+    observed_count: 2
+    confidence: 0.6
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: false
+    required_gates: [argus_gate, logi_gate, qa_gate]
+    gate_statuses: {}
+
+  - skill_id: llama-cpp-inference
+    owner_agent_id: traini
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: mlops
+    source_hermes_name: llama-cpp
+    description: "llama.cpp-based local inference patterns for AIMS model serving."
+    observed_count: 2
+    confidence: 0.7
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: true
+    required_gates: [argus_gate, logi_gate, qa_gate, traini_gate]
+    gate_statuses: {}
+
+  - skill_id: lm-evaluation-harness
+    owner_agent_id: traini
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: mlops
+    source_hermes_name: lm-evaluation-harness
+    description: "LM evaluation harness patterns for AIMS model quality gates."
+    observed_count: 3
+    confidence: 0.75
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: true
+    required_gates: [argus_gate, logi_gate, qa_gate, traini_gate]
+    gate_statuses: {}
+
+  - skill_id: vllm-inference
+    owner_agent_id: traini
+    lifecycle_state: OBSERVED_PATTERN
+    source_hermes_category: mlops
+    source_hermes_name: vllm
+    description: "vLLM-based high-throughput inference patterns for AIMS pipeline."
+    observed_count: 2
+    confidence: 0.7
+    risk_flags:
+      secrets_related: false
+      deletion_or_quarantine_related: false
+      service_restart_related: false
+      production_related: false
+      model_related: true
+    required_gates: [argus_gate, logi_gate, qa_gate, traini_gate]
+    gate_statuses: {}
