@@ -24,6 +24,12 @@ services:
         required: false
       - path: ops/.env.axi-bot
         required: false
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/bot_alive || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     environment:
       # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
       AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
@@ -239,6 +245,12 @@ services:
     - python
     - /omi_telegram/omi_bot.py
     container_name: axiomsphere-omi-bot
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/bot_alive || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     environment:
       AIMS_WORKSPACE: /data
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-}
@@ -658,6 +670,12 @@ services:
       published: '8765'
       protocol: tcp
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8765/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     volumes:
     - type: bind
       source: /home/axi_omi_sphere/aims-workspace/aims_workspace
@@ -940,6 +958,12 @@ services:
     networks:
       axiomsphere_net: null
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     volumes:
     - type: bind
       source: /home/axi_omi_sphere/aims-workspace/aims_workspace
