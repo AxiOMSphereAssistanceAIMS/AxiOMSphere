@@ -433,7 +433,10 @@ services:
       redis-server
       --bind 0.0.0.0
       --appendonly yes
-      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - axiomsphere_redis_data:/data
     networks:
       axiomsphere_net: null
     restart: unless-stopped
@@ -1576,3 +1579,5 @@ volumes:
     name: axiomsphere_prometheus_data
   grafana_data:
     name: axiomsphere_grafana_data
+  axiomsphere_redis_data:
+    driver: local
