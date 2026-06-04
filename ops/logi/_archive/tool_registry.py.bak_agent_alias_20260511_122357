@@ -1,0 +1,213 @@
+"""Tool Registry for NemoClaw Orchestrator.
+
+Provides a unified interface for NemoClaw to call all AIMS agents as tools.
+Each tool has: name, description, endpoint, method, input_schema.
+"""
+from __future__ import annotations
+
+import logging
+from typing import Any
+
+import httpx
+
+log = logging.getLogger("aims.tool_registry")
+
+# ── tool registry ──────────────────────────────────────────────────────────────
+
+TOOL_REGISTRY: dict[str, dict[str, Any]] = {
+    "doci_compose": {
+        "name": "doci_compose",
+        "description": (
+            "Compose a structured document from raw input and context documents. "
+            "Uses DociAgent (Nemotron 120B) to generate compliant technical documentation."
+        ),
+        "endpoint": "http://localhost:8001/compose_and_generate",
+        "method": "POST",
+        "timeout_s": 1200,
+        "input_schema": {
+            "raw_input": "dict — task/request object with content, doc_type, department, etc.",
+            "context_docs": "list[dict] — filtered reference documents from KnomiAgent",
+        },
+    },
+    "omi_store": {
+        "name": "omi_store",
+        "description": (
+            "Store a document in the OMI registry. "
+            "Use status='master' for approved documents, 'training_pair' for QA failures."
+        ),
+        "endpoint": "http://localhost:8008/documents",
+        "method": "POST",
+        "timeout_s": 30,
+        "input_schema": {
+            "document": "dict — document object to store",
+            "status": "str — 'master' | 'training_pair' | 'draft'",
+            "audit_id": "str (optional) — PoliAgent audit ID for master documents",
+        },
+    },
+    "omi_search": {
+        "name": "omi_search",
+        "description": (
+            "Search for existing documents in the OMI registry by semantic query."
+        ),
+        "endpoint": "http://localhost:8008/documents/search",
+        "method": "GET",
+        "timeout_s": 15,
+        "input_schema": {
+            "q": "str — search query",
+            "top_k": "int (optional, default 10) — number of results",
+            "doc_type": "str (optional) — filter by document type",
+            "status": "str (optional) — filter by status",
+        },
+    },
+    "knomi_search": {
+        "name": "knomi_search",
+        "description": (
+            "Search the local Knomi knowledge index for relevant reference chunks. "
+            "Returns raw results (unfiltered); filtering is done by context_filter."
+        ),
+        "endpoint": "http://localhost:8002/search",
+        "method": "POST",
+        "timeout_s": 30,
+        "input_schema": {
+            "query": "str — search query",
+            "top_k": "int (optional, default 20) — number of results to return",
+        },
+    },
+    "cloud_validate": {
+        "name": "cloud_validate",
+        "description": (
+            "Validate a generated document against ISO 55001 / industry compliance standards "
+            "using the cloud quality gate (DeepSeek-R1:672B). "
+            "Returns verdict: APPROVE | APPROVE_WITH_NOTES | FAIL | TRAINING_PAIR."
+        ),
+        "endpoint": "http://localhost:8003/validate",
+        "method": "POST",
+        "timeout_s": 600,
+        "input_schema": {
+            "document": "dict — document to validate",
+            "doc_type": "str — type of document (procedure, policy, risk_matrix, etc.)",
+            "quality_threshold": "int (optional, default 85) — minimum acceptable quality score",
+        },
+    },
+    "poli_check": {
+        "name": "poli_check",
+        "description": (
+            "Check whether a proposed action is permitted by system policy (SysPolic). "
+            "Must be called before any mainy_execute call. Returns audit_id on approval."
+        ),
+        "endpoint": "http://localhost:8004/check",
+        "method": "POST",
+        "timeout_s": 10,
+        "input_schema": {
+            "action_type": "str — action to check (e.g. restart_container, write_document)",
+            "params": "dict — action-specific parameters",
+            "requester": "str — identity of the requesting agent or user",
+            "department": "str — department context for the request",
+        },
+    },
+    "mainy_execute": {
+        "name": "mainy_execute",
+        "description": (
+            "Execute a self-healing repair action via MainyRepairAgent. "
+            "Requires an audit_id from a prior poli_check call. "
+            "Circuit breaker: returns 503 if recent error rate exceeds 50%%."
+        ),
+        "endpoint": "http://localhost:8005/execute",
+        "method": "POST",
+        "timeout_s": 90,
+        "input_schema": {
+            "action": "dict — action object with 'type' and action-specific fields",
+            "audit_id": "str — audit ID from PoliAgent approval",
+            "authorized_by": "str — who authorized this execution",
+        },
+    },
+    "argus_health": {
+        "name": "argus_health",
+        "description": (
+            "Retrieve the current AIMS system health snapshot from ArgusAgent. "
+            "Returns health_score (0-100), per-service statuses, and timestamp."
+        ),
+        "endpoint": "http://localhost:8006/health",
+        "method": "GET",
+        "timeout_s": 10,
+        "input_schema": {},
+    },
+    "traini_trigger": {
+        "name": "traini_trigger",
+        "description": (
+            "Trigger a fine-tuning cycle on the local model when quality thresholds are breached. "
+            "Sends training_pairs accumulated in OMI to the TrainiAgent pipeline."
+        ),
+        "endpoint": "http://localhost:8007/trigger_ft",
+        "method": "POST",
+        "timeout_s": 30,
+        "input_schema": {
+            "reason": "str — reason for triggering (e.g. threshold_met, manual)",
+            "metrics": "dict — current quality metrics that triggered the training run",
+            "model": "str (optional) — target model name; defaults to current active model",
+        },
+    },
+    "repairman_trigger": {
+        "name": "repairman_trigger",
+        "description": (
+            "Trigger automated repairman task for system diagnosis and repair. "
+            "Requires PoliAgent approval (handled internally by RepairmanAPI). "
+            "Use mode='inspect' for read-only diagnosis, 'repair' for concept-preserving fixes, "
+            "'fix' for operability restoration."
+        ),
+        "endpoint": "http://localhost:8010/trigger",
+        "method": "POST",
+        "timeout_s": 30,
+        "input_schema": {
+            "task": "str — description of the issue or repair task",
+            "mode": "str — 'inspect' | 'repair' | 'fix'",
+            "source": "str — triggering source (e.g. logi_orchestrator, argus_agent)",
+        },
+    },
+}
+
+
+# ── tool caller ────────────────────────────────────────────────────────────────
+
+def call_tool(tool_name: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Call a registered tool synchronously and return the JSON response.
+
+    On any error (timeout, HTTP error, JSON decode failure) returns
+    {"error": "<description>"} so callers can handle gracefully.
+    """
+    tool = TOOL_REGISTRY.get(tool_name)
+    if tool is None:
+        log.error("call_tool: unknown tool '%s'", tool_name)
+        return {"error": f"unknown tool: {tool_name}"}
+
+    endpoint: str = tool["endpoint"]
+    method: str = tool["method"].upper()
+    timeout: float = float(tool.get("timeout_s", 30))
+
+    log.info("call_tool tool=%s method=%s endpoint=%s", tool_name, method, endpoint)
+
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            if method == "GET":
+                # For GET calls, pass payload as query params
+                resp = client.get(endpoint, params=payload or None)
+            elif method == "POST":
+                resp = client.post(endpoint, json=payload)
+            else:
+                return {"error": f"unsupported HTTP method: {method}"}
+
+            resp.raise_for_status()
+            return resp.json()
+
+    except httpx.TimeoutException as exc:
+        log.error("call_tool timeout tool=%s: %s", tool_name, exc)
+        return {"error": f"timeout calling {tool_name}"}
+    except httpx.HTTPStatusError as exc:
+        log.error(
+            "call_tool HTTP error tool=%s status=%d: %s",
+            tool_name, exc.response.status_code, exc.response.text[:200],
+        )
+        return {"error": f"HTTP {exc.response.status_code} from {tool_name}: {exc.response.text[:200]}"}
+    except Exception as exc:
+        log.exception("call_tool unexpected error tool=%s: %s", tool_name, exc)
+        return {"error": f"unexpected error calling {tool_name}: {exc}"}
