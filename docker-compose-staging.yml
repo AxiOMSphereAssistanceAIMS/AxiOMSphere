@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: aims-redis-staging
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - aims-staging
+
+  logi-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.logi
+    container_name: aims-logi-api-staging
+    ports:
+      - "8100:8100"
+    environment:
+      REDIS_URL: redis://redis:6379
+      AIMS_PHASE5_EVENTBUS_ENABLED: "true"
+      AWS_REGION: us-east-1
+      BEDROCK_ENABLED: "true"
+      LOG_LEVEL: INFO
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ops:/app/ops
+      - ./data:/app/data
+      - ./aims_workspace:/app/aims_workspace
+    command: python3 -m uvicorn ops.logi.logi_api:app --host 0.0.0.0 --port 8100
+    restart: unless-stopped
+    networks:
+      - aims-staging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aims-prometheus-staging
+    ports:
+      - "127.0.0.1:9092:9090"
+    volumes:
+      - ./prometheus-staging.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+    networks:
+      - aims-staging
+    depends_on:
+      - logi-api
+
+volumes:
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  aims-staging:
+    driver: bridge
