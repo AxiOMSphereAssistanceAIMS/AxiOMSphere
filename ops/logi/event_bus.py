@@ -19,12 +19,16 @@ from __future__ import annotations
 
 import json
 import asyncio
+import logging
+import time
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Callable, Any, Optional
 
 import redis.asyncio as redis
+
+logger = logging.getLogger(__name__)
 
 
 class EventType(str, Enum):
@@ -127,21 +131,39 @@ class EventBus:
     # ============ Publishing ============
 
     async def publish(self, event: Event) -> bool:
-        """Publish an event to the bus."""
+        """Publish an event to the bus.
+
+        Retries Redis publish up to 3 times with exponential backoff
+        (0.5 s, 1 s, 2 s).  After all retries are exhausted the event
+        falls back to local handler dispatch so no events are silently
+        dropped on transient Redis issues.
+        """
         channel = f"event:{event.event_type.value}"
         payload = json.dumps(event.to_dict())
 
         if self.redis_client:
-            try:
-                await self.redis_client.publish(channel, payload)
-                # Also store in ledger for auditing
-                ledger_key = f"event_ledger:{event.event_type.value}"
-                await self.redis_client.lpush(ledger_key, payload)
-                # Keep last 1000 events per type
-                await self.redis_client.ltrim(ledger_key, 0, 999)
-                return True
-            except Exception as e:
-                print(f"⚠ Redis publish failed: {e}")
+            _backoff = [0.5, 1.0, 2.0]
+            for attempt, delay in enumerate(_backoff, start=1):
+                try:
+                    await self.redis_client.publish(channel, payload)
+                    # Also store in ledger for auditing
+                    ledger_key = f"event_ledger:{event.event_type.value}"
+                    await self.redis_client.lpush(ledger_key, payload)
+                    # Keep last 1000 events per type
+                    await self.redis_client.ltrim(ledger_key, 0, 999)
+                    return True
+                except Exception as e:
+                    if attempt < len(_backoff):
+                        logger.warning(
+                            "Redis publish failed (attempt %d/3): %s — retrying in %.1fs",
+                            attempt, e, delay,
+                        )
+                        await asyncio.sleep(delay)
+                    else:
+                        logger.warning(
+                            "Redis publish failed after 3 attempts: %s — falling back to local handlers",
+                            e,
+                        )
 
         # Fallback: call local handlers
         await self._call_handlers(event)
