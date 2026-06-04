@@ -1,0 +1,60 @@
+# Override для DGX Spark (arm64): без bind nvidia-smi в scheduler, если его нет на хосте.
+# Базовый docker-compose.yml уже под Linux; WSL не используется.
+# Использование:
+#   docker compose -f docker-compose.yml -f docker-compose.dgx.yml up -d
+#
+# Ollama: в .env задайте DGX_OLLAMA_URL (по умолчанию Llama 70B axi_omi_sphere) и при необходимости PC_ANDREY_*:
+#   — Ollama на хосте вне Docker: http://172.17.0.1:11434
+#   — или http://ollama:11434 с профилем: docker compose --profile local-ollama up -d
+#
+# Telegram-боты: принудительно «сначала Ollama» (дубль с docker-compose.yml — при merge не уедет в .env).
+
+services:
+  omi-bot:
+    environment:
+      OMI_OMNIROUTER_UNTIL_OLLAMA_READY: "0"
+      AXI_CHAT_OMNIROUTER_UNTIL_OLLAMA_READY: "0"
+  omi-quality-gate:
+    environment:
+      OMI_OMNIROUTER_UNTIL_OLLAMA_READY: "0"
+      AXI_CHAT_OMNIROUTER_UNTIL_OLLAMA_READY: "0"
+  aims-scheduler:
+    build:
+      context: /home/axi_omi_sphere/aims-workspace
+      dockerfile: Dockerfile.scheduler
+    image: axiomsphere-scheduler:local
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Отчёты omi_night_smoke: на хосте см. aims_workspace/scheduler_logs/night_tests.log
+      - /home/axi_omi_sphere/aims-workspace/aims_workspace/scheduler_logs:/var/log/scheduler_out
+      # PlannedActionExecutionDaemon — mounted at identical host paths so ROOT resolution matches
+      - /home/axi_omi_sphere/aims-workspace/ops:/home/axi_omi_sphere/aims-workspace/ops:ro
+      - /home/axi_omi_sphere/aims-workspace/aims_workspace:/home/axi_omi_sphere/aims-workspace/aims_workspace:rw
+    environment:
+      - TZ=Asia/Dubai
+      - LD_LIBRARY_PATH=
+      # dgx_qwen14_keepalive.sh (07:00, 08:00, …): Ollama на Spark/DGX
+      - DGX_OLLAMA_URL=${DGX_OLLAMA_URL:-}
+#     - DGX_QWEN_KEEPALIVE_MODEL=${DGX_QWEN_KEEPALIVE_MODEL:-}
+      - DGX_HEAVY_OLLAMA_MODEL=${DGX_HEAVY_OLLAMA_MODEL:-}
+      - DGX_QWEN_KEEPALIVE_UNLOAD_SMALL_WHEN_HEAVY_IN_PS=${DGX_QWEN_KEEPALIVE_UNLOAD_SMALL_WHEN_HEAVY_IN_PS:-1}
+      - QWEN_PC_ASSIST_STACK=${QWEN_PC_ASSIST_STACK:-0}
+      - PC_ANDREY_OLLAMA_URL=${PC_ANDREY_OLLAMA_URL:-}
+      # Ночной стек / тесты — см. ops/scheduler/README.md (0 = без прогона и без отчёта)
+      - NIGHT_SCHEDULED_TESTS=${NIGHT_SCHEDULED_TESTS:-1}
+      - NIGHT_TESTS_REPORT_LOG=/var/log/scheduler_out/night_tests.log
+      # 1 = вызвать ops/scripts/qwen_pc_warm.sh в night_week*.sh
+      - NIGHT_WARM_PC_ASSIST=${NIGHT_WARM_PC_ASSIST:-0}
+      - NIGHT_TESTS_CMD=${NIGHT_TESTS_CMD:-}
+      - NIGHT_TESTS_OMI_CONTAINER=${NIGHT_TESTS_OMI_CONTAINER:-axiomsphere-omi-bot}
+      # Перед ночными тестами: docker start этих имён (пробелы). После — см. NIGHT_TESTS_STOP_AFTER
+      - NIGHT_TESTS_PREREQ_CONTAINERS=${NIGHT_TESTS_PREREQ_CONTAINERS:-axiomsphere-omi-bot}
+      - NIGHT_TESTS_PREREQ_SLEEP=${NIGHT_TESTS_PREREQ_SLEEP:-12}
+      - NIGHT_TESTS_STOP_AFTER=${NIGHT_TESTS_STOP_AFTER:-0}
+      # PlannedActionExecutionDaemon mode: live-lightweight | dry-run
+      - PA_DAEMON_MODE=${PA_DAEMON_MODE:-live-lightweight}
+
+  # JobLocator: по умолчанию включить источники (сайты/RSS); без JOB_FILTER_BOT_TOKEN контейнер не стартует — задайте в .env
+  job-filter-bot:
+    environment:
+      JOB_FILTER_SOURCES_ENABLED: ${JOB_FILTER_SOURCES_ENABLED:-1}
