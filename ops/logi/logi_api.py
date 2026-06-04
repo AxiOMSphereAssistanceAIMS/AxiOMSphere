@@ -18,17 +18,17 @@ from pydantic import BaseModel
 import asyncio
 from fastapi.responses import Response
 
-from ops.logi.project_state_manager import (
+from logi.project_state_manager import (
     ProjectStateManager,
     Task,
     TaskStatus,
     TaskType,
     get_manager,
 )
-from ops.logi.event_bus import EventBus, get_bus, EventType
-from ops.logi.telegram_alerts import TelegramAlertManager, get_alert_manager
-from ops.logi.escalation_policy import create_escalation_monitor
-from ops.logi.metrics_collector import create_metrics_collector
+from logi.event_bus import EventBus, get_bus, EventType
+from logi.telegram_alerts import TelegramAlertManager, get_alert_manager
+from logi.escalation_policy import create_escalation_monitor
+from logi.metrics_collector import create_metrics_collector
 
 
 # ============ Pydantic Models for API ============
@@ -367,7 +367,7 @@ async def create_task(req: CreateTaskRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     # Publish event
-    from ops.logi.event_bus import Event, EventSeverity
+    from logi.event_bus import Event, EventSeverity
     event = Event(
         event_type=EventType.TASK_CREATED,
         source="logi-api",
@@ -404,7 +404,7 @@ async def update_task(task_id: str, req: UpdateTaskRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
     # Publish event
-    from ops.logi.event_bus import Event, EventSeverity
+    from logi.event_bus import Event, EventSeverity
     event = Event(
         event_type=EventType.TASK_UPDATED,
         source="logi-api",

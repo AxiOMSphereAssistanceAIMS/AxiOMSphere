@@ -1272,7 +1272,7 @@ services:
       LOGI_AGENT_MODEL: ${LOGI_AGENT_MODEL:-qwen3:14b}
       OLLAMA_BASE_URL: ${DGX_OLLAMA_URL_INTERNAL:-http://host.docker.internal:11434}
       AIMS_WORKSPACE: /data
-      PYTHONPATH: /workspace/ops
+      PYTHONPATH: /workspace:/workspace/ops
       PYTHONUNBUFFERED: "1"
       KNOMI_URL: http://knomi-agent:8002
       POLI_URL: http://poli-agent:8004
