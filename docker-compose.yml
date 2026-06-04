@@ -33,7 +33,7 @@ services:
       start_period: 30s
     environment:
       # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
-      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://omniroute-gateway:8082}
       AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       AXI_ALLOWED_USER_IDS: '8077374184,8003780560'
@@ -295,7 +295,7 @@ services:
       QWEN_PC_ASSIST_STACK: ${QWEN_PC_ASSIST_STACK:-0}
       OMI_OLLAMA_TEMPERATURE: ${OMI_OLLAMA_TEMPERATURE:-0}
       # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
-      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://omniroute-gateway:8082}
       AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       # Omnirouter model for fallback (replaces OMI_GEMINI_MODEL)
@@ -461,6 +461,49 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  # ── OmniRoute Gateway — Anthropic-compatible proxy → Ollama ─────────────────
+  # Replaces the host-level aims-omniroute.service; all LLM-dependent containers
+  # talk to this service instead of host.docker.internal:8082.
+  omniroute-gateway:
+    image: python:3.11-slim
+    container_name: axiomsphere-omniroute-gateway
+    mem_limit: 512m
+    working_dir: /ops/gateway
+    command:
+    - /bin/sh
+    - -c
+    - |
+      pip install --quiet --no-cache-dir fastapi uvicorn httpx &&
+      exec uvicorn ops.gateway.anthropic_proxy:app --host 0.0.0.0 --port 8082
+    environment:
+      AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
+      OLLAMA_OPENAI_BASE_URL: http://host.docker.internal:11434/v1
+      AIMS_REPAIR_MODEL: ${AIMS_REPAIR_MODEL:-nemotron-3-super:120b}
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      PYTHONPATH: /
+    extra_hosts:
+    - host.docker.internal=host-gateway
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8082/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      axiomsphere_net: null
+    ports:
+    - "127.0.0.1:20129:8082"
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/ops
+      target: /ops
+      read_only: true
+    - type: bind
+      source: /home/axi_omi_sphere/aims-workspace/.env
+      target: /workspace/.env
+      read_only: true
 
   queue-api:
     mem_limit: 1g
@@ -787,7 +830,7 @@ services:
       OLLAMA_LOCAL_URL: ${OLLAMA_LOCAL_URL:-}
       PC_ANDREY_OLLAMA_URL: ${PC_ANDREY_OLLAMA_URL:-}
       # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
-      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://omniroute-gateway:8082}
       AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       # DB paths for monitoring
@@ -926,7 +969,7 @@ services:
       DGX_HEAVY_OLLAMA_MODEL: ${DGX_HEAVY_OLLAMA_MODEL:-qwen3:32b-q8_0}
       AIMS_WORKSPACE: /data
       # Omnirouter (anthropic_proxy) with fallback: local-nemotron → llama405b → Claude Sonnet 4.5
-      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://omniroute-gateway:8082}
       AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     extra_hosts:
@@ -1552,7 +1595,7 @@ services:
     environment:
       AIMS_WORKSPACE: /data
       AIMS_CLAUDE_PROXY_TOKEN: ${AIMS_CLAUDE_PROXY_TOKEN:-aims-local-repair-token}
-      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://host.docker.internal:8082}
+      AIMS_OMNIROUTER_URL: ${AIMS_OMNIROUTER_URL:-http://omniroute-gateway:8082}
       POLI_URL: http://poli-agent:8004
       PYTHONPATH: /ops
     depends_on:
