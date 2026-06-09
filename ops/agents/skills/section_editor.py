@@ -36,7 +36,7 @@ from ops.cyclic_skills import validate_structure
 log = logging.getLogger("section_editor")
 
 OLLAMA_URL   = "http://127.0.0.1:11434"
-SLOT120      = "qwen36-reasoning-35b-v1:latest"
+SLOT120      = "axi_omi_sphere"  # SLOT32 (32B) is optimal for section editing
 
 # ── Data structures ──────────────────────────────────────────────
 
@@ -75,7 +75,7 @@ class SectionEditResult:
 
 def _ollama(prompt: str, timeout: int = 300) -> str:
     import urllib.request
-    payload = json.dumps({
+    payload_obj = {
         "model": SLOT120,
         "prompt": (
             "<|im_start|>system\nYou are a precise document editor. "
@@ -86,20 +86,26 @@ def _ollama(prompt: str, timeout: int = 300) -> str:
         "raw": True,
         "stream": False,
         "options": {"temperature": 0.10, "num_predict": 4096},
-    }).encode()
-    req = urllib.request.Request(
-        f"{OLLAMA_URL}/api/generate",
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        raw = json.loads(r.read().decode()).get("response", "").strip()
-    # Strip think blocks
-    raw = re.sub(r"<think>.*?</think>\s*", "", raw, flags=re.DOTALL)
-    if "<think>" in raw:
-        raw = re.sub(r"<think>.*$", "", raw, flags=re.DOTALL).strip()
-    return raw
+    }
+    raw = ""
+    for _attempt in range(3):
+        payload = json.dumps(payload_obj).encode()
+        req = urllib.request.Request(
+            f"{OLLAMA_URL}/api/generate",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            raw = json.loads(r.read().decode()).get("response", "").strip()
+        # Strip think blocks
+        raw = re.sub(r"<think>.*?</think>\s*", "", raw, flags=re.DOTALL)
+        if "<think>" in raw:
+            raw = re.sub(r"<think>.*$", "", raw, flags=re.DOTALL).strip()
+        if raw:
+            return raw
+        log.warning("[OLLAMA] Empty response on attempt %d/3, retrying...", _attempt + 1)
+    return raw  # empty string; _call_section() will raise on json.loads and roll back
 
 
 # ── Step 1: Build section catalog ───────────────────────────────
@@ -271,11 +277,45 @@ def normalize_all(recs: list[str]) -> list[NormalizedRec]:
 
 # ── Step 3: Group by section ─────────────────────────────────────
 
+def _resolve_target_id(target: str, catalog_ids: set[str]) -> str | None:
+    """
+    Fuzzy-resolve a recommendation target ID against the document catalog.
+
+    Handles two common mismatches produced by the Claude audit:
+    1. Short IDs: "1" or "8" → document has "1.0" or "8.0"
+    2. Sub-section targets for non-existent subsections:
+       "8.4.1" → parent "8.4" exists → route to parent so the editor
+       can add the sub-content within the existing section.
+    """
+    if target in catalog_ids:
+        return target
+
+    # Attempt 1: append ".0" (e.g. "1" → "1.0", "8" → "8.0")
+    candidate = target + ".0"
+    if candidate in catalog_ids:
+        return candidate
+
+    # Attempt 2: strip trailing components until a parent is found
+    # e.g. "8.4.1" → "8.4" → "8"
+    parts = target.split(".")
+    while len(parts) > 1:
+        parts = parts[:-1]
+        parent = ".".join(parts)
+        if parent in catalog_ids:
+            return parent
+        # Also try parent + ".0"
+        parent0 = parent + ".0"
+        if parent0 in catalog_ids:
+            return parent0
+
+    return None
+
+
 def group_by_section(
     norm_recs: list[NormalizedRec],
     catalog: list[SectionEntry],
 ) -> dict[str, list[NormalizedRec]]:
-    """Map exact section_id to recommendations; never guess a target."""
+    """Map section_id to recommendations; tries fuzzy fallback before unresolved."""
     groups: dict[str, list[NormalizedRec]] = {}
     catalog_ids = {e.section_id for e in catalog}
 
@@ -285,12 +325,15 @@ def group_by_section(
             continue
 
         target = rec.target
-        if target not in catalog_ids:
+        resolved = _resolve_target_id(target, catalog_ids)
+        if resolved is None:
             groups.setdefault("UNRESOLVED", []).append(rec)
             log.warning("[EDITOR] Unresolved target '%s' for: %s", rec.target, rec.raw[:60])
             continue
 
-        groups.setdefault(target, []).append(rec)
+        if resolved != target:
+            log.info("[EDITOR] Target '%s' fuzzy-resolved to '%s'", target, resolved)
+        groups.setdefault(resolved, []).append(rec)
 
     return groups
 
@@ -313,11 +356,55 @@ def _neighbor_summaries(section_id: str, catalog: list[SectionEntry]) -> str:
     return "\n\n".join(parts)
 
 
+def _extract_reference_section(reference_text: str, section_id: str) -> str:
+    """Extract content matching section_id from the reference document.
+
+    Looks for headings like "8.1", "8.1 ", "8.1." followed by a title,
+    then captures text until the next same-level or higher section heading.
+    Returns at most 2000 chars to avoid flooding the editing prompt.
+    """
+    if not reference_text or not section_id:
+        return ""
+    lines = reference_text.splitlines()
+    # Build a regex that matches this section heading at start of a line.
+    escaped = re.escape(section_id)
+    heading_re = re.compile(
+        rf"^\s*{escaped}[\s\.]+\S",
+        re.IGNORECASE,
+    )
+    # Determine the "level" of this section (number of dot-separated parts).
+    level = len(section_id.split("."))
+    # Regex for any heading at the same level or higher (terminates the section).
+    higher_re = re.compile(
+        r"^\s*(\d+(?:\.\d+){0," + str(level - 1) + r"})\s+\S",
+    )
+
+    collecting = False
+    collected: list[str] = []
+    for line in lines:
+        if not collecting:
+            if heading_re.match(line):
+                collecting = True
+                collected.append(line.strip())
+        else:
+            # Stop at next sibling or parent heading.
+            m = re.match(r"^\s*(\d+(?:\.\d+)*)\s+\S", line)
+            if m:
+                parts = m.group(1).split(".")
+                if len(parts) <= level and m.group(1) != section_id:
+                    break
+            collected.append(line.rstrip())
+
+    content = "\n".join(collected).strip()
+    return content[:2000]
+
+
 def _edit_section_prompt(
     entry: SectionEntry,
     recs: list[NormalizedRec],
     toc: str,
     neighbor_summaries: str,
+    reference_section: str = "",
 ) -> str:
     recs_text = "\n".join(
         f"  {r.rec_id} [{r.operation}]: {r.raw}" for r in recs
@@ -330,6 +417,13 @@ def _edit_section_prompt(
     if replace_recs:
         replace_note = "\n⚠️ IMPORTANT: REPLACE recommendations mean this section's current content is incomplete/incorrect and should be COMPLETELY REWRITTEN based on the recommendations. Do not preserve old content unless explicitly stated."
 
+    ref_block = ""
+    if reference_section:
+        ref_block = f"""
+REFERENCE DOCUMENT — this section in the source standard (use exact terminology, requirements, and structure from here):
+{reference_section}
+"""
+
     return f"""You are editing one section of a professional Oil & Gas Asset Integrity Management document.
 
 DOCUMENT OUTLINE (TOC):
@@ -337,7 +431,7 @@ DOCUMENT OUTLINE (TOC):
 
 NEIGHBOR CONTEXT (read-only):
 {neighbor_summaries}
-
+{ref_block}
 TARGET SECTION TO EDIT:
 Heading: {entry.heading}
 Current body:
@@ -353,8 +447,8 @@ RULES:
 - skipped: list of rec_ids you could not apply
 - Do NOT change the heading or section number
 - Do NOT add placeholder text like "TBD" or "(to be defined)"
-- For ADD_CONTENT/EXPAND/UPDATE: expand or improve existing content
-- For REPLACE: rewrite the section completely based on recommendations
+- For ADD_CONTENT/EXPAND/UPDATE: expand or improve existing content using REFERENCE DOCUMENT content
+- For REPLACE: rewrite the section completely based on REFERENCE DOCUMENT and recommendations
 - Preserve all existing standards references
 
 RESPOND WITH THIS EXACT JSON STRUCTURE:
@@ -437,6 +531,20 @@ def _verify_recommendation(
     if rec.operation == "EXPAND":
         return len(revised_body.split()) > len(original_body.split())
 
+    # REPLACE: section may already contain rec terms from a prior-cycle expansion.
+    # Don't require *new* terms — just sufficient word count and term coverage.
+    # Threshold is 0.25 (not 0.4) because rec text contains action verbs like
+    # "replace", "fabricated", "narrative" that describe the operation, not the content.
+    if rec.operation == "REPLACE":
+        if len(revised_body.split()) < 50:
+            return False
+        terms = _recommendation_terms(rec.raw)
+        if not terms:
+            return len(revised_body.split()) >= 50
+        after = revised_body.lower()
+        after_hits = sum(term in after for term in terms)
+        return after_hits / len(terms) >= 0.25
+
     terms = _recommendation_terms(rec.raw)
     if not terms:
         return False
@@ -444,7 +552,11 @@ def _verify_recommendation(
     after = revised_body.lower()
     after_hits = sum(term in after for term in terms)
     new_hits = sum(term in after and term not in before for term in terms)
-    return after_hits / len(terms) >= 0.4 and new_hits >= 1
+    # Accept significant word-count growth as alternative to new_hits — handles
+    # cases where domain terms already exist in original (e.g. adding equipment
+    # list to a Scope section that already mentioned "equipment").
+    significant_growth = len(revised_body.split()) > len(original_body.split()) * 1.3
+    return after_hits / len(terms) >= 0.4 and (new_hits >= 1 or significant_growth)
 
 
 def _resolve_global_target(
@@ -544,7 +656,7 @@ RULES:
 RESPOND:
 {{"section_id":"{section_id}","body":"...","applied":["{rec.rec_id}"]}}"""
     try:
-        data = json.loads(_ollama(prompt, timeout=600))
+        data = json.loads(_ollama(prompt, timeout=3600))
         required = {"section_id", "body", "applied"}
         if not isinstance(data, dict) or set(data) != required:
             raise ValueError("new-section response has invalid keys")
@@ -724,12 +836,13 @@ def _call_section(
     recs: list[NormalizedRec],
     toc: str,
     catalog: list[SectionEntry],
+    reference_section: str = "",
 ) -> SectionEditResult:
     neighbor_ctx = _neighbor_summaries(entry.section_id, catalog)
-    prompt = _edit_section_prompt(entry, recs, toc, neighbor_ctx)
+    prompt = _edit_section_prompt(entry, recs, toc, neighbor_ctx, reference_section)
 
     try:
-        raw = _ollama(prompt, timeout=300)
+        raw = _ollama(prompt, timeout=3600)
         expected_rec_ids = {rec.rec_id for rec in recs}
         data = _parse_section_response(
             raw,
@@ -775,11 +888,14 @@ def _call_section(
             if _verify_recommendation(rec, entry.body, revised_body):
                 verified.append(rec_id)
 
-        if not verified:
+        # Also rollback when the model explicitly reports skipping a rec that
+        # was expected — the model refused to apply an assigned change.
+        expected_skipped = {rid for rid in model_skipped if rid in expected}
+        if not verified or expected_skipped:
             rollback = True
             reason = (
                 f"verification_failed: verified={sorted(verified)} "
-                f"expected={sorted(expected)} skipped={model_skipped}"
+                f"expected={sorted(expected)} skipped={sorted(model_skipped)}"
             )
 
     if not rollback:
@@ -883,7 +999,8 @@ def apply_section_edits(
     doc: str,
     recommendations: list[str],
     last_accepted_doc: str = "",
-    max_workers: int = 3,
+    max_workers: int = 1,
+    reference_text: str = "",
 ) -> dict:
     """
     Section-batched transactional editing.
@@ -986,7 +1103,8 @@ def apply_section_edits(
                 entry = next((e for e in catalog if e.section_id == sid), None)
                 if not entry:
                     continue
-                futures[ex.submit(_call_section, entry, groups[sid], toc, catalog)] = sid
+                ref_sec = _extract_reference_section(reference_text, sid) if reference_text else ""
+                futures[ex.submit(_call_section, entry, groups[sid], toc, catalog, ref_sec)] = sid
 
             for future in as_completed(futures):
                 sid = futures[future]
@@ -1117,6 +1235,15 @@ def apply_section_edits(
         _m = re.match(r"^\s*(\d+(?:\.\d+)*)", _s)
         if _m:
             _post_stub_ids.add(_m.group(1))
+    # Pre-compute which section IDs in the ORIGINAL doc were also stubs/empty —
+    # reverting a committed section back to an original stub makes things WORSE,
+    # not better. Only revert if the original body was actually filled content.
+    _orig_check = validate_structure(doc)
+    _orig_stub_ids: set[str] = set()
+    for _s in _orig_check.stub_sections + _orig_check.empty_sections:
+        _m = re.match(r"^\s*(\d+(?:\.\d+)*)", _s)
+        if _m:
+            _orig_stub_ids.add(_m.group(1))
     _stub_reverted = False
     for _sid, _res in results.items():
         # Skip post-reassembly stub revert for sections with REPLACE operations.
@@ -1127,6 +1254,28 @@ def apply_section_edits(
         if _res.status == "COMMITTED" and _sid in _post_stub_ids:
             _entry = next((e for e in catalog if e.section_id == _sid), None)
             if _entry:
+                # If the original body was ALSO a stub, reverting would go backwards.
+                # Keep the committed revision — it is at least no worse than original.
+                if _sid in _orig_stub_ids:
+                    log.info(
+                        "[EDITOR] Post-reassembly stub check: section %s is stub but "
+                        "original was also stub — keeping committed revision to avoid regression",
+                        _sid,
+                    )
+                    continue
+                # If the model verified at least one recommendation, the section
+                # was substantively edited. The post-reassembly stub classification
+                # is a false positive: the model likely wrote content that starts
+                # with sub-headings (leaving the parent direct body < 30 chars),
+                # but the section IS populated. Keep the committed revision.
+                if _res.verified:
+                    log.info(
+                        "[EDITOR] Post-reassembly stub check: section %s has %d verified rec(s) "
+                        "— keeping committed revision (model proved content is substantive)",
+                        _sid,
+                        len(_res.verified),
+                    )
+                    continue
                 log.warning(
                     "[EDITOR] Post-reassembly stub revert: section %s committed but "
                     "validate_structure sees it as stub/empty — reverting to original body",
@@ -1180,11 +1329,22 @@ def apply_section_edits(
                    - len(new_filled_stubs))
 
     committed_sections = [r for r in results.values() if r.status == "COMMITTED"]
-    topology_violated  = not body_topology_valid and not committed_sections
-    # If REPLACE operations exist, use more lenient thresholds since stub detection
-    # is unreliable for freshly-generated content
-    regression_threshold = 0.02 if replace_sections else 0.05
-    filled_loss_threshold = 0 if replace_sections else 1
+    # Topology violation always triggers rollback — no exemption for committed
+    # sections.  The exemption (`and not committed_sections`) was removed because
+    # a committed section that injects a spurious heading (e.g. ## 99.0) is still
+    # a hallucination and must cause global rollback.  Body topology is evaluated
+    # before the global new-section pass, so legitimate section additions (9.0)
+    # do not affect this flag.
+    topology_violated  = not body_topology_valid
+    # Always use lenient thresholds — REPLACE stub compensation is already handled
+    # via new_filled_stubs above.  Tightening thresholds when REPLACE sections exist
+    # paradoxically makes the global rollback *more* likely: a rec that classifies as
+    # REPLACE (e.g. "Replace the fabricated paragraph with the compliance matrix")
+    # but then fails per-section verification still appears in replace_sections
+    # (computed before results), which would force filled_loss_threshold=0 and trigger
+    # global rollback on a single filled-section reclassification.
+    regression_threshold = 0.05
+    filled_loss_threshold = 1
     significant_regression = (
         new_struct.completeness_ratio < orig_struct.completeness_ratio - regression_threshold
         and new_filled < orig_filled - filled_loss_threshold
