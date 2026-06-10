@@ -1,5 +1,5 @@
 """
-Tests for DOCSREG Reference Governance Policy YAML externalisation.
+Tests for DOCSREG Approved Standards Policy YAML externalisation.
 
 Covers:
   - TestPolicyYamlFile       — verifies the YAML file itself is valid and complete
@@ -18,7 +18,7 @@ import yaml
 # Paths
 # ---------------------------------------------------------------------------
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
-_POLICY_PATH = _PROJECT_ROOT / "config/docsreg/reference_governance_policy.yaml"
+_POLICY_PATH = _PROJECT_ROOT / "config/docsreg/approved_standards_policy.yaml"
 
 
 # ---------------------------------------------------------------------------
@@ -27,7 +27,7 @@ _POLICY_PATH = _PROJECT_ROOT / "config/docsreg/reference_governance_policy.yaml"
 
 
 class TestPolicyYamlFile:
-    """Verify the config/docsreg/reference_governance_policy.yaml file itself."""
+    """Verify the config/docsreg/approved_standards_policy.yaml file itself."""
 
     def test_yaml_file_exists(self):
         assert _POLICY_PATH.exists(), (
@@ -123,17 +123,17 @@ class TestModuleLoadedFromYaml:
 
 
 class TestPolicyFallback:
-    """Verify _load_policy() falls back to hardcoded defaults on missing file."""
+    """Verify load_policy() falls back to hardcoded defaults on missing file."""
 
     def test_load_policy_falls_back_when_file_missing(self, monkeypatch, tmp_path):
-        import ops.agents.skills.docsreg_reference_governance as mod
+        import ops.docsreg.docsreg_standards_policy as policy_mod
 
         # Point _POLICY_PATH at a non-existent file
         nonexistent = tmp_path / "does_not_exist.yaml"
-        monkeypatch.setattr(mod, "_POLICY_PATH", nonexistent)
+        monkeypatch.setattr(policy_mod, "_POLICY_PATH", nonexistent)
 
         # Should not raise — must return valid defaults
-        ref_standards, patterns, prefixes = mod._load_policy()
+        ref_standards, patterns, prefixes = policy_mod.load_policy()
 
         assert isinstance(ref_standards, frozenset), "fallback ref_standards must be frozenset"
         assert len(ref_standards) > 0, "fallback ref_standards must not be empty"

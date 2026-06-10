@@ -7,7 +7,8 @@ API 510/570/580/581, NACE SP0169, ASME B31.3 are classified as FABRICATED and
 block certification until removed.
 
 This module is intentionally free of LLM calls and HTTP calls.
-A YAML policy file is loaded once at import time for standards configuration.
+Policy (approved standards lists, fabricated patterns) is loaded once at import
+time via :mod:`ops.docsreg.docsreg_standards_policy`.
 
 Usage::
 
@@ -27,69 +28,11 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 from typing import Optional
 
+from ops.docsreg.docsreg_standards_policy import load_policy as _load_policy
+
 log = logging.getLogger("docsreg_reference_governance")
-
-
-# ── Hardcoded defaults (used when YAML is missing or malformed) ────────────────
-
-_DEFAULT_REFERENCE_STANDARDS: frozenset[str] = frozenset([
-    "ISO 9000",
-    "ISO 55001",
-    "ISO 55002",
-    "ISO 45001",   # Occupational Health & Safety Management Systems — legitimate in AIM-PFM context
-    "ISO 9712",    # Non-Destructive Testing — Qualification/certification — legitimate in asset integrity
-])
-
-_DEFAULT_FABRICATED_PATTERNS: list[str] = [
-    r"API\s+(?:510|570|580|581|RP\s*571|RP\s*572|RP\s*574)",
-    r"NACE\s+SP\d{4}",
-    r"IEC\s+60364",
-    r"NFPA\s+70",
-    r"ASME\s+B31\.\d",
-    r"AS\s*4024",
-    r"BS\s*EN\s+ISO\s+14001",
-]
-
-_DEFAULT_ISO_PREFIXES: tuple[str, ...] = (
-    "ISO 9000", "ISO 55001", "ISO 55002", "ISO 45001", "ISO 9712"
-)
-
-_POLICY_PATH = (
-    Path(__file__).resolve().parents[3] / "config/docsreg/reference_governance_policy.yaml"
-)
-
-
-def _load_policy() -> tuple[frozenset[str], list[str], tuple[str, ...]]:
-    """Load standards policy from YAML. Returns (reference_standards, fabricated_patterns, iso_prefixes)."""
-    try:
-        import yaml
-    except ImportError:
-        log.warning("PyYAML not available — using hardcoded reference governance policy")
-        return _DEFAULT_REFERENCE_STANDARDS, _DEFAULT_FABRICATED_PATTERNS, _DEFAULT_ISO_PREFIXES
-
-    try:
-        with _POLICY_PATH.open("r", encoding="utf-8") as fh:
-            data = yaml.safe_load(fh)
-        reference_standards = frozenset(data["reference_standards"])
-        fabricated_patterns = list(data["fabricated_patterns"])
-        iso_prefixes = tuple(data["iso_prefixes"])
-        log.debug("Reference governance policy loaded from %s", _POLICY_PATH)
-        return reference_standards, fabricated_patterns, iso_prefixes
-    except FileNotFoundError:
-        log.warning(
-            "Reference governance policy file not found at %s — using hardcoded defaults",
-            _POLICY_PATH,
-        )
-    except Exception as exc:
-        log.warning(
-            "Failed to load reference governance policy from %s: %s — using hardcoded defaults",
-            _POLICY_PATH,
-            exc,
-        )
-    return _DEFAULT_REFERENCE_STANDARDS, _DEFAULT_FABRICATED_PATTERNS, _DEFAULT_ISO_PREFIXES
 
 
 def _compile_fabricated_patterns() -> re.Pattern:  # type: ignore[type-arg]
