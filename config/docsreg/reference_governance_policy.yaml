@@ -1,0 +1,40 @@
+# Reference governance policy for DOCSREG certification pipeline.
+#
+# This file is the source of truth for standards classification.
+# Modify this file to add/remove approved or fabricated standards.
+# Changes take effect on next process start (loaded at module import time).
+#
+# reference_standards:
+#   Standards whose presence in a document is always VERIFIED.
+#   Used by _is_verified_iso() — exact prefix matching (case-insensitive).
+#
+# fabricated_patterns:
+#   Python regex patterns (re.IGNORECASE) matching standards that are
+#   NOT present in AIM-PFM references and should block certification.
+#
+# iso_prefixes:
+#   Canonical ISO prefix strings used for verified classification.
+#   Should mirror reference_standards for ISO entries.
+
+reference_standards:
+  - "ISO 9000"
+  - "ISO 55001"
+  - "ISO 55002"
+  - "ISO 45001"
+  - "ISO 9712"
+
+iso_prefixes:
+  - "ISO 9000"
+  - "ISO 55001"
+  - "ISO 55002"
+  - "ISO 45001"
+  - "ISO 9712"
+
+fabricated_patterns:
+  - 'API\s+(?:510|570|580|581|RP\s*571|RP\s*572|RP\s*574)'
+  - 'NACE\s+SP\d{4}'
+  - 'IEC\s+60364'
+  - 'NFPA\s+70'
+  - 'ASME\s+B31\.\d'
+  - 'AS\s*4024'
+  - 'BS\s*EN\s+ISO\s+14001'
