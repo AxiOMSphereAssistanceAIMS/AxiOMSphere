@@ -35,9 +35,9 @@ from ops.docsreg.docsreg_standards_policy import load_policy as _load_policy
 log = logging.getLogger("docsreg_reference_governance")
 
 
-def _compile_fabricated_patterns() -> re.Pattern:  # type: ignore[type-arg]
-    """Compile all FABRICATED_STANDARDS_PATTERNS into a single regex."""
-    combined = "|".join(f"(?:{p})" for p in FABRICATED_STANDARDS_PATTERNS)
+def _compile_fabricated_patterns(patterns: list[str]) -> re.Pattern:  # type: ignore[type-arg]
+    """Compile *patterns* into a single combined regex."""
+    combined = "|".join(f"(?:{p})" for p in patterns)
     return re.compile(combined, re.IGNORECASE)
 
 
@@ -46,7 +46,7 @@ def _compile_fabricated_patterns() -> re.Pattern:  # type: ignore[type-arg]
 REFERENCE_STANDARDS, FABRICATED_STANDARDS_PATTERNS, _ISO_PREFIXES = _load_policy()
 
 # Compiled once at import time — reused across all calls
-_FABRICATED_RE: re.Pattern = _compile_fabricated_patterns()  # type: ignore[type-arg]
+_FABRICATED_RE: re.Pattern = _compile_fabricated_patterns(FABRICATED_STANDARDS_PATTERNS)  # type: ignore[type-arg]
 
 
 # ── Enumerations ───────────────────────────────────────────────────────────────

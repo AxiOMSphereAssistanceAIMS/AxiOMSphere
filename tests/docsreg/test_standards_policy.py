@@ -123,21 +123,86 @@ class TestModuleLoadedFromYaml:
 
 
 class TestPolicyFallback:
-    """Verify load_policy() falls back to hardcoded defaults on missing file."""
+    """Verify load_policy() falls back to hardcoded defaults on missing/malformed file."""
+
+    def _assert_valid_defaults(
+        self,
+        ref_standards: object,
+        patterns: object,
+        prefixes: object,
+    ) -> None:
+        assert isinstance(ref_standards, frozenset), "fallback ref_standards must be frozenset"
+        assert len(ref_standards) > 0, "fallback ref_standards must not be empty"  # type: ignore[arg-type]
+        assert isinstance(patterns, list), "fallback patterns must be list"
+        assert len(patterns) > 0, "fallback patterns must not be empty"  # type: ignore[arg-type]
+        assert isinstance(prefixes, tuple), "fallback prefixes must be tuple"
+        assert len(prefixes) > 0, "fallback prefixes must not be empty"  # type: ignore[arg-type]
 
     def test_load_policy_falls_back_when_file_missing(self, monkeypatch, tmp_path):
         import ops.docsreg.docsreg_standards_policy as policy_mod
 
-        # Point _POLICY_PATH at a non-existent file
         nonexistent = tmp_path / "does_not_exist.yaml"
         monkeypatch.setattr(policy_mod, "_POLICY_PATH", nonexistent)
 
-        # Should not raise — must return valid defaults
         ref_standards, patterns, prefixes = policy_mod.load_policy()
+        self._assert_valid_defaults(ref_standards, patterns, prefixes)
 
-        assert isinstance(ref_standards, frozenset), "fallback ref_standards must be frozenset"
-        assert len(ref_standards) > 0, "fallback ref_standards must not be empty"
-        assert isinstance(patterns, list), "fallback patterns must be list"
-        assert len(patterns) > 0, "fallback patterns must not be empty"
-        assert isinstance(prefixes, tuple), "fallback prefixes must be tuple"
-        assert len(prefixes) > 0, "fallback prefixes must not be empty"
+    def test_load_policy_falls_back_on_invalid_yaml(self, monkeypatch, tmp_path):
+        import ops.docsreg.docsreg_standards_policy as policy_mod
+
+        bad_yaml = tmp_path / "bad.yaml"
+        bad_yaml.write_text(":: this is not valid yaml ::", encoding="utf-8")
+        monkeypatch.setattr(policy_mod, "_POLICY_PATH", bad_yaml)
+
+        ref_standards, patterns, prefixes = policy_mod.load_policy()
+        self._assert_valid_defaults(ref_standards, patterns, prefixes)
+
+    def test_load_policy_falls_back_on_missing_keys(self, monkeypatch, tmp_path):
+        """YAML exists and parses but is missing required sections."""
+        import ops.docsreg.docsreg_standards_policy as policy_mod
+
+        partial_yaml = tmp_path / "partial.yaml"
+        partial_yaml.write_text(
+            "reference_standards:\n  - ISO 9000\n",  # missing fabricated_patterns + iso_prefixes
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(policy_mod, "_POLICY_PATH", partial_yaml)
+
+        ref_standards, patterns, prefixes = policy_mod.load_policy()
+        self._assert_valid_defaults(ref_standards, patterns, prefixes)
+
+    def test_load_policy_falls_back_on_empty_file(self, monkeypatch, tmp_path):
+        """Empty YAML file (safe_load returns None) must not crash."""
+        import ops.docsreg.docsreg_standards_policy as policy_mod
+
+        empty_yaml = tmp_path / "empty.yaml"
+        empty_yaml.write_text("", encoding="utf-8")
+        monkeypatch.setattr(policy_mod, "_POLICY_PATH", empty_yaml)
+
+        ref_standards, patterns, prefixes = policy_mod.load_policy()
+        self._assert_valid_defaults(ref_standards, patterns, prefixes)
+
+
+# ---------------------------------------------------------------------------
+# TestPolicyInvariant — cross-field consistency checks
+# ---------------------------------------------------------------------------
+
+
+class TestPolicyInvariant:
+    """Verify invariants that span multiple YAML sections."""
+
+    def test_iso_prefixes_are_subset_of_reference_standards(self):
+        """Every iso_prefixes entry must appear in reference_standards.
+
+        These two lists serve different purposes (prefix matching vs. exact match)
+        but should stay in sync — an ISO prefix that isn't in reference_standards
+        would create a verifiable standard whose prefix isn't recognised.
+        """
+        with _POLICY_PATH.open("r", encoding="utf-8") as fh:
+            data = yaml.safe_load(fh)
+        ref_set = set(data["reference_standards"])
+        for prefix in data["iso_prefixes"]:
+            assert prefix in ref_set, (
+                f"iso_prefixes entry '{prefix}' is not in reference_standards — "
+                "the two lists must stay in sync"
+            )

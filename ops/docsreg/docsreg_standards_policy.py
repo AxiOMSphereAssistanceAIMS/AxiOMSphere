@@ -77,6 +77,15 @@ def load_policy() -> tuple[frozenset[str], list[str], tuple[str, ...]]:
     try:
         with _POLICY_PATH.open("r", encoding="utf-8") as fh:
             data = yaml.safe_load(fh)
+        required_keys = ("reference_standards", "fabricated_patterns", "iso_prefixes")
+        missing = [k for k in required_keys if k not in (data or {})]
+        if missing:
+            log.warning(
+                "Policy YAML at %s missing required keys %s — using hardcoded defaults",
+                _POLICY_PATH,
+                missing,
+            )
+            return _DEFAULT_REFERENCE_STANDARDS, _DEFAULT_FABRICATED_PATTERNS, _DEFAULT_ISO_PREFIXES
         reference_standards = frozenset(data["reference_standards"])
         fabricated_patterns = list(data["fabricated_patterns"])
         iso_prefixes = tuple(data["iso_prefixes"])
