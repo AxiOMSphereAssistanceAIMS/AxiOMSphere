@@ -79,6 +79,7 @@ from argus_code_agent import (
     review_prompt,
 )
 from argus_monitor import ArgusMonitor, MonitorEvent
+from argus.cycle_health_monitor import CycleHealthMonitor
 from argus_keepalive import KeepaliveManager
 from argus_orchestrator import ArgusOrchestrator, PlanStep
 from argus.crash_incident_lifecycle import (
@@ -337,6 +338,31 @@ WARM_HEAVY_ON_START = os.environ.get("ARGUS_WARM_HEAVY_ON_START", "1").strip() =
 USE_SMALL_WHILE_HEAVY_LOADING = os.environ.get("ARGUS_USE_SMALL_WHILE_HEAVY_LOADING", "1").strip() == "1"
 WARM_SMALL_ON_START = os.environ.get("ARGUS_WARM_SMALL_ON_START", "1").strip() == "1"
 WARM_SMALL_INTERVAL_SEC = max(60, int(os.environ.get("ARGUS_WARM_SMALL_INTERVAL_SEC", "900")))
+# ── Training mode signal file ─────────────────────────────────────────────────
+# When this file exists, Argus suppresses model warm-ups and model_missing alerts.
+# Training scripts create it before unloading models and remove it after restoring them.
+TRAINING_MODE_SIGNAL = os.environ.get(
+    "ARGUS_TRAINING_MODE_SIGNAL",
+    os.path.join(os.environ.get("AIMS_WORKSPACE", "/workspace/aims_workspace"), "argus_training_mode.json"),
+)
+
+
+def is_training_mode_active() -> bool:
+    """Check if large-model training is in progress (file-based signal)."""
+    try:
+        if not os.path.isfile(TRAINING_MODE_SIGNAL):
+            return False
+        stat = os.stat(TRAINING_MODE_SIGNAL)
+        # Auto-expire after 12 hours (safety against stale signal)
+        age_hours = (time.time() - stat.st_mtime) / 3600
+        if age_hours > 12:
+            log.warning("Training mode signal stale (%.1fh old) — ignoring", age_hours)
+            return False
+        return True
+    except OSError:
+        return False
+
+
 USE_SHARED_OLLAMA_RESOLVE = os.environ.get("ARGUS_USE_SHARED_OLLAMA_RESOLVE", "1").strip() == "1"
 CHAT_CONTEXT_TURNS = max(1, int(os.environ.get("ARGUS_CHAT_CONTEXT_TURNS", "8")))
 CLAUDE_CODE_APPROVAL_TTL_SEC = max(60, int(os.environ.get("ARGUS_CLAUDE_CODE_APPROVAL_TTL_SEC", "600")))
@@ -869,9 +895,77 @@ def _orch_approval_request(step: PlanStep) -> None:
     _dispatch_coro_to_main_loop(_send(), "orch_approval")
 
 
+# Phase 3: Redis Scheduler missed-startup report ─────────────────────────────
+
+def _fmt_overdue(seconds: int) -> str:
+    """Format overdue duration as 'Xh Ym' or 'Ym Zs'."""
+    if seconds >= 3600:
+        h, rem = divmod(seconds, 3600)
+        m = rem // 60
+        return f"{h}h {m}m"
+    elif seconds >= 60:
+        m, s = divmod(seconds, 60)
+        return f"{m}m {s}s"
+    return f"{seconds}s"
+
+
+def _fmt_scheduled_for(iso_str: str) -> str:
+    """Format ISO timestamp as 'DD Mon YYYY, HH:MM'."""
+    try:
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        return dt.strftime("%d %b %Y, %H:%M")
+    except Exception:
+        return iso_str
+
+
+def _orch_missed_start_report(tasks_info: list) -> None:
+    """Send English-only Telegram message listing overdue tasks with action buttons."""
+    if _app is None or not tasks_info:
+        return
+
+    lines = [
+        "⚠️ <b>Redis Scheduler found overdue tasks after startup.</b>",
+        "These tasks were <b>NOT</b> started automatically:",
+        "",
+    ]
+    for i, t in enumerate(tasks_info, 1):
+        scheduled = _fmt_scheduled_for(t.get("original_scheduled_for", ""))
+        overdue = _fmt_overdue(int(t.get("overdue_duration_seconds", 0)))
+        lines.append(
+            f"{i}. <b>{t['display_name']}</b>\n"
+            f"   Scheduled for: {scheduled}\n"
+            f"   Overdue by: {overdue}\n"
+            f"   Type: <code>{t['task_type']}</code>"
+        )
+
+    text = "\n".join(lines)
+    n = len(tasks_info)
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("Reschedule same time", callback_data="missed_start_reschedule_same"),
+            InlineKeyboardButton("Reschedule NEW date/time", callback_data="missed_start_reschedule_new"),
+        ],
+        [
+            InlineKeyboardButton(f"Cancel tasks {n}:", callback_data="missed_start_cancel_all"),
+            InlineKeyboardButton("Keep in review", callback_data="missed_start_keep"),
+        ],
+    ])
+
+    async def _send():
+        for cid in OWNER_CHAT_IDS:
+            try:
+                await _app.bot.send_message(
+                    cid, text, parse_mode=ParseMode.HTML, reply_markup=keyboard
+                )
+            except Exception as e:
+                log.warning("orch_missed_start_report: %s", e)
+    _dispatch_coro_to_main_loop(_send(), "orch_missed_start_report")
+
+
 orchestrator = ArgusOrchestrator(
     on_notify=_orch_notify,
     on_approval_request=_orch_approval_request,
+    on_missed_start_report=_orch_missed_start_report,
     storage=storage,
 )
 
@@ -1183,12 +1277,15 @@ async def _small_model_keeper_loop() -> None:
         return
     while True:
         try:
-            if WARM_SMALL_ON_START and SMALL_MODEL:
-                await asyncio.to_thread(_warm_small_model_now)
-            if WARM_MEDIUM_ON_START and MEDIUM_MODEL:
-                await asyncio.to_thread(_warm_medium_model_now)
-            if WARM_HEAVY_ON_START and WARM_HEAVY_MODEL:
-                await asyncio.to_thread(_warm_heavy_model_now)
+            if is_training_mode_active():
+                log.info("keeper loop: training mode active — skipping all model warm-ups")
+            else:
+                if WARM_SMALL_ON_START and SMALL_MODEL:
+                    await asyncio.to_thread(_warm_small_model_now)
+                if WARM_MEDIUM_ON_START and MEDIUM_MODEL:
+                    await asyncio.to_thread(_warm_medium_model_now)
+                if WARM_HEAVY_ON_START and WARM_HEAVY_MODEL:
+                    await asyncio.to_thread(_warm_heavy_model_now)
         except Exception as exc:
             log.warning("small/medium/heavy keeper loop error: %s", exc)
         await asyncio.sleep(WARM_SMALL_INTERVAL_SEC)
@@ -1541,6 +1638,46 @@ def _maybe_trigger_heavy_warm(update: Update) -> None:
         asyncio.get_running_loop().create_task(asyncio.to_thread(_warm_heavy_model_now))
     except Exception:
         pass
+
+
+async def _scheduler_health_monitor_loop(app: Application) -> None:
+    """Background task: alert when Redis Scheduler heartbeat goes stale or missing.
+
+    Polls every 120s. Emits a single warning when the condition first appears,
+    then suppresses repeats until recovery.  Uses the same _alert_queue path
+    as all other Argus monitor events.
+    """
+    from ops.argus.argus_orchestrator import get_scheduler_status
+
+    _was_stale = False
+    await asyncio.sleep(90)  # grace period — let the daemon write its first heartbeat
+    while True:
+        try:
+            st = await get_scheduler_status()
+            if st.get("available"):
+                now_stale = st.get("stale", False) or not st.get("daemon_alive", False)
+                if now_stale and not _was_stale:
+                    age_str = (
+                        f"{st['heartbeat_age_s']}s назад"
+                        if st.get("heartbeat_age_s") is not None
+                        else "отсутствует"
+                    )
+                    _alert_queue.put_nowait(MonitorEvent(
+                        service="redis-scheduler",
+                        event_type="heartbeat_stale",
+                        severity="warning",
+                        message=(
+                            f"Scheduler heartbeat {age_str} (порог 150s) — "
+                            "демон может быть остановлен"
+                        ),
+                    ))
+                    _was_stale = True
+                elif not now_stale and _was_stale:
+                    log.info("scheduler_health_monitor: heartbeat recovered")
+                    _was_stale = False
+        except Exception as exc:
+            log.warning("scheduler_health_monitor: error — %s", exc)
+        await asyncio.sleep(120)
 
 
 async def _error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -2290,7 +2427,7 @@ async def cmd_pull(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def cmd_delete(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
-    """Delete a model from disk on the specified node."""
+    """Create a model deletion proposal; never delete from Telegram."""
     if not _allowed(update):
         return
     if not ctx.args:
@@ -2310,12 +2447,12 @@ async def cmd_delete(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
 
     node_label = f" на {node}" if node else ""
     await update.message.reply_text(
-        f"🗑 Удаляю <code>{_h(model)}</code>{node_label}…",
+        f"Готовлю предложение по освобождению места для <code>{_h(model)}</code>{node_label}…",
         parse_mode=ParseMode.HTML,
     )
     await update.message.chat.send_action(ChatAction.TYPING)
     ok, msg = await asyncio.to_thread(ollama_mgr.delete_model, model, node)
-    icon = "✅" if ok else "❌"
+    icon = "✅" if ok else "⛔"
     await update.message.reply_text(f"{icon} {_h(msg)}", parse_mode=ParseMode.HTML)
 
 
@@ -2331,6 +2468,118 @@ async def cmd_tasks(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         f"<b>{header}</b>\n<pre>{_h(text)}</pre>",
         parse_mode=ParseMode.HTML,
     )
+
+
+async def cmd_scheduler(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show Redis Scheduler live dashboard: daemon, container, queues, last tasks."""
+    if not _allowed(update):
+        return
+    await update.message.chat.send_action(ChatAction.TYPING)
+
+    from ops.argus.argus_orchestrator import get_scheduler_backpressure_detail
+    st = await get_scheduler_backpressure_detail()
+
+    if not st.get("available"):
+        await update.message.reply_text(
+            "⚠️ <b>Redis Scheduler</b> — недоступен (импорт не удался)",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    # ── Daemon health line ────────────────────────────────────────────────────
+    if "error" in st:
+        daemon_line = f"❌ <b>OFFLINE</b> — Redis недоступен\n  <code>{_h(st['error'][:120])}</code>"
+        icon = "❌"
+    elif not st["daemon_alive"]:
+        daemon_line = "❌ <b>OFFLINE</b> — heartbeat отсутствует"
+        icon = "❌"
+    elif st["stale"]:
+        daemon_line = f"⚠️ <b>STALE</b> — heartbeat {st['heartbeat_age_s']}s назад (порог 150s)"
+        icon = "⚠️"
+    else:
+        daemon_line = f"✅ <b>ONLINE</b> — heartbeat {st['heartbeat_age_s']}s назад"
+        icon = "✅"
+
+    # ── Container health line ─────────────────────────────────────────────────
+    try:
+        cstatus = await asyncio.to_thread(docker_mgr.get_status, "redis-scheduler")
+        ci = cstatus.get("redis-scheduler", {})
+        cstate = ci.get("status", "unknown")
+        chealth = ci.get("health", "")
+        if cstate == "running":
+            container_line = f"✅ running{(' · ' + chealth) if chealth else ''}"
+        else:
+            container_line = f"❌ {cstate}"
+    except Exception:
+        container_line = "⚠️ docker недоступен"
+
+    # ── EventBus line ─────────────────────────────────────────────────────────
+    eventbus_line = "✅ доступен" if PHASE5_EVENTBUS_AVAILABLE else "⚠️ недоступен"
+
+    # ── Last task lines ───────────────────────────────────────────────────────
+    def _fmt_task(t: dict | None, label: str) -> str:
+        if not t:
+            return f"  {label}: —"
+        name = _h(t.get("display_name") or t.get("task_type", ""))
+        tid = _h(t.get("task_id", "")[-20:])
+        err = t.get("error", "")
+        err_part = f"  ↳ <code>{_h(err[:80])}</code>" if err else ""
+        ts = t.get("created_at", "")[:16]
+        base = f"  {label}: <code>{name}</code> …{tid} {ts}"
+        return f"{base}\n{err_part}" if err_part else base
+
+    lines = [
+        f"{icon} <b>Redis Scheduler</b>",
+        "",
+        f"Демон:     {daemon_line}",
+        f"Контейнер: {container_line}",
+        f"EventBus:  {eventbus_line}",
+        f"Redis:     {'✅ OK' if 'error' not in st else '❌ ошибка'}",
+        "",
+        "Очереди:",
+        f"  pending:          <code>{st['pending']}</code>",
+        f"  running:          <code>{st['running']}</code>",
+        f"  retrying:         <code>{st['retrying']}</code>",
+        f"  failed:           <code>{st['failed']}</code>",
+        f"  held_for_review:  <code>{st['held_for_review']}</code>",
+        f"  completed total:  <code>{st.get('completed_total', 0)}</code>",
+        "",
+        "Последние задачи:",
+        _fmt_task(st.get("last_completed"), "✅ завершено"),
+        _fmt_task(st.get("last_failed"), "❌ упало"),
+    ]
+    if st["held_for_review"] > 0:
+        lines.append("\n⚠️ Есть задачи, ожидающие решения после пропущенного старта.")
+
+    # ── Backpressure section (English) ───────────────────────────────────────
+    slot_states = st.get("slot_states", {})
+    running_count = st.get("running", 0)
+    global_limit  = st.get("global_limit", 3)
+    mutex_locked  = st.get("mutex_locked", False)
+    rkeys         = st.get("active_resource_keys", [])
+    pressure      = st.get("queue_pressure", "OK")
+
+    def _slot_icon(s: str) -> str:
+        return "🔴 busy" if s == "busy" else "🟢 free"
+
+    pressure_icon = {"OK": "✅ OK", "WARN": "⚠️ WARN", "CRITICAL": "❌ CRITICAL"}.get(pressure, pressure)
+    mutex_line = "🔒 LOCKED" if mutex_locked else "🔓 free"
+    rkey_line  = ", ".join(_h(k) for k in rkeys) if rkeys else "none"
+
+    lines += [
+        "",
+        "─── Backpressure ───",
+        f"  Global running: {running_count}/{global_limit}",
+        f"  Pending:        {st.get('pending', 0)}",
+        f"  slot14:  {_slot_icon(slot_states.get('slot14', 'free'))}",
+        f"  slot32:  {_slot_icon(slot_states.get('slot32', 'free'))}",
+        f"  slot120: {_slot_icon(slot_states.get('slot120', 'free'))}",
+        f"  Mutex (slot32↔120): {mutex_line}",
+        f"  Active locks: {rkey_line}",
+        f"  Queue pressure: {pressure_icon}",
+    ]
+
+    await update.message.reply_text("\n".join(lines), parse_mode=ParseMode.HTML)
 
 
 async def cmd_incidents(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
@@ -5093,6 +5342,51 @@ async def on_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         await query.message.reply_text(result, parse_mode=ParseMode.HTML)
         return
 
+    # ── Phase 3: missed-startup review callbacks ──────────────────────────────
+
+    if data == "missed_start_reschedule_same":
+        await query.edit_message_reply_markup(None)
+        await query.message.reply_text(
+            "✅ <b>Reschedule same time requested.</b>\n"
+            "All held tasks will be rescheduled to their next matching time today or tomorrow.",
+            parse_mode=ParseMode.HTML,
+        )
+        from ops.scheduler.missed_start_handler import handle_reschedule_same
+        await handle_reschedule_same()
+        return
+
+    if data == "missed_start_reschedule_new":
+        await query.edit_message_reply_markup(None)
+        await query.message.reply_text(
+            "📅 <b>Reschedule to NEW date/time requested.</b>\n"
+            "Please reply with the new date/time in format: <code>YYYY-MM-DD HH:MM</code>",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    if data == "missed_start_cancel_all":
+        await query.edit_message_reply_markup(None)
+        from ops.scheduler.missed_start_handler import handle_cancel_all
+        count = await handle_cancel_all()
+        await query.message.reply_text(
+            f"❌ <b>{count} task(s) cancelled.</b>\n"
+            "They have been removed from the scheduler queue.",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    if data == "missed_start_keep":
+        await query.edit_message_reply_markup(None)
+        await query.message.reply_text(
+            "🔒 <b>Tasks kept in review.</b>\n"
+            "They remain blocked from auto-dispatch. "
+            "Use /scheduler to review them later.",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    # ── end Phase 3 ───────────────────────────────────────────────────────────
+
     if data.startswith("restart:"):
         svc = data.split(":", 1)[1]
         await query.edit_message_reply_markup(None)
@@ -5153,9 +5447,14 @@ async def _post_init(app: Application) -> None:
     asyncio.create_task(_small_model_keeper_loop())
     asyncio.create_task(_thermal_guard_loop())
     asyncio.create_task(_ft_process_watcher_loop())
+    asyncio.create_task(_scheduler_health_monitor_loop(app))
     monitor.start()
     ka_mgr.start()
     orchestrator.start()
+    # Dynamic workflow: cycle health monitor for self-healing/self-learning loops
+    _cycle_monitor = CycleHealthMonitor(on_event=_on_monitor_event)
+    _cycle_monitor.start()
+    log.info("CycleHealthMonitor started — monitoring 6 automation cycles")
     await app.bot.set_my_commands([
         BotCommand("statemode", "Режим Argus + sync always-on"),
         BotCommand("production", "Production mode (autoheal, no Telegram alerts)"),
@@ -5172,6 +5471,7 @@ async def _post_init(app: Application) -> None:
         BotCommand("unload",    "Выгрузить модель из VRAM"),
         BotCommand("pull",      "Скачать модель Ollama"),
         BotCommand("tasks",     "Реестр задач"),
+        BotCommand("scheduler", "Redis Scheduler: статус демона и очередей"),
         BotCommand("incidents", "История инцидентов"),
         BotCommand("diagnose",  "AI-диагностика сервиса"),
         BotCommand("test",      "Smoke-тест сервиса"),
@@ -5234,6 +5534,7 @@ def main() -> None:
     app.add_handler(CommandHandler("pull",      cmd_pull))
     app.add_handler(CommandHandler("delete",    cmd_delete))
     app.add_handler(CommandHandler("tasks",     cmd_tasks))
+    app.add_handler(CommandHandler("scheduler", cmd_scheduler))
     app.add_handler(CommandHandler("incidents", cmd_incidents))
     app.add_handler(CommandHandler("diagnose",  cmd_diagnose))
     app.add_handler(CommandHandler("test",      cmd_test))
