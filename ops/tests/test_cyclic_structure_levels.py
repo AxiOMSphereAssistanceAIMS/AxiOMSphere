@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from ops.cyclic_skills import _is_stub, validate_structure
+from ops.cyclic_skills import (
+    _is_stub,
+    sections_semantically_match,
+    validate_structure,
+)
 
 
 def test_validate_structure_includes_level_four_subsections() -> None:
@@ -113,3 +117,30 @@ Inspections must be documented within 48 hours of completion.
 """
     report = validate_structure(doc)
     assert "2.0 INSPECTION PROCEDURES" not in report.stub_sections
+
+
+def test_validate_structure_matches_numbered_list_toc_to_decimal_headings() -> None:
+    doc = """## 0.2 Table of Contents
+1.  Purpose and Objectives
+2.  Scope, Assets, and Boundaries
+
+## 1.0 Purpose and Objectives
+This section contains substantive purpose and objective content.
+
+## 2.0 Scope, Assets, and Boundaries
+This section contains substantive scope and boundary content.
+"""
+    report = validate_structure(doc)
+    assert report.completeness_ratio == 1.0
+    assert report.empty_sections == []
+
+
+def test_section_semantic_match_does_not_hide_different_title() -> None:
+    assert sections_semantically_match(
+        "1. Purpose and Objectives [MISSING FROM BODY]",
+        "1.0 Purpose and Objectives",
+    )
+    assert not sections_semantically_match(
+        "1. Definitions",
+        "1.0 Purpose and Objectives",
+    )

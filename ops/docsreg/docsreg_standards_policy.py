@@ -19,6 +19,11 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from ops.docsreg.standards_registry import (
+    list_registered_standards,
+    register_standards,
+)
+
 log = logging.getLogger("docsreg_standards_policy")
 
 # ── Policy file path ───────────────────────────────────────────────────────────
@@ -72,6 +77,12 @@ def load_policy() -> tuple[frozenset[str], list[str], tuple[str, ...]]:
         import yaml
     except ImportError:
         log.warning("PyYAML not available — using hardcoded approved standards policy")
+        register_standards(
+            _DEFAULT_REFERENCE_STANDARDS,
+            domain="docsreg.reference_policy",
+            source="docsreg_standards_policy.bootstrap",
+            status="approved",
+        )
         return _DEFAULT_REFERENCE_STANDARDS, _DEFAULT_FABRICATED_PATTERNS, _DEFAULT_ISO_PREFIXES
 
     try:
@@ -85,10 +96,27 @@ def load_policy() -> tuple[frozenset[str], list[str], tuple[str, ...]]:
                 _POLICY_PATH,
                 missing,
             )
+            register_standards(
+                _DEFAULT_REFERENCE_STANDARDS,
+                domain="docsreg.reference_policy",
+                source="docsreg_standards_policy.bootstrap",
+                status="approved",
+            )
             return _DEFAULT_REFERENCE_STANDARDS, _DEFAULT_FABRICATED_PATTERNS, _DEFAULT_ISO_PREFIXES
         reference_standards = frozenset(data["reference_standards"])
         fabricated_patterns = list(data["fabricated_patterns"])
         iso_prefixes = tuple(data["iso_prefixes"])
+        register_standards(
+            reference_standards,
+            domain="docsreg.reference_policy",
+            source="config/docsreg/approved_standards_policy.yaml",
+            status="approved",
+        )
+        registered_reference_standards = list_registered_standards(
+            domain="docsreg.reference_policy"
+        )
+        if registered_reference_standards:
+            reference_standards = frozenset(registered_reference_standards)
         log.debug("Approved standards policy loaded from %s", _POLICY_PATH)
         return reference_standards, fabricated_patterns, iso_prefixes
     except FileNotFoundError:
@@ -102,6 +130,12 @@ def load_policy() -> tuple[frozenset[str], list[str], tuple[str, ...]]:
             _POLICY_PATH,
             exc,
         )
+    register_standards(
+        _DEFAULT_REFERENCE_STANDARDS,
+        domain="docsreg.reference_policy",
+        source="docsreg_standards_policy.bootstrap",
+        status="approved",
+    )
     return _DEFAULT_REFERENCE_STANDARDS, _DEFAULT_FABRICATED_PATTERNS, _DEFAULT_ISO_PREFIXES
 
 

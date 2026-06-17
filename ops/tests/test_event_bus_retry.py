@@ -61,6 +61,7 @@ class TestEventBusRetry(unittest.TestCase):
         bus = EventBus.__new__(EventBus)
         handler = AsyncMock()
         bus._handlers = {EventType.TASK_CREATED.value: [handler]}
+        bus._event_ledger = {}
 
         redis_mock = MagicMock()
         redis_mock.publish = AsyncMock(side_effect=ConnectionError("down"))
@@ -102,6 +103,7 @@ class TestEventBusRetry(unittest.TestCase):
         bus.redis_client = None
         handler = AsyncMock()
         bus._handlers = {EventType.TASK_CREATED.value: [handler]}
+        bus._event_ledger = {}
 
         asyncio.run(bus.publish(_make_event()))
         handler.assert_called_once()

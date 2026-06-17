@@ -16,6 +16,7 @@ from ops.logi.event_bus import (
     EventType,
     EventSeverity,
     get_bus,
+    reset_bus_instance,
 )
 from ops.logi.traini_eventbus_bridge import (
     publish_learning_need,
@@ -36,6 +37,7 @@ class TestTrainiEventBusBridge:
 
     async def test_publish_baseline_created(self):
         """Publish baseline creation event."""
+        await reset_bus_instance()
         bus = await get_bus()
 
         result = await publish_baseline_created(
@@ -51,6 +53,7 @@ class TestTrainiEventBusBridge:
 
     async def test_publish_loop_lifecycle(self):
         """Publish full loop lifecycle events."""
+        await reset_bus_instance()
         bus = await get_bus()
 
         # Start
@@ -86,6 +89,7 @@ class TestTrainiEventBusBridge:
 
     async def test_publish_learning_need(self):
         """Publish learning need event."""
+        await reset_bus_instance()
         bus = await get_bus()
 
         result = await publish_learning_need(
@@ -99,6 +103,7 @@ class TestTrainiEventBusBridge:
         assert result is True
 
         # Verify in EventBus
+        await asyncio.sleep(0.1)  # Allow event to be processed
         events = await bus.get_events(EventType.TRAINING_REQUESTED, limit=10)
         assert len(events) > 0
 
@@ -115,6 +120,7 @@ class TestLearningLoopConsumer:
 
     async def test_consumer_creation(self):
         """Consumer should initialize and subscribe."""
+        await reset_bus_instance()
         consumer = await create_learning_loop_consumer()
 
         assert consumer is not None
@@ -124,6 +130,7 @@ class TestLearningLoopConsumer:
 
     async def test_consumer_handles_learning_need(self):
         """Consumer should handle learning needs from EventBus."""
+        await reset_bus_instance()
         consumer = await create_learning_loop_consumer()
 
         if not consumer:
@@ -146,6 +153,7 @@ class TestLearningLoopConsumer:
 
     async def test_consumer_handles_loop_complete(self):
         """Consumer should handle loop completion events."""
+        await reset_bus_instance()
         consumer = await create_learning_loop_consumer()
 
         if not consumer:
@@ -170,6 +178,7 @@ class TestPhase2BIntegration:
 
     async def test_full_learning_cycle(self):
         """Full cycle: incident correction → learning pattern → optimization."""
+        await reset_bus_instance()
         bus = await get_bus()
         consumer = await create_learning_loop_consumer()
 
@@ -221,13 +230,14 @@ class TestPhase2BIntegration:
 
         # All events should be in EventBus
         stats = await bus.get_event_stats()
-        assert stats.get("training_requested", 0) > 0
+        assert stats.get("training.requested", 0) > 0
 
         await bus.disconnect()
         await consumer.bus.disconnect()
 
     async def test_multiple_incidents_learning(self):
         """Test learning from multiple incidents."""
+        await reset_bus_instance()
         bus = await get_bus()
         consumer = await create_learning_loop_consumer()
 
@@ -254,13 +264,14 @@ class TestPhase2BIntegration:
 
         # All should be published
         stats = await bus.get_event_stats()
-        assert stats.get("training_requested", 0) >= 3
+        assert stats.get("training.requested", 0) >= 3
 
         await bus.disconnect()
         await consumer.bus.disconnect()
 
     async def test_loop_acceptance_triggers_optimization(self):
         """Accepted loops should trigger optimization suggestions."""
+        await reset_bus_instance()
         bus = await get_bus()
         consumer = await create_learning_loop_consumer()
 
@@ -289,6 +300,7 @@ class TestEventBusLedger:
 
     async def test_traini_events_persisted(self):
         """Traini events should persist in EventBus ledger."""
+        await reset_bus_instance()
         bus = await get_bus()
 
         # Publish multiple Traini events
@@ -316,6 +328,7 @@ class TestEventBusLedger:
 
     async def test_event_correlation(self):
         """Events should be traceable via correlation IDs."""
+        await reset_bus_instance()
         bus = await get_bus()
 
         # Publish related events with same correlation

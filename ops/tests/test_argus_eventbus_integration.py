@@ -292,6 +292,7 @@ class TestArgusMonitorEventHandler:
             log_snippet = "Error details"
             incident_id = "mock_001"
             timestamp = datetime.utcnow()
+            event_type = "health_check_failure"
 
         mock_event = MockMonitorEvent()
         await handler(mock_event)
