@@ -1,0 +1,793 @@
+{
+  "metadata": {
+    "framework_version": "PHASE_7_v1",
+    "generated_at": "2026-06-17T08:50:58.516687",
+    "execution_timestamp": "2026-06-17T08:50:58.516632",
+    "total_skills": 6,
+    "total_cases": 30,
+    "overall_verdict": "BLOCKED"
+  },
+  "aggregated_metrics": {
+    "total_test_cases": 30,
+    "promoted_cases": 18,
+    "advisory_cases": 6,
+    "blocked_cases": 6,
+    "promotion_rate_percent": 60.0,
+    "quality_metrics": {
+      "average_quality_delta": 0.1177,
+      "min_quality_delta": -0.28,
+      "max_quality_delta": 0.31
+    },
+    "performance_metrics": {
+      "average_repair_time_ms": 3026,
+      "min_repair_time_ms": 900,
+      "max_repair_time_ms": 12500
+    },
+    "retention_metrics": {
+      "failure_count": 6,
+      "failure_rate_percent": 20.0
+    }
+  },
+  "skill_details": {
+    "FIX_TIMEOUT": {
+      "overall_verdict": "BLOCKED",
+      "total_cases": 5,
+      "cases_promoted": 3,
+      "cases_advisory": 1,
+      "cases_blocked": 1,
+      "executed_at": "2026-06-17T08:50:58.516632",
+      "cases": [
+        {
+          "test_case_id": "timeout_001",
+          "scenario_description": "API call timed out on first attempt, succeeded on retry",
+          "verdict": "PROMOTED",
+          "reasoning": "Timeout resolved with retry logic; quality improved 0.72\u21920.88; no data loss",
+          "input_hash": "b757a44daf8b021e...",
+          "output_hash": "ffa1831d4e70bef3...",
+          "quality_before": 0.72,
+          "quality_after": 0.88,
+          "quality_delta": 0.16,
+          "repair_applied": true,
+          "repair_time_ms": 4200,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.3,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "timeout_002",
+          "scenario_description": "Timeout during document section retrieval, partial content recovered",
+          "verdict": "ADVISORY",
+          "reasoning": "Timeout recovery successful; quality improved 0.65\u21920.76; advisory data loss 1.8%",
+          "input_hash": "a61f72f9e9a34b6e...",
+          "output_hash": "7e92bfa21d7fbeb0...",
+          "quality_before": 0.65,
+          "quality_after": 0.76,
+          "quality_delta": 0.11,
+          "repair_applied": true,
+          "repair_time_ms": 5100,
+          "retention_status": "advisory",
+          "token_loss_percentage": 1.8,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "timeout_003",
+          "scenario_description": "Timeout during critical control section, >2% loss",
+          "verdict": "BLOCKED",
+          "reasoning": "Timeout recovery caused critical section loss (2.3%); repair rejected by data retention gate",
+          "input_hash": "153c0615066e5740...",
+          "output_hash": "4d73d39f6439560d...",
+          "quality_before": 0.8,
+          "quality_after": 0.71,
+          "quality_delta": -0.09,
+          "repair_applied": true,
+          "repair_time_ms": 6000,
+          "retention_status": "fail",
+          "token_loss_percentage": 2.3,
+          "sections_lost": [
+            "Document Control"
+          ],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "timeout_004",
+          "scenario_description": "Multiple timeout retries with exponential backoff, eventually successful",
+          "verdict": "PROMOTED",
+          "reasoning": "Multiple retries succeeded; significant quality improvement 0.68\u21920.94; no data loss",
+          "input_hash": "e0d1e7beeec25db3...",
+          "output_hash": "179eebde8e75d104...",
+          "quality_before": 0.68,
+          "quality_after": 0.94,
+          "quality_delta": 0.26,
+          "repair_applied": true,
+          "repair_time_ms": 12500,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "timeout_005",
+          "scenario_description": "Timeout during real-time API fetch, fallback to cached content",
+          "verdict": "PROMOTED",
+          "reasoning": "Fallback cache used successfully; quality improved 0.75\u21920.82; minimal data loss 0.5%",
+          "input_hash": "c1d3bacd54c15cb3...",
+          "output_hash": "1008e462382dbcee...",
+          "quality_before": 0.75,
+          "quality_after": 0.82,
+          "quality_delta": 0.07,
+          "repair_applied": true,
+          "repair_time_ms": 2100,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.5,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        }
+      ]
+    },
+    "FIX_STRUCTURE": {
+      "overall_verdict": "BLOCKED",
+      "total_cases": 5,
+      "cases_promoted": 3,
+      "cases_advisory": 1,
+      "cases_blocked": 1,
+      "executed_at": "2026-06-17T08:50:58.516632",
+      "cases": [
+        {
+          "test_case_id": "structure_001",
+          "scenario_description": "LLM-generated heading format corrected to ADNOC standard",
+          "verdict": "PROMOTED",
+          "reasoning": "Heading format standardized; validation now passes; quality 0.70\u21920.93",
+          "input_hash": "0dddea618895e4d3...",
+          "output_hash": "af32aa5eeaa85cb6...",
+          "quality_before": 0.7,
+          "quality_after": 0.93,
+          "quality_delta": 0.23,
+          "repair_applied": true,
+          "repair_time_ms": 1200,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.1,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "structure_002",
+          "scenario_description": "Required 'Scope' section inferred and added",
+          "verdict": "PROMOTED",
+          "reasoning": "Missing required section inferred and added; structure now valid; quality improved",
+          "input_hash": "be127dce6408844b...",
+          "output_hash": "5ec4673a43fa0c22...",
+          "quality_before": 0.68,
+          "quality_after": 0.85,
+          "quality_delta": 0.17,
+          "repair_applied": true,
+          "repair_time_ms": 2300,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "structure_003",
+          "scenario_description": "Markdown table with missing delimiters, partial recovery",
+          "verdict": "ADVISORY",
+          "reasoning": "Table structure repaired; minor row loss 1.9%; quality improved 0.62\u21920.78",
+          "input_hash": "c679c6ebe953c6fe...",
+          "output_hash": "9c8c988a9e305bdc...",
+          "quality_before": 0.62,
+          "quality_after": 0.78,
+          "quality_delta": 0.16,
+          "repair_applied": true,
+          "repair_time_ms": 1800,
+          "retention_status": "advisory",
+          "token_loss_percentage": 1.9,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "structure_004",
+          "scenario_description": "Complex nested list severely corrupted, >2% content loss",
+          "verdict": "BLOCKED",
+          "reasoning": "List structure repair required removal of corrupted items; data loss 2.4% exceeds threshold",
+          "input_hash": "2640924b79fd413e...",
+          "output_hash": "81fe7e0b0421040e...",
+          "quality_before": 0.55,
+          "quality_after": 0.6,
+          "quality_delta": 0.05,
+          "repair_applied": true,
+          "repair_time_ms": 2500,
+          "retention_status": "fail",
+          "token_loss_percentage": 2.4,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "structure_005",
+          "scenario_description": "Code block indentation corrected, fence delimiters fixed",
+          "verdict": "PROMOTED",
+          "reasoning": "Code block formatting corrected; syntax now valid; quality 0.81\u21920.96",
+          "input_hash": "9fb46d6fc6315e50...",
+          "output_hash": "b9f8735e824795d9...",
+          "quality_before": 0.81,
+          "quality_after": 0.96,
+          "quality_delta": 0.15,
+          "repair_applied": true,
+          "repair_time_ms": 900,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        }
+      ]
+    },
+    "FIX_POLICY_VIOLATION": {
+      "overall_verdict": "BLOCKED",
+      "total_cases": 5,
+      "cases_promoted": 3,
+      "cases_advisory": 1,
+      "cases_blocked": 1,
+      "executed_at": "2026-06-17T08:50:58.516632",
+      "cases": [
+        {
+          "test_case_id": "policy_001",
+          "scenario_description": "Missing 'Document ID' required field, inferred from context",
+          "verdict": "PROMOTED",
+          "reasoning": "Required Document ID field inferred and added; policy now compliant; quality improved",
+          "input_hash": "625a17d8c5b02df3...",
+          "output_hash": "5dc50afdb40ab3da...",
+          "quality_before": 0.74,
+          "quality_after": 0.91,
+          "quality_delta": 0.17,
+          "repair_applied": true,
+          "repair_time_ms": 1500,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "policy_002",
+          "scenario_description": "Reference citations use wrong format, corrected to policy standard",
+          "verdict": "PROMOTED",
+          "reasoning": "Reference format standardized; all citations now compliant; quality 0.69\u21920.87",
+          "input_hash": "d31fbf9c0e05e64e...",
+          "output_hash": "79ac345f7b232b5a...",
+          "quality_before": 0.69,
+          "quality_after": 0.87,
+          "quality_delta": 0.18,
+          "repair_applied": true,
+          "repair_time_ms": 2000,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.2,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "policy_003",
+          "scenario_description": "Approval timestamp expired, re-approval required but content preserved",
+          "verdict": "ADVISORY",
+          "reasoning": "Approval renewed; revision updated; minor formatting loss 1.7%; compliant but advisory",
+          "input_hash": "7c740077c921367e...",
+          "output_hash": "9738a61d5a5a02eb...",
+          "quality_before": 0.76,
+          "quality_after": 0.83,
+          "quality_delta": 0.07,
+          "repair_applied": true,
+          "repair_time_ms": 1100,
+          "retention_status": "advisory",
+          "token_loss_percentage": 1.7,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "policy_004",
+          "scenario_description": "Document archetype mismatch, content lost during conversion attempt",
+          "verdict": "BLOCKED",
+          "reasoning": "Archetype conversion caused section loss (2.2%); incompatible archetype; repair rejected",
+          "input_hash": "7ba0dd99f455c499...",
+          "output_hash": "59abe15ccf8a340c...",
+          "quality_before": 0.72,
+          "quality_after": 0.64,
+          "quality_delta": -0.08,
+          "repair_applied": true,
+          "repair_time_ms": 2800,
+          "retention_status": "fail",
+          "token_loss_percentage": 2.2,
+          "sections_lost": [
+            "Code Examples"
+          ],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "policy_005",
+          "scenario_description": "Metadata fields corrected: version, status, revision",
+          "verdict": "PROMOTED",
+          "reasoning": "Metadata standardized; version and status now compliant; quality improved significantly",
+          "input_hash": "aaf08fc834afef57...",
+          "output_hash": "daba6ec5bb0e520a...",
+          "quality_before": 0.77,
+          "quality_after": 0.92,
+          "quality_delta": 0.15,
+          "repair_applied": true,
+          "repair_time_ms": 1300,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        }
+      ]
+    },
+    "FIX_QUALITY_GATE": {
+      "overall_verdict": "BLOCKED",
+      "total_cases": 5,
+      "cases_promoted": 3,
+      "cases_advisory": 1,
+      "cases_blocked": 1,
+      "executed_at": "2026-06-17T08:50:58.516632",
+      "cases": [
+        {
+          "test_case_id": "quality_001",
+          "scenario_description": "Vague language clarified, examples added",
+          "verdict": "PROMOTED",
+          "reasoning": "Clarity significantly improved with concrete metrics; quality 0.58\u21920.89; no data loss",
+          "input_hash": "7d9464d44c6d69b8...",
+          "output_hash": "83fb5a010741ad30...",
+          "quality_before": 0.58,
+          "quality_after": 0.89,
+          "quality_delta": 0.31,
+          "repair_applied": true,
+          "repair_time_ms": 3200,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "quality_002",
+          "scenario_description": "Content reorganized into logical sections with transitions",
+          "verdict": "PROMOTED",
+          "reasoning": "Structure optimized with logical sections; readability improved; quality 0.65\u21920.84",
+          "input_hash": "e3f5b7802eb47c53...",
+          "output_hash": "49d643ed211dc2ff...",
+          "quality_before": 0.65,
+          "quality_after": 0.84,
+          "quality_delta": 0.19,
+          "repair_applied": true,
+          "repair_time_ms": 2100,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.1,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "quality_003",
+          "scenario_description": "Grammar corrected but content specificity partially lost",
+          "verdict": "ADVISORY",
+          "reasoning": "Grammar corrected and clarity improved; quality 0.52\u21920.71; advisory loss 1.6% on specificity",
+          "input_hash": "70e47289dd09191f...",
+          "output_hash": "665d9858faf3d755...",
+          "quality_before": 0.52,
+          "quality_after": 0.71,
+          "quality_delta": 0.19,
+          "repair_applied": true,
+          "repair_time_ms": 1600,
+          "retention_status": "advisory",
+          "token_loss_percentage": 1.6,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "quality_004",
+          "scenario_description": "Oversimplification attempt removes critical technical details (>2% loss)",
+          "verdict": "BLOCKED",
+          "reasoning": "Oversimplification lost critical parameter specifications (2.5%); quality degraded; repair rejected",
+          "input_hash": "59b652187524d9ef...",
+          "output_hash": "ba62aa405b488656...",
+          "quality_before": 0.73,
+          "quality_after": 0.65,
+          "quality_delta": -0.08,
+          "repair_applied": true,
+          "repair_time_ms": 1900,
+          "retention_status": "fail",
+          "token_loss_percentage": 2.5,
+          "sections_lost": [],
+          "fields_lost": [
+            "Parameter ranges",
+            "Default values"
+          ],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "quality_005",
+          "scenario_description": "Complete content enhancement with examples, diagrams reference, and metrics",
+          "verdict": "PROMOTED",
+          "reasoning": "Comprehensive enhancement with specific metrics and references; quality 0.61\u21920.91; no loss",
+          "input_hash": "f23706dbd3e3a0d6...",
+          "output_hash": "dc4d29c363bf7653...",
+          "quality_before": 0.61,
+          "quality_after": 0.91,
+          "quality_delta": 0.3,
+          "repair_applied": true,
+          "repair_time_ms": 3800,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        }
+      ]
+    },
+    "FIX_DATA_LOSS": {
+      "overall_verdict": "BLOCKED",
+      "total_cases": 5,
+      "cases_promoted": 3,
+      "cases_advisory": 1,
+      "cases_blocked": 1,
+      "executed_at": "2026-06-17T08:50:58.516632",
+      "cases": [
+        {
+          "test_case_id": "dataloss_001",
+          "scenario_description": "Corrupted section, minimal content loss (<1%)",
+          "verdict": "PROMOTED",
+          "reasoning": "Data loss minimal (0.8%); section recovered successfully; quality improved 0.67\u21920.84",
+          "input_hash": "efa4f4e2120e808c...",
+          "output_hash": "b0a982c73da8190d...",
+          "quality_before": 0.67,
+          "quality_after": 0.84,
+          "quality_delta": 0.17,
+          "repair_applied": true,
+          "repair_time_ms": 2400,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.8,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "dataloss_002",
+          "scenario_description": "Lost content recovered from backup, verified against hash",
+          "verdict": "PROMOTED",
+          "reasoning": "Backup restoration verified; no data loss; quality improved significantly 0.70\u21920.95",
+          "input_hash": "e5c9c162da40f355...",
+          "output_hash": "edfe0a29eb439ed8...",
+          "quality_before": 0.7,
+          "quality_after": 0.95,
+          "quality_delta": 0.25,
+          "repair_applied": true,
+          "repair_time_ms": 1800,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.0,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "dataloss_003",
+          "scenario_description": "Partial table data recoverable, some rows unrecoverable",
+          "verdict": "ADVISORY",
+          "reasoning": "Partial recovery achieved; loss 1.9% (advisory boundary); quality improved but data unavailable",
+          "input_hash": "eae6bee326f29711...",
+          "output_hash": "e708bdbbba3aa99c...",
+          "quality_before": 0.62,
+          "quality_after": 0.76,
+          "quality_delta": 0.14,
+          "repair_applied": true,
+          "repair_time_ms": 2000,
+          "retention_status": "advisory",
+          "token_loss_percentage": 1.9,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "dataloss_004",
+          "scenario_description": "Critical section permanently lost, recovery impossible (>2%)",
+          "verdict": "BLOCKED",
+          "reasoning": "Critical section unrecoverable; loss 2.8% exceeds threshold; repair would degrade quality",
+          "input_hash": "30f52c4e49891d7a...",
+          "output_hash": "95e65076d6d6bd0d...",
+          "quality_before": 0.8,
+          "quality_after": 0.52,
+          "quality_delta": -0.28,
+          "repair_applied": true,
+          "repair_time_ms": 1500,
+          "retention_status": "fail",
+          "token_loss_percentage": 2.8,
+          "sections_lost": [
+            "Critical Controls"
+          ],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "dataloss_005",
+          "scenario_description": "Lost metadata reconstructed from contextual clues and linked data",
+          "verdict": "PROMOTED",
+          "reasoning": "Metadata intelligently reconstructed from context; quality improved 0.58\u21920.86; minimal loss 0.2%",
+          "input_hash": "d25e2ceadde62dad...",
+          "output_hash": "f99a4e9524cffab1...",
+          "quality_before": 0.58,
+          "quality_after": 0.86,
+          "quality_delta": 0.28,
+          "repair_applied": true,
+          "repair_time_ms": 3100,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.2,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        }
+      ]
+    },
+    "FIX_RESOURCE_EXHAUSTION": {
+      "overall_verdict": "BLOCKED",
+      "total_cases": 5,
+      "cases_promoted": 3,
+      "cases_advisory": 1,
+      "cases_blocked": 1,
+      "executed_at": "2026-06-17T08:50:58.516632",
+      "cases": [
+        {
+          "test_case_id": "resource_001",
+          "scenario_description": "Document optimized to fit within token limits without quality loss",
+          "verdict": "PROMOTED",
+          "reasoning": "Token-optimized version improved clarity; quality 0.72\u21920.88; minimal loss 0.9%",
+          "input_hash": "6dd9fb7a113b8602...",
+          "output_hash": "92a35b8c9907b933...",
+          "quality_before": 0.72,
+          "quality_after": 0.88,
+          "quality_delta": 0.16,
+          "repair_applied": true,
+          "repair_time_ms": 4500,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.9,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "resource_002",
+          "scenario_description": "Complex nested structure flattened for memory efficiency",
+          "verdict": "PROMOTED",
+          "reasoning": "Memory optimization successful; quality improved 0.75\u21920.84; negligible loss 0.3%",
+          "input_hash": "518b95ea96287341...",
+          "output_hash": "df97f83887f3fdd2...",
+          "quality_before": 0.75,
+          "quality_after": 0.84,
+          "quality_delta": 0.09,
+          "repair_applied": true,
+          "repair_time_ms": 3200,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.3,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "resource_003",
+          "scenario_description": "Large batch split into smaller chunks, some processing overhead",
+          "verdict": "ADVISORY",
+          "reasoning": "Resource constraint handled via batching; quality improved 0.70\u21920.77; advisory loss 1.7%",
+          "input_hash": "e4ad67498024bdbd...",
+          "output_hash": "5c585df7cb69292d...",
+          "quality_before": 0.7,
+          "quality_after": 0.77,
+          "quality_delta": 0.07,
+          "repair_applied": true,
+          "repair_time_ms": 5800,
+          "retention_status": "advisory",
+          "token_loss_percentage": 1.7,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        },
+        {
+          "test_case_id": "resource_004",
+          "scenario_description": "Aggressive content pruning to fit resource constraints, >2% loss",
+          "verdict": "BLOCKED",
+          "reasoning": "Aggressive pruning lost appendix and references (2.6%); quality degraded; repair rejected",
+          "input_hash": "fba4b5ca6862f57e...",
+          "output_hash": "867cab8518980323...",
+          "quality_before": 0.82,
+          "quality_after": 0.64,
+          "quality_delta": -0.18,
+          "repair_applied": true,
+          "repair_time_ms": 2700,
+          "retention_status": "fail",
+          "token_loss_percentage": 2.6,
+          "sections_lost": [
+            "APPENDIX"
+          ],
+          "fields_lost": [],
+          "references_lost": [
+            "10 items"
+          ]
+        },
+        {
+          "test_case_id": "resource_005",
+          "scenario_description": "Content compressed while preserving critical details via summarization",
+          "verdict": "PROMOTED",
+          "reasoning": "Compression via summarization; critical details preserved; quality 0.73\u21920.89; minimal loss 0.6%",
+          "input_hash": "1a1630c4adc98739...",
+          "output_hash": "99f14b26046b8d0a...",
+          "quality_before": 0.73,
+          "quality_after": 0.89,
+          "quality_delta": 0.16,
+          "repair_applied": true,
+          "repair_time_ms": 3900,
+          "retention_status": "pass",
+          "token_loss_percentage": 0.6,
+          "sections_lost": [],
+          "fields_lost": [],
+          "references_lost": []
+        }
+      ]
+    }
+  },
+  "diagnostics": {
+    "retention_failures": [
+      {
+        "skill": "FIX_TIMEOUT",
+        "test_case_id": "timeout_003",
+        "token_loss_percentage": 2.3,
+        "sections_lost": [
+          "Document Control"
+        ],
+        "fields_lost": [],
+        "references_lost": [],
+        "guidance": "Data loss exceeds 2.0% threshold \u2014 repair rejected by hard gate"
+      },
+      {
+        "skill": "FIX_STRUCTURE",
+        "test_case_id": "structure_004",
+        "token_loss_percentage": 2.4,
+        "sections_lost": [],
+        "fields_lost": [],
+        "references_lost": [],
+        "guidance": "Data loss exceeds 2.0% threshold \u2014 repair rejected by hard gate"
+      },
+      {
+        "skill": "FIX_POLICY_VIOLATION",
+        "test_case_id": "policy_004",
+        "token_loss_percentage": 2.2,
+        "sections_lost": [
+          "Code Examples"
+        ],
+        "fields_lost": [],
+        "references_lost": [],
+        "guidance": "Data loss exceeds 2.0% threshold \u2014 repair rejected by hard gate"
+      },
+      {
+        "skill": "FIX_QUALITY_GATE",
+        "test_case_id": "quality_004",
+        "token_loss_percentage": 2.5,
+        "sections_lost": [],
+        "fields_lost": [
+          "Parameter ranges",
+          "Default values"
+        ],
+        "references_lost": [],
+        "guidance": "Data loss exceeds 2.0% threshold \u2014 repair rejected by hard gate"
+      },
+      {
+        "skill": "FIX_DATA_LOSS",
+        "test_case_id": "dataloss_004",
+        "token_loss_percentage": 2.8,
+        "sections_lost": [
+          "Critical Controls"
+        ],
+        "fields_lost": [],
+        "references_lost": [],
+        "guidance": "Data loss exceeds 2.0% threshold \u2014 repair rejected by hard gate"
+      },
+      {
+        "skill": "FIX_RESOURCE_EXHAUSTION",
+        "test_case_id": "resource_004",
+        "token_loss_percentage": 2.6,
+        "sections_lost": [
+          "APPENDIX"
+        ],
+        "fields_lost": [],
+        "references_lost": [
+          "10 items"
+        ],
+        "guidance": "Data loss exceeds 2.0% threshold \u2014 repair rejected by hard gate"
+      }
+    ],
+    "advisory_cases": [
+      {
+        "skill": "FIX_TIMEOUT",
+        "test_case_id": "timeout_002",
+        "token_loss_percentage": 1.8,
+        "guidance": "Data loss at boundary (1.5%-2.0%) \u2014 monitor for production impact"
+      },
+      {
+        "skill": "FIX_STRUCTURE",
+        "test_case_id": "structure_003",
+        "token_loss_percentage": 1.9,
+        "guidance": "Data loss at boundary (1.5%-2.0%) \u2014 monitor for production impact"
+      },
+      {
+        "skill": "FIX_POLICY_VIOLATION",
+        "test_case_id": "policy_003",
+        "token_loss_percentage": 1.7,
+        "guidance": "Data loss at boundary (1.5%-2.0%) \u2014 monitor for production impact"
+      },
+      {
+        "skill": "FIX_QUALITY_GATE",
+        "test_case_id": "quality_003",
+        "token_loss_percentage": 1.6,
+        "guidance": "Data loss at boundary (1.5%-2.0%) \u2014 monitor for production impact"
+      },
+      {
+        "skill": "FIX_DATA_LOSS",
+        "test_case_id": "dataloss_003",
+        "token_loss_percentage": 1.9,
+        "guidance": "Data loss at boundary (1.5%-2.0%) \u2014 monitor for production impact"
+      },
+      {
+        "skill": "FIX_RESOURCE_EXHAUSTION",
+        "test_case_id": "resource_003",
+        "token_loss_percentage": 1.7,
+        "guidance": "Data loss at boundary (1.5%-2.0%) \u2014 monitor for production impact"
+      }
+    ],
+    "slow_repairs": [
+      {
+        "skill": "FIX_TIMEOUT",
+        "test_case_id": "timeout_002",
+        "repair_time_ms": 5100,
+        "guidance": "Repair time exceeds 5 seconds \u2014 may impact SLA"
+      },
+      {
+        "skill": "FIX_TIMEOUT",
+        "test_case_id": "timeout_003",
+        "repair_time_ms": 6000,
+        "guidance": "Repair time exceeds 5 seconds \u2014 may impact SLA"
+      },
+      {
+        "skill": "FIX_TIMEOUT",
+        "test_case_id": "timeout_004",
+        "repair_time_ms": 12500,
+        "guidance": "Repair time exceeds 5 seconds \u2014 may impact SLA"
+      },
+      {
+        "skill": "FIX_RESOURCE_EXHAUSTION",
+        "test_case_id": "resource_003",
+        "repair_time_ms": 5800,
+        "guidance": "Repair time exceeds 5 seconds \u2014 may impact SLA"
+      }
+    ]
+  },
+  "deployment_readiness": {
+    "status": "BLOCKED",
+    "promoted_skills": 0,
+    "advisory_skills": 0,
+    "blocked_skills": 6,
+    "recommendation": "FIX_REQUIRED: 6 skills have retention failures (data loss > 2.0%)",
+    "gates": {
+      "retention_gate_status": "FAIL",
+      "quality_target_status": "PASS",
+      "repair_efficacy_status": "PASS"
+    }
+  }
+}
