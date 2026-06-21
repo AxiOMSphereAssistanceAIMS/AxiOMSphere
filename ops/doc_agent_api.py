@@ -71,6 +71,7 @@ def _handle_generate(body: dict) -> dict:
         out_dir=Path(out_dir) if out_dir else None,
         model=body.get("model") or None,
         ollama_base=body.get("ollama_base") or None,
+        architecture_context=body.get("architecture_context") or {},
     )
 
     try:
@@ -102,6 +103,7 @@ def _handle_generate_dual(body: dict) -> dict:
         web_context=body.get("web_context") or None,
         out_dir=Path(out_dir) if out_dir else None,
         dual_pipeline=True,
+        architecture_context=body.get("architecture_context") or {},
     )
 
     try:
@@ -235,6 +237,7 @@ class DocAgentClient:
         source_docs: list[dict] | None = None,
         web_context: str | None = None,
         out_dir: str | None = None,
+        architecture_context: dict | None = None,
         model: str | None = None,
         ollama_base: str | None = None,
         timeout: float = 360.0,
@@ -249,6 +252,8 @@ class DocAgentClient:
             payload["web_context"] = web_context
         if out_dir:
             payload["out_dir"] = out_dir
+        if architecture_context:
+            payload["architecture_context"] = architecture_context
         if model:
             payload["model"] = model
         if ollama_base:
@@ -266,6 +271,7 @@ class DocAgentClient:
         source_docs: list[dict] | None = None,
         web_context: str | None = None,
         out_dir: str | None = None,
+        architecture_context: dict | None = None,
         timeout: float = 1800.0,
     ) -> dict:
         import httpx
@@ -278,6 +284,8 @@ class DocAgentClient:
             payload["web_context"] = web_context
         if out_dir:
             payload["out_dir"] = out_dir
+        if architecture_context:
+            payload["architecture_context"] = architecture_context
         r = httpx.post(f"{self.base}/v1/generate_dual", json=payload, timeout=timeout)
         r.raise_for_status()
         return r.json()

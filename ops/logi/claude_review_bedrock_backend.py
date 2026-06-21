@@ -97,7 +97,7 @@ def build_bedrock_claude_command(
     use_dangerous_skip_permissions: bool = True,
 ) -> list[str]:
     """Build the local Claude Code CLI command."""
-    cmd = ["claude", "--print", "--model", model_alias]
+    cmd = ["/home/axi_omi_sphere/.local/bin/claude", "--print", "--model", model_alias]
     if use_dangerous_skip_permissions:
         cmd.append("--dangerously-skip-permissions")
     cmd.append(prompt)

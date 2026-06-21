@@ -28,9 +28,24 @@ CANONICAL_GATE_KEYS: Dict[str, Dict[str, Any]] = {
         "polarity": "positive",
         "phase": 1,
     },
+    "visual_qa_passed": {
+        "description": "Document visual QA check passed (layout, formatting, image placement)",
+        "polarity": "positive",
+        "phase": 1,
+    },
     "no_critical_issues": {
         "description": "Document contains no CRITICAL severity issues",
         "polarity": "positive",
+        "phase": 1,
+    },
+    "has_critical_issues": {
+        "description": "Document contains one or more CRITICAL severity issues (inverse of no_critical_issues)",
+        "polarity": "negative",
+        "phase": 1,
+    },
+    "critical_issue_count": {
+        "description": "Number of CRITICAL severity issues found (0 = pass)",
+        "polarity": "negative",
         "phase": 1,
     },
 
@@ -40,9 +55,29 @@ CANONICAL_GATE_KEYS: Dict[str, Dict[str, Any]] = {
         "polarity": "positive",
         "phase": 2,
     },
+    "has_duplicate_content": {
+        "description": "Document contains duplicate content blocks (inverse of no_duplicate_blocks)",
+        "polarity": "negative",
+        "phase": 2,
+    },
     "no_placeholder_content": {
         "description": "Document contains no placeholder/TODO text",
         "polarity": "positive",
+        "phase": 2,
+    },
+    "has_placeholder_content": {
+        "description": "Document contains placeholder/TODO text (inverse of no_placeholder_content)",
+        "polarity": "negative",
+        "phase": 2,
+    },
+    "has_major_issues": {
+        "description": "Document contains one or more MAJOR severity issues",
+        "polarity": "negative",
+        "phase": 2,
+    },
+    "major_issue_count": {
+        "description": "Number of MAJOR severity issues found (0 = pass)",
+        "polarity": "negative",
         "phase": 2,
     },
     "evidence_complete": {
@@ -50,8 +85,23 @@ CANONICAL_GATE_KEYS: Dict[str, Dict[str, Any]] = {
         "polarity": "positive",
         "phase": 2,
     },
+    "pre_decision_evidence_complete": {
+        "description": "Evidence artifacts staged before final verdict decision",
+        "polarity": "positive",
+        "phase": 2,
+    },
+    "final_evidence_complete": {
+        "description": "Evidence artifacts staged after final verdict decision",
+        "polarity": "positive",
+        "phase": 2,
+    },
     "audit_pass": {
         "description": "Document audit completed successfully without blocking issues",
+        "polarity": "positive",
+        "phase": 2,
+    },
+    "audit_status": {
+        "description": "Audit completion status (PASS/FAIL/WARN/TIMEOUT)",
         "polarity": "positive",
         "phase": 2,
     },
@@ -77,10 +127,30 @@ CANONICAL_GATE_KEYS: Dict[str, Dict[str, Any]] = {
         "polarity": "positive",
         "phase": 3,
     },
+    "has_warning_issues": {
+        "description": "Document contains one or more WARNING severity issues",
+        "polarity": "negative",
+        "phase": 3,
+    },
+    "warning_issue_count": {
+        "description": "Number of WARNING severity issues found (0 = pass)",
+        "polarity": "negative",
+        "phase": 3,
+    },
 
     # Phase 4: Training signal gates — determine if document should contribute to training
     "training_pairs_available": {
         "description": "Document generated enough training pair candidates for model improvement",
+        "polarity": "positive",
+        "phase": 4,
+    },
+    "training_pairs_count": {
+        "description": "Number of training pair candidates available (distinct from availability flag)",
+        "polarity": "positive",
+        "phase": 4,
+    },
+    "training_readiness_positive": {
+        "description": "Baseline eval metric training_readiness is greater than 0 (positive signal)",
         "polarity": "positive",
         "phase": 4,
     },
@@ -95,6 +165,44 @@ CANONICAL_GATE_KEYS: Dict[str, Dict[str, Any]] = {
         "phase": 4,
     },
 }
+
+
+def canonical_gate_names() -> Set[str]:
+    """
+    Get the set of all canonical gate names.
+
+    Supports both dict and set registry shapes; returns a new set each call.
+
+    Returns:
+        Set of canonical gate name strings
+
+    Example:
+        >>> gate_names = canonical_gate_names()
+        >>> "all_required_blocks_generated" in gate_names
+        True
+    """
+    return set(CANONICAL_GATE_KEYS.keys())
+
+
+def is_canonical_gate_name(gate_name: str) -> bool:
+    """
+    Check if a gate name is in the canonical registry.
+
+    Fast O(1) lookup; works with both dict and set registry shapes.
+
+    Args:
+        gate_name: Name to check (str)
+
+    Returns:
+        True if gate_name is a canonical gate; False otherwise
+
+    Example:
+        >>> is_canonical_gate_name("render_success")
+        True
+        >>> is_canonical_gate_name("invalid_gate")
+        False
+    """
+    return gate_name in CANONICAL_GATE_KEYS
 
 
 @dataclass(frozen=True)
@@ -135,12 +243,17 @@ def normalize_gates(
     producer_gates: Dict[str, Any],
     producer_type: str = "baseline_eval",
     invert_flags: Dict[str, str] = None,
-) -> Dict[str, bool]:
+) -> Dict[str, Any]:
     """
     Convert producer-specific gate vocabulary to canonical gates.
 
     This is the ONLY place where legacy gate names should be mapped.
     All consumers should use canonical names only.
+
+    Handles three gate types:
+    - Boolean gates: direct pass-through or polarity inversion
+    - Count gates: extract integer or default to 0
+    - Availability gates: derived from count if not explicit (>0 → True)
 
     Args:
         producer_gates: Gates dict from evaluator (e.g., BaselineEvalMinimal._build_gates())
@@ -149,7 +262,10 @@ def normalize_gates(
                      counterparts when the polarity is inverted
 
     Returns:
-        Dict with canonical gate names as keys and boolean values
+        Dict with canonical gate names as keys and boolean or integer values
+
+    Raises:
+        ValueError: If a non-canonical gate is encountered after all mappings
 
     Example:
         # BaselineEvalMinimal produces "required_blocks_present"
@@ -161,7 +277,7 @@ def normalize_gates(
         # Returns {"all_required_blocks_generated": True, ...}
     """
     invert_flags = invert_flags or {}
-    normalized: Dict[str, bool] = {}
+    normalized: Dict[str, Any] = {}
 
     # Mapping from producer gate names to canonical names
     # (organized by producer_type)
@@ -170,37 +286,93 @@ def normalize_gates(
             "required_blocks_present": "all_required_blocks_generated",
             "no_critical_issues": "no_critical_issues",
             "render_success": "render_success",
+            "visual_qa_passed": "visual_qa_passed",
             "no_duplicate_blocks": "no_duplicate_blocks",
             "no_placeholder_content": "no_placeholder_content",
             "evidence_complete": "evidence_complete",
+            "pre_decision_evidence_complete": "pre_decision_evidence_complete",
+            "final_evidence_complete": "final_evidence_complete",
             "audit_pass": "audit_pass",
+            "audit_status": "audit_status",
         },
         "audit": {
             "no_critical_findings": "no_critical_issues",
             "audit_complete": "audit_pass",
+            "audit_status": "audit_status",
+        },
+    }
+
+    # Polarity inversions: producer name → canonical name with opposite polarity
+    # When an inverted gate is encountered, both forms are created
+    polarity_inversions = {
+        "baseline_eval": {
+            "no_duplicate_blocks": "has_duplicate_content",
+            "no_placeholder_content": "has_placeholder_content",
+            "no_critical_issues": "has_critical_issues",
+        },
+        "audit": {},
+    }
+
+    # Count gate mappings: producer name → (count_canonical, availability_canonical)
+    # Handles producer providing "critical_issues": 2 → create both count and availability
+    count_mappings = {
+        "baseline_eval": {
+            "critical_issues": ("critical_issue_count", "has_critical_issues"),
+            "major_issues": ("major_issue_count", "has_major_issues"),
+            "warning_issues": ("warning_issue_count", "has_warning_issues"),
+            "training_pairs": ("training_pairs_count", "training_pairs_available"),
         },
     }
 
     producer_mapping = mappings.get(producer_type, {})
+    inversions = polarity_inversions.get(producer_type, {})
+    counts = count_mappings.get(producer_type, {})
 
     for producer_name, producer_value in producer_gates.items():
-        if producer_name not in producer_mapping:
-            # Check if this is already a canonical gate name (e.g., training_pairs_available from Phase 4)
-            # If so, pass it through unchanged; otherwise skip it
-            if producer_name in CANONICAL_GATE_KEYS:
-                normalized[producer_name] = producer_value
-            # else: skip unmapped, non-canonical gates
+        # Handle direct mappings (baseline name → canonical name)
+        if producer_name in producer_mapping:
+            canonical_name = producer_mapping[producer_name]
+
+            # Apply polarity inversion if needed (rare; for legacy inverted gate names)
+            if producer_name in invert_flags:
+                canonical_value = not producer_value
+            else:
+                canonical_value = producer_value
+
+            normalized[canonical_name] = canonical_value
             continue
 
-        canonical_name = producer_mapping[producer_name]
+        # Handle polarity inversions (create both positive and negative forms)
+        # Example: no_critical_issues:True → create no_critical_issues:True AND has_critical_issues:False
+        if producer_name in inversions:
+            canonical_name = producer_mapping.get(producer_name, producer_name)
+            inverted_name = inversions[producer_name]
 
-        # Apply polarity inversion if needed
-        if producer_name in invert_flags:
-            canonical_value = not producer_value
-        else:
-            canonical_value = producer_value
+            # Original polarity
+            normalized[canonical_name] = producer_value
+            # Inverted polarity
+            normalized[inverted_name] = not producer_value
+            continue
 
-        normalized[canonical_name] = canonical_value
+        # Handle count gates: if producer provides "critical_issues": 2
+        # create both "critical_issue_count": 2 AND "has_critical_issues": True/False
+        count_handled = False
+        for count_key, (count_canonical, avail_canonical) in counts.items():
+            if producer_name == count_key and isinstance(producer_value, int):
+                count_handled = True
+                critical_count = int(producer_value or 0)
+                normalized[count_canonical] = critical_count
+                normalized[avail_canonical] = critical_count > 0
+                break
+
+        if count_handled:
+            continue
+
+        # Check if this is already a canonical gate name (e.g., training_pairs_available from Phase 4)
+        # If so, pass it through unchanged; otherwise skip unmapped, non-canonical gates
+        if is_canonical_gate_name(producer_name):
+            normalized[producer_name] = producer_value
+        # else: skip unmapped, non-canonical gates (no error; allows producer flexibility)
 
     return normalized
 

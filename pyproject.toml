@@ -46,6 +46,7 @@ addopts = "-v --strict-markers"
 markers = [
     "integration: marks tests as integration tests requiring external services",
     "slow: marks tests as slow running",
+    "legacy_mock: marks tests that validate a local mock/fake, not real shipped code; exclude from certification counts via -m 'not legacy_mock'",
 ]
 
 [tool.black]

@@ -13,8 +13,8 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Optional
 
-from logi.event_bus import Event, EventType, EventBus, get_bus
-from logi.project_state_manager import (
+from ops.logi.event_bus import Event, EventType, EventBus, get_bus
+from ops.logi.project_state_manager import (
     ProjectStateManager,
     TaskType,
     get_manager,
@@ -146,7 +146,13 @@ class IncidentToTaskDispatcher:
         print(f"✓ Created WARNING analysis task {task.task_id} for {service}")
 
     async def _handle_repair_succeeded(self, event: Event):
-        """On repair success, create training task to learn from it."""
+        """On repair success, create reprocess and training tasks.
+
+        Architecture: repair → {reprocess → audit, training}
+        - REPROCESS: Re-run original document through fixed pipeline
+        - AUDIT: Re-evaluate document quality after reprocess
+        - TRAINING: Learn from repair example (parallel track)
+        """
         repair_data = event.data or {}
         task_id = repair_data.get("task_id")
 
@@ -158,12 +164,46 @@ class IncidentToTaskDispatcher:
         if not repair_task:
             return
 
-        # Create training task that depends on repair
+        # Create reprocess task (run document through fixed pipeline)
+        reprocess_task = await self.manager.create_task(
+            task_type=TaskType.REPROCESS,
+            title=f"Reprocess document from: {repair_task.title}",
+            created_by="dispatcher",
+            depends_on=[task_id],  # Must wait for repair to complete
+            priority=80,
+            estimated_duration_seconds=1800,  # 30 min estimate
+        )
+
+        reprocess_task.result = {
+            "incident_id": repair_task.result.get("incident_id") if repair_task.result else None,
+            "repair_task_id": task_id,
+            "repair_title": repair_task.title,
+        }
+        await self.manager._store_task(reprocess_task)
+
+        # Create audit task (re-evaluate quality after reprocess)
+        audit_task = await self.manager.create_task(
+            task_type=TaskType.HEALTH_CHECK,  # Not ANALYSIS — avoids collision with training-results analysis
+            title=f"Re-audit after reprocess: {repair_task.title}",
+            created_by="dispatcher",
+            depends_on=[reprocess_task.task_id],  # Must wait for reprocess
+            priority=75,
+            estimated_duration_seconds=600,  # 10 min estimate
+        )
+
+        audit_task.result = {
+            "incident_id": repair_task.result.get("incident_id") if repair_task.result else None,
+            "repair_task_id": task_id,
+            "reprocess_task_id": reprocess_task.task_id,
+        }
+        await self.manager._store_task(audit_task)
+
+        # Create training task (learn from repair, parallel to reprocess)
         training_task = await self.manager.create_task(
             task_type=TaskType.TRAINING,
             title=f"Train on repair: {repair_task.title}",
             created_by="dispatcher",
-            depends_on=[task_id],
+            depends_on=[task_id],  # Parallel with reprocess, both depend on repair
             priority=70,
             estimated_duration_seconds=3600,  # 1 hour
         )
@@ -175,23 +215,30 @@ class IncidentToTaskDispatcher:
         }
         await self.manager._store_task(training_task)
 
-        # Publish event
-        task_event = Event(
-            event_type=EventType.TASK_CREATED,
-            source="dispatcher",
-            timestamp=datetime.utcnow(),
-            correlation_id=event.correlation_id,
-            parent_event_id=event.correlation_id,
-            data={
-                "task_id": training_task.task_id,
-                "task_type": "training",
-                "repair_task_id": task_id,
-                "title": training_task.title,
-            },
-        )
-        await self.bus.publish(task_event)
+        # Publish events for all created tasks
+        for task_obj, task_type_str in [
+            (reprocess_task, "reprocess"),
+            (audit_task, "health_check"),
+            (training_task, "training"),
+        ]:
+            task_event = Event(
+                event_type=EventType.TASK_CREATED,
+                source="dispatcher",
+                timestamp=datetime.utcnow(),
+                correlation_id=event.correlation_id,
+                parent_event_id=event.correlation_id,
+                data={
+                    "task_id": task_obj.task_id,
+                    "task_type": task_type_str,
+                    "repair_task_id": task_id,
+                    "title": task_obj.title,
+                },
+            )
+            await self.bus.publish(task_event)
 
-        print(f"✓ Created TRAINING task {training_task.task_id} after repair success")
+        print(f"✓ Created REPROCESS task {reprocess_task.task_id}")
+        print(f"✓ Created AUDIT task {audit_task.task_id}")
+        print(f"✓ Created TRAINING task {training_task.task_id}")
 
     async def _handle_training_completed(self, event: Event):
         """On training success, create analysis task for results."""
@@ -260,7 +307,7 @@ if __name__ == "__main__":
         dispatcher = await create_and_start_dispatcher()
 
         # Simulate critical incident
-        from logi.event_bus import EventSeverity
+        from ops.logi.event_bus import EventSeverity
 
         incident_event = Event(
             event_type=EventType.ARGUS_CRITICAL_INCIDENT,

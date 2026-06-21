@@ -35,6 +35,7 @@ class TaskStatus(str, Enum):
 class TaskType(str, Enum):
     """Task categories for orchestration."""
     REPAIR = "repair"
+    REPROCESS = "reprocess"
     TRAINING = "training"
     ANALYSIS = "analysis"
     DEPLOYMENT = "deployment"
@@ -52,7 +53,8 @@ class Task:
     status: TaskStatus = TaskStatus.PENDING
 
     # Dependencies
-    depends_on: List[str] = field(default_factory=list)  # tasks that must finish first
+    depends_on: List[str] = field(default_factory=list)  # causal lineage — all declared deps, never shrinks
+    blocked_by: List[str] = field(default_factory=list)  # live gate — only unfinished deps; shrinks as deps complete
     blocking: List[str] = field(default_factory=list)    # tasks waiting for this one
 
     # Metadata
@@ -76,7 +78,7 @@ class Task:
 
     def is_runnable(self) -> bool:
         """Can this task run now (all deps complete)?"""
-        return self.status == TaskStatus.PENDING and not self.depends_on
+        return self.status == TaskStatus.PENDING and not self.blocked_by
 
     def mark_blocked(self, reason: str):
         """Mark task as blocked and store reason."""
@@ -107,6 +109,12 @@ class Task:
         for ts_field in ['created_at', 'scheduled_for', 'deadline', 'started_at', 'completed_at']:
             if d.get(ts_field):
                 d[ts_field] = datetime.fromisoformat(d[ts_field])
+
+        # Back-compat: older records lack blocked_by; derive from depends_on
+        if 'blocked_by' not in d:
+            _TERMINAL = {'succeeded', 'failed', 'cancelled'}
+            status_val = d['status'].value if hasattr(d['status'], 'value') else d.get('status', '')
+            d['blocked_by'] = [] if status_val in _TERMINAL else list(d.get('depends_on', []))
 
         return Task(**d)
 
@@ -146,23 +154,34 @@ class ProjectStateManager:
         priority: int = 50,
         estimated_duration_seconds: int = 0,
     ) -> Task:
-        """Create a new task with optional dependencies."""
+        """Create a new task with optional dependencies.
+
+        depends_on preserves full causal lineage (all declared deps, never filtered).
+        blocked_by contains only non-terminal deps — is_runnable() checks this field
+        so tasks created after their deps complete are immediately runnable.
+        """
+        _TERMINAL = {TaskStatus.SUCCEEDED, TaskStatus.FAILED, TaskStatus.CANCELLED}
+        all_deps = list(depends_on or [])
+        active_deps = []
+        for dep_id in all_deps:
+            dep_task = await self.get_task(dep_id)
+            if not dep_task:
+                raise ValueError(f"Dependency {dep_id} not found")
+            if dep_task.status not in _TERMINAL:
+                active_deps.append(dep_id)
+
         task = Task(
             task_type=task_type,
             title=title,
             created_by=created_by,
-            depends_on=depends_on or [],
+            depends_on=all_deps,
+            blocked_by=active_deps,
             deadline=deadline,
             priority=priority,
             estimated_duration_seconds=estimated_duration_seconds,
         )
 
-        # Validate dependencies exist
-        for dep_id in task.depends_on:
-            if not await self.get_task(dep_id):
-                raise ValueError(f"Dependency {dep_id} not found")
-
-        # Store
+        await self._update_blocking_lists(task.task_id, active_deps)
         await self._store_task(task)
         return task
 
@@ -255,7 +274,7 @@ class ProjectStateManager:
     async def get_blocked_tasks(self) -> List[Task]:
         """Get tasks currently blocked by dependencies."""
         all_tasks = await self.list_tasks()
-        blocked = [t for t in all_tasks if t.status == TaskStatus.BLOCKED or t.depends_on]
+        blocked = [t for t in all_tasks if t.status == TaskStatus.BLOCKED or t.blocked_by]
         return sorted(blocked, key=lambda t: t.priority, reverse=True)
 
     # ============ Dependency Graph ============
@@ -348,16 +367,24 @@ class ProjectStateManager:
             except Exception as e:
                 print(f"⚠ Redis write failed: {e}")
 
+    async def _update_blocking_lists(self, new_task_id: str, upstream_task_ids: List[str]):
+        """Add new_task_id to blocking list of all upstream tasks (bidirectional linking)."""
+        for upstream_id in upstream_task_ids:
+            upstream_task = await self.get_task(upstream_id)
+            if upstream_task and new_task_id not in upstream_task.blocking:
+                upstream_task.blocking.append(new_task_id)
+                await self._store_task(upstream_task)
+
     async def _unblock_dependents(self, completed_task_id: str):
-        """When a task completes, remove it from depends_on lists."""
+        """When a task completes, remove it from blocked_by lists."""
         all_tasks = await self.list_tasks()
 
         for task in all_tasks:
-            if completed_task_id in task.depends_on:
-                task.depends_on.remove(completed_task_id)
+            if completed_task_id in task.blocked_by:
+                task.blocked_by.remove(completed_task_id)
 
-                # If no more deps, mark as runnable
-                if not task.depends_on and task.status == TaskStatus.BLOCKED:
+                # If no more live blockers, mark as runnable
+                if not task.blocked_by and task.status == TaskStatus.BLOCKED:
                     task.status = TaskStatus.PENDING
 
                 await self._store_task(task)

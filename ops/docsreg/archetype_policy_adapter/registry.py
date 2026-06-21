@@ -2,6 +2,9 @@
 from typing import Dict, List
 
 from ops.docsreg.archetype_policy_adapter.base import ArchetypeDefinition
+from ops.docsreg.archetype_policy_adapter.classification_notation_table import (
+    get_classification_notation_table_archetype,
+)
 from ops.docsreg.archetype_policy_adapter.maintenance_procedure import (
     get_maintenance_procedure_archetype,
 )
@@ -27,6 +30,7 @@ class ConcreteArchetypeRegistry:
 
     def _register_builtin(self) -> None:
         """Register built-in archetype definitions."""
+        self.register_archetype(get_classification_notation_table_archetype())
         self.register_archetype(get_maintenance_procedure_archetype())
         self.register_archetype(get_policy_framework_archetype())
 

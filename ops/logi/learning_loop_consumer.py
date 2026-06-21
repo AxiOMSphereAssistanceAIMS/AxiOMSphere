@@ -11,13 +11,16 @@ Bridges Phase 5 orchestration with Phase 2B learning loops.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
+import os
+from datetime import datetime, UTC
+from pathlib import Path
 from typing import Optional
 
-from logi.event_bus import (
+from ops.logi.event_bus import (
     EventBus,
     Event,
     EventType,
+    EventSeverity,
     get_bus,
 )
 
@@ -35,18 +38,28 @@ except ImportError:
     pass
 
 
+_DEFAULT_STATE_DIR = Path(
+    os.environ.get(
+        "AIMS_ECC_STATE_DIR",
+        Path(__file__).resolve().parent.parent.parent / "aims_workspace" / "ecc_learning_state",
+    )
+)
+
+
 class LearningLoopConsumer:
     """Consume EventBus learning events and trigger loops."""
 
-    def __init__(self, bus: EventBus):
+    def __init__(self, bus: EventBus, state_dir: Path | None = None):
         self.bus = bus
+        self.state_dir = Path(state_dir) if state_dir else _DEFAULT_STATE_DIR
 
-        # Initialize learning engines
+        # Initialize learning engines — load persisted state if available
         if _learning_loops_available:
-            self.failure_loop = FailureLearningLoop()
-            self.optimization_loop = OptimizationLoop()
-            self.meta_learning = MetaLearningEngine()
-            self.skill_fusion = SkillFusionEngine()
+            self.state_dir.mkdir(parents=True, exist_ok=True)
+            self.failure_loop = FailureLearningLoop.load(self.state_dir / "failure_patterns.json")
+            self.optimization_loop = OptimizationLoop.load(self.state_dir / "optimization_candidates.json")
+            self.meta_learning = MetaLearningEngine.load(self.state_dir / "meta_strategies.json")
+            self.skill_fusion = SkillFusionEngine.load(self.state_dir / "fusion_proposals.json")
         else:
             print("⚠ Learning loops not available (Phase 2B not installed)")
             self.failure_loop = None
@@ -73,6 +86,22 @@ class LearningLoopConsumer:
             EventType.TRAINING_COMPLETED,
             self._handle_training_complete,
         )
+
+    def _save_state(self) -> None:
+        """Persist all learning loop state to disk."""
+        if not _learning_loops_available:
+            return
+        try:
+            if self.failure_loop:
+                self.failure_loop.save(self.state_dir / "failure_patterns.json")
+            if self.optimization_loop:
+                self.optimization_loop.save(self.state_dir / "optimization_candidates.json")
+            if self.meta_learning:
+                self.meta_learning.save(self.state_dir / "meta_strategies.json")
+            if self.skill_fusion:
+                self.skill_fusion.save(self.state_dir / "fusion_proposals.json")
+        except Exception as e:
+            print(f"⚠ Failed to save learning loop state: {e}")
 
     async def _handle_traini_event(self, event: Event):
         """Handle Traini loop events."""
@@ -121,6 +150,7 @@ class LearningLoopConsumer:
             print(f"   📊 Pattern identified: {patterns[0].pattern_id}")
             print(f"   Suggested fix: {patterns[0].suggested_fix}")
             print(f"   Confidence: {patterns[0].confidence:.2f}")
+            self._save_state()
 
     async def _process_loop_complete(self, event: Event):
         """Process completed Traini loop result.
@@ -139,7 +169,24 @@ class LearningLoopConsumer:
 
         if verdict == "ACCEPT":
             print(f"   ✅ Accepted — triggering optimization loop")
-            # OptimizationLoop can suggest parameter tweaks on next run
+            # Publish training_requested event to trigger next phase
+            try:
+                training_event = Event(
+                    event_type=EventType.TRAINING_REQUESTED,
+                    source="learning_loop_consumer",
+                    timestamp=datetime.now(UTC),
+                    severity=EventSeverity.INFO,
+                    data={
+                        "training_source": "traini_loop_accepted",
+                        "run_id": run_id,
+                        "iterations_used": data.get("iterations_used"),
+                        "total_evidence_size": data.get("total_evidence_size"),
+                    },
+                )
+                await self.bus.publish(training_event)
+            except Exception as e:
+                print(f"⚠ Failed to publish training_requested event: {e}")
+            self._save_state()
 
     async def _handle_repair_success(self, event: Event):
         """Handle successful repair completion.
@@ -176,10 +223,12 @@ class LearningLoopConsumer:
         # MetaLearningEngine could suggest next training direction
 
 
-async def create_learning_loop_consumer() -> Optional[LearningLoopConsumer]:
+async def create_learning_loop_consumer(redis_url: str | None = None) -> Optional[LearningLoopConsumer]:
     """Create and initialize learning loop consumer."""
     try:
-        bus = await get_bus()
+        import os
+        url = redis_url or os.environ.get("REDIS_URL", "redis://localhost:6379")
+        bus = await get_bus(url)
         if not bus:
             return None
 

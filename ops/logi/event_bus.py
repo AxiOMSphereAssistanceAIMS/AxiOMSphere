@@ -54,7 +54,18 @@ class EventType(str, Enum):
     # Task lifecycle
     TASK_CREATED = "task.created"
     TASK_UPDATED = "task.updated"
+    TASK_SCHEDULED = "task.scheduled"
+    TASK_STARTED = "task.started"
     TASK_COMPLETED = "task.completed"
+    TASK_FAILED = "task.failed"
+    TASK_RETRY_SCHEDULED = "task.retry_scheduled"
+    TASK_ESCALATED = "task.escalated"
+
+    # Task missed-start policy (Phase 3)
+    TASK_MISSED_STARTUP_REVIEW = "task.missed_startup_review"  # Task held on startup
+    TASK_HELD_FOR_DECISION = "task.held_for_decision"  # Task blocked, user must decide
+    TASK_RESCHEDULE_REQUESTED = "task.reschedule_requested"  # User chose to reschedule
+    TASK_KEEP_IN_REVIEW = "task.keep_in_review"  # User chose to keep in review queue
 
     # Learning
     LEARNING_TRIGGERED = "learning.triggered"
@@ -111,6 +122,9 @@ class EventBus:
         # Local handler registry (fallback/in-memory)
         self._handlers: Dict[str, List[Callable]] = {}
 
+        # In-memory event ledger (fallback when Redis unavailable)
+        self._event_ledger: Dict[str, List[Event]] = {}
+
     async def connect(self):
         """Connect to Redis backend."""
         try:
@@ -165,7 +179,15 @@ class EventBus:
                             e,
                         )
 
-        # Fallback: call local handlers
+        # Fallback: store in in-memory ledger and call local handlers
+        ledger_key = event.event_type.value
+        if ledger_key not in self._event_ledger:
+            self._event_ledger[ledger_key] = []
+        self._event_ledger[ledger_key].insert(0, event)  # newest first
+        # Keep last 1000 events per type
+        if len(self._event_ledger[ledger_key]) > 1000:
+            self._event_ledger[ledger_key] = self._event_ledger[ledger_key][:1000]
+
         await self._call_handlers(event)
         return True
 
@@ -273,11 +295,16 @@ class EventBus:
         if self.redis_client:
             try:
                 data = await self.redis_client.lrange(ledger_key, 0, limit - 1)
-                events = [Event.from_dict(json.loads(item)) for item in data]
-                return list(reversed(events))  # newest first
+                if data:
+                    events = [Event.from_dict(json.loads(item)) for item in data]
+                    return list(reversed(events))  # newest first
             except Exception as e:
-                print(f"⚠ Redis read failed: {e}")
+                pass
 
+        # Fallback: return from in-memory ledger
+        event_type_str = event_type.value
+        if event_type_str in self._event_ledger:
+            return self._event_ledger[event_type_str][:limit]
         return []
 
     async def get_event_stats(self) -> Dict[str, int]:
@@ -298,7 +325,12 @@ class EventBus:
                     if cursor == 0:
                         break
             except Exception as e:
-                print(f"⚠ Redis scan failed: {e}")
+                pass
+
+        # Fallback: merge in-memory ledger counts (ensures we don't miss events)
+        for event_type, events in self._event_ledger.items():
+            # Take max of Redis count and in-memory count
+            stats[event_type] = max(stats.get(event_type, 0), len(events))
 
         return stats
 
@@ -315,8 +347,18 @@ async def get_bus(redis_url: str = "redis://localhost:6379") -> EventBus:
     if not _bus_instance:
         _bus_instance = EventBus(redis_url)
         await _bus_instance.connect()
+    else:
+        pass
 
     return _bus_instance
+
+
+async def reset_bus_instance() -> None:
+    """Reset the global EventBus singleton (for testing)."""
+    global _bus_instance
+    if _bus_instance:
+        await _bus_instance.disconnect()
+    _bus_instance = None
 
 
 if __name__ == "__main__":

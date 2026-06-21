@@ -5,7 +5,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from logi.short_term_action_plan import StrategicPlannedAction
+try:  # pragma: no cover - container path differs between bots
+    from ops.logi.short_term_action_plan import StrategicPlannedAction
+except ModuleNotFoundError:  # pragma: no cover
+    from logi.short_term_action_plan import StrategicPlannedAction
 
 DUBAI = timezone(timedelta(hours=4))
 

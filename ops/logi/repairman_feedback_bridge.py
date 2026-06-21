@@ -16,13 +16,13 @@ import os
 from datetime import datetime
 from typing import Optional, Dict, Any
 
-from logi.project_state_manager import (
+from ops.logi.project_state_manager import (
     ProjectStateManager,
     TaskStatus,
     TaskType,
     get_manager,
 )
-from logi.event_bus import (
+from ops.logi.event_bus import (
     EventBus,
     Event,
     EventType,

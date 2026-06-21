@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
-from logi.project_state_manager import (
+from ops.logi.project_state_manager import (
     ProjectStateManager,
     TaskStatus,
     TaskType,

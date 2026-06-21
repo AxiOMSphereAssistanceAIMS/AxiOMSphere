@@ -19,7 +19,6 @@ from ops.docsreg.universal_loop.evidence import EvidenceStore
 from ops.docsreg.universal_loop.result import UniversalLoopResult
 from ops.docsreg.universal_loop.stage_result import StageResult, StageOutcome
 from ops.docsreg.universal_loop.terminal_state import TerminalState
-from ops.docsreg.integration.phase6_orchestration import Phase6OrchestrationLayer
 
 
 class UniversalImprovementLoop:
@@ -35,6 +34,10 @@ class UniversalImprovementLoop:
         self, dependencies: LoopDependencies, logger: Any = None, event_bus: Any = None
     ):
         """Initialize loop with injected dependencies."""
+        # Lazy import breaks the cycle: universal_loop/__init__ → cycle → phase6_orchestration
+        # → universal_loop.data_retention_validator (which re-enters __init__ before cycle is done)
+        from ops.docsreg.integration.phase6_orchestration import Phase6OrchestrationLayer  # noqa: PLC0415
+
         self.dependencies = dependencies
         self.logger = logger
         self.event_bus = event_bus

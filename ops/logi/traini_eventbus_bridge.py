@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import asyncio
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional, Dict, Any
 
-from logi.event_bus import (
+from ops.logi.event_bus import (
     EventBus,
     Event,
     EventType,
@@ -51,7 +51,7 @@ async def publish_traini_event(
         event = Event(
             event_type=eb_event_type,
             source=source,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
             severity=EventSeverity.INFO,
             data={
                 "traini_event_type": event_type,
@@ -81,7 +81,7 @@ async def publish_baseline_created(
             "model_slot": model_slot,
             "eval_score": eval_score,
             "eval_suite": eval_suite,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
     )
 
@@ -146,7 +146,7 @@ async def publish_loop_complete(
             "final_verdict": final_verdict,
             "iterations_used": iterations_used,
             "total_evidence_size": total_evidence_size_bytes,
-            "timestamp_complete": datetime.utcnow().isoformat(),
+            "timestamp_complete": datetime.now(UTC).isoformat(),
         },
     )
 
@@ -174,7 +174,7 @@ async def publish_learning_need(
             "correction_applied": correction_applied,
             "severity": severity,
             "learning_priority": learning_priority,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
     )
 

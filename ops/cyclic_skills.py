@@ -24,7 +24,14 @@ from typing import Optional
 
 log = logging.getLogger("cyclic_skills")
 
-OLLAMA_URL = "http://127.0.0.1:11434"
+
+def _ollama_base_url() -> str:
+    try:
+        from ollama_resolve import effective_ollama_base_url
+
+        return effective_ollama_base_url().rstrip("/")
+    except Exception:
+        return "http://127.0.0.1:11434"
 
 
 # ── Data types ─────────────────────────────────────────────────
@@ -121,6 +128,41 @@ def _extract_body_sections(doc: str) -> dict[str, str]:
     return sections
 
 
+def section_identity(value: str) -> tuple[str, str]:
+    """Return canonical section number and semantic title for matching."""
+    cleaned = re.sub(r"\s+\[(?:MISSING|STUB)[^\]]*\]\s*$", "", value)
+    cleaned = re.sub(r"^[#*\s]+|[*\s]+$", "", cleaned).strip()
+    match = re.match(
+        r"^(?P<number>\d+(?:\.\d+)*)\s*[.)]?\s+(?P<title>.+)$",
+        cleaned,
+    )
+    if match:
+        number_parts = match.group("number").split(".")
+        while len(number_parts) > 1 and number_parts[-1] == "0":
+            number_parts.pop()
+        number = ".".join(number_parts)
+        title = match.group("title")
+    else:
+        number = ""
+        title = cleaned
+    semantic_title = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
+    return number, semantic_title
+
+
+def sections_semantically_match(left: str, right: str) -> bool:
+    left_number, left_title = section_identity(left)
+    right_number, right_title = section_identity(right)
+    if left_title and left_title == right_title:
+        return True
+    return bool(
+        left_number
+        and left_number == right_number
+        and left_title
+        and right_title
+        and (left_title in right_title or right_title in left_title)
+    )
+
+
 def validate_structure(doc: str, threshold: float = 0.90) -> StructureReport:
     """
     Skill 1: Validate document structure completeness.
@@ -132,13 +174,6 @@ def validate_structure(doc: str, threshold: float = 0.90) -> StructureReport:
     """
     toc_sections  = _extract_toc_sections(doc)
     body_sections = _extract_body_sections(doc)
-
-    # Normalize for matching
-    def _norm(s: str) -> str:
-        return re.sub(r"[^a-z0-9]", "", s.lower())
-
-    body_norm = {_norm(k): k for k in body_sections}
-    toc_norm  = [_norm(s) for s in toc_sections]
 
     def _section_number(value: str) -> str:
         match = re.match(r"^\s*(\d+(?:\.\d+)*)", value)
@@ -218,9 +253,16 @@ def validate_structure(doc: str, threshold: float = 0.90) -> StructureReport:
     stub_sections  = []
     found_sections = []
 
-    for toc_n, toc_s in zip(toc_norm, toc_sections):
+    for toc_s in toc_sections:
         # Find matching body section
-        matched_key = next((body_norm[k] for k in body_norm if toc_n in k or k in toc_n), None)
+        matched_key = next(
+            (
+                heading
+                for heading in body_sections
+                if sections_semantically_match(toc_s, heading)
+            ),
+            None,
+        )
         if matched_key is None:
             empty_sections.append(toc_s + " [MISSING FROM BODY]")
             continue
@@ -410,7 +452,7 @@ def _ollama_generate(model: str, prompt: str, timeout: int = 300, num_predict: i
         "options": {"temperature": 0.2, "num_predict": num_predict},
     }
     req = urllib.request.Request(
-        f"{OLLAMA_URL}/api/generate",
+        f"{_ollama_base_url()}/api/generate",
         data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json"},
         method="POST",

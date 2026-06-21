@@ -11,13 +11,13 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List
 
-from logi.project_state_manager import (
+from ops.logi.project_state_manager import (
     ProjectStateManager,
     TaskStatus,
     TaskType,
     get_manager,
 )
-from logi.telegram_alerts import get_alert_manager
+from ops.logi.telegram_alerts import get_alert_manager
 
 
 class EscalationPolicy:

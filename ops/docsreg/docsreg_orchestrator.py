@@ -11,6 +11,7 @@ from ops.docsreg.docsreg_retry_policy import STANDARD_RETRY, DocsregRetryPolicy
 from ops.docsreg.docsreg_run_manifest import DocsregRunManifest
 from ops.docsreg.docsreg_scheduler import DocsregRedisScheduler
 from ops.docsreg.docsreg_state_machine import DocsregState
+from ops.docsreg.docsreg_tasks import TASK_REGISTRY
 from ops.docsreg.docsreg_worker import run_worker
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,13 @@ class DocsregOrchestrator:
         checkpoint = DocsregEvidenceCheckpoint(scheduler)
 
         scheduler.transition_to(DocsregState.CREATED)
+
+        # Seed the CREATED evidence checkpoint so downstream stages
+        # (INTAKE_READY etc.) pass their dependency gate.
+        created_task = TASK_REGISTRY.get(DocsregState.CREATED)
+        if created_task is not None:
+            created_task(manifest, checkpoint)
+
         logger.info(
             "Certification run started: run_id=%s draft=%s",
             manifest.run_id,

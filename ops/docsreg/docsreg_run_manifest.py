@@ -10,7 +10,9 @@ from dataclasses import asdict, dataclass
 from ops.docsreg.docsreg_state_machine import DocsregState
 
 _HAPPY_PATH_STAGES: list[str] = [
-    DocsregState.CREATED,
+    # NOTE: CREATED is the bootstrap state set by the orchestrator —
+    # it must NOT appear here or the worker will attempt a duplicate
+    # CREATED → CREATED transition.
     DocsregState.INTAKE_READY,
     DocsregState.EXTRACTION_READY,
     DocsregState.FAMILY_MAP_READY,
