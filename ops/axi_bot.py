@@ -304,6 +304,7 @@ _PENDING_DOCFILL: dict[int, dict[str, object]] = {}  # step: await_blank | await
 _DOCFILL_VRAM_QUEUE: dict[int, str] = {}            # chat_id → blank_text, waiting for VRAM headroom
 _PENDING_DOCREVIEW: dict[int, dict[str, object]] = {}   # step: await_doc | ready
 _PENDING_DOC_INTAKE: dict[int, dict[str, object]] = {}  # step: await_more | await_task | await_mode
+_PENDING_AI_LABEL_REMOVAL: dict[int, dict[str, object]] = {}  # prompt + ts for document-followup routing
 _DOC_INTAKE_HANDLED_CALLBACKS: set[str] = set()  # Telegram callback_query.id de-duplication
 DOCFILL_VRAM_MIN_FREE_GB: float = float(os.environ.get("DOCFILL_VRAM_MIN_FREE_GB", "36"))
 _VEO_GEN_BUSY: set[int] = set()
@@ -587,7 +588,7 @@ async def _anthropic_reply(
     system_override: str | None = None,
 ) -> str:
     """Call Claude via OmniRouter. Used as fallback when NIM is unavailable."""
-    omnirouter_url = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:8082").rstrip("/")
+    omnirouter_url = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:20129").rstrip("/")
     auth_token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
     model = os.environ.get("AIMS_ANTHROPIC_MODEL", ANTHROPIC_MODEL)
 
@@ -641,7 +642,7 @@ async def _anthropic_reply(
 
 async def _anthropic_classify_intent(prompt: str, file_names: str) -> str:
     """Classify routing intent via Omnirouter (NVIDIA NIM) tool_use — returns guaranteed enum value."""
-    omnirouter_url = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:8082").rstrip("/")
+    omnirouter_url = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:20129").rstrip("/")
     auth_token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
     model = os.environ.get("AIMS_INTENT_MODEL", "llama405b")
 
@@ -1082,13 +1083,18 @@ async def _generate_custom_docx(
 
 def _wants_docx(text: str) -> bool:
     norm = text.lower()
+    if _is_docsreg_launch_text(norm):
+        # DOCSREG is Omi-owned intent. Axi must not claim it as a docx task.
+        return False
     patterns = (
         r"(word|docx|\.docx|в word|в ворд|ворд)",
         r"(return|send|give|верни|пришли|отправь).{0,30}(word|docx)",
         r"(generate|create|сгенерируй|создай).{0,30}(docx|word|report|отчёт|отчет)",
         r"(report|отчёт|отчет|документ).{0,30}(word|docx)",
         r"(generate|create|prepare|draft|combine|review|develop|write).{0,40}(procedure|report|document|manual|strategy)",
+        r"(generate|create|prepare|draft|combine|review|develop|write).{0,40}(policy|framework|policy framework|policy_framework)",
         r"(сгенерируй|создай|подготовь|собери|проверь).{0,40}(процедур|отч[её]т|документ|регламент|стратег)",
+        r"(создай|подготовь|разработай|сделай).{0,40}(политик|рамк|framework|policy)",
         # Analysis + send/deliver intent (no explicit "word" but clearly wants a document output)
         r"(check|analyze|analyse|review|compare|assess|audit).{0,60}(send|deliver|share|attach|chat|file)",
         r"(send|deliver|share).{0,20}(it|file|result|output).{0,20}(to chat|to us|to me)",
@@ -1315,6 +1321,9 @@ def _build_doc_analysis_system() -> str:
 
 def _wants_standards_docx_result(text: str) -> bool:
     low = (text or "").lower()
+    if _is_docsreg_launch_text(low):
+        # DOCSREG launch semantics are delegated to Omi, not Axi.
+        return False
     if _wants_docx(low):
         return True
     return any(k in low for k in (
@@ -2087,6 +2096,224 @@ def _chat_allowed(update: Update) -> bool:
             return True
     return False
 
+
+def _is_docgen_upgrade_origin(update: Update) -> bool:
+    """Private Axi origin gate for DOCGEN upgrade batches."""
+    if update.effective_chat is None:
+        return False
+    if update.effective_chat.type != "private":
+        return False
+    if not ALLOWED_CHATS and not OWNER_CHATS:
+        return True
+    return (
+        update.effective_chat.id in OWNER_CHATS
+        or update.effective_chat.id in ALLOWED_CHATS
+    )
+
+
+def _format_docgen_upgrade_reply(
+    *,
+    action_id: str,
+    action_path: str,
+    execution: dict[str, object],
+    run_summary: dict[str, object],
+    doc_types: list[str],
+) -> str:
+    loop_state = str(run_summary.get("loop_state") or execution.get("status") or "unknown")
+    shelf_state = str(run_summary.get("shelf_state") or "unknown")
+    next_step = str(run_summary.get("next_step") or "unknown")
+    target_quality = float(run_summary.get("target_quality") or 0.98)
+    best_quality = float(run_summary.get("best_quality") or 0.0)
+    best_cycles = int(run_summary.get("best_cycles") or 0)
+    avg_quality = float(run_summary.get("avg_quality") or 0.0)
+    trace = str(run_summary.get("trajectory_trace") or "").strip() or "n/a"
+    launcher_status = str(execution.get("status") or "unknown")
+    exit_code = str(execution.get("exit_code") or "unknown")
+    evidence_dir = str(execution.get("evidence_dir") or "n/a")
+    training_review = bool(run_summary.get("training_review_required"))
+    promotion_ready = bool(run_summary.get("promotion_ready"))
+    blocked_reasons = [
+        str(item)
+        for item in (run_summary.get("blocked_reasons") or [])
+        if str(item).strip()
+    ]
+    loop_completed = best_cycles > 0 or best_quality > 0.0
+    branch_markers = [
+        f"{item.get('document_type')}: {float(item.get('achieved_quality') or 0.0):.1%} / {int(item.get('cycles_completed') or 0)}c"
+        for item in run_summary.get("batch_summaries") or []
+        if isinstance(item, dict)
+    ]
+    branch_text = " | ".join(branch_markers) if branch_markers else "n/a"
+    doc_types_text = ", ".join(doc_types)
+    if loop_state in {"BLOCKED", "REVIEW"} and best_cycles <= 0 and best_quality <= 0.0:
+        heading = "❌ DOCGEN runtime preflight failed."
+    elif loop_state in {"COMPLETE", "TARGET_REACHED"} or best_quality >= target_quality:
+        heading = "✅ DOCGEN upgrade completed."
+    elif best_cycles > 0:
+        heading = "🔵 DOCGEN runtime started."
+    else:
+        heading = "🟡 DOCGEN upgrade job accepted."
+    blocker_text = ", ".join(blocked_reasons) if blocked_reasons else "n/a"
+    return (
+        f"{heading}\n"
+        f"Action: `{action_id}`\n"
+        f"Path: `{action_path}`\n"
+        f"Types: `{doc_types_text}`\n"
+        f"Loop state: `{loop_state}`\n"
+        f"Shelf: `{shelf_state}`\n"
+        f"Best quality: `{best_quality:.1%}` / target `{target_quality:.1%}`\n"
+        f"Avg quality: `{avg_quality:.1%}`\n"
+        f"Cycles: `{best_cycles}`\n"
+        f"Trace: `{trace}`\n"
+        f"Branches: `{branch_text}`\n"
+        f"Training review: `{str(training_review).lower()}`\n"
+        f"Promotion ready: `{str(promotion_ready).lower()}`\n"
+        f"Next: `{next_step}`\n"
+        f"Blocker: `{blocker_text}`\n"
+        f"Launcher status: `{launcher_status}`\n"
+        f"Exit code: `{exit_code}`\n"
+        f"Evidence: `{evidence_dir}`"
+    )
+
+def _format_docgen_upgrade_completion(
+    *,
+    action_id: str,
+    run_summary: dict[str, object],
+) -> str:
+    loop_state = str(run_summary.get("loop_state") or "unknown")
+    shelf_state = str(run_summary.get("shelf_state") or "unknown")
+    next_step = str(run_summary.get("next_step") or "unknown")
+    target_quality = float(run_summary.get("target_quality") or 0.98)
+    best_quality = float(run_summary.get("best_quality") or 0.0)
+    best_cycles = int(run_summary.get("best_cycles") or 0)
+    avg_quality = float(run_summary.get("avg_quality") or 0.0)
+    branch_markers = [
+        f"{item.get('document_type')}: {float(item.get('achieved_quality') or 0.0):.1%} / {int(item.get('cycles_completed') or 0)}c"
+        for item in run_summary.get("batch_summaries") or []
+        if isinstance(item, dict)
+    ]
+    branch_text = " | ".join(branch_markers) if branch_markers else "n/a"
+    if loop_state in {"BLOCKED", "REVIEW"} and best_cycles <= 0 and best_quality <= 0.0:
+        heading = "❌ DOCGEN runtime preflight failed."
+    elif loop_state in {"COMPLETE", "TARGET_REACHED"} or best_quality >= target_quality:
+        heading = "✅ DOCGEN upgrade completed."
+    elif best_cycles > 0:
+        heading = "🔵 DOCGEN runtime started."
+    else:
+        heading = "🟡 DOCGEN upgrade job accepted."
+    return (
+        f"{heading}\n"
+        f"Action: `{action_id}`\n"
+        f"Loop state: `{loop_state}`\n"
+        f"Shelf: `{shelf_state}`\n"
+        f"Best quality: `{best_quality:.1%}` / target `{target_quality:.1%}`\n"
+        f"Avg quality: `{avg_quality:.1%}`\n"
+        f"Cycles: `{best_cycles}`\n"
+        f"Branches: `{branch_text}`\n"
+        f"Next: `{next_step}`"
+    )
+
+
+
+def _is_docsreg_launch_text(text: str) -> bool:
+    low = (text or "").lower()
+    return any(
+        token in low
+        for token in (
+            "/docsreg",
+            "/docsreg_start_media",
+            "/gocsreg_start_media",
+            "docsreg_start_media",
+            "gocsreg_start_media",
+            "docsreg ",
+            "docsreg:",
+        )
+    )
+
+
+async def _is_omi_owned_intent(text: str) -> bool:
+    """Return True when the message should be delegated to Omi.
+
+    This is the semantic gate: Axi should not treat Omi-owned document
+    workflows as its own generation requests.
+
+    Fast deterministic check runs first so that text-handler messages like
+    "Omi, /docsreg <path>" are caught even when the NLP classifier routes
+    them to a different intent (e.g. ai_label_removal).
+    """
+    low = (text or "").strip()
+    if not low:
+        return False
+    # Deterministic fast-path: if text contains any docsreg command token,
+    # it is unconditionally Omi-owned regardless of NLP result.
+    if _is_docsreg_launch_text(low):
+        return True
+    try:
+        from chat_intent_router import OMI_CMDS, classify  # noqa: PLC0415
+        routed = await asyncio.to_thread(classify, low, OMI_CMDS)
+        return bool(routed and routed[0] == "docsreg")
+    except Exception:
+        return False
+
+
+def _recent_ai_label_removal_context(chat_id: int | None, *, max_age_sec: int = 1800) -> bool:
+    """Check recent dialog memory for an AI-label-removal request."""
+    if chat_id is None:
+        return False
+    rows = _AXI_DIALOG.get(chat_id) or []
+    now = time.time()
+    for row in reversed(rows[-10:]):
+        if row.get("role") != "user":
+            continue
+        ts = float(row.get("ts") or 0.0)
+        if ts and now - ts > max_age_sec:
+            continue
+        content = str(row.get("content") or "")
+        try:
+            from ops.pipelines.ai_label_removal.telegram_handler import detect_ai_label_removal_intent as _ai_rm_intent
+            if _ai_rm_intent(content):
+                return True
+        except Exception:
+            if _is_docsreg_launch_text(content):
+                return False
+    return False
+
+
+def _should_route_ai_label_removal_text(text: str, chat_id: int | None = None) -> bool:
+    """True when the text should seed or continue the AI-label-removal flow."""
+    if _wants_docx(text):
+        return False
+    try:
+        from ops.pipelines.ai_label_removal.telegram_handler import detect_ai_label_removal_intent as _ai_rm_intent
+        if _ai_rm_intent(text):
+            return True
+    except Exception:
+        pass
+    return _recent_ai_label_removal_context(chat_id)
+
+
+def _should_route_ai_label_removal_upload(message, chat_id: int | None = None) -> bool:
+    """
+    True when an uploaded document should be processed by the AI-label-removal pipeline.
+
+    This catches three real Telegram shapes:
+      - explicit intent in the document caption
+      - pending follow-up after a prior text request
+      - recent dialog memory when the file arrives as a separate update
+    """
+    text = getattr(message, "caption", None) or getattr(message, "text", None) or ""
+    if _should_route_ai_label_removal_text(text, chat_id):
+        return True
+    if chat_id is not None and _PENDING_AI_LABEL_REMOVAL.get(chat_id):
+        return True
+    return False
+
+
+def _seed_ai_label_removal_pending(chat_id: int | None, text: str) -> None:
+    if chat_id is None:
+        return
+    _PENDING_AI_LABEL_REMOVAL[chat_id] = {"prompt": text, "ts": time.time()}
+
 def _is_owner(update: Update) -> bool:
     if not OWNER_CHATS:
         return False
@@ -2167,6 +2394,7 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         f"*{AXI_NAME} — команды*\n\n"
         "/start — приветствие\n"
         "/help — эта справка\n"
+        "/aimarks_delete — удалить AI-метки из прикреплённого документа\n"
         "/quality_report [часы] — отчёт качества Task Registry (default: 24ч)\n"
         "/stuck_tasks — список зависших задач прямо сейчас\n"
         "/close_task [task_id] — закрыть зависшую задачу Omi\n"
@@ -2175,6 +2403,30 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         "Для генерации Word: 'сделай отчёт в Word' / 'generate report as docx'"
     )
     await update.message.reply_text(text, parse_mode="Markdown")
+
+
+async def cmd_aimarks_delete(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Explicit alias for the AI-label-removal pipeline."""
+    if not _chat_allowed(update):
+        return
+    message = update.message
+    if message is None:
+        return
+
+    chat_id = update.effective_chat.id if update.effective_chat else None
+    prompt = (message.text or message.caption or "/aimarks_delete").strip()
+    _seed_ai_label_removal_pending(chat_id, prompt)
+
+    if getattr(message, "document", None):
+        from ops.pipelines.ai_label_removal.telegram_handler import handle_ai_label_removal
+
+        handled = await handle_ai_label_removal(update, ctx)
+        if handled:
+            return
+
+    await message.reply_text(
+        "Прикрепите документ (DOCX, PPTX, XLSX или PDF) к сообщению, и я удалю метки ИИ."
+    )
 
 
 async def cmd_quality_report(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
@@ -2903,7 +3155,50 @@ async def _process_analyze_batch(
     )
     _anim_task = asyncio.create_task(_animate_progress(progress_msg, _anim_base, _anim_stop))
     try:
+        if await _is_omi_owned_intent(prompt):
+            log.info("Axi delegating DOCSREG intent to Omi: chat_id=%s", chat_id)
+            _anim_stop.set()
+            _tr_done(tr_id, summary="delegated_to_omi:docsreg")
+            return
+
         use_search = _should_web_search(prompt)
+
+        # ── AI-label removal: explicit request runs the dedicated pipeline ────────
+        try:
+            from ops.pipelines.ai_label_removal.telegram_handler import (
+                detect_ai_label_removal_intent as _ai_rm_intent,
+                run_request as _ai_rm_run,
+                build_user_message as _ai_rm_msg,
+            )
+            if _ai_rm_intent(prompt):
+                _sup = next(
+                    (f for f in files if (f.get("name") or "").lower().endswith(
+                        (".docx", ".pptx", ".xlsx", ".pdf"))),
+                    None,
+                )
+                if _sup and _sup.get("path"):
+                    _anim_stop.set()
+                    _res = await asyncio.to_thread(
+                        _ai_rm_run,
+                        Path(_sup["path"]),
+                        AXI_RESULTS_DIR / "ai_label_removal",
+                        chat_id=chat_id,
+                        user_id=None,
+                        original_filename=_sup.get("name") or "document",
+                    )
+                    if _res.status == "SUCCESS" and _res.output_path:
+                        with open(_res.output_path, "rb") as _fh:
+                            await bot.send_document(
+                                chat_id=chat_id, document=_fh,
+                                filename=_res.output_path.name, caption=_ai_rm_msg(_res),
+                            )
+                    else:
+                        await bot.send_message(chat_id=chat_id, text=_ai_rm_msg(_res))
+                    _tr_done(tr_id, summary=f"ai_label_removal:{_res.status}")
+                    return
+        except Exception as _ai_rm_err:
+            log.debug("ai_label_removal intercept skipped: %s", _ai_rm_err)
+
         # ── Intent classification: LLM first, keywords as fast-bypass only ────────
         _xlsx_in_batch = any((f.get("name") or "").lower().endswith((".xlsx", ".xlsm")) for f in files)
         _explicit_docx = bool(re.search(r"\b(word|docx|\.docx)\b", prompt.lower()))
@@ -3003,19 +3298,50 @@ async def _process_analyze_batch(
         elif file_intent == "ask":
             _anim_stop.set()
             _pending_intent[chat_id] = {"prompt": prompt, "files": files, "tr_id": tr_id, "lang": lang, "ts": time.time()}
-            clarify_text = (
-                f"{AXI_NAME}: получил файлы, но не до конца понял задачу. Уточни:\n"
-                f"— нужен **Word-документ** с анализом/отчётом?\n"
-                f"— или **изменить данные** внутри таблицы?\n"
-                f"— или просто **текстовый ответ**?"
-                if lang == "ru" else
-                f"{AXI_NAME}: received the files but the task is unclear. Please clarify:\n"
-                f"— do you need a **Word document** (analysis / report)?\n"
-                f"— or **edit data** inside the spreadsheet?\n"
-                f"— or just a **text answer**?"
-            )
-            await bot.send_message(chat_id=chat_id, text=clarify_text, parse_mode="Markdown")
-            _tr_done(tr_id, summary="batch_ask_clarify")
+            # Ambiguous intent → show the 5-option clarification menu:
+            # DOCGEN / training pair / standard revision / DOCSREG / AI-label cleanup.
+            _menu_shown = False
+            try:
+                import shutil as _shutil
+                from ops.pipelines.ai_label_removal import telegram_intent_menu as _ai_menu
+                _sup = next(
+                    (f for f in files if (f.get("name") or "").lower().endswith(
+                        (".docx", ".pptx", ".xlsx", ".pdf"))),
+                    files[0] if files else None,
+                )
+                if _sup and _sup.get("path") and Path(_sup["path"]).exists():
+                    # Copy to a persistent location so the menu callback can still read it.
+                    _persist_dir = AXI_RESULTS_DIR / "ai_intent_pending"
+                    _persist_dir.mkdir(parents=True, exist_ok=True)
+                    _dst = _persist_dir / f"{int(time.time())}_{_sup.get('name') or 'document'}"
+                    _shutil.copy2(_sup["path"], _dst)
+                    _req = _ai_menu.stash_pending(
+                        chat_id=chat_id, user_id=None, file_path=_dst,
+                        original_filename=_sup.get("name") or "document", prompt=prompt,
+                    )
+                    await bot.send_message(
+                        chat_id=chat_id, text=_ai_menu.CLARIFICATION_PROMPT,
+                        reply_markup=_ai_menu.build_inline_keyboard(_req.token),
+                    )
+                    _menu_shown = True
+                    _tr_done(tr_id, summary="batch_ask_menu")
+            except Exception as _menu_err:
+                log.debug("intent menu failed, falling back to text clarify: %s", _menu_err)
+
+            if not _menu_shown:
+                clarify_text = (
+                    f"{AXI_NAME}: получил файлы, но не до конца понял задачу. Уточни:\n"
+                    f"— нужен **Word-документ** с анализом/отчётом?\n"
+                    f"— или **изменить данные** внутри таблицы?\n"
+                    f"— или просто **текстовый ответ**?"
+                    if lang == "ru" else
+                    f"{AXI_NAME}: received the files but the task is unclear. Please clarify:\n"
+                    f"— do you need a **Word document** (analysis / report)?\n"
+                    f"— or **edit data** inside the spreadsheet?\n"
+                    f"— or just a **text answer**?"
+                )
+                await bot.send_message(chat_id=chat_id, text=clarify_text, parse_mode="Markdown")
+                _tr_done(tr_id, summary="batch_ask_clarify")
         elif file_intent == "training_pair":
             # Training pair creation pipeline
             _anim_stop.set()
@@ -3408,6 +3734,47 @@ async def handle_file_upload(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> 
     if chat is None:
         return
     chat_id = chat.id
+
+    # Semantic priority: if the message indicates AI-label removal, route it
+    # to the dedicated pipeline before any generic doc-intake/session logic can
+    # claim the file.
+    try:
+        if _should_route_ai_label_removal_upload(update.message, chat_id):
+            from ops.pipelines.ai_label_removal.telegram_handler import (
+                run_request as _ai_rm_run,
+                build_user_message as _ai_rm_msg,
+            )
+            doc = update.message.document
+            if doc is not None:
+                import tempfile
+
+                original_filename = doc.file_name or "document"
+                with tempfile.TemporaryDirectory(prefix="ai_label_") as tmpdir:
+                    tmpdir_path = Path(tmpdir)
+                    input_path = tmpdir_path / original_filename
+                    tg_file = await ctx.bot.get_file(doc.file_id)
+                    await tg_file.download_to_drive(str(input_path))
+                    result = _ai_rm_run(
+                        input_path,
+                        tmpdir_path / "out",
+                        chat_id=str(chat_id),
+                        user_id=str(getattr(getattr(update.message, "from_user", None), "id", None) or ""),
+                        original_filename=original_filename,
+                    )
+                    _PENDING_AI_LABEL_REMOVAL.pop(chat_id, None)
+                    if result.status == "SUCCESS" and result.output_path:
+                        with open(result.output_path, "rb") as fh:
+                            await update.message.reply_document(
+                                document=fh,
+                                filename=result.output_path.name,
+                                caption=_ai_rm_msg(result),
+                            )
+                    else:
+                        await update.message.reply_text(_ai_rm_msg(result))
+                return
+    except Exception as _ai_rm_gate_err:
+        log.debug("ai_label_removal file-upload gate skipped: %s", _ai_rm_gate_err)
+
     video_state = _PENDING_VIDEO.get(chat_id)
     if video_state:
         lang = str(video_state.get("lang", "ru"))
@@ -3677,6 +4044,17 @@ async def _process_request_text(
             return
         text = text.replace(f"@{bot_username}", "").strip()
     text = _strip_axi_prefix(text)
+
+    if await _is_omi_owned_intent(text):
+        log.info("Axi delegating DOCSREG intent to Omi: chat_id=%s", _chat_id)
+        return
+
+    if not _wants_docx(text) and _should_route_ai_label_removal_text(text, _chat_id):
+        _PENDING_AI_LABEL_REMOVAL[_chat_id or -1] = {"prompt": text, "ts": time.time()}
+        await update.message.reply_text(
+            "Прикрепите документ (DOCX, PPTX, XLSX или PDF), и я удалю метки ИИ."
+        )
+        return
 
     # NLP intent routing — map free text to slash commands via local small model
     try:
@@ -6639,6 +7017,114 @@ async def cmd_doctuning_cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -
     )
 
 
+async def cmd_docgen_upgrade(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Queue a DOCGEN self-improvement upgrade batch. Private Axi only."""
+    if not _chat_allowed(update) or update.message is None:
+        return
+    if not _is_docgen_upgrade_origin(update):
+        await update.message.reply_text(
+            "⚠️ `/DOCGEN_UPGRADE` is private-only for Axi. "
+            "Use `/docgen` for generation-only runs.",
+            parse_mode="Markdown",
+        )
+        return
+
+    try:
+        from logi.docgen_skill_scope_policy import DOCGEN_DOCUMENT_TYPES  # noqa: PLC0415
+        from docgen.universal_overlay.nightly_improvement_orchestrator import (  # noqa: PLC0415
+            build_docgen_upgrade_batch_action,
+            make_docgen_upgrade_run_tag,
+            split_docgen_upgrade_request,
+            run_docgen_upgrade_batch_now,
+            stream_docgen_upgrade_progress,
+        )
+    except Exception as exc:  # pragma: no cover - import depends on runtime layout
+        await update.message.reply_text(
+            f"❌ DOCGEN upgrade launcher unavailable: {type(exc).__name__}",
+            parse_mode="Markdown",
+        )
+        return
+
+    topic_prefix, requested_types = split_docgen_upgrade_request(
+        ctx.args or [],
+        DOCGEN_DOCUMENT_TYPES,
+    )
+    doc_types = requested_types or list(DOCGEN_DOCUMENT_TYPES)
+    run_tag = make_docgen_upgrade_run_tag()
+    action_preview = build_docgen_upgrade_batch_action(
+        document_types=doc_types,
+        created_by="axi",
+        self_improvement_enabled=True,
+        max_cycles=0,
+        topic_prefix=" ".join(topic_prefix).strip() or None,
+        run_tag=run_tag,
+    )
+
+    progress_msg = await update.message.reply_text("⏳ DOCGEN upgrade started...", parse_mode="Markdown")
+    chat_id = update.effective_chat.id
+    stop_event = asyncio.Event()
+
+    async def _run_upgrade_and_report() -> None:
+        try:
+            log.info("DOCGEN upgrade: starting batch run for %s", ",".join(doc_types))
+            monitor_task = asyncio.create_task(
+                stream_docgen_upgrade_progress(
+                    action=action_preview,
+                    document_types=doc_types,
+                    chat_id=chat_id,
+                    bot=ctx.bot,
+                    stop_event=stop_event,
+                )
+            )
+            action = await asyncio.to_thread(
+                run_docgen_upgrade_batch_now,
+                document_types=doc_types,
+                created_by="axi",
+                self_improvement_enabled=True,
+                max_cycles=0,
+                topic_prefix=" ".join(topic_prefix).strip() or None,
+                run_tag=run_tag,
+            )
+            action_payload = action.get("action") or {}
+            action_id = str(action_payload.get("action_id") or "")
+            action_path = str(action.get("action_path") or "")
+            execution = action.get("execution_result") or {}
+            run_summary = action.get("run_summary") or {}
+            summary = run_summary if isinstance(run_summary, dict) else {}
+            final_msg = _format_docgen_upgrade_reply(
+                action_id=action_id,
+                action_path=action_path,
+                execution=execution,
+                run_summary=summary,
+                doc_types=doc_types,
+            )
+            completion_msg = _format_docgen_upgrade_completion(
+                action_id=action_id,
+                run_summary=summary,
+            )
+            try:
+                await progress_msg.edit_text(final_msg, parse_mode="Markdown")
+            except Exception:
+                pass
+            await ctx.bot.send_message(chat_id=chat_id, text=completion_msg, parse_mode="Markdown")
+            log.info("DOCGEN upgrade: completion message sent for %s", action_id or "unknown")
+            stop_event.set()
+            try:
+                await monitor_task
+            except Exception:
+                pass
+        except Exception as exc:
+            stop_event.set()
+            err = f"❌ DOCGEN upgrade failed: {type(exc).__name__}: {exc}"
+            try:
+                await progress_msg.edit_text(err, parse_mode="Markdown")
+            except Exception:
+                await ctx.bot.send_message(chat_id=chat_id, text=err, parse_mode="Markdown")
+
+    await _run_upgrade_and_report()
+    return
+
+
 async def _job_docfill_vram_monitor(ctx: ContextTypes.DEFAULT_TYPE) -> None:
     """Periodic job: resume queued docfill local-fill tasks when VRAM is available."""
     if not _DOCFILL_VRAM_QUEUE:
@@ -7671,12 +8157,15 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if not _claim_update_once(update):
         return
     _chat_id = update.effective_chat.id if update.effective_chat else None
+    text = update.message.text.strip()
     if not _chat_allowed(update):
+        return
+    if await _is_omi_owned_intent(text):
         return
     # ── Intent clarification response ─────────────────────────────────────────
     if _chat_id and _chat_id in _pending_intent:
         pending = _pending_intent.pop(_chat_id)
-        answer_text = update.message.text.strip().lower()
+        answer_text = text.lower()
         if any(w in answer_text for w in ("word", "docx", "document", "report", "анализ", "отчёт", "документ", "word-")):
             confirmed = "docx"
         elif any(w in answer_text for w in ("edit", "update", "table", "spreadsheet", "таблиц", "измен", "обнов")):
@@ -7690,7 +8179,7 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     # ── Doctuning batch_training_pair: standards approval ─────────────────────
     if _chat_id and _chat_id in _PENDING_DOCFILL:
         df_state = _PENDING_DOCFILL[_chat_id]
-        raw_lower = update.message.text.strip().lower()
+        raw_lower = text.lower()
         if df_state.get("step") == "await_standards_approval" and df_state.get("source") == "batch_training_pair":
             # Guard: no file was generated yet
             if any(w in raw_lower for w in ("file", "xlsx", "docx", "generate", "regenerate", "attachment", "send me")):
@@ -7732,6 +8221,12 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
                 )
                 return
     # ── Doc intake: capture task description ──────────────────────────────────
+    if _should_route_ai_label_removal_text(text, _chat_id):
+        _PENDING_AI_LABEL_REMOVAL[_chat_id or -1] = {"prompt": text, "ts": time.time()}
+        await update.message.reply_text(
+            "Прикрепите документ (DOCX, PPTX, XLSX или PDF), и я удалю метки ИИ."
+        )
+        return
     if (
         _chat_id is not None
         and _chat_id in _PENDING_DOC_INTAKE
@@ -7743,7 +8238,6 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     # ──────────────────────────────────────────────────────────────────────────
     state = _get_pending_analyze_state(_chat_id) if _chat_id is not None else None
     if state and state.get("awaiting_clarify") and (state.get("files") or []):
-        text = update.message.text.strip()
         state["prompt"] = text
         state["awaiting_clarify"] = False
         files = list(state.get("files") or [])
@@ -7752,8 +8246,6 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         _pending_analyze_persist()
         await _process_analyze_batch(ctx.bot, _chat_id, text, files, lang=lang)
         return
-
-    text = update.message.text.strip()
     await _process_request_text(
         update,
         ctx,
@@ -7818,7 +8310,8 @@ async def _job_monitor_stuck_tasks(context: ContextTypes.DEFAULT_TYPE) -> None:
             try:
                 # Call repairman for investigation
                 import httpx
-                gateway_url = "http://localhost:8082/v1/chat/completions"
+                _omnirouter_base = os.environ.get("AIMS_OMNIROUTER_URL", "http://127.0.0.1:20129").rstrip("/")
+                gateway_url = f"{_omnirouter_base}/v1/chat/completions"
                 token = os.environ.get("AIMS_CLAUDE_PROXY_TOKEN", "aims-local-repair-token")
 
                 response = httpx.post(
@@ -7850,7 +8343,7 @@ async def _job_monitor_stuck_tasks(context: ContextTypes.DEFAULT_TYPE) -> None:
 
             # Register the problem and cleanup the task
             try:
-                _tr_client.mark_done(task_id, summary=f"stuck_investigated_cleanup: {root_cause[:200]}")
+                _tr_client.done(task_id, result_summary=f"stuck_investigated_cleanup: {root_cause[:200]}")
                 log.info("monitor: investigated and cleaned up task %s (age: %.0f min)", task_id, age_min)
             except Exception as e:
                 log.warning("monitor: failed to cleanup task %s: %s", task_id, e)
@@ -8050,12 +8543,14 @@ async def _post_init(application: Application) -> None:
         BotCommand("analyze",        "Ожидать и анализировать файл"),
         BotCommand("analyze_done",   "Запустить пакет /analyze сейчас"),
         BotCommand("analyze_end",    "Алиас завершения загрузки файлов"),
+        BotCommand("aimarks_delete", "Удалить AI-метки из документа"),
         BotCommand("quality_report", "Отчёт качества задач"),
         BotCommand("stuck_tasks",    "Зависшие задачи"),
         BotCommand("close_task",     "Закрыть зависшую задачу"),
         BotCommand("doctuning",         "Создать тюнинг-пару из шаблона + эталона"),
         BotCommand("doctuning_approve", "Одобрить эталон — сохранить мастер-документ и пары"),
         BotCommand("doctuning_cancel",  "Отменить режим doctuning"),
+        BotCommand("docgen_upgrade",    "Запуск DOCGEN upgrade batch (private only)"),
     ]
     try:
         await application.bot.set_my_commands(commands)
@@ -8101,6 +8596,7 @@ def main() -> None:
     app.add_handler(CommandHandler("analyze",        cmd_analyze))
     app.add_handler(CommandHandler("analyze_done",   cmd_analyze_done))
     app.add_handler(CommandHandler("analyze_end",    cmd_analyze_end))
+    app.add_handler(CommandHandler("aimarks_delete", cmd_aimarks_delete))
     app.add_handler(CommandHandler("quality_report", cmd_quality_report))
     app.add_handler(CommandHandler("stuck_tasks",    cmd_stuck_tasks))
     app.add_handler(CommandHandler("close_task",     cmd_close_task))
@@ -8108,6 +8604,7 @@ def main() -> None:
     app.add_handler(CommandHandler("doctuning",         cmd_doctuning))
     app.add_handler(CommandHandler("doctuning_approve", cmd_doctuning_approve))
     app.add_handler(CommandHandler("doctuning_cancel",  cmd_doctuning_cancel))
+    app.add_handler(CommandHandler("docgen_upgrade",    cmd_docgen_upgrade))
 
     # Inline button callbacks
     app.add_handler(CallbackQueryHandler(_cmd_start_callback, pattern="^axi_activate$"))
@@ -8115,39 +8612,89 @@ def main() -> None:
     app.add_handler(CallbackQueryHandler(_di_callback_handler, pattern="^di_"))
     app.add_handler(CallbackQueryHandler(_di_callback_handler, pattern="^dr_"))
 
+    # AI-label removal clarification menu (5 options on ambiguous document intent)
+    try:
+        from ops.pipelines.ai_label_removal import telegram_intent_menu as _ai_menu
+        from ops.pipelines.ai_label_removal.telegram_handler import (
+            handle_intent_menu_callback as _ai_menu_cb,
+        )
+
+        async def _route_docgen(req, update, ctx):
+            _files = [{"name": req.original_filename, "path": str(req.file_path)}]
+            await _process_analyze_batch(
+                ctx.bot, req.chat_id,
+                (req.prompt or "") + " сделай word документ с анализом", _files, lang="ru",
+            )
+
+        async def _route_standard(req, update, ctx):
+            _files = [{"name": req.original_filename, "path": str(req.file_path)}]
+            await _process_analyze_batch(
+                ctx.bot, req.chat_id,
+                (req.prompt or "") + " проверь документ на соответствие стандартам и верни результат",
+                _files, lang="ru",
+            )
+
+        async def _route_training(req, update, ctx):
+            await ctx.bot.send_message(
+                chat_id=req.chat_id,
+                text="🎓 Для обучающей пары пришлите два документа (до и после) "
+                     "одним сообщением с подписью «обучающая пара».",
+            )
+
+        async def _route_docsreg(req, update, ctx):
+            await ctx.bot.send_message(
+                chat_id=req.chat_id,
+                text="🗂 Для регистрации пачки в DOCSREG загрузите комплект документов "
+                     "с запросом регистрации в базу.",
+            )
+
+        _ai_menu.register_route("docgen", _route_docgen)
+        _ai_menu.register_route("standard_revision", _route_standard)
+        _ai_menu.register_route("training_pair", _route_training)
+        _ai_menu.register_route("docsreg", _route_docsreg)
+        app.add_handler(CallbackQueryHandler(_ai_menu_cb, pattern=r"^axi_intent:"))
+        log.info("ai_label_removal: clarification menu + cleanup wired")
+    except Exception as _ai_wire_err:
+        log.warning("ai_label_removal wiring skipped: %s", _ai_wire_err)
+
     # Text messages
     app.add_handler(MessageHandler(filters.Document.ALL | filters.PHOTO, handle_file_upload))
+    app.add_handler(MessageHandler(filters.Regex(r"^/DOCGEN_UPGRADE(?:\s|$)"), cmd_docgen_upgrade))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_chat))
 
     # Periodic stuck-task monitor (Axi = качественный монитор §9)
-    app.job_queue.run_repeating(
-        _job_monitor_stuck_tasks,
-        interval=TASK_REGISTRY_MONITOR_INTERVAL,
-        first=60,
-        name="monitor_stuck_tasks",
-    )
+    if app.job_queue is not None:
+        app.job_queue.run_repeating(
+            _job_monitor_stuck_tasks,
+            interval=TASK_REGISTRY_MONITOR_INTERVAL,
+            first=60,
+            name="monitor_stuck_tasks",
+        )
 
-    # VRAM queue monitor: resume docfill local-fill tasks when GPU memory is available
-    app.job_queue.run_repeating(
-        _job_docfill_vram_monitor,
-        interval=60,
-        first=90,
-        name="docfill_vram_monitor",
-    )
-    app.job_queue.run_repeating(
-        _job_flush_pending_analyze,
-        interval=5,
-        first=5,
-        name="flush_pending_analyze",
-    )
-    app.job_queue.run_repeating(
-        _job_axi_deliver_cross_handoffs,
-        interval=2,
-        first=3,
-        name="axi_cross_handoff",
-    )
+        # VRAM queue monitor: resume docfill local-fill tasks when GPU memory is available
+        app.job_queue.run_repeating(
+            _job_docfill_vram_monitor,
+            interval=60,
+            first=90,
+            name="docfill_vram_monitor",
+        )
+        app.job_queue.run_repeating(
+            _job_flush_pending_analyze,
+            interval=5,
+            first=5,
+            name="flush_pending_analyze",
+        )
+        app.job_queue.run_repeating(
+            _job_axi_deliver_cross_handoffs,
+            interval=2,
+            first=3,
+            name="axi_cross_handoff",
+        )
+    else:
+        log.warning("job queue is unavailable; background monitors are disabled")
 
     log.info("Starting Axi bot polling…")
+    open("/tmp/bot_alive", "w").close()
     app.run_polling(drop_pending_updates=True)
 
 
