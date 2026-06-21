@@ -3507,7 +3507,7 @@ def run_cyclic_generation(
     docsreg_document_type: str = "procedure",
     docsreg_evidence_root: Optional[Path] = None,
     docsreg_write_policy: str = "write_all",
-    docsreg_auditor_mode: str = "noop",
+    docsreg_auditor_mode: str = "production",
     export_learning_pairs: bool = False,
     soft_preflight_fail: bool = False,
 ) -> CycleResult:

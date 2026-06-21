@@ -27,7 +27,7 @@ log = logging.getLogger("docsreg_scheduler_integration")
 # Feature flag
 # ---------------------------------------------------------------------------
 
-DOCSREG_USE_SCHEDULER: bool = False
+DOCSREG_USE_SCHEDULER: bool = True
 """Module-level kill-switch.  Set to ``True`` to enable Redis scheduler wiring."""
 
 
