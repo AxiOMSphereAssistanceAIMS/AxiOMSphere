@@ -2244,6 +2244,11 @@ async def _is_omi_owned_intent(text: str) -> bool:
     low = (text or "").strip()
     if not low:
         return False
+    low_check = low.lower()
+    # If the message is explicitly addressed to Omi it is unconditionally
+    # Omi-owned — Axi must not claim it regardless of content.
+    if low_check.startswith("omi,") or low_check.startswith("omi "):
+        return True
     # Deterministic fast-path: if text contains any docsreg command token,
     # it is unconditionally Omi-owned regardless of NLP result.
     if _is_docsreg_launch_text(low):
@@ -2349,7 +2354,7 @@ async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         return
     lang = _reply_lang(update.message.text or "")
     keyboard = InlineKeyboardMarkup([[
-        InlineKeyboardButton("🚀 Начать работу с Axi", callback_data="axi_activate"),
+        InlineKeyboardButton("🚀 Start working with Axi", callback_data="axi_activate"),
     ]])
     if lang == "ru":
         await update.message.reply_text(

@@ -46,6 +46,26 @@ DEFAULT_DOCSREG_STANDARDS_SOURCE = Path(
 )
 
 
+# Per-chat cancel events for running batches.  Key: Telegram chat_id.
+_ACTIVE_BATCHES: dict[int, asyncio.Event] = {}
+
+_STOP_TOKENS: frozenset[str] = frozenset({
+    "stop", "стоп", "cancel", "отмена", "halt",
+    "stop report", "стоп репорт", "прекрати", "стоп отчёт",
+})
+
+
+def _is_stop_command(text: str) -> bool:
+    """Return True if *text* is a cancel/stop command for an active batch."""
+    low = text.strip().lower()
+    # Strip optional bot greeting prefix
+    for prefix in ("omi,", "omi", "бот,", "бот"):
+        if low.startswith(prefix):
+            low = low[len(prefix):].strip()
+            break
+    return low in _STOP_TOKENS or any(low.startswith(t + " ") for t in _STOP_TOKENS)
+
+
 async def _send_chat_action_safe(bot: Any, chat_id: int, action: str) -> None:
     """Best-effort Telegram chat action heartbeat.
 
@@ -466,68 +486,76 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
     )
 
     chat_id = update.effective_chat.id
+    cancel_event = asyncio.Event()
+    _ACTIVE_BATCHES[chat_id] = cancel_event
+
     processed = 0
     registered = 0
     failed = 0
     batch_results: list[str] = []
 
-    for idx, source_file in enumerate(inputs, start=1):
-        # Yield to event loop so APScheduler / heartbeat jobs can run
-        await asyncio.sleep(0)
+    try:
+        for idx, source_file in enumerate(inputs, start=1):
+            # Yield to event loop so APScheduler / heartbeat jobs and incoming
+            # "stop" messages can be processed between files.
+            await asyncio.sleep(0)
 
-        processed += 1
-        rel_path = _relative_artifact_path(request.draft_path, source_file)
-        ext = source_file.suffix.lower()
-        if source_file.is_dir() or (source_file.is_file() and ext not in SUPPORTED_DRAFT_EXTENSIONS):
-            failed += 1
-            _copy_for_review(source_file, request.draft_path, review_dir)
-            batch_results.append(f"- `{rel_path}`: failed (unsupported format)")
-            continue
+            if cancel_event.is_set():
+                break
 
-        # Per-file progress message
-        await _send_chat_action_safe(ctx.bot, chat_id, "typing")
-        await update.message.reply_text(
-            f"[{idx}/{total}] Processing `{rel_path}`...",
-            parse_mode="Markdown",
-        )
+            processed += 1
+            rel_path = _relative_artifact_path(request.draft_path, source_file)
+            ext = source_file.suffix.lower()
+            if source_file.is_dir() or (source_file.is_file() and ext not in SUPPORTED_DRAFT_EXTENSIONS):
+                failed += 1
+                _copy_for_review(source_file, request.draft_path, review_dir)
+                batch_results.append(f"- `{rel_path}`: failed (unsupported format)")
+                continue
 
-        file_evidence_root = session_root / rel_path.parent / f"{idx:03d}_{source_file.stem}"
+            await _send_chat_action_safe(ctx.bot, chat_id, "typing")
 
-        # Start a typing heartbeat so the event loop stays responsive
-        stop_typing = asyncio.Event()
-        heartbeat_task = asyncio.create_task(
-            _typing_heartbeat(ctx.bot, chat_id, stop_typing)
-        )
+            file_evidence_root = session_root / rel_path.parent / f"{idx:03d}_{source_file.stem}"
 
-        try:
-            result = await loop.run_in_executor(
-                None,
-                lambda sf=source_file, fr=file_evidence_root: _run_one_cycle(
-                    source_file=sf,
-                    request=request,
-                    evidence_root=fr,
-                ),
+            # Start a typing heartbeat so the event loop stays responsive
+            stop_typing = asyncio.Event()
+            heartbeat_task = asyncio.create_task(
+                _typing_heartbeat(ctx.bot, chat_id, stop_typing)
             )
-        except Exception as exc:  # noqa: BLE001
-            failed += 1
-            _copy_for_review(source_file, request.draft_path, review_dir)
-            batch_results.append(f"- `{rel_path}`: failed ({type(exc).__name__})")
-            continue
-        finally:
-            stop_typing.set()
-            await heartbeat_task
 
-        if getattr(result, "passed", False):
-            registered += 1
-            batch_results.append(f"- `{rel_path}`: registered")
-        else:
-            failed += 1
-            _copy_for_review(source_file, request.draft_path, review_dir)
-            batch_results.append(f"- `{rel_path}`: failed ({getattr(result, 'outcome', 'FAILED')})")
+            try:
+                result = await loop.run_in_executor(
+                    None,
+                    lambda sf=source_file, fr=file_evidence_root: _run_one_cycle(
+                        source_file=sf,
+                        request=request,
+                        evidence_root=fr,
+                    ),
+                )
+            except Exception as exc:  # noqa: BLE001
+                failed += 1
+                _copy_for_review(source_file, request.draft_path, review_dir)
+                batch_results.append(f"- `{rel_path}`: failed ({type(exc).__name__})")
+                continue
+            finally:
+                stop_typing.set()
+                await heartbeat_task
 
+            if getattr(result, "passed", False):
+                registered += 1
+                batch_results.append(f"- `{rel_path}`: registered")
+            else:
+                failed += 1
+                _copy_for_review(source_file, request.draft_path, review_dir)
+                batch_results.append(f"- `{rel_path}`: failed ({getattr(result, 'outcome', 'FAILED')})")
+
+    finally:
+        _ACTIVE_BATCHES.pop(chat_id, None)
+
+    cancelled = cancel_event.is_set()
+    status_line = "Batch cancelled.\n" if cancelled else "Batch complete.\n"
     review_note = f"\nFiles for review: `{review_dir}`" if failed else ""
     await update.message.reply_text(
-        f"Batch complete.\n"
+        f"{status_line}"
         f"Processed {processed} files.\n"
         f"Registered {registered} files.\n"
         f"Failed registration {failed} files.{review_note}",
@@ -537,7 +565,19 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
 
 
 async def maybe_handle_docsreg_message(update: Any, ctx: Any, text: str) -> bool:
-    """Handle a free-text DOCSREG launch request from the live chat."""
+    """Handle a free-text DOCSREG launch request or cancel command from the live chat."""
+    # ── Cancel running batch ───────────────────────────────────────────────────
+    if _is_stop_command(text or ""):
+        chat_id = update.effective_chat.id if update.effective_chat else None
+        cancel = _ACTIVE_BATCHES.get(chat_id) if chat_id is not None else None
+        if cancel is not None:
+            cancel.set()
+            await update.message.reply_text("Stopping after current file...")
+            return True
+        # No active batch — don't consume the message
+        return False
+
+    # ── Launch batch ───────────────────────────────────────────────────────────
     low = (text or "").lower()
     if "docsreg" not in low and "start_media" not in low:
         return False
