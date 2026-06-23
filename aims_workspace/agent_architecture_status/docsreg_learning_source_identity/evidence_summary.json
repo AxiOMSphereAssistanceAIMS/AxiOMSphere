@@ -1,0 +1,25 @@
+{
+  "task": "fix(docsreg): use explicit source sha256 for learning identity",
+  "date": "2026-06-23",
+  "status": "COMPLETE",
+  "files_modified": [
+    "ops/docsreg/docsreg_knowledge_source.py",
+    "ops/omi_telegram/docsreg_launch.py"
+  ],
+  "files_created": [
+    "ops/tests/test_docsreg_learning_source_identity.py"
+  ],
+  "changes": {
+    "compute_file_sha256": "new helper added to docsreg_knowledge_source.py; raises on missing file",
+    "_find_prior_failed_entry": "strict 4-way matching: sha256+sha256-equal=match, sha256+sha256-diff=no-match, one-absent=no-match, both-absent+filename=fallback",
+    "build_knowledge_entry": "prefers quality_report['source_sha256'] over computed sha256 (archive member provenance)",
+    "_record_cycle_learning": "computes sha256 via compute_file_sha256(); injects into quality_report['source_sha256']; uses same sha256 in prior-failure scan (replaces _sha256_cache hack)"
+  },
+  "test_results": {
+    "new_tests": 6,
+    "new_tests_passed": 6,
+    "regression_tests": 889,
+    "regression_tests_passed": 889,
+    "regressions": 0
+  }
+}

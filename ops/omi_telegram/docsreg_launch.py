@@ -441,12 +441,33 @@ def _record_cycle_learning(result: Any, source_file: Path, evidence_root: Path) 
     never blocked.
     """
     from aims_paths import workspace_root as _ws_root
-    from ops.docsreg.docsreg_knowledge_source import read_json_object, record_knowledge_source
+    from ops.docsreg.docsreg_knowledge_source import (
+        compute_file_sha256,
+        read_json_object,
+        record_knowledge_source,
+    )
 
     workspace_dir = _ws_root()
     learning_jsonl = workspace_dir / "axi_ft_log" / "docsreg_learning.jsonl"
 
+    # Compute source sha256 once so we can use the same value in the prior-failure
+    # scan AND inject it into quality_report for downstream storage.
+    # Wrapped in try/except: a missing or unreadable file must not block learning.
+    cur_sha: Optional[str] = None
+    try:
+        cur_sha = compute_file_sha256(source_file)
+    except Exception:
+        log.debug(
+            "docsreg_learning: could not compute sha256 for %s — identity will fall back to filename",
+            source_file,
+        )
+
     # Detect prior failure for this source file (needed for DPO eligibility).
+    # Strict matching rules:
+    #   sha256 + sha256 equal        → match
+    #   sha256 + sha256 different    → no match
+    #   one has sha256, other absent → no match (strict; no filename fallback)
+    #   both sha256 absent + same filename → filename fallback match
     has_prior_failure = False
     try:
         if learning_jsonl.exists():
@@ -456,17 +477,18 @@ def _record_cycle_learning(result: Any, source_file: Path, evidence_root: Path) 
                         e = json.loads(raw)
                     except Exception:
                         continue
-                    # "passed" lives at outcome.passed in the v1 schema, not root level.
-                    e_passed = e.get("outcome", {}).get("passed", True)
+                    if e.get("outcome", {}).get("passed", True):
+                        continue
                     e_sha = e.get("source_sha256")
-                    cur_sha = getattr(source_file, "_sha256_cache", None)
-                    matches = (
-                        (e_sha and cur_sha and e_sha == cur_sha)
-                        or e.get("source_file") == str(source_file)
-                    )
-                    if not e_passed and matches:
-                        has_prior_failure = True
-                        break
+                    if cur_sha and e_sha:
+                        if cur_sha == e_sha:
+                            has_prior_failure = True
+                            break
+                    elif not cur_sha and not e_sha:
+                        if e.get("source_file") == str(source_file):
+                            has_prior_failure = True
+                            break
+                    # else: one has sha256, other absent → no match
     except Exception:
         pass
 
@@ -477,6 +499,11 @@ def _record_cycle_learning(result: Any, source_file: Path, evidence_root: Path) 
     quality_report: dict[str, Any] = dict(
         read_json_object(evidence_root / "quality_report.json")
     )
+
+    # Inject the computed sha256 so build_knowledge_entry() stores it in the
+    # learning entry, and _find_prior_failed_entry() can match future cycles.
+    if cur_sha:
+        quality_report["source_sha256"] = cur_sha
 
     # Inject production artifact paths when the files actually exist.
     # Only existing files get wired; missing paths are left absent so the

@@ -158,6 +158,20 @@ def sha256_file(path: Optional[Path]) -> Optional[str]:
     return h.hexdigest()
 
 
+def compute_file_sha256(path: Path) -> str:
+    """Return the SHA-256 hex digest of *path*.
+
+    Unlike :func:`sha256_file`, this raises rather than returning ``None``
+    when the file is missing or unreadable.  Use at call sites where a
+    missing file is an error, not a graceful skip.
+    """
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
 def _try_read_text(path_str: Optional[str]) -> Optional[str]:
     """Read text from *path_str* if it exists and is non-empty, else return None."""
     if not path_str:
@@ -196,10 +210,16 @@ def _find_prior_failed_entry(
                     continue  # skip passing entries
                 e_sha = e.get("source_sha256")
                 e_file = e.get("source_file", "")
-                if source_sha256 and e_sha and source_sha256 == e_sha:
-                    last_failed = e
-                elif e_file and e_file == source_file:
-                    last_failed = e
+                if source_sha256 and e_sha:
+                    # Both carry sha256: only match if equal.
+                    # Different sha256 → not the same source; do NOT fall back.
+                    if source_sha256 == e_sha:
+                        last_failed = e
+                elif not source_sha256 and not e_sha:
+                    # Neither has a sha256: filename is the only identity signal.
+                    if e_file and e_file == source_file:
+                        last_failed = e
+                # else: one has sha256 and the other does not → no match (strict).
     except Exception:
         pass
     return last_failed
@@ -400,7 +420,11 @@ def build_knowledge_entry(
     bottleneck = determine_bottleneck(component_scores)
 
     source_path = Path(source_file) if source_file else None
-    source_sha = sha256_file(source_path)
+    # Prefer an explicitly injected sha256 (e.g. archive member provenance) over
+    # the value computed from the file on disk.  Falls back to sha256_file() when
+    # the quality_report does not carry a pre-computed value.
+    _report_sha = str(quality_report.get("source_sha256") or "").strip() or None
+    source_sha = _report_sha or sha256_file(source_path)
 
     recommendations = make_recommendations(
         bottleneck=bottleneck,

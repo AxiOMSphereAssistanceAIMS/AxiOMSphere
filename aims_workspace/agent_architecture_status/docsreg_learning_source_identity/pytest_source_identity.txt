@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/axi_omi_sphere/aims-workspace
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 6 items
+
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_matches_same_source_sha256 PASSED [ 16%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_rejects_different_sha256_same_filename PASSED [ 33%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_rejects_missing_sha256_when_other_has_sha256 PASSED [ 50%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_filename_fallback_only_when_both_sha256_missing PASSED [ 66%]
+ops/tests/test_docsreg_learning_source_identity.py::test_archive_member_uses_extracted_sha256_for_identity PASSED [ 83%]
+ops/tests/test_docsreg_learning_source_identity.py::test_source_sha256_written_to_learning_entry PASSED [100%]
+
+============================== 6 passed in 0.10s ===============================
