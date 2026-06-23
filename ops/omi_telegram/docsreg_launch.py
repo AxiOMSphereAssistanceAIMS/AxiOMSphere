@@ -6,18 +6,24 @@ from ``omi_bot.py`` so it can be unit-tested without the full bot runtime.
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
 import os
 import shlex
 import secrets
 import shutil
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger("docsreg_launch")
 
 from aims_paths import workspace_root
 from ops.docsreg import run_docsreg_cycle
 from ops.docsreg.docsreg_document_type_registry import load_document_type_registry
+from ops.docsreg.docsreg_production_auditor import build_structure_auditor_fn
 
 
 SUPPORTED_DRAFT_EXTENSIONS = frozenset({".md", ".txt", ".rst", ".docx", ".pdf"})
@@ -379,6 +385,26 @@ def _format_launch_prompt() -> str:
     )
 
 
+def _load_certified_sources() -> frozenset[str]:
+    """Return absolute source paths already certified in standards_index.
+
+    Used to skip files that were successfully registered in a previous run,
+    so a re-run of /docsreg only processes the remainder.
+    """
+    import sqlite3
+
+    db_path = os.environ.get("OMI_DB_PATH", "data/aims_registry.db")
+    try:
+        con = sqlite3.connect(db_path)
+        rows = con.execute(
+            "SELECT source FROM standards_index WHERE status IN ('certified','active','approved')"
+        ).fetchall()
+        con.close()
+        return frozenset(str(Path(r[0]).resolve()) for r in rows if r[0])
+    except Exception:
+        return frozenset()
+
+
 def _collect_input_files(source_path: Path) -> list[Path]:
     if source_path.is_file():
         return [source_path]
@@ -407,12 +433,103 @@ def _copy_for_review(source_file: Path, source_root: Path, review_dir: Path) -> 
         pass
 
 
+def _record_cycle_learning(result: Any, source_file: Path, evidence_root: Path) -> None:
+    """Wrapper around record_knowledge_source() for completed DOCSREG cycles.
+
+    Delegates all learning artifact writes to the canonical Knowledge Source
+    Layer.  Non-fatal: any exception is caught and logged so registration is
+    never blocked.
+    """
+    from aims_paths import workspace_root as _ws_root
+    from ops.docsreg.docsreg_knowledge_source import read_json_object, record_knowledge_source
+
+    workspace_dir = _ws_root()
+    learning_jsonl = workspace_dir / "axi_ft_log" / "docsreg_learning.jsonl"
+
+    # Detect prior failure for this source file (needed for DPO eligibility).
+    has_prior_failure = False
+    try:
+        if learning_jsonl.exists():
+            with learning_jsonl.open("r", encoding="utf-8") as fh:
+                for raw in fh:
+                    try:
+                        e = json.loads(raw)
+                    except Exception:
+                        continue
+                    # "passed" lives at outcome.passed in the v1 schema, not root level.
+                    e_passed = e.get("outcome", {}).get("passed", True)
+                    e_sha = e.get("source_sha256")
+                    cur_sha = getattr(source_file, "_sha256_cache", None)
+                    matches = (
+                        (e_sha and cur_sha and e_sha == cur_sha)
+                        or e.get("source_file") == str(source_file)
+                    )
+                    if not e_passed and matches:
+                        has_prior_failure = True
+                        break
+    except Exception:
+        pass
+
+    # Read quality_report.json explicitly so we can inject artifact paths before
+    # passing it to record_knowledge_source().  Let the read raise if the file is
+    # missing or malformed — that exception propagates to the caller's try/except
+    # at the call site, which logs a warning rather than blocking registration.
+    quality_report: dict[str, Any] = dict(
+        read_json_object(evidence_root / "quality_report.json")
+    )
+
+    # Inject production artifact paths when the files actually exist.
+    # Only existing files get wired; missing paths are left absent so the
+    # SFT/DPO guards in record_knowledge_source() skip pair creation safely.
+    raw_text_path = evidence_root / "raw_extracted_text.md"
+    master_doc_path = evidence_root / "master_document.md"
+
+    if raw_text_path.exists():
+        quality_report["source_text_path"] = str(raw_text_path)
+    else:
+        log.debug(
+            "docsreg_learning: raw_extracted_text.md absent in %s — SFT/DPO source text not available",
+            evidence_root,
+        )
+
+    if master_doc_path.exists():
+        quality_report["master_document_path"] = str(master_doc_path)
+    else:
+        log.debug(
+            "docsreg_learning: master_document.md absent in %s — SFT/DPO response text not available",
+            evidence_root,
+        )
+
+    record_knowledge_source(
+        evidence_dir=evidence_root,
+        workspace_dir=workspace_dir,
+        quality_report=quality_report,
+        job_id=getattr(result, "job_id", None),
+        doc_id=getattr(result, "doc_id", None),
+        cycle_id=getattr(result, "cycle_id", None),
+        source_file=str(source_file),
+        file_type=source_file.suffix.lstrip(".") or "unknown",
+        final_state=getattr(result, "outcome", None),
+        has_prior_failure=has_prior_failure,
+    )
+
+
 def _run_one_cycle(
     *,
     source_file: Path,
     request: DocsregLaunchRequest,
     evidence_root: Path,
 ) -> Any:
+    # Use the production auditor so the batch path gets real COMPONENT_PASS /
+    # COMPONENT_FAIL_REPAIRABLE statuses — the legacy build_docsreg_auditor
+    # returns COMPONENT_BLOCKED which is not recognised by the gate and causes
+    # every cycle to fail with the 0.60 quality floor.
+    # Default threshold 0.80: lenient enough that well-formed docs can certify on
+    # first cycle without a full evidence package; target_quality (0.98 cycle goal)
+    # is a separate concept used to drive multi-cycle improvement.
+    auditor_fn = build_structure_auditor_fn(
+        threshold=request.target_quality if request.target_quality is not None else 0.80,
+    )
     return run_docsreg_cycle(
         document_type=request.document_type,
         draft_path=source_file,
@@ -423,6 +540,7 @@ def _run_one_cycle(
         max_cycles=request.max_cycles if request.max_cycles is not None else 7,
         stall_window=request.stall_window if request.stall_window is not None else 3,
         min_quality_delta=request.min_quality_delta if request.min_quality_delta is not None else 0.005,
+        auditor_fn=auditor_fn,
     )
 
 
@@ -492,7 +610,10 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
     processed = 0
     registered = 0
     failed = 0
+    skipped = 0
     batch_results: list[str] = []
+
+    certified = _load_certified_sources()
 
     try:
         for idx, source_file in enumerate(inputs, start=1):
@@ -502,6 +623,10 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
 
             if cancel_event.is_set():
                 break
+
+            if str(source_file.resolve()) in certified:
+                skipped += 1
+                continue
 
             processed += 1
             rel_path = _relative_artifact_path(request.draft_path, source_file)
@@ -540,6 +665,12 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
                 stop_typing.set()
                 await heartbeat_task
 
+            # Record learning data regardless of pass/fail — agents write their own data.
+            try:
+                _record_cycle_learning(result, source_file, file_evidence_root)
+            except Exception as _lerr:
+                log.warning("docsreg_learning: record_cycle_learning raised: %s", _lerr)
+
             if getattr(result, "passed", False):
                 registered += 1
                 batch_results.append(f"- `{rel_path}`: registered")
@@ -554,8 +685,10 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
     cancelled = cancel_event.is_set()
     status_line = "Batch cancelled.\n" if cancelled else "Batch complete.\n"
     review_note = f"\nFiles for review: `{review_dir}`" if failed else ""
+    skip_note = f"Skipped (already certified): {skipped} files.\n" if skipped else ""
     await update.message.reply_text(
         f"{status_line}"
+        f"{skip_note}"
         f"Processed {processed} files.\n"
         f"Registered {registered} files.\n"
         f"Failed registration {failed} files.{review_note}",
