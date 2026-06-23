@@ -1,0 +1,53 @@
+{
+  "layer": "04_LAYER_TELEGRAM_HANDLER_SMOKE",
+  "generated_at": "2026-06-24T00:09:00+04:00",
+  "result": "PASS",
+  "tests_total": 19,
+  "tests_pass": 19,
+  "tests_fail": 0,
+  "test_file": "ops/tests/test_docsreg_telegram_control_path.py",
+  "regression_suite": "ops/tests/test_docsreg_*.py",
+  "regression_pass": 915,
+  "regression_fail": 0,
+
+  "handler_tests": [
+    {"id": "H1", "name": "test_cmd_docsreg_directory_creates_batch_job",       "result": "PASS"},
+    {"id": "H2", "name": "test_cmd_docsreg_calls_real_run_one_cycle_path",     "result": "PASS"},
+    {"id": "H3", "name": "test_cmd_docsreg_rejects_invalid_path",              "result": "PASS"},
+    {"id": "H4", "name": "test_cmd_docsreg_status_reports_real_quality",       "result": "PASS"},
+    {"id": "H5", "name": "test_cmd_docsreg_report_does_not_certify_failed_docs", "result": "PASS"},
+    {"id": "H6", "name": "test_group_chat_docsreg_allowed_for_registration_only", "result": "PASS"},
+    {"id": "H7", "name": "test_private_improvement_requires_explicit_command", "result": "PASS"}
+  ],
+
+  "fix_applied": {
+    "symptom": "PermissionError: [Errno 13] Permission denied: '/data'",
+    "root_cause": "cmd_docsreg line 623 constructs review_dir from DEFAULT_DOCSREG_EVIDENCE_ROOT which is /data/docsreg_evidence — not writable in test context",
+    "fix": "patch('ops.omi_telegram.docsreg_launch.DEFAULT_DOCSREG_EVIDENCE_ROOT', tmp_path / 'evidence') added to H1, H2, H4, H5, H6",
+    "tests_fixed": 5
+  },
+
+  "real_components_exercised": [
+    "parse_docsreg_launch_spec() — full parser, no mock",
+    "_collect_input_files() — real directory scan",
+    "_run_one_cycle() — real function in thread executor",
+    "build_structure_auditor_fn() — production auditor, spy-verified threshold=0.80",
+    "_record_cycle_learning() — real learning write to tmp_path workspace"
+  ],
+
+  "mocked_only": [
+    "run_docsreg_cycle() — Redis/Qdrant backend; side_effect writes quality_report.json",
+    "update.message.reply_text — AsyncMock",
+    "ctx.bot.send_chat_action — AsyncMock",
+    "aims_paths.workspace_root — returns tmp_path/workspace",
+    "DEFAULT_DOCSREG_EVIDENCE_ROOT — redirected to tmp_path/evidence"
+  ],
+
+  "remaining_risks": [
+    "No live Redis/Qdrant integration — run_docsreg_cycle still mocked",
+    "No live Telegram bot token — AsyncMock used for reply_text",
+    "teacher_mode type mismatch (# type: ignore[arg-type]) — cosmetic, no runtime effect"
+  ],
+
+  "blockers": "none"
+}

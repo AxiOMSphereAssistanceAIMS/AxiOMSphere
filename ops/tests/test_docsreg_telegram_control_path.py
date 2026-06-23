@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import json
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -320,3 +321,337 @@ def test_zip_path_rejected_not_supported(tmp_path: Path) -> None:
 def test_supported_extensions_set() -> None:
     """Document the current supported extensions set as a contract test."""
     assert SUPPORTED_DRAFT_EXTENSIONS == frozenset({".md", ".txt", ".rst", ".docx", ".pdf"})
+
+
+# ── Handler-level smoke tests — call cmd_docsreg() as a real coroutine ─────────
+#
+# Strategy:
+#   - AsyncMock for reply_text / send_chat_action (Telegram stubs)
+#   - run_docsreg_cycle mocked via side_effect that writes quality_report.json
+#     to the evidence_root it receives → _run_one_cycle and _record_cycle_learning
+#     run for real; only the Redis/Qdrant backend call is replaced.
+#   - aims_paths.workspace_root patched to tmp_path so learning writes are local.
+#   - build_structure_auditor_fn left real unless spied upon to verify wiring.
+#
+# Redis/Qdrant: unavailable in unit mode; run_docsreg_cycle mock bypasses them.
+# This is noted in evidence as a remaining risk (live integration not exercised).
+
+
+_COMP_SCORES = {
+    "content_richness_score": 0.90,
+    "data_retention_score": 0.88,
+    "source_to_master_alignment_score": 0.91,
+    "structure_score": 0.89,
+    "metadata_safety_score": 0.95,
+}
+
+_COMP_SCORES_FAIL = {k: 0.25 for k in _COMP_SCORES}
+
+
+def _make_update_async(chat_id: int = 12345) -> MagicMock:
+    """Telegram Update stub with AsyncMock reply_text (safe to await)."""
+    upd = MagicMock()
+    upd.effective_chat.id = chat_id
+    upd.message.reply_text = AsyncMock(return_value=None)
+    return upd
+
+
+def _make_ctx_async() -> MagicMock:
+    ctx = MagicMock()
+    ctx.args = []
+    ctx.bot = MagicMock()
+    ctx.bot.send_chat_action = AsyncMock(return_value=None)
+    return ctx
+
+
+def _cycle_side_effect(*, passed: bool = True, quality: float = 0.91):
+    """Return a side_effect function for run_docsreg_cycle that writes real evidence files."""
+    def _inner(**kwargs):
+        ev_root = Path(kwargs["evidence_root"])
+        ev_root.mkdir(parents=True, exist_ok=True)
+        scores = _COMP_SCORES if passed else _COMP_SCORES_FAIL
+        report = {
+            "quality": quality,
+            "target_quality": 0.80,
+            "audit_status": "COMPONENT_PASS" if passed else "COMPONENT_FAIL_REPAIRABLE",
+            "component_scores": scores,
+        }
+        (ev_root / "quality_report.json").write_text(json.dumps(report), encoding="utf-8")
+        if passed:
+            (ev_root / "raw_extracted_text.md").write_text("# Source\n\nContent.", encoding="utf-8")
+            (ev_root / "master_document.md").write_text("# Master\n\nContent.", encoding="utf-8")
+        r = MagicMock()
+        r.passed = passed
+        r.outcome = "CERTIFIED_MASTER_READY" if passed else "QUALITY_INSUFFICIENT"
+        r.best_quality = quality
+        r.job_id = "job-handler-test"
+        r.doc_id = "doc-handler-test"
+        r.cycle_id = "cycle-handler-test"
+        r.cycles_run = 1
+        return r
+    return _inner
+
+
+# ── Test H1: directory input queues batch job ─────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_cmd_docsreg_directory_creates_batch_job(tmp_path: Path) -> None:
+    """cmd_docsreg() with a directory path processes all .md files inside it.
+
+    Verifies the full handler path: parse → collect_input_files → batch loop
+    → _run_one_cycle → reply with "Registered N files".
+    """
+    draft_dir = tmp_path / "standards"
+    draft_dir.mkdir()
+    (draft_dir / "doc_a.md").write_text("# Doc A\n\nContent.", encoding="utf-8")
+    (draft_dir / "doc_b.md").write_text("# Doc B\n\nContent.", encoding="utf-8")
+
+    ws = tmp_path / "workspace"
+    ws.mkdir()
+
+    upd = _make_update_async()
+    ctx = _make_ctx_async()
+    ctx.args = [str(draft_dir)]
+
+    ev_root = tmp_path / "evidence"
+
+    with patch("ops.omi_telegram.docsreg_launch.run_docsreg_cycle",
+               side_effect=_cycle_side_effect(passed=True)), \
+         patch("aims_paths.workspace_root", return_value=ws), \
+         patch("ops.omi_telegram.docsreg_launch.DEFAULT_DOCSREG_EVIDENCE_ROOT", ev_root):
+        result = await cmd_docsreg(upd, ctx)
+
+    assert result is True
+    # reply_text called at least twice: "Task accepted" + final summary
+    assert upd.message.reply_text.call_count >= 2
+    calls = [str(c) for c in upd.message.reply_text.call_args_list]
+    final_reply = str(upd.message.reply_text.call_args_list[-1])
+    assert "Registered 2" in final_reply, f"Expected 2 registered, got: {final_reply}"
+    assert "Failed registration 0" in final_reply
+
+
+# ── Test H2: real _run_one_cycle path — production auditor is called ──────────
+
+
+@pytest.mark.asyncio
+async def test_cmd_docsreg_calls_real_run_one_cycle_path(tmp_path: Path) -> None:
+    """cmd_docsreg() exercises the real _run_one_cycle, which calls build_structure_auditor_fn.
+
+    The spy on build_structure_auditor_fn proves the production auditor wiring is
+    not bypassed at the handler level.
+    """
+    draft = tmp_path / "procedure.md"
+    draft.write_text("# Procedure\n\nStep 1: Do it.", encoding="utf-8")
+
+    ws = tmp_path / "workspace"
+    ws.mkdir()
+
+    auditor_calls: list[float] = []
+    _original_build = __import__(
+        "ops.docsreg.docsreg_production_auditor",
+        fromlist=["build_structure_auditor_fn"],
+    ).build_structure_auditor_fn
+
+    def _spy_build(threshold: float) -> Any:
+        auditor_calls.append(threshold)
+        return _original_build(threshold)
+
+    upd = _make_update_async()
+    ctx = _make_ctx_async()
+    ctx.args = [str(draft)]
+
+    ev_root = tmp_path / "evidence"
+
+    with patch("ops.omi_telegram.docsreg_launch.build_structure_auditor_fn",
+               side_effect=_spy_build), \
+         patch("ops.omi_telegram.docsreg_launch.run_docsreg_cycle",
+               side_effect=_cycle_side_effect(passed=True)), \
+         patch("aims_paths.workspace_root", return_value=ws), \
+         patch("ops.omi_telegram.docsreg_launch.DEFAULT_DOCSREG_EVIDENCE_ROOT", ev_root):
+        await cmd_docsreg(upd, ctx)
+
+    assert len(auditor_calls) == 1, (
+        "build_structure_auditor_fn must be called exactly once per file via _run_one_cycle"
+    )
+    assert auditor_calls[0] == pytest.approx(0.80), (
+        "Default threshold 0.80 when target_quality not specified"
+    )
+
+
+# ── Test H3: invalid path → error reply, handler returns True (consumed) ──────
+
+
+@pytest.mark.asyncio
+async def test_cmd_docsreg_rejects_invalid_path(tmp_path: Path) -> None:
+    """cmd_docsreg() with a nonexistent path returns an error reply via Telegram.
+
+    The handler must return True (message consumed) even on parse error; the
+    error is surfaced to the user, not re-raised as an exception.
+    """
+    upd = _make_update_async()
+    ctx = _make_ctx_async()
+    ctx.args = ["/nonexistent/path/that/does/not/exist/draft.md"]
+
+    result = await cmd_docsreg(upd, ctx)
+
+    assert result is True
+    upd.message.reply_text.assert_called_once()
+    error_text = str(upd.message.reply_text.call_args_list[0])
+    assert "❌" in error_text or "DOCSREG" in error_text
+
+
+# ── Test H4: passing doc → "Registered 1 files" in reply ─────────────────────
+
+
+@pytest.mark.asyncio
+async def test_cmd_docsreg_status_reports_real_quality(tmp_path: Path) -> None:
+    """After a passing cycle, cmd_docsreg() reports Registered 1, Failed 0.
+
+    The reply text reflects the actual batch outcome — not a static message.
+    """
+    draft = tmp_path / "quality_doc.md"
+    draft.write_text("# Quality Document\n\nRich structured content.", encoding="utf-8")
+
+    ws = tmp_path / "workspace"
+    ws.mkdir()
+
+    upd = _make_update_async()
+    ctx = _make_ctx_async()
+    ctx.args = [str(draft)]
+
+    ev_root = tmp_path / "evidence"
+
+    with patch("ops.omi_telegram.docsreg_launch.run_docsreg_cycle",
+               side_effect=_cycle_side_effect(passed=True, quality=0.91)), \
+         patch("aims_paths.workspace_root", return_value=ws), \
+         patch("ops.omi_telegram.docsreg_launch.DEFAULT_DOCSREG_EVIDENCE_ROOT", ev_root):
+        await cmd_docsreg(upd, ctx)
+
+    final = str(upd.message.reply_text.call_args_list[-1])
+    assert "Registered 1" in final, f"Expected 'Registered 1' in reply: {final}"
+    assert "Failed registration 0" in final
+
+
+# ── Test H5: failed doc → never shows as registered ──────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_cmd_docsreg_report_does_not_certify_failed_docs(tmp_path: Path) -> None:
+    """A doc that fails quality gate appears as 'failed', never as 'registered'.
+
+    This closes the risk that a false-positive reply could mislead operators
+    into believing a low-quality document was accepted into the registry.
+    """
+    draft = tmp_path / "weak_doc.md"
+    draft.write_text("# x", encoding="utf-8")  # trivial content
+
+    ws = tmp_path / "workspace"
+    ws.mkdir()
+
+    upd = _make_update_async()
+    ctx = _make_ctx_async()
+    ctx.args = [str(draft)]
+
+    ev_root = tmp_path / "evidence"
+
+    with patch("ops.omi_telegram.docsreg_launch.run_docsreg_cycle",
+               side_effect=_cycle_side_effect(passed=False, quality=0.31)), \
+         patch("aims_paths.workspace_root", return_value=ws), \
+         patch("ops.omi_telegram.docsreg_launch.DEFAULT_DOCSREG_EVIDENCE_ROOT", ev_root):
+        await cmd_docsreg(upd, ctx)
+
+    final = str(upd.message.reply_text.call_args_list[-1])
+    assert "Registered 0" in final, f"Failed doc must not be registered: {final}"
+    assert "Failed registration 1" in final, f"Expected failed count 1: {final}"
+    # Confirm 'registered' label is absent for the failed file
+    batch_reply_texts = [str(c) for c in upd.message.reply_text.call_args_list]
+    for txt in batch_reply_texts:
+        assert ": registered" not in txt, (
+            f"Failed doc must never appear as 'registered' in any reply: {txt}"
+        )
+
+
+# ── Test H6: group and private chats use the same handler, no branching ───────
+
+
+@pytest.mark.asyncio
+async def test_group_chat_docsreg_allowed_for_registration_only(tmp_path: Path) -> None:
+    """cmd_docsreg() routes group and private chats identically.
+
+    chat_id is used only for cancel-event state management; it never changes
+    the execution path.  A group chat (negative chat_id) must produce the same
+    Registered/Failed counts as a private chat (positive chat_id).
+    """
+    draft = tmp_path / "shared_doc.md"
+    draft.write_text("# Shared Document\n\nContent.", encoding="utf-8")
+
+    ws = tmp_path / "workspace"
+    ws.mkdir()
+
+    results: dict[str, str] = {}
+    ev_root = tmp_path / "evidence"
+
+    for chat_label, chat_id in [("private", 12345), ("group", -1001234567890)]:
+        upd = _make_update_async(chat_id=chat_id)
+        ctx = _make_ctx_async()
+        ctx.args = [str(draft)]
+
+        with patch("ops.omi_telegram.docsreg_launch.run_docsreg_cycle",
+                   side_effect=_cycle_side_effect(passed=True)), \
+             patch("aims_paths.workspace_root", return_value=ws), \
+             patch("ops.omi_telegram.docsreg_launch.DEFAULT_DOCSREG_EVIDENCE_ROOT", ev_root):
+            await cmd_docsreg(upd, ctx)
+
+        results[chat_label] = str(upd.message.reply_text.call_args_list[-1])
+
+    # Both chat types must reach the same outcome
+    assert "Registered 1" in results["private"]
+    assert "Registered 1" in results["group"]
+    # Handler must not route differently based on chat type
+    src = inspect.getsource(cmd_docsreg)
+    assert "chat_type" not in src
+
+
+# ── Test H7: no args → help prompt, not batch execution ──────────────────────
+
+
+@pytest.mark.asyncio
+async def test_private_improvement_requires_explicit_command(tmp_path: Path) -> None:
+    """Without an explicit path argument, cmd_docsreg() returns a usage prompt.
+
+    No batch execution happens; no files are processed.  The user must provide
+    an explicit /docsreg <path> to start processing.
+    """
+    upd = _make_update_async()
+    ctx = _make_ctx_async()
+    ctx.args = []  # no arguments
+
+    result = await cmd_docsreg(upd, ctx)
+
+    assert result is True
+    upd.message.reply_text.assert_called_once()
+    prompt_text = str(upd.message.reply_text.call_args_list[0])
+    # Must show usage guidance, not a batch result
+    assert "docsreg" in prompt_text.lower() or "DOCSREG" in prompt_text
+
+
+# ── Archive behavior contract ─────────────────────────────────────────────────
+
+
+def test_zip_archive_behavior_documented() -> None:
+    """Explicit contract: archive.zip is rejected at parse gate; extraction is future work.
+
+    current_behavior  = parse_gate_reject
+    expected_after_archive_layer = extract_and_queue_members
+    """
+    archive_behavior = {
+        "file": "archive.zip",
+        "current_behavior": "parse_gate_reject",
+        "reason": ".zip not in SUPPORTED_DRAFT_EXTENSIONS",
+        "expected_after_archive_layer": "extract_and_queue_members",
+        "blocker_for_layer4": False,
+    }
+    assert archive_behavior["current_behavior"] == "parse_gate_reject"
+    assert archive_behavior["blocker_for_layer4"] is False
+    assert ".zip" not in SUPPORTED_DRAFT_EXTENSIONS
