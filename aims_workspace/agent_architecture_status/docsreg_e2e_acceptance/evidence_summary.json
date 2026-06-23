@@ -1,0 +1,113 @@
+{
+  "layer": "05_LAYER_END_TO_END_ACCEPTANCE",
+  "generated_at": "2026-06-23T23:15:00+04:00",
+  "result": "READY",
+  "tests_added": 7,
+  "test_file": "ops/tests/test_docsreg_e2e_acceptance.py",
+  "test_pass_rate": "7/7",
+
+  "input_set": {
+    "path": "tmp_path (pytest fixture — no persistent disk path)",
+    "files": [
+      {"name": "pass_doc.md",   "type": "Markdown",         "expected": "PASS"},
+      {"name": "pass_doc.pdf",  "type": "PDF",              "expected": "PASS"},
+      {"name": "fail_doc.xlsx", "type": "Spreadsheet",      "expected": "REJECTED (parse gate)"},
+      {"name": "empty_doc.md",  "type": "Markdown (empty)", "expected": "FAIL_REPAIRABLE"},
+      {"name": "archive.zip",   "type": "ZIP archive",      "expected": "REJECTED (parse gate)"}
+    ]
+  },
+
+  "execution": {
+    "path": "internal batch equivalent (_resolve_draft_path → _run_one_cycle → _record_cycle_learning)",
+    "run_docsreg_cycle": "mocked (returns controlled CERTIFIED_MASTER_READY / QUALITY_INSUFFICIENT)",
+    "record_knowledge_source": "real (writes to tmp_path workspace)",
+    "aims_paths.workspace_root": "patched to tmp_path/workspace"
+  },
+
+  "results_table": [
+    {
+      "file": "pass_doc.md",
+      "type": "md",
+      "passed": true,
+      "quality": 0.91,
+      "bottleneck": "none",
+      "registry_status": "CERTIFIED_MASTER_READY",
+      "learning_written": true,
+      "gold_pair_written": true
+    },
+    {
+      "file": "pass_doc.pdf",
+      "type": "pdf",
+      "passed": true,
+      "quality": 0.88,
+      "bottleneck": "none",
+      "registry_status": "CERTIFIED_MASTER_READY",
+      "learning_written": true,
+      "gold_pair_written": true
+    },
+    {
+      "file": "fail_doc.xlsx",
+      "type": "xlsx",
+      "passed": null,
+      "quality": null,
+      "bottleneck": "parse_gate (.xlsx not in SUPPORTED_DRAFT_EXTENSIONS)",
+      "registry_status": "REJECTED",
+      "learning_written": false,
+      "gold_pair_written": false
+    },
+    {
+      "file": "empty_doc.md",
+      "type": "md",
+      "passed": false,
+      "quality": 0.31,
+      "bottleneck": "metadata_safety_score (0.25)",
+      "registry_status": "QUALITY_INSUFFICIENT",
+      "learning_written": true,
+      "gold_pair_written": false
+    },
+    {
+      "file": "archive.zip",
+      "type": "zip",
+      "passed": null,
+      "quality": null,
+      "bottleneck": "parse_gate (.zip not in SUPPORTED_DRAFT_EXTENSIONS)",
+      "registry_status": "REJECTED",
+      "learning_written": false,
+      "gold_pair_written": false
+    }
+  ],
+
+  "criteria_verification": {
+    "C1_no_uncaught_exception":         "PASS — all 5 inputs complete, no exception propagated",
+    "C2_evidence_dirs_created":          "PASS — ev_pass_md, ev_pass_pdf, ev_empty_md created",
+    "C3_quality_reports_present":        "PASS — quality_report.json present in all 3 evidence dirs",
+    "C4_five_component_scores":          "PASS — all 5 score keys verified in every quality report",
+    "C5_pass_md_result_true":            "PASS — result.passed is True for pass_doc.md",
+    "C6_pass_pdf_result_true":           "PASS — result.passed is True for pass_doc.pdf",
+    "C7_empty_md_result_false":          "PASS — result.passed is False for empty_doc.md",
+    "C8_unsupported_rejected_at_parse":  "PASS — xlsx and zip: resolved_path is None, err non-null",
+    "C9_learning_log_3_entries":         "PASS — 3 entries in docsreg_learning.jsonl",
+    "C10_gold_pairs_2_entries":          "PASS — 2 gold pairs (pass docs only); 0 from fail/rejected"
+  },
+
+  "blockers": "none — all 10 criteria PASS",
+
+  "ready_means": {
+    "no_uncaught_exception": true,
+    "evidence_created_for_attempted_cycles": true,
+    "quality_report_present_per_cycle": true,
+    "five_component_scores_in_every_report": true,
+    "certified_docs_passed_true": true,
+    "rejected_docs_passed_false_or_parse_rejected": true,
+    "learning_log_entry_per_attempted_cycle": true,
+    "gold_pair_per_passing_cycle": true,
+    "quality_not_capped_at_legacy_floor": true,
+    "unsupported_extensions_rejected_user_readable_error": true
+  },
+
+  "remaining_risks": [
+    "run_docsreg_cycle is mocked — real Redis + Qdrant integration not exercised",
+    "No live Telegram bot runtime; cmd_docsreg() coroutine not executed end-to-end",
+    "evidence_root passed to _record_cycle_learning in tests is the same as the one used by _run_one_cycle (consistent with production flow)"
+  ]
+}
