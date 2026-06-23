@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/axi_omi_sphere/aims-workspace
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 11 items
+
+ops/tests/test_docsreg_telegram_control_path.py::test_parse_creates_request_with_default_target_quality PASSED [  9%]
+ops/tests/test_docsreg_telegram_control_path.py::test_parse_explicit_target_quality_stored PASSED [ 18%]
+ops/tests/test_docsreg_telegram_control_path.py::test_no_group_private_branching_same_handler PASSED [ 27%]
+ops/tests/test_docsreg_telegram_control_path.py::test_free_text_docsreg_trigger_parsed_to_request PASSED [ 36%]
+ops/tests/test_docsreg_telegram_control_path.py::test_run_one_cycle_uses_production_auditor_not_legacy PASSED [ 45%]
+ops/tests/test_docsreg_telegram_control_path.py::test_run_one_cycle_uses_default_threshold_when_target_quality_none PASSED [ 54%]
+ops/tests/test_docsreg_telegram_control_path.py::test_failed_doc_not_reported_as_certified PASSED [ 63%]
+ops/tests/test_docsreg_telegram_control_path.py::test_invalid_extension_rejected_safely PASSED [ 72%]
+ops/tests/test_docsreg_telegram_control_path.py::test_invalid_extension_via_parse PASSED [ 81%]
+ops/tests/test_docsreg_telegram_control_path.py::test_zip_path_rejected_not_supported PASSED [ 90%]
+ops/tests/test_docsreg_telegram_control_path.py::test_supported_extensions_set PASSED [100%]
+
+============================== 11 passed in 1.20s ==============================

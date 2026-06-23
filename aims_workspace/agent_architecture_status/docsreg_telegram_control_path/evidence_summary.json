@@ -1,0 +1,33 @@
+{
+  "layer": "04_LAYER_TELEGRAM_DOCSREG_CONTROL_PATH",
+  "generated_at": "2026-06-23T22:45:00+04:00",
+  "result": "READY",
+  "tests_added": 11,
+  "test_file": "ops/tests/test_docsreg_telegram_control_path.py",
+  "test_pass_rate": "11/11",
+  "regression_pass_rate": "883/883 (no failures)",
+  "call_path": [
+    "omi_bot.py:1763 → cmd_docsreg() wrapper",
+    "docsreg_launch.py:589 → cmd_docsreg(update, ctx)",
+    "  → parse_docsreg_launch_spec(text) → DocsregLaunchRequest | error",
+    "  → _collect_input_files(request.draft_path)",
+    "  → batch loop: _run_one_cycle(source_file, request, evidence_root)",
+    "    → build_structure_auditor_fn(threshold=target_quality or 0.80)",
+    "    → run_docsreg_cycle(..., auditor_fn=production)",
+    "  → _record_cycle_learning(result, source_file, evidence_root)",
+    "  → Telegram reply: Processed N / Registered N / Failed M"
+  ],
+  "findings": {
+    "no_group_private_branching": "cmd_docsreg treats all chat types identically; chat_id is for state management only",
+    "no_status_report_commands": "No dedicated /status or /report command; result is delivered inline in the same batch reply",
+    "zip_not_supported": ".zip not in SUPPORTED_DRAFT_EXTENSIONS; rejected with user-readable error",
+    "production_auditor_wired": "build_structure_auditor_fn (not legacy build_docsreg_auditor) called with threshold=target_quality or 0.80",
+    "failed_docs_not_certified": "Failed files labeled 'failed (OUTCOME)' in batch_results, never 'registered'",
+    "path_validation": "SUPPORTED_DRAFT_EXTENSIONS = {.md, .txt, .rst, .docx, .pdf}; others return error string"
+  },
+  "remaining_risks": [
+    "No end-to-end integration test against a real bot runtime (requires live Telegram token)",
+    "Archive (.zip) extraction not yet wired — future work",
+    "teacher_mode type mismatch (# type: ignore[arg-type] in _run_one_cycle) — cosmetic, no runtime effect"
+  ]
+}
