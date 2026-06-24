@@ -1,0 +1,83 @@
+{
+  "layer": "05_LAYER_LIVE_RUNTIME_INTEGRATION_SMOKE",
+  "generated_at": "2026-06-24T08:11:00+04:00",
+  "result": "PASS",
+  "tests_total": 5,
+  "tests_pass": 5,
+  "tests_fail": 0,
+  "test_file": "ops/tests/test_docsreg_live_runtime_smoke.py",
+  "regression_suite": "ops/tests/test_docsreg_*.py",
+  "regression_pass": 920,
+  "regression_fail": 0,
+
+  "source_document": {
+    "path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/AIM INF/ISO 55000 Asset Managment Policy.pdf",
+    "size_kb": 99,
+    "type": "PDF"
+  },
+
+  "redis": {
+    "resolution": "docker inspect axiomsphere-aims-redis",
+    "container_ip": "172.18.0.26",
+    "url": "redis://172.18.0.26:6379/0",
+    "localhost_published": false
+  },
+
+  "tests": [
+    {
+      "id": "L5-1",
+      "name": "test_live_runtime_smoke_creates_master_package",
+      "result": "PASS",
+      "assertion": "result has document_type, draft_path, passed (bool), best_quality (float in [0,1]), outcome, cycles_run >= 1"
+    },
+    {
+      "id": "L5-2",
+      "name": "test_live_runtime_smoke_writes_quality_report",
+      "result": "PASS",
+      "assertion": "quality_report.json written with 5 component scores + final_quality float + quality_method"
+    },
+    {
+      "id": "L5-3",
+      "name": "test_live_runtime_smoke_uses_real_auditor",
+      "result": "PASS",
+      "assertion": "real_auditor_used=True, audit_status != COMPONENT_BLOCKED"
+    },
+    {
+      "id": "L5-4",
+      "name": "test_live_runtime_smoke_writes_learning_entry",
+      "result": "PASS",
+      "assertion": "docsreg_learning.jsonl written, schema_version=docsreg.knowledge.v1, training_candidates.jsonl written, knowledge_entry.json in evidence_root"
+    },
+    {
+      "id": "L5-5",
+      "name": "test_live_runtime_smoke_does_not_certify_failed_doc",
+      "result": "PASS",
+      "assertion": "stub doc: result.passed=False, best_quality < 0.98, quality_report.json still written"
+    }
+  ],
+
+  "production_fix": {
+    "file": "ops/docsreg/docsreg_document_type_cycle.py",
+    "function": "_run_single_cycle",
+    "symptom": "real_auditor_used always False — audit_status read from quality_report.json defaulted to UNKNOWN",
+    "root_cause": "task_quality_validated writes quality_report.json before run_claude_code_audit() runs; audit status was never persisted back to quality_report.json",
+    "fix": "After audit_status resolved from run_claude_code_audit(), update quality_report.json with {\"audit_status\": audit_status}",
+    "impact": "record_knowledge_source now correctly sets real_auditor_used=True when production auditor (build_structure_auditor_fn) is used"
+  },
+
+  "real_components_exercised": [
+    "run_docsreg_cycle() — real pipeline, no mock",
+    "build_structure_auditor_fn(threshold=0.80) — production auditor",
+    "task_quality_validated() — writes quality_report.json with 5 component scores",
+    "_run_single_cycle() — now writes audit_status back to quality_report.json",
+    "record_knowledge_source() — real learning write to workspace",
+    "Redis orchestration — axiomsphere-aims-redis container at 172.18.0.26:6379"
+  ],
+
+  "mocked_only": [
+    "Telegram bot — no live bot token needed",
+    "Qdrant — not required by live runtime smoke path"
+  ],
+
+  "blockers": "none"
+}

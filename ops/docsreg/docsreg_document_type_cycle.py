@@ -407,6 +407,18 @@ class DocumentTypeCertificationLoop:
             reference_governance = str(metrics.get("reference_governance", "UNKNOWN"))
             audit_status = str(audit.get("status", AUDIT_STATUS_COMPONENT_PASS))
 
+            # Persist audit_status into quality_report.json so record_knowledge_source
+            # can determine real_auditor_used correctly.
+            _qr_path = Path(manifest.draft_path).parent / "quality_report.json"
+            try:
+                if _qr_path.exists():
+                    import json as _json
+                    _qr = _json.loads(_qr_path.read_text(encoding="utf-8"))
+                    _qr["audit_status"] = audit_status
+                    _qr_path.write_text(_json.dumps(_qr, indent=2), encoding="utf-8")
+            except Exception:
+                pass
+
             passed = self._check_cycle_criteria(
                 final_state=final_state,
                 quality=quality,
