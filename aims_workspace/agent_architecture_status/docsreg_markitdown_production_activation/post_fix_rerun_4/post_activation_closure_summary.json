@@ -1,0 +1,24 @@
+{
+  "status": "PASS_WITH_PENDING_REGISTRATION",
+  "markitdown_backend": "PASS",
+  "abs_certification_status": "PENDING",
+  "pending_reason_identified": true,
+  "failed_gates": [
+    "quality_below_certified_threshold",
+    "audit_status_not_certified:COMPONENT_BLOCKED"
+  ],
+  "learning_entry_written_after_fix": true,
+  "gold_pairs_expected": false,
+  "gold_pairs_written": 0,
+  "dpo_pairs_expected": false,
+  "dpo_pairs_written": 0,
+  "raw_output_certified_without_master": false,
+  "qdrant_write_skipped_reason": "quality_score=0.850 below certification threshold 0.95",
+  "documents_write_skipped_reason": "quality_score=0.850 below certification threshold 0.95",
+  "tests_passed": true,
+  "full_regression_passed": true,
+  "remaining_blockers": [],
+  "learning_entry_path": "axi_ft_log/docsreg_learning.jsonl",
+  "learning_entry_source_sha256": "82cd7d2901ab0f8e8197db6d86536e95dd49a67cad4e20fe16615e1bbc750f13",
+  "evidence_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/post_fix_rerun_4"
+}

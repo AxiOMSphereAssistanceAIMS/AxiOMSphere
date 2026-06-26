@@ -473,6 +473,7 @@ def build_knowledge_entry(
         },
         "recommendations": recommendations,
         "training": training,
+        "approved_for_training": training["approved_for_training"],
     }
 
 

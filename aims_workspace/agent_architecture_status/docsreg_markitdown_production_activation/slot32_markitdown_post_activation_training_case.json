@@ -1,0 +1,66 @@
+{
+  "case_id": "docsreg_markitdown_post_activation_slot32_20260626",
+  "created_at": "2026-06-26T00:00:00Z",
+  "scope": [
+    "DOCSREG post-activation closure",
+    "MarkItDown production activation",
+    "learning-entry capture",
+    "certification-status diagnosis"
+  ],
+  "requested_outcomes": [
+    "explain why ABS certification stayed PENDING",
+    "fix missing docsreg_learning.jsonl entry for attempted cycle"
+  ],
+  "actual_outcomes": [
+    "MarkItDown extraction passed",
+    "DOCGEN comparison-only normalization passed",
+    "ABS batch attempt produced quality_report.json",
+    "learning entry was not present in the attempted batch path"
+  ],
+  "confirmed_patterns": [
+    {
+      "pattern": "Evidence-only completion",
+      "description": "The model treated logs and status narration as if they were completion of the requested closure."
+    },
+    {
+      "pattern": "First-success stopping",
+      "description": "The model stopped after MarkItDown extraction and regression success instead of pursuing the missing postcondition."
+    },
+    {
+      "pattern": "Path confusion",
+      "description": "Learning capture exists in the Telegram wrapper path, but the batch runner path bypasses it."
+    },
+    {
+      "pattern": "Gate narration without repair",
+      "description": "The model observed PENDING but did not convert that observation into a targeted fix or explicit blocker."
+    },
+    {
+      "pattern": "Safety gate overreach",
+      "description": "The model correctly preserved safety gates, but did not keep post-activation closure separate from safety success."
+    }
+  ],
+  "root_cause": {
+    "pending_certification": "task_master_registered() requires CERTIFIED; the ABS attempt stayed PENDING and skipped documents/Qdrant write",
+    "missing_learning_entry": "run_batch() calls run_docsreg_cycle() directly and does not invoke the Telegram wrapper _record_cycle_learning()"
+  },
+  "teaching_points": [
+    "A report is not a completed fix.",
+    "Trace the owner of every required artifact.",
+    "Batch and Telegram execution paths are not interchangeable.",
+    "A PENDING gate must be explained by the exact gate that set it.",
+    "If a required learning file is absent, the path that should write it must be identified and repaired."
+  ],
+  "recommended_repair_rules": [
+    "Do not declare success until the requested file exists.",
+    "Do not assume a downstream hook ran just because the main cycle finished.",
+    "Keep certification gates strict, but separately ensure learning capture runs on attempted cycles.",
+    "Always verify final artifacts on disk, not only in logs."
+  ],
+  "reference_files": [
+    "/home/axi_omi_sphere/aims-workspace/ops/docsreg/docsreg_tasks.py",
+    "/home/axi_omi_sphere/aims-workspace/ops/docsreg/docsreg_knowledge_source.py",
+    "/home/axi_omi_sphere/aims-workspace/ops/omi_telegram/docsreg_launch.py",
+    "/home/axi_omi_sphere/aims-workspace/ops/docsreg/pipelines/run_batch.py",
+    "/home/axi_omi_sphere/aims-workspace/ops/docsreg/docsreg_cycle_runner.py"
+  ]
+}

@@ -433,111 +433,25 @@ def _copy_for_review(source_file: Path, source_root: Path, review_dir: Path) -> 
         pass
 
 
-def _record_cycle_learning(result: Any, source_file: Path, evidence_root: Path) -> None:
+def _record_cycle_learning(
+    result: Any,
+    source_file: Path,
+    evidence_root: Path,
+    workspace_dir: Path | None = None,
+) -> None:
     """Wrapper around record_knowledge_source() for completed DOCSREG cycles.
 
     Delegates all learning artifact writes to the canonical Knowledge Source
     Layer.  Non-fatal: any exception is caught and logged so registration is
     never blocked.
     """
-    from aims_paths import workspace_root as _ws_root
-    from ops.docsreg.docsreg_knowledge_source import (
-        compute_file_sha256,
-        read_json_object,
-        record_knowledge_source,
-    )
+    from ops.docsreg.docsreg_learning_capture import record_attempted_cycle_learning
 
-    workspace_dir = _ws_root()
-    learning_jsonl = workspace_dir / "axi_ft_log" / "docsreg_learning.jsonl"
-
-    # Compute source sha256 once so we can use the same value in the prior-failure
-    # scan AND inject it into quality_report for downstream storage.
-    # Wrapped in try/except: a missing or unreadable file must not block learning.
-    cur_sha: Optional[str] = None
-    try:
-        cur_sha = compute_file_sha256(source_file)
-    except Exception:
-        log.debug(
-            "docsreg_learning: could not compute sha256 for %s — identity will fall back to filename",
-            source_file,
-        )
-
-    # Detect prior failure for this source file (needed for DPO eligibility).
-    # Strict matching rules:
-    #   sha256 + sha256 equal        → match
-    #   sha256 + sha256 different    → no match
-    #   one has sha256, other absent → no match (strict; no filename fallback)
-    #   both sha256 absent + same filename → filename fallback match
-    has_prior_failure = False
-    try:
-        if learning_jsonl.exists():
-            with learning_jsonl.open("r", encoding="utf-8") as fh:
-                for raw in fh:
-                    try:
-                        e = json.loads(raw)
-                    except Exception:
-                        continue
-                    if e.get("outcome", {}).get("passed", True):
-                        continue
-                    e_sha = e.get("source_sha256")
-                    if cur_sha and e_sha:
-                        if cur_sha == e_sha:
-                            has_prior_failure = True
-                            break
-                    elif not cur_sha and not e_sha:
-                        if e.get("source_file") == str(source_file):
-                            has_prior_failure = True
-                            break
-                    # else: one has sha256, other absent → no match
-    except Exception:
-        pass
-
-    # Read quality_report.json explicitly so we can inject artifact paths before
-    # passing it to record_knowledge_source().  Let the read raise if the file is
-    # missing or malformed — that exception propagates to the caller's try/except
-    # at the call site, which logs a warning rather than blocking registration.
-    quality_report: dict[str, Any] = dict(
-        read_json_object(evidence_root / "quality_report.json")
-    )
-
-    # Inject the computed sha256 so build_knowledge_entry() stores it in the
-    # learning entry, and _find_prior_failed_entry() can match future cycles.
-    if cur_sha:
-        quality_report["source_sha256"] = cur_sha
-
-    # Inject production artifact paths when the files actually exist.
-    # Only existing files get wired; missing paths are left absent so the
-    # SFT/DPO guards in record_knowledge_source() skip pair creation safely.
-    raw_text_path = evidence_root / "raw_extracted_text.md"
-    master_doc_path = evidence_root / "master_document.md"
-
-    if raw_text_path.exists():
-        quality_report["source_text_path"] = str(raw_text_path)
-    else:
-        log.debug(
-            "docsreg_learning: raw_extracted_text.md absent in %s — SFT/DPO source text not available",
-            evidence_root,
-        )
-
-    if master_doc_path.exists():
-        quality_report["master_document_path"] = str(master_doc_path)
-    else:
-        log.debug(
-            "docsreg_learning: master_document.md absent in %s — SFT/DPO response text not available",
-            evidence_root,
-        )
-
-    record_knowledge_source(
-        evidence_dir=evidence_root,
+    record_attempted_cycle_learning(
+        result=result,
+        source_file=source_file,
+        evidence_root=evidence_root,
         workspace_dir=workspace_dir,
-        quality_report=quality_report,
-        job_id=getattr(result, "job_id", None),
-        doc_id=getattr(result, "doc_id", None),
-        cycle_id=getattr(result, "cycle_id", None),
-        source_file=str(source_file),
-        file_type=source_file.suffix.lstrip(".") or "unknown",
-        final_state=getattr(result, "outcome", None),
-        has_prior_failure=has_prior_failure,
     )
 
 
@@ -694,7 +608,12 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
 
             # Record learning data regardless of pass/fail — agents write their own data.
             try:
-                _record_cycle_learning(result, source_file, file_evidence_root)
+                _record_cycle_learning(
+                    result,
+                    source_file,
+                    file_evidence_root,
+                    workspace_dir=Path("aims_workspace"),
+                )
             except Exception as _lerr:
                 log.warning("docsreg_learning: record_cycle_learning raised: %s", _lerr)
 

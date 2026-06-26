@@ -39,6 +39,7 @@ from ops.docsreg.batch.archive_models import (
     MemberStatus,
 )
 from ops.docsreg import run_docsreg_cycle  # noqa: E402 — module-level for mock patching
+from ops.docsreg.docsreg_learning_capture import record_attempted_cycle_learning
 
 log = logging.getLogger("docsreg.run_batch")
 
@@ -113,6 +114,7 @@ def _run_batch(
     input_root: Path,
     output_root: Path,
     evidence_root: Path,
+    workspace_dir: Path | None = None,
     document_type: str = "procedure",
     teacher_mode: str = "noop",
     target_quality: float = 0.98,
@@ -254,6 +256,19 @@ def _run_batch(
                 target_quality=target_quality,
                 max_cycles=max_cycles,
             )
+            try:
+                record_attempted_cycle_learning(
+                    result=result,
+                    source_file=Path(fpath),
+                    evidence_root=file_evidence_root,
+                    workspace_dir=workspace_dir or Path("aims_workspace"),
+                )
+            except Exception as exc:
+                log.warning(
+                    "docsreg_learning: failed to record attempted cycle for %s: %s",
+                    fpath,
+                    exc,
+                )
             passed = getattr(result, "passed", False)
             outcome = getattr(result, "outcome", "UNKNOWN")
             if passed:

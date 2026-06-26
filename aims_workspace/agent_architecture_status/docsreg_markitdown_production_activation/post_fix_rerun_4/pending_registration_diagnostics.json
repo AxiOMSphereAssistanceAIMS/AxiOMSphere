@@ -1,0 +1,38 @@
+{
+  "source_file": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/post_fix_rerun_4/input/ABS vessels classification.pdf",
+  "standard_id": "ABS vessels classification",
+  "certification_status": "PENDING",
+  "registration_status": "PENDING",
+  "quality_report_found": true,
+  "final_quality": 0.85,
+  "target_quality": 0.0,
+  "audit_status": "COMPONENT_BLOCKED",
+  "component_scores": {
+    "content_richness_score": 0.97,
+    "data_retention_score": 0.85,
+    "source_to_master_alignment_score": 0.85,
+    "structure_score": 0.9,
+    "metadata_safety_score": 0.9
+  },
+  "failed_gates": [
+    "quality_below_certified_threshold",
+    "audit_status_not_certified:COMPONENT_BLOCKED"
+  ],
+  "missing_artifacts": [
+    "source_manifest.json",
+    "registration_manifest.json",
+    "master_document.md"
+  ],
+  "qdrant_skipped_reason": "quality_score=0.850 below certification threshold 0.95",
+  "documents_write_skipped_reason": "quality_score=0.850 below certification threshold 0.95",
+  "can_certify_if_fixed": false,
+  "required_next_fix": "Raise composite quality to at least 0.95 and rerun certification so the registration gate can emit CERTIFIED.",
+  "source_manifest_path": "",
+  "quality_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/post_fix_rerun_4/input/quality_report.json",
+  "registration_manifest_path": "",
+  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/post_fix_rerun_4/0001_ABS vessels classification/procedure/procedure_cycle000_20260626_110353_5bb60643/raw_extracted_text.md",
+  "master_document_path": "",
+  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/post_fix_rerun_4/0001_ABS vessels classification/procedure/procedure_cycle000_20260626_110353_5bb60643/extraction_report.json",
+  "log_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/post_fix_rerun_4/rerun_markitdown_abs.log",
+  "log_contains_pending": true
+}
