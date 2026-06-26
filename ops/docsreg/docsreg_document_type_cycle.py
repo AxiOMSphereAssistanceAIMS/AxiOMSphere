@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -398,7 +399,15 @@ class DocumentTypeCertificationLoop:
                 cycle_id=cycle_id,
                 draft_path=draft_path,
             )
-            final_state = self.run_docsreg_pipeline(manifest, retry_policy)
+            previous_artifact_dir = os.environ.get("DOCSREG_EXTRACTION_ARTIFACT_DIR")
+            os.environ["DOCSREG_EXTRACTION_ARTIFACT_DIR"] = cycle_evidence_str
+            try:
+                final_state = self.run_docsreg_pipeline(manifest, retry_policy)
+            finally:
+                if previous_artifact_dir is None:
+                    os.environ.pop("DOCSREG_EXTRACTION_ARTIFACT_DIR", None)
+                else:
+                    os.environ["DOCSREG_EXTRACTION_ARTIFACT_DIR"] = previous_artifact_dir
             audit = self.run_claude_code_audit(manifest)
             metrics = self.collect_metrics(final_state, audit)
 

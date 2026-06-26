@@ -25,6 +25,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+docsreg-extract = [
+    "markitdown",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.1.0",

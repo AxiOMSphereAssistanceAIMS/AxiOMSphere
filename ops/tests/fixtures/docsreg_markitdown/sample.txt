@@ -1,0 +1,3 @@
+Sample DOCSREG source text.
+
+This fixture is plain text used to verify extraction counters and artifact writing.

@@ -45,6 +45,11 @@ _SOURCE_PDF = Path(
     "AIM INF/ISO 55000 Asset Managment Policy.pdf"
 )
 
+pytestmark = pytest.mark.skipif(
+    not _SOURCE_PDF.exists(),
+    reason=f"live DOCSREG source fixture not mounted: {_SOURCE_PDF}",
+)
+
 # ── Redis URL resolution ───────────────────────────────────────────────────────
 
 _REDIS_CONTAINER_NAME = "axiomsphere-aims-redis"

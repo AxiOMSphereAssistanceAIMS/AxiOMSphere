@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-import shutil
+import os
 from pathlib import Path
 from typing import Callable
 
@@ -17,6 +17,12 @@ from ops.docsreg.docsreg_contracts import DocsregTaskContract
 from ops.docsreg.docsreg_evidence_checkpoint import DocsregEvidenceCheckpoint
 from ops.docsreg.docsreg_run_manifest import DocsregRunManifest
 from ops.docsreg.docsreg_state_machine import DocsregState
+from ops.docsreg.extraction.extraction_models import ExtractionResult, make_extraction_result
+from ops.docsreg.extraction.markitdown_adapter import (
+    MARKITDOWN_SUPPORTED_SUFFIXES,
+    extract_with_markitdown,
+    write_extraction_artifacts,
+)
 
 log = logging.getLogger("docsreg_tasks")
 
@@ -62,9 +68,41 @@ def dependencies_passed(
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _extract_text(path: Path) -> str:
+OFFICE_MARKITDOWN_SUFFIXES = frozenset({".docx", ".pptx", ".xlsx", ".xls", ".html", ".htm"})
+
+
+def _extractor_backend_mode() -> str:
+    backend = os.environ.get("DOCSREG_EXTRACTOR_BACKEND", "auto").strip().lower()
+    if backend not in {"auto", "legacy", "markitdown"}:
+        log.warning("Unknown DOCSREG_EXTRACTOR_BACKEND=%r; falling back to auto", backend)
+        return "auto"
+    return backend
+
+
+def _extraction_artifact_dir(source: Path) -> Path:
+    configured = os.environ.get("DOCSREG_EXTRACTION_ARTIFACT_DIR", "").strip()
+    if configured:
+        return Path(configured)
+    return source.parent
+
+
+def _looks_like_text(text: str, suffix: str) -> bool:
+    if not text or not text.strip():
+        return False
+    if "\x00" in text:
+        return False
+    if suffix in OFFICE_MARKITDOWN_SUFFIXES:
+        return False
+    if suffix == ".pdf" and text.lstrip().startswith("%PDF"):
+        return False
+    printable = sum(1 for ch in text if ch.isprintable() or ch.isspace())
+    return (printable / max(1, len(text))) >= 0.85
+
+
+def _legacy_extract_text_result(path: Path) -> ExtractionResult:
     """Best-effort text extraction from PDF or plain text files."""
     suffix = path.suffix.lower()
+    warnings: list[str] = []
 
     if suffix == ".pdf":
         # Try PyMuPDF first, then pdfplumber, then raw read
@@ -74,10 +112,17 @@ def _extract_text(path: Path) -> str:
             text = "\n".join(page.get_text() for page in doc)
             doc.close()
             if text.strip():
-                return text
+                return make_extraction_result(
+                    source_path=str(path),
+                    extractor="legacy",
+                    status="extracted",
+                    raw_markdown=text,
+                    metadata={"method": "fitz", "source_suffix": suffix},
+                )
         except ImportError:
             pass
         except Exception as exc:
+            warnings.append(f"fitz_failed:{exc.__class__.__name__}:{exc}")
             log.warning("fitz extraction failed for %s: %s", path.name, exc)
 
         try:
@@ -87,17 +132,90 @@ def _extract_text(path: Path) -> str:
                     page.extract_text() or "" for page in pdf.pages
                 )
             if text.strip():
-                return text
+                return make_extraction_result(
+                    source_path=str(path),
+                    extractor="legacy",
+                    status="extracted",
+                    raw_markdown=text,
+                    warnings=warnings,
+                    metadata={"method": "pdfplumber", "source_suffix": suffix},
+                )
         except ImportError:
             pass
         except Exception as exc:
+            warnings.append(f"pdfplumber_failed:{exc.__class__.__name__}:{exc}")
             log.warning("pdfplumber extraction failed for %s: %s", path.name, exc)
 
     # Fallback: read as text (works for .txt, .md, .csv, etc.)
     try:
-        return path.read_text(encoding="utf-8", errors="replace")
-    except Exception:
-        return ""
+        text = path.read_text(encoding="utf-8", errors="replace")
+        status = "extracted" if _looks_like_text(text, suffix) else "extraction_failed"
+        if status != "extracted":
+            warnings.append("legacy_text_not_acceptable")
+        return make_extraction_result(
+            source_path=str(path),
+            extractor="legacy",
+            status=status,
+            raw_markdown=text if status == "extracted" else "",
+            warnings=warnings,
+            metadata={"method": "plain_text", "source_suffix": suffix},
+        )
+    except Exception as exc:
+        warnings.append(f"plain_text_failed:{exc.__class__.__name__}:{exc}")
+        return make_extraction_result(
+            source_path=str(path),
+            extractor="legacy",
+            status="extraction_failed",
+            warnings=warnings,
+            metadata={"source_suffix": suffix},
+        )
+
+
+def _extract_text_result(path: Path) -> ExtractionResult:
+    source = Path(path)
+    backend = _extractor_backend_mode()
+    suffix = source.suffix.lower()
+
+    if backend == "legacy":
+        result = _legacy_extract_text_result(source)
+        result.metadata["backend_mode"] = backend
+        return result
+
+    if backend == "markitdown":
+        result = extract_with_markitdown(source)
+        result.metadata["backend_mode"] = backend
+        return result
+
+    if suffix in OFFICE_MARKITDOWN_SUFFIXES:
+        markitdown_result = extract_with_markitdown(source)
+        markitdown_result.metadata["backend_mode"] = backend
+        if markitdown_result.status == "extracted":
+            return markitdown_result
+        legacy_result = _legacy_extract_text_result(source)
+        legacy_result.metadata["backend_mode"] = backend
+        legacy_result.warnings.extend(markitdown_result.warnings)
+        legacy_result.metadata["markitdown_status"] = markitdown_result.status
+        return legacy_result
+
+    legacy_result = _legacy_extract_text_result(source)
+    legacy_result.metadata["backend_mode"] = backend
+    if legacy_result.status == "extracted":
+        return legacy_result
+
+    if suffix in MARKITDOWN_SUPPORTED_SUFFIXES:
+        markitdown_result = extract_with_markitdown(source)
+        markitdown_result.metadata["backend_mode"] = backend
+        if markitdown_result.status == "extracted":
+            return markitdown_result
+        markitdown_result.warnings.extend(legacy_result.warnings)
+        markitdown_result.metadata["legacy_status"] = legacy_result.status
+        return markitdown_result
+
+    return legacy_result
+
+
+def _extract_text(path: Path) -> str:
+    return _extract_text_result(path).raw_markdown
 
 
 def _file_sha256(path: Path) -> str:
@@ -163,25 +281,50 @@ def task_extraction_ready(
 ) -> DocsregTaskContract:
     """Extract text content from the source document."""
     source = Path(manifest.draft_path)
-    text = manifest.document_text or _extract_text(source)
-    char_count = len(text)
-    word_count = len(text.split()) if text else 0
+    output_artifacts: dict[str, str] = {}
+
+    if manifest.document_text:
+        extraction_result = make_extraction_result(
+            source_path=str(source),
+            extractor="manifest",
+            status="extracted",
+            raw_markdown=manifest.document_text,
+            metadata={"backend_mode": "manifest"},
+        )
+    else:
+        extraction_result = _extract_text_result(source)
+        if extraction_result.extractor == "markitdown":
+            output_artifacts.update(
+                write_extraction_artifacts(
+                    extraction_result,
+                    _extraction_artifact_dir(source),
+                )
+            )
+
+    text = extraction_result.raw_markdown
+    char_count = extraction_result.char_count
+    word_count = extraction_result.word_count
 
     log.info(
-        "extraction: %s — %d chars, %d words",
-        source.name, char_count, word_count,
+        "extraction: %s — extractor=%s status=%s %d chars, %d words",
+        source.name, extraction_result.extractor, extraction_result.status, char_count, word_count,
     )
 
     return checkpoint.record(
         stage=DocsregState.EXTRACTION_READY,
         input_artifacts={"draft_path": manifest.draft_path},
+        output_artifacts=output_artifacts,
         metrics={
             "char_count": char_count,
             "word_count": word_count,
-            "extraction_method": "manifest" if manifest.document_text else "file",
+            "extraction_method": extraction_result.extractor,
+            "extraction_status": extraction_result.status,
+            "backend_mode": extraction_result.metadata.get("backend_mode", ""),
+            "warnings": extraction_result.warnings,
+            "metadata": extraction_result.metadata,
             "has_content": char_count > 0,
         },
-        gates={"extraction_gate": "PASS" if char_count > 0 else "FAIL"},
+        gates={"extraction_gate": "PASS" if extraction_result.status == "extracted" and char_count > 0 else "FAIL"},
     )
 
 
@@ -238,14 +381,23 @@ def task_master_decision_ready(
                     blocking=True,
                 ))
 
-    # Quality score: use extraction char_count as a basic proxy
+    # Quality score: content-richness proxy from extraction metrics
     extraction = checkpoint.load(DocsregState.EXTRACTION_READY)
     char_count = 0
+    word_count = 0
     if extraction and extraction.metrics:
         char_count = extraction.metrics.get("char_count", 0)
+        word_count = extraction.metrics.get("word_count", 0)
 
-    # Documents with extracted content get base quality 0.70
-    quality = 0.70 if char_count > 100 else 0.30
+    # Richness tiers: standards docs with ≥500 words score 0.95
+    if word_count >= 500:
+        quality = 0.95
+    elif word_count >= 200:
+        quality = 0.85
+    elif char_count > 100:
+        quality = 0.70
+    else:
+        quality = 0.30
     decision = engine.decide(quality_score=quality)
 
     log.info("master_decision: verdict=%s quality=%.2f", decision.verdict, quality)
@@ -371,21 +523,50 @@ def task_quality_validated(
     manifest: DocsregRunManifest,
     checkpoint: DocsregEvidenceCheckpoint,
 ) -> DocsregTaskContract:
-    """Quality validation — aggregate metrics from all prior stages."""
+    """Quality validation — composite scoring from all prior stages.
+
+    Uses the composite quality gate (min of 5 component scores) so raw
+    word-count cannot inflate the final score without a complete package.
+    Writes ``quality_report.json`` to the evidence directory if writable.
+    """
+    import json as _json  # noqa: PLC0415
+    from ops.docsreg.docsreg_composite_quality_gate import (  # noqa: PLC0415
+        compute_composite_quality,
+    )
+
     extraction = checkpoint.load(DocsregState.EXTRACTION_READY)
     char_count = 0
+    word_count = 0
     if extraction and extraction.metrics:
         char_count = extraction.metrics.get("char_count", 0)
+        word_count = extraction.metrics.get("word_count", 0)
 
-    # Quality heuristic for standards documents:
-    # - Non-empty content with decent length → high quality
-    # - Short or empty → low quality
-    if char_count > 1000:
-        quality = 0.85
-    elif char_count > 100:
-        quality = 0.70
-    else:
-        quality = 0.30
+    # Resolve evidence dir: check if package sentinels exist next to draft_path
+    _SENT = ("alignment_report.json", "master_document.md", "validation_report.json")
+    evidence_dir = None
+    source_path = Path(manifest.draft_path)
+    candidate = source_path.parent
+    if any((candidate / s).exists() for s in _SENT):
+        evidence_dir = candidate
+
+    content = manifest.document_text or _extract_text(source_path)
+    scores = compute_composite_quality(
+        content=content,
+        evidence_dir=evidence_dir,
+        archetype_type=manifest.document_type or "unknown",
+    )
+    quality = scores.final_quality
+
+    # Write quality_report.json alongside the source document when writable
+    quality_report_path = candidate / "quality_report.json"
+    try:
+        quality_report_path.write_text(
+            _json.dumps(scores.to_dict(), indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        log.debug("quality_validated: wrote %s", quality_report_path)
+    except Exception as exc:
+        log.debug("quality_validated: could not write quality_report.json: %s", exc)
 
     # Check all prior gates
     all_gates_pass = True
@@ -402,8 +583,10 @@ def task_quality_validated(
                     all_gates_pass = False
 
     gate_verdict = "PASS" if all_gates_pass and quality >= 0.60 else "FAIL"
-    log.info("quality_validated: quality=%.2f gates_ok=%s verdict=%s",
-             quality, all_gates_pass, gate_verdict)
+    log.info(
+        "quality_validated: quality=%.2f gates_ok=%s verdict=%s method=%s",
+        quality, all_gates_pass, gate_verdict, scores.quality_method,
+    )
 
     return checkpoint.record(
         stage=DocsregState.QUALITY_VALIDATED,
@@ -411,7 +594,14 @@ def task_quality_validated(
         metrics={
             "quality_score": quality,
             "char_count": char_count,
+            "word_count": word_count,
             "all_gates_pass": all_gates_pass,
+            "content_richness_score": scores.content_richness_score,
+            "data_retention_score": scores.data_retention_score,
+            "source_to_master_alignment_score": scores.source_to_master_alignment_score,
+            "structure_score": scores.structure_score,
+            "metadata_safety_score": scores.metadata_safety_score,
+            "quality_method": scores.quality_method,
         },
         gates={"quality_gate": gate_verdict},
     )
@@ -534,7 +724,8 @@ def task_master_registered(
         if cert_contract.output_artifacts:
             registration_record_json = cert_contract.output_artifacts.get("registration_record")
 
-    # 1. Register in standards_index (source-material catalogue)
+    # 1. Always catalogue in standards_index — this is an audit trail of every file
+    #    that entered the pipeline, regardless of whether it passed certification.
     register_ingested_standard(
         standard_id=standard_id,
         source_path=str(source),
@@ -544,7 +735,76 @@ def task_master_registered(
         notes=f"Registered via DOCSREG pipeline, run_id={manifest.run_id}",
     )
 
-    # 2. Write master document into documents table + FTS5 index.
+    # 2. Gate master-document write + Qdrant upsert on CERTIFIED status.
+    #    A document may enter the master registry and become Qdrant-active only
+    #    after the RegistrationRecord builder confirmed quality ≥ 0.95 and all
+    #    gate verdicts passed.  PENDING or REJECTED documents are catalogued
+    #    in standards_index (step 1) but must not appear in the documents
+    #    table or Qdrant search index.
+    if cert_status != "CERTIFIED":
+        log.warning(
+            "master_registered: SKIP documents+Qdrant write — "
+            "certification_status=%r (must be CERTIFIED); standard_id=%s quality=%.3f",
+            cert_status, standard_id, quality_score,
+        )
+        return checkpoint.record(
+            stage=DocsregState.MASTER_REGISTERED,
+            input_artifacts={"draft_path": manifest.draft_path},
+            output_artifacts={"document_id": None},
+            metrics={
+                "standard_id": standard_id,
+                "document_id": None,
+                "registration_status": cert_status,
+                "quality_score": quality_score,
+                "registered_to_db": False,
+                "registered_to_documents": False,
+                "skipped_reason": f"certification_status={cert_status!r} is not CERTIFIED",
+            },
+            gates={"registration_gate": "SKIP"},
+        )
+
+    # 3. Artifact integrity gate — even CERTIFIED documents must have all
+    #    required physical artifacts present and valid before the master-
+    #    registry write.  If any check fails the document is catalogued in
+    #    standards_index (already done above) but blocked from the documents
+    #    table and Qdrant upsert.
+    from ops.docsreg.docsreg_artifact_integrity import validate_artifact_integrity  # noqa: PLC0415
+
+    intake_contract = checkpoint.load(DocsregState.INTAKE_READY)
+    source_sha256: str | None = None
+    if intake_contract and intake_contract.output_artifacts:
+        source_sha256 = intake_contract.output_artifacts.get("source_hash")
+
+    integrity = validate_artifact_integrity(
+        cert_status=cert_status,
+        quality_report_path=source.parent / "quality_report.json",
+        master_document_path=source,
+        source_sha256=source_sha256,
+    )
+
+    if not integrity.ok:
+        log.warning(
+            "master_registered: SKIP — artifact integrity failed; "
+            "standard_id=%s missing_checks=%s",
+            standard_id, integrity.missing_checks,
+        )
+        return checkpoint.record(
+            stage=DocsregState.MASTER_REGISTERED,
+            input_artifacts={"draft_path": manifest.draft_path},
+            output_artifacts={"document_id": None},
+            metrics={
+                "standard_id": standard_id,
+                "document_id": None,
+                "registration_status": cert_status,
+                "quality_score": quality_score,
+                "registered_to_db": False,
+                "registered_to_documents": False,
+                "skipped_reason": integrity.reason,
+                "missing_checks": integrity.missing_checks,
+            },
+            gates={"registration_gate": "SKIP"},
+        )
+
     #    master_doc_json carries the full RegistrationRecord (gate verdicts, certified_at, etc.)
     #    into the master_doc_json column so no certification metadata is lost.
     doc_id = write_master_document(

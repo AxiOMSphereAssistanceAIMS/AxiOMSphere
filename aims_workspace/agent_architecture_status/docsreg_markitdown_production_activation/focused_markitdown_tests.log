@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/axi_omi_sphere/aims-workspace
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 9 items
+
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_adapter_reports_unavailable_cleanly PASSED [ 11%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_extracts_txt_or_md_fixture PASSED [ 22%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_extraction_writes_raw_markdown PASSED [ 33%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_extraction_report_has_word_count PASSED [ 44%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_unsupported_media_returns_unsupported_format PASSED [ 55%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_markitdown_failure_not_counted_as_registration_failure PASSED [ 66%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_auto_backend_uses_markitdown_for_office_format_when_available PASSED [ 77%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_markitdown_raw_output_not_certified_without_master_package PASSED [ 88%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_archive_member_can_use_markitdown_after_extraction PASSED [100%]
+
+============================== 9 passed in 0.17s ===============================

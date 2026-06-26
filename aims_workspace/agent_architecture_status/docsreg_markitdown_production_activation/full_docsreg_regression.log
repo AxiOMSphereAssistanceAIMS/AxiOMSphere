@@ -1,0 +1,1336 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/axi_omi_sphere/aims-workspace
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 929 items
+
+ops/tests/test_docsreg_abs_registration_package.py::TestMetadataCleaner::test_strips_paths PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestMetadataCleaner::test_strips_emails PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestMetadataCleaner::test_clean_text_unchanged PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestTextSanitizer::test_removes_page_headers PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestTextSanitizer::test_collapses_whitespace PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestMarkdownRenderer::test_renders_markdown PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestJSONLWriter::test_write_and_read PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestChunkBuilder::test_builds_chunks PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestChunkBuilder::test_write_chunks PASSED [  0%]
+ops/tests/test_docsreg_abs_registration_package.py::TestRecordAligner::test_perfect_alignment PASSED [  1%]
+ops/tests/test_docsreg_abs_registration_package.py::TestRecordAligner::test_empty_source_fails PASSED [  1%]
+ops/tests/test_docsreg_abs_registration_package.py::TestRegistrationPackageBuilder::test_builds_complete_package PASSED [  1%]
+ops/tests/test_docsreg_abs_registration_package.py::TestClassificationNotationTableArchetype::test_archetype_registered PASSED [  1%]
+ops/tests/test_docsreg_abs_registration_package.py::TestClassificationNotationTableArchetype::test_archetype_has_constraints PASSED [  1%]
+ops/tests/test_docsreg_abs_registration_package.py::TestClassificationNotationTableArchetype::test_archetype_fields_complete PASSED [  1%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestDetectAbsPageNumber::test_detects_page_number PASSED [  1%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestDetectAbsPageNumber::test_no_match_returns_none PASSED [  1%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassifyTableKind::test_table_a PASSED [  1%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassifyTableKind::test_table_b PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassifyTableKind::test_table_c PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassifyTableKind::test_table_d PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassifyTableKind::test_unknown PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestBuildSourcePage::test_builds_page PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSSymbolNormalizer::test_maltese_cross PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSSymbolNormalizer::test_anchoring_equipment PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSSymbolNormalizer::test_modu_position PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSSymbolNormalizer::test_none_input PASSED [  2%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSSymbolNormalizer::test_unknown_symbol PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestSymbolNormalizationPass::test_applies_normalization PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestMakeRecordId::test_deterministic PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestMakeRecordId::test_different_keys PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSNotationExtractor::test_extract_basic_records PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestABSNotationExtractor::test_empty_pages PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassificationRecordValidator::test_valid_record_passes PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassificationRecordValidator::test_duplicate_ids_critical PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassificationRecordValidator::test_missing_key_critical PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassificationRecordValidator::test_short_description_critical PASSED [  3%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassificationRecordValidator::test_missing_reference_high PASSED [  4%]
+ops/tests/test_docsreg_abs_vessels_classification_reconstruction.py::TestClassificationRecordValidator::test_low_confidence_high PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_zip_extracts_pdf_docx_txt PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_tar_gz_extracts_supported_files PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_archive_path_traversal_blocked PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_archive_size_limit_enforced PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_nested_archive_depth_limit PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_archive_members_get_provenance PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_extracted_supported_files_enter_queue PASSED [  4%]
+ops/tests/test_docsreg_archive_extractor.py::test_unsupported_archive_members_not_failed_registration PASSED [  5%]
+ops/tests/test_docsreg_archive_extractor.py::test_corrupt_archive_reported_separately PASSED [  5%]
+ops/tests/test_docsreg_archive_extractor.py::test_final_summary_has_archive_counts PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_passes_for_complete_certified_artifacts PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_cert_status_is_rejected PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_cert_status_is_pending PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_quality_report_path_is_none PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_quality_report_file_missing PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_quality_report_is_malformed_json PASSED [  5%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_quality_report_is_list_not_dict PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_component_score_missing PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_flags_each_missing_component_score PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_accepts_flat_scores_without_component_scores_key PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_metadata_safety_below_threshold PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_passes_metadata_safety_at_exact_threshold PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_metadata_safety_score_invalid_type PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_source_sha256_missing PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_source_sha256_is_none PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_master_document_path_is_none PASSED [  6%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_master_document_file_missing PASSED [  7%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_fails_when_master_document_empty PASSED [  7%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_reports_all_failures_at_once PASSED [  7%]
+ops/tests/test_docsreg_artifact_integrity_gate.py::test_artifact_integrity_result_as_dict_contains_all_keys PASSED [  7%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectEmptyManifest::test_reject_manifest_with_document_text_len_zero PASSED [  7%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectEmptyManifest::test_reject_manifest_with_missing_document_text_key PASSED [  7%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectEmptyManifest::test_reject_manifest_where_document_text_is_none PASSED [  7%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectBelowThreshold::test_reject_manifest_with_document_text_len_100 PASSED [  7%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectBelowThreshold::test_reject_manifest_with_document_text_len_500 PASSED [  7%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectBelowThreshold::test_reject_manifest_with_document_text_len_999 PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestAcceptAtAndAboveThreshold::test_accept_manifest_with_document_text_len_1200 PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestAcceptAtAndAboveThreshold::test_accept_manifest_with_document_text_len_2000 PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestAcceptAtAndAboveThreshold::test_accept_manifest_with_realistic_content PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectInvalidTypes::test_reject_manifest_when_document_text_is_list PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectInvalidTypes::test_reject_manifest_when_document_text_is_int PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectInvalidTypes::test_reject_manifest_when_document_text_is_dict PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectInvalidTypes::test_reject_when_manifest_itself_not_dict PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectionResultFunction::test_rejection_result_returns_correct_structure PASSED [  8%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectionResultFunction::test_rejection_result_sets_status_to_component_blocked PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectionResultFunction::test_rejection_result_sets_quality_to_zero PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectionResultFunction::test_rejection_result_includes_reason_in_notes PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectionResultFunction::test_rejection_result_sets_error_to_none PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestRejectionResultFunction::test_rejection_result_with_empty_reason PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestLoggingBehavior::test_validation_logs_on_rejection PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestLoggingBehavior::test_validation_logs_on_acceptance PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestEdgeCases::test_accept_manifest_with_1201_characters PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestEdgeCases::test_manifest_with_extra_keys_still_validates PASSED [  9%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestEdgeCases::test_document_text_with_whitespace_only PASSED [ 10%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestEdgeCases::test_document_text_with_newlines_count_as_length PASSED [ 10%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestIntegrationWithFixtures::test_validate_fixture_procedure_sample PASSED [ 10%]
+ops/tests/test_docsreg_auditor_input_contract.py::TestIntegrationWithFixtures::test_validate_fixture_policy_sample PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_batch_processes_direct_and_extracted_files PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_unsupported_inside_archives_not_counted_as_registration_failed PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_archive_extraction_failures_tracked_separately PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_final_manifest_written PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_archive_files_jsonl_written PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_extracted_processable_files_jsonl_written PASSED [ 10%]
+ops/tests/test_docsreg_batch_archives.py::test_summary_counts_match_reality PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_production_auditor_never_returns_component_blocked PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_production_auditor_quality_never_capped_at_59 PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_run_docsreg_cycle_accepts_auditor_fn_kwarg PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_run_docsreg_cycle_uses_provided_auditor_fn PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_run_one_cycle_passes_auditor_fn_to_run_docsreg_cycle PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_run_one_cycle_auditor_fn_is_not_noop PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_run_one_cycle_auditor_threshold_matches_target_quality PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_run_one_cycle_default_threshold_is_080_when_target_quality_absent PASSED [ 11%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_failed_audit_does_not_certify_document PASSED [ 12%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_passed_audit_can_certify_document PASSED [ 12%]
+ops/tests/test_docsreg_batch_auditor_wiring.py::test_quality_report_json_contains_five_component_scores PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_0_8_percent_loss_is_pass PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_1_5_percent_loss_boundary_is_pass PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_1_7_percent_loss_is_advisory PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_2_0_percent_loss_boundary_is_advisory PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_2_5_percent_loss_is_fail PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_7_1_percent_loss_is_fail PASSED [ 12%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_50_percent_loss_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestDataLossPercentageThresholds::test_35_1_percent_loss_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestHighLossOverridesQualityImprovement::test_7_percent_loss_with_quality_improvement_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestRequiredFieldLossAlwaysFails::test_required_field_lost_with_minimal_token_loss_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestRequiredFieldLossAlwaysFails::test_required_field_lost_with_zero_token_loss_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestRequiredFieldLossAlwaysFails::test_multiple_required_fields_lost_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestSectionLossAlwaysFails::test_single_section_lost_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestSectionLossAlwaysFails::test_multiple_sections_lost_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestReferenceLossAlwaysFails::test_single_reference_lost_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestReferenceLossAlwaysFails::test_multiple_references_lost_is_fail PASSED [ 13%]
+ops/tests/test_docsreg_data_retention_validator.py::TestTableLossAlwaysFails::test_single_table_lost_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestTableLossAlwaysFails::test_all_tables_lost_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestLinkLossAlwaysFails::test_single_link_lost_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestLinkLossAlwaysFails::test_multiple_links_lost_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestSemanticClaimLossAlwaysFails::test_single_semantic_claim_lost_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestSemanticClaimLossAlwaysFails::test_multiple_semantic_claims_lost_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestCombinedLossScenarios::test_lost_field_and_lost_section_is_fail PASSED [ 14%]
+ops/tests/test_docsreg_data_retention_validator.py::TestCombinedLossScenarios::test_no_losses_with_high_token_loss_in_pass_range_is_pass PASSED [ 14%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c8_xlsx_rejected_at_parse_gate PASSED [ 14%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c8_zip_rejected_at_parse_gate PASSED [ 15%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c5_pass_doc_md_result_is_pass PASSED [ 15%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c6_pass_doc_pdf_result_is_pass PASSED [ 15%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c7_empty_doc_md_result_is_fail PASSED [ 15%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c9_c10_learning_and_gold_pairs_written PASSED [ 15%]
+ops/tests/test_docsreg_e2e_acceptance.py::test_c1_all_five_inputs_no_exception PASSED [ 15%]
+ops/tests/test_docsreg_knowledge_source.py::test_normalise_component_scores_returns_exact_five_keys PASSED [ 15%]
+ops/tests/test_docsreg_knowledge_source.py::test_determine_bottleneck_takes_argmin PASSED [ 15%]
+ops/tests/test_docsreg_knowledge_source.py::test_build_knowledge_entry_contains_real_audit_signal PASSED [ 15%]
+ops/tests/test_docsreg_knowledge_source.py::test_record_knowledge_source_writes_json_and_jsonl PASSED [ 16%]
+ops/tests/test_docsreg_knowledge_source.py::test_passed_quality_creates_sft_eligibility_but_not_training_approval PASSED [ 16%]
+ops/tests/test_docsreg_knowledge_source.py::test_passed_quality_after_prior_failure_creates_dpo_eligibility PASSED [ 16%]
+ops/tests/test_docsreg_knowledge_source.py::test_component_blocked_is_flagged_as_unrecognised_not_normalised PASSED [ 16%]
+ops/tests/test_docsreg_learning_artifacts.py::test_sft_pair_requires_eligible_entry PASSED [ 16%]
+ops/tests/test_docsreg_learning_artifacts.py::test_sft_pair_created_for_passed_entry_but_not_approved PASSED [ 16%]
+ops/tests/test_docsreg_learning_artifacts.py::test_dpo_pair_requires_dpo_eligible_chosen_entry PASSED [ 16%]
+ops/tests/test_docsreg_learning_artifacts.py::test_dpo_pair_created_when_chosen_has_prior_failure_and_better_quality PASSED [ 16%]
+ops/tests/test_docsreg_learning_artifacts.py::test_dpo_rejects_chosen_quality_not_better_than_rejected PASSED [ 16%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_failed_real_audit_writes_learning_but_not_gold PASSED [ 17%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_passed_real_audit_writes_learning_and_gold PASSED [ 17%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_noop_component_blocked_does_not_write_gold PASSED [ 17%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_malformed_quality_report_raises_not_silently_swallowed PASSED [ 17%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_dpo_pair_requires_same_source_identity PASSED [ 17%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_dpo_pair_not_created_across_unrelated_files PASSED [ 17%]
+ops/tests/test_docsreg_learning_loop_guardrails.py::test_two_cycle_evidence_fail_then_pass_produces_dpo PASSED [ 17%]
+ops/tests/test_docsreg_learning_production_wiring.py::test_record_cycle_learning_populates_source_and_master_paths PASSED [ 17%]
+ops/tests/test_docsreg_learning_production_wiring.py::test_production_pass_cycle_writes_gold_pair_when_paths_exist PASSED [ 17%]
+ops/tests/test_docsreg_learning_production_wiring.py::test_production_fail_then_pass_same_source_writes_dpo_pair PASSED [ 17%]
+ops/tests/test_docsreg_learning_production_wiring.py::test_missing_paths_skips_pairs_but_writes_learning_entry PASSED [ 18%]
+ops/tests/test_docsreg_learning_production_wiring.py::test_component_blocked_never_writes_gold_or_dpo PASSED [ 18%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_matches_same_source_sha256 PASSED [ 18%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_rejects_different_sha256_same_filename PASSED [ 18%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_rejects_missing_sha256_when_other_has_sha256 PASSED [ 18%]
+ops/tests/test_docsreg_learning_source_identity.py::test_dpo_filename_fallback_only_when_both_sha256_missing PASSED [ 18%]
+ops/tests/test_docsreg_learning_source_identity.py::test_archive_member_uses_extracted_sha256_for_identity PASSED [ 18%]
+ops/tests/test_docsreg_learning_source_identity.py::test_source_sha256_written_to_learning_entry PASSED [ 18%]
+ops/tests/test_docsreg_live_runtime_smoke.py::test_live_runtime_smoke_creates_master_package SKIPPEDE2/Documents/Standards/AIM INF/ISO 55000
+Asset Managment Policy.pdf)                                              [ 18%]
+ops/tests/test_docsreg_live_runtime_smoke.py::test_live_runtime_smoke_writes_quality_report SKIPPEDE2/Documents/Standards/AIM INF/ISO 55000
+Asset Managment Policy.pdf)                                              [ 19%]
+ops/tests/test_docsreg_live_runtime_smoke.py::test_live_runtime_smoke_uses_real_auditor SKIPPEDE2/Documents/Standards/AIM INF/ISO 55000
+Asset Managment Policy.pdf)                                              [ 19%]
+ops/tests/test_docsreg_live_runtime_smoke.py::test_live_runtime_smoke_writes_learning_entry SKIPPEDE2/Documents/Standards/AIM INF/ISO 55000
+Asset Managment Policy.pdf)                                              [ 19%]
+ops/tests/test_docsreg_live_runtime_smoke.py::test_live_runtime_smoke_does_not_certify_failed_doc SKIPPEDE2/Documents/Standards/AIM INF/ISO
+55000 Asset Managment Policy.pdf)                                        [ 19%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_adapter_reports_unavailable_cleanly PASSED [ 19%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_extracts_txt_or_md_fixture PASSED [ 19%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_extraction_writes_raw_markdown PASSED [ 19%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_extraction_report_has_word_count PASSED [ 19%]
+ops/tests/test_docsreg_markitdown_adapter.py::test_markitdown_unsupported_media_returns_unsupported_format PASSED [ 19%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_markitdown_failure_not_counted_as_registration_failure PASSED [ 20%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_auto_backend_uses_markitdown_for_office_format_when_available PASSED [ 20%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_markitdown_raw_output_not_certified_without_master_package PASSED [ 20%]
+ops/tests/test_docsreg_markitdown_pipeline_integration.py::test_archive_member_can_use_markitdown_after_extraction PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_audit_dict_has_required_keys PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_audit_quality_is_float_in_range PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_audit_section_coverage_matches_quality PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_audit_recommendations_is_list PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_empty_document_returns_fail_repairable PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_whitespace_only_document_fails PASSED [ 20%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_stub_document_returns_fail_repairable PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_stub_document_recommendations_mention_sections PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_well_structured_document_has_quality_above_zero PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_well_structured_low_threshold_passes PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_strict_threshold_fails_moderate_document PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_zero_threshold_always_passes PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_manifest_without_document_text_attribute_fails_gracefully PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_manifest_with_none_document_text_fails_gracefully PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_document_type_captured_in_archetype PASSED [ 21%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_certification_loop_accepts_production_auditor PASSED [ 22%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_certification_loop_run_claude_code_audit_uses_injected_fn PASSED [ 22%]
+ops/tests/test_docsreg_phase10_production_auditor.py::test_production_auditor_replaces_noop_quality_zero PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_returns_campaign_runner PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_wires_production_auditor_not_noop PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_loop_is_certification_loop PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_respects_auditor_threshold PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_sets_evidence_root PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_passes_max_cycles PASSED [ 22%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_passes_target_quality PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_factory_passes_document_text PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_empty_document_types_returns_skipped_campaign PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_run_campaign_single_type_certified PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_run_campaign_single_type_failed PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_run_campaign_multiple_types_all_certified PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_run_campaign_mixed_results PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_run_campaign_writes_summary_json PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_campaign_summary_json_has_required_fields PASSED [ 23%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_all_certified_true_when_all_pass PASSED [ 24%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_all_certified_false_when_zero_types PASSED [ 24%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_all_certified_false_when_partial_pass PASSED [ 24%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_campaign_outcome_has_campaign_id PASSED [ 24%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_campaign_outcome_timestamps_present PASSED [ 24%]
+ops/tests/test_docsreg_phase11_campaign_factory.py::test_campaign_result_best_quality_propagated PASSED [ 24%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_scheduler_flag_is_enabled PASSED [ 24%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_cyclic_generation_default_auditor_is_production PASSED [ 24%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_production_auditor_mode_uses_build_structure_auditor_fn PASSED [ 24%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_production_auditor_mode_quality_is_not_hardcoded_one PASSED [ 24%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_noop_mode_still_works PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_is_importable PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_returns_dict PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_empty_types PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_required_keys PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_campaign_id_prefix PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_accepts_custom_orchestrator PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_mocked_single_type_certified PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_campaign_writes_summary_json PASSED [ 25%]
+ops/tests/test_docsreg_phase12_production_wiring.py::test_run_docsreg_document_type_cycle_docstring_mentions_production PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_classifies_new_section_as_critical PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_classifies_table_as_critical PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_classifies_pdca_table_as_critical PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_classifies_sub_element_expansion_as_nesting PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_classifies_section_expansion_as_high PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_classifies_kpi_improvement_as_content PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_detects_section_target PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_detects_global_target PASSED [ 26%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_operation_detection_new_section PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_operation_detection_add_table PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestRecommendationClassifier::test_operation_detection_expand PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1Selector::test_selects_critical_and_high_only PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1Selector::test_batches_to_max_recommendations PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1Selector::test_prioritizes_critical_before_high PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1Selector::test_handles_empty_recommendations PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestSemanticStubValidator::test_rejects_tbd_content PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestSemanticStubValidator::test_rejects_placeholder_content PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestSemanticStubValidator::test_rejects_incomplete_markers PASSED [ 27%]
+ops/tests/test_docsreg_phase1_convergence.py::TestSemanticStubValidator::test_rejects_too_short_content PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestSemanticStubValidator::test_accepts_real_section_content PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestSemanticStubValidator::test_rejects_prose_only_compliance_matrix PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1ConvergenceOrchestrator::test_prepares_phase1_batch PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1ConvergenceOrchestrator::test_phase1_count_respects_limit PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1ConvergenceOrchestrator::test_produces_classification_stats PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1IntegrationScenario::test_cycle2_recommendations_classification PASSED [ 28%]
+ops/tests/test_docsreg_phase1_convergence.py::TestPhase1IntegrationScenario::test_cycle2_metrics_baseline PASSED [ 28%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_1_docx_file_detection_triggers_render_gate PASSED [ 28%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_2_render_gate_writes_metrics_to_artifacts PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_3_failed_render_is_explicit_not_silent PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_4_non_docx_path_skips_render_gate PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_5_phase2_type_aware_thresholds_applied PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_6_severity_routing_critical_failure_blocks PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_6b_severity_routing_blank_pages_warn_conditionally PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_6c_severity_routing_degraded_continues_with_flag PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_7_phase2_type_specific_profiles_load_correctly PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_scenario_8_phase2_phase3_integrated_without_breaking_phase1_stages PASSED [ 29%]
+ops/tests/test_docsreg_phase2_phase3_integration.py::TestPhase2Phase3Integration::test_blank_page_threshold_calculation_boundary_cases PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_terminal_state_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_stage_result_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_context_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_result_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_cycle_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_data_retention_validator_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestPhase2ModulesImported::test_evidence_store_imported PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_terminal_state_has_16_states PASSED [ 30%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_stage_outcome_has_all_states PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_retention_verdict_has_three_states PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_stage_result_is_frozen_dataclass PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_universal_loop_result_is_frozen_dataclass PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestQualityTargetMandatoryValues::test_quality_target_is_095 PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestQualityTargetMandatoryValues::test_aspirational_target_is_098 PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestQualityTargetMandatoryValues::test_no_placeholder_075_in_code PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestQualityTargetMandatoryValues::test_plateau_threshold_is_002 PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoPlaceholderOutputs::test_no_repaired_string_literal PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoPlaceholderOutputs::test_repair_service_returns_str PASSED [ 31%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestReadyForReviewNotRegistered::test_ready_for_review_is_different_from_registration PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestReadyForReviewNotRegistered::test_registration_completed_exists PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestReadyForReviewNotRegistered::test_cycle_does_not_advance_to_registration PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestDataLossOverTwoPercentRejected::test_data_loss_threshold_over_2_percent_is_fail PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestDataLossOverTwoPercentRejected::test_data_loss_threshold_exactly_2_0_is_fail PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestDataLossOverTwoPercentRejected::test_data_loss_threshold_1_5_percent_is_pass PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRequiredFieldLossRejected::test_lost_required_field_is_fail PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRequiredFieldLossRejected::test_lost_section_is_fail PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRequiredFieldLossRejected::test_lost_reference_is_fail PASSED [ 32%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRequiredFieldLossRejected::test_lost_table_is_fail PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRequiredFieldLossRejected::test_lost_link_is_fail PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRequiredFieldLossRejected::test_lost_semantic_claim_is_fail PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRepairCandidateNotPromotedOnRetentionFail::test_retention_fail_overrides_quality_improvement PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestRepairCandidateNotPromotedOnRetentionFail::test_failed_retention_written_to_evidence_only PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_evidence_store_write_json_method_exists PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_evidence_store_create_stage_evidence_method PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_evidence_store_create_loop_evidence_package_method PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_evidence_store_detect_failure_class_method PASSED [ 33%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_failure_class_detection_timeout PASSED [ 34%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_failure_class_detection_structure PASSED [ 34%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_failure_class_detection_data_preservation PASSED [ 34%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_stage_result_has_diagnostics_field PASSED [ 34%]
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_universal_loop_result_has_evidence_package_field PASSED [ 34%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestConcreteArchetypeRegistry::test_registry_lists_builtin_archetypes PASSED [ 34%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestConcreteArchetypeRegistry::test_registry_retrieves_maintenance_procedure PASSED [ 34%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestConcreteArchetypeRegistry::test_registry_retrieves_policy_framework PASSED [ 34%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestConcreteArchetypeRegistry::test_registry_raises_on_unknown_archetype PASSED [ 34%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestConcreteArchetypeRegistry::test_registry_can_register_custom_archetype PASSED [ 34%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorUnknownArchetype::test_unknown_archetype_creates_critical_violation PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorUnknownArchetype::test_unknown_archetype_in_policy_violations PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorMaintenanceProcedure::test_maintenance_procedure_missing_sections PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorMaintenanceProcedure::test_maintenance_procedure_with_all_sections PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorMaintenanceProcedure::test_maintenance_procedure_section_min_length PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorPolicyFramework::test_policy_framework_missing_sections PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorPolicyFramework::test_policy_framework_required_fields PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorFieldExtraction::test_field_extraction_exact_match PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorFieldExtraction::test_field_extraction_spaced_variant PASSED [ 35%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorFieldExtraction::test_field_extraction_dashed_variant PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorReferences::test_reference_extraction_pattern_ref PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorReferences::test_reference_extraction_iso_pattern PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorReferences::test_missing_required_reference PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorTables::test_table_extraction_pipe_format PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestDocumentValidatorTables::test_missing_required_table PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestSemanticClaimExtraction::test_semantic_claim_extraction_policy PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestSemanticClaimExtraction::test_semantic_claim_extraction_maintenance PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestViolationSeverityEnum::test_violation_severity_values PASSED [ 36%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestViolationSeverityEnum::test_violation_severity_comparison PASSED [ 37%]
+ops/tests/test_docsreg_phase3_archetype_adapter.py::TestConstraintTypeEnum::test_constraint_type_values PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_stub_word_threshold_is_30 PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_expansion_target_is_80 PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_max_phase3_recommendations_is_6 PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_eligible_tiers_contains_three_values PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_reference_standards_iso_only PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_fabricated_standards_patterns_count PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestModuleConstants::test_reference_iso_standards_not_in_fabricated_patterns PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_numeric_heading_captured PASSED [ 37%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_non_numeric_heading_skipped PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_multi_level_nested_sections PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_body_ends_at_next_heading PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_last_section_body_reaches_eof PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_empty_document_returns_empty_list PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSplitIntoSections::test_section_id_with_three_parts PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_detects_api_510 PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_detects_api_570 PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_detects_nace_sp_pattern PASSED [ 38%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_detects_iec_60364 PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_detects_nfpa_70 PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_detects_asme_b31 PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_does_not_flag_iso_55001 PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_does_not_flag_iso_9000 PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_multiple_fabricated_in_one_text PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_clean_text_returns_empty PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestFindFabricatedStandards::test_case_insensitive_matching PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_stub_detection_below_threshold PASSED [ 39%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_non_stub_above_threshold PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_exactly_at_threshold_is_not_stub PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_fabricated_standards_detection PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_quality_score_stub_penalty PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_quality_score_perfect_clean_section PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_quality_score_capped_at_zero PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_assessment_fields_present PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_multiple_sections_scanned PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestDocumentContentScannerScan::test_empty_document_returns_empty_list PASSED [ 40%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_fabricated_standards_rec_generated PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_stub_rec_generated PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_standards_recs_before_stub_recs PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_no_stub_rec_when_standards_issue_present PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_clean_section_produces_no_rec PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_rec_text_mentions_iso_standards PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_stub_rec_mentions_expansion_target PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestAutoRecommendationGenerator::test_fabricated_standards_capped_at_three_in_rec PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_eligible_deferred_recs_selected PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_ineligible_deferred_recs_skipped PASSED [ 41%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_format_low_tier_is_eligible PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_structure_high_tier_is_eligible PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_max_limit_enforced PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_overflow_goes_to_skipped PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_deduplication_on_prefix PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_stub_sections_reported PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_fabricated_sections_reported PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_total_from_deferred_count PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_total_auto_generated_count PASSED [ 42%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_custom_max_limit PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_section_assessments_returned PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestPhase3ContentQualitySelector::test_deferred_before_auto_in_merged PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_returns_all_nine_keys PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_status_has_work_when_stubs_present PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_status_no_work_on_clean_doc PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_phase3_version_is_v1 PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_none_deferred_treated_as_empty_list PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_section_assessments_are_dicts PASSED [ 43%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_idempotent_on_clean_doc PASSED [ 44%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_fabricated_standards_recs_in_selected PASSED [ 44%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_empty_document_returns_no_work PASSED [ 44%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_total_counts_are_integers PASSED [ 44%]
+ops/tests/test_docsreg_phase3_content_quality.py::TestSelectPhase3Recommendations::test_with_eligible_deferred_increases_selected PASSED [ 44%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestArchetypeSnapshotBuilderInit::test_builder_initializes_with_registry PASSED [ 44%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestArchetypeSnapshotBuilderInit::test_builder_registry_has_builtin_archetypes PASSED [ 44%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestTokenEstimation::test_token_estimation_empty_content PASSED [ 44%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestTokenEstimation::test_token_estimation_single_word PASSED [ 44%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestTokenEstimation::test_token_estimation_100_words PASSED [ 44%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestTokenEstimation::test_token_estimation_1000_words PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSectionExtraction::test_extract_empty_sections PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSectionExtraction::test_extract_single_section PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSectionExtraction::test_extract_multiple_sections PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSectionExtraction::test_extract_sections_normalized PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSectionExtraction::test_extract_sections_with_subsections PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderUnknownArchetype::test_unknown_archetype_raises PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderUnknownArchetype::test_unknown_archetype_error_message PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_returns_document_snapshot PASSED [ 45%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_sets_document_id PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_without_document_id PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_sets_archetype_name PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_sets_original_content PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_calculates_token_count PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_extracts_sections PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_extracts_fields PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_extracts_references PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_extracts_tables PASSED [ 46%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderBuildMethod::test_build_extracts_semantic_claims PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderMaintenanceProcedure::test_build_maintenance_procedure_snapshot PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotBuilderPolicyFramework::test_build_policy_framework_snapshot PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestDocumentSnapshotImmutability::test_snapshot_is_frozen PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestDocumentSnapshotImmutability::test_snapshot_tuple_fields_immutable PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotDataPreservation::test_snapshot_preserves_content_length PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotDataPreservation::test_snapshot_preserves_special_characters PASSED [ 47%]
+ops/tests/test_docsreg_phase3_snapshot_builder.py::TestSnapshotDataPreservation::test_snapshot_multiple_builds_independent PASSED [ 47%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassEnum::test_failure_class_values PASSED [ 47%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassEnum::test_failure_class_length PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestDocumentFailureImmutability::test_failure_is_frozen PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestDocumentFailureImmutability::test_failure_preserves_all_fields PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_timeout_error PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_memory_error PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_connection_error PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_archetype_policy_violation PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_assertion_error PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_type_error PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_attribute_error PASSED [ 48%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_unknown_error PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_classify_case_insensitive_timeout PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_create_failure_record_generates_id PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_create_failure_record_classifies_error PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureClassifier::test_create_failure_record_truncates_context PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollectorInit::test_collector_initializes_empty PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollectorInit::test_collector_initializes_methods PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_emit_failure_event_returns_event PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_emit_creates_unique_event_id PASSED [ 49%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_emit_copies_failure_fields PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_required_for_timeout PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_required_for_resource_exhaustion PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_required_for_bug PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_not_required_for_network_error PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_not_required_for_policy_violation PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_suggested_action_for_timeout PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_suggested_action_for_resource_exhaustion PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_suggested_action_for_bug PASSED [ 50%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_returns_all PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_filters_by_document PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_filters_by_time_window PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_with_document_and_time_filter PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_empty PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_single PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_multiple PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_mixed PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_respects_time_window PASSED [ 51%]
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_respects_document_filter PASSED [ 51%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairDecisionEnum::test_repair_decision_values PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairDecisionEnum::test_repair_decision_comparison PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairPriorityEnum::test_repair_priority_values PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairPriorityEnum::test_repair_priority_comparison PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairActionImmutability::test_repair_action_is_frozen PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairActionImmutability::test_repair_action_fields PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairOutcomeImmutability::test_repair_outcome_is_frozen PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairOutcomeImmutability::test_repair_outcome_fields PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMetaImprovementControllerInit::test_controller_initializes PASSED [ 52%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMetaImprovementControllerInit::test_controller_decision_policy_built PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestDecisionPolicyMapping::test_timeout_policy PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestDecisionPolicyMapping::test_resource_exhaustion_policy PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestDecisionPolicyMapping::test_bug_policy PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestDecisionPolicyMapping::test_network_error_policy PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestDecisionPolicyMapping::test_policy_violation_policy PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestDecisionPolicyMapping::test_other_policy PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_make_decision_from_timeout_event PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_make_decision_from_bug_event PASSED [ 53%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_decision_stored_in_actions_list PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_max_retries_set_based_on_decision PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestReasoningGeneration::test_reasoning_includes_failure_class PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestReasoningGeneration::test_reasoning_includes_decision_and_priority PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRecordRepairOutcome::test_record_successful_outcome PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRecordRepairOutcome::test_record_failed_outcome PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRecordRepairOutcome::test_outcome_stored_in_outcomes_list PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_accept_repair_actions PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_escalate_actions PASSED [ 54%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_actions_respects_max_age PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_critical_priority_actions PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_actions_by_priority_respects_max_age PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetOutcomesForAction::test_get_outcomes_for_action_id PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetOutcomesForAction::test_get_outcomes_for_nonexistent_action PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetOutcomesForAction::test_outcomes_isolated_by_action PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_all_successful PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_all_failed PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_mixed PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_no_outcomes PASSED [ 55%]
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_respects_max_age PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_timeout_exception_classification PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_memory_error_classification PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_connection_error_classification PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_assertion_error_classification PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_policy_violation_classification PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_unknown_error_classification PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestExceptionClassification::test_context_excerpt_truncation PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_timeout_routes_to_accept_repair_high_priority PASSED [ 56%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_resource_exhaustion_routes_to_defer_critical_priority PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_bug_routes_to_escalate_critical_priority PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_network_error_routes_to_accept_medium_priority PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_policy_violation_routes_to_accept_high_priority PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_other_routes_to_skip_low_priority PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestFailureRouting::test_routing_context_immutability PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestHardGateEnforcement::test_pass_verdict_accepts_repair PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestHardGateEnforcement::test_advisory_verdict_accepts_repair PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestHardGateEnforcement::test_fail_verdict_rejects_repair PASSED [ 57%]
+ops/tests/test_docsreg_phase6_integration.py::TestHardGateEnforcement::test_retention_report_includes_all_metrics PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestOutcomeRecording::test_record_successful_outcome PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestOutcomeRecording::test_record_failed_outcome PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestOutcomeRecording::test_outcome_immutability PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_get_repair_metrics_returns_success_rate PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_metrics_default_window_60_minutes PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_metrics_custom_window PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestEndToEndPipeline::test_timeout_pipeline_end_to_end PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestEndToEndPipeline::test_resource_exhaustion_pipeline_escalates_critical PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestEndToEndPipeline::test_bug_pipeline_escalates_to_human PASSED [ 58%]
+ops/tests/test_docsreg_phase6_integration.py::TestRegressionPreviousPhases::test_phase3_failure_classifier_integration PASSED [ 59%]
+ops/tests/test_docsreg_phase6_integration.py::TestRegressionPreviousPhases::test_phase4_failure_events_integration PASSED [ 59%]
+ops/tests/test_docsreg_phase6_integration.py::TestRegressionPreviousPhases::test_phase5_meta_improvement_controller_integration PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceGeneratorBasics::test_evidence_generator_initialization PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceGeneratorBasics::test_create_evidence_package_returns_dict PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceGeneratorBasics::test_evidence_package_has_required_sections PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceMetadata::test_metadata_is_complete PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceMetadata::test_metadata_values_correct PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestAggregatedMetrics::test_aggregated_metrics_has_required_fields PASSED [ 59%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestAggregatedMetrics::test_aggregated_metrics_counts_sum PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestAggregatedMetrics::test_quality_metrics_present PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestAggregatedMetrics::test_performance_metrics_present PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestAggregatedMetrics::test_retention_metrics_present PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestSkillDetails::test_skill_details_covers_all_skills PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestSkillDetails::test_skill_detail_has_required_fields PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestSkillDetails::test_skill_detail_has_five_cases PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestSkillDetails::test_skill_case_has_required_fields PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDiagnostics::test_diagnostics_has_required_sections PASSED [ 60%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDiagnostics::test_retention_failures_list_type PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDiagnostics::test_advisory_cases_list_type PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDiagnostics::test_slow_repairs_list_type PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDeploymentReadiness::test_deployment_readiness_has_required_fields PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDeploymentReadiness::test_deployment_status_values PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDeploymentReadiness::test_deployment_recommendation_present PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestDeploymentReadiness::test_deployment_gates_present PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestJsonExport::test_export_json_creates_file PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestJsonExport::test_exported_json_is_valid PASSED [ 61%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestJsonExport::test_exported_json_contains_all_sections PASSED [ 62%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestTextReportExport::test_export_text_report_creates_file PASSED [ 62%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestTextReportExport::test_exported_text_is_string PASSED [ 62%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestTextReportExport::test_exported_text_contains_sections PASSED [ 62%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestTextReportExport::test_exported_text_has_proper_formatting PASSED [ 62%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceIntegration::test_full_evidence_workflow PASSED [ 62%]
+ops/tests/test_docsreg_phase7_evidence_generator.py::TestEvidenceIntegration::test_evidence_reflects_actual_results PASSED [ 62%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestResultAggregatorBasics::test_aggregator_initialization PASSED [ 62%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestResultAggregatorBasics::test_get_summary_returns_summary_object PASSED [ 62%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestResultAggregatorBasics::test_summary_has_all_fields PASSED [ 62%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestResultAggregatorBasics::test_summary_counts_sum_correctly PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestSkillClassification::test_classify_skills PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestSkillClassification::test_classification_covers_all_skills PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestSkillClassification::test_get_skills_by_verdict_promoted PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestSkillClassification::test_get_skills_by_verdict_advisory PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestSkillClassification::test_get_skills_by_verdict_blocked PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestFailureDetection::test_find_retention_failures PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestFailureDetection::test_find_advisory_cases PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestFailureDetection::test_get_slowest_repairs PASSED [ 63%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestFailureDetection::test_slowest_repairs_are_sorted PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestFailureDetection::test_get_best_quality_improvements PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestFailureDetection::test_best_improvements_are_sorted PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestReportGeneration::test_generate_report PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestReportGeneration::test_report_contains_summary_section PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestReportGeneration::test_report_contains_verdict_section PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestReportGeneration::test_report_contains_failure_section_if_failures PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestReportGeneration::test_report_is_properly_formatted PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestAggregatorRecommendations::test_recommendation_is_string PASSED [ 64%]
+ops/tests/test_docsreg_phase7_result_aggregator.py::TestAggregatorRecommendations::test_recommendation_matches_verdict PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillTestingFrameworkBasics::test_framework_initialization PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillTestingFrameworkBasics::test_load_test_cases PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillTestingFrameworkBasics::test_test_cases_have_verdicts PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillExecution::test_execute_all_skills PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillExecution::test_execution_sets_timestamp PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillExecution::test_skill_suite_result_has_five_cases PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillExecution::test_skill_result_verdict_logic PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestRetentionHardGate::test_validate_retention_hard_gate_pass PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestRetentionHardGate::test_validate_retention_hard_gate_advisory PASSED [ 65%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestRetentionHardGate::test_validate_retention_hard_gate_fail PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestMetricsCalculation::test_get_overall_metrics PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestMetricsCalculation::test_overall_metrics_verdict_logic PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestMetricsCalculation::test_quality_delta_metrics PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestMetricsCalculation::test_repair_time_metrics PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestEvidenceGeneration::test_generate_evidence_package PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestEvidenceGeneration::test_evidence_metadata_complete PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestEvidenceGeneration::test_evidence_skill_results_complete PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestEvidenceGeneration::test_evidence_case_details PASSED [ 66%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestEvidenceExport::test_export_evidence_json PASSED [ 67%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestEvidenceExport::test_exported_json_is_valid PASSED [ 67%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestFrameworkIntegration::test_full_execution_workflow PASSED [ 67%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestFrameworkIntegration::test_multiple_executions_independent PASSED [ 67%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestFrameworkIntegration::test_get_skill_result PASSED [ 67%]
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestFrameworkIntegration::test_get_all_results PASSED [ 67%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryAnalyzerBasics::test_analyzer_initializes PASSED [ 67%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryAnalyzerBasics::test_finds_all_blocked_skills PASSED [ 67%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryAnalyzerBasics::test_get_blocked_cases_returns_fail_cases PASSED [ 67%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryAnalyzerBasics::test_get_blocked_cases_nonexistent_skill PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestDiagnosis::test_diagnose_case_returns_diagnosis PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestDiagnosis::test_diagnose_all_skills PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestDiagnosis::test_severity_moderate_for_2_to_3_pct PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestDiagnosis::test_root_cause_is_skill_specific PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestProposal::test_propose_recovery_returns_proposal PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestProposal::test_all_skills_get_proposals PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestProposal::test_proposal_has_rationale PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestProposal::test_proposal_estimated_loss_is_lower PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoverySimulator::test_simulate_returns_outcome PASSED [ 68%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoverySimulator::test_simulate_all PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoverySimulator::test_simulated_loss_lower_than_original PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoverySimulator::test_improvement_pct_is_positive PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoverySimulator::test_verdict_resolved_when_below_threshold PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoverySimulator::test_simulation_notes_nonempty PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_orchestrator_initializes PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_run_returns_summary PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_summary_counts_sum PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_skill_reports_complete PASSED [ 69%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_each_skill_has_diagnosis_proposal_outcome PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_summary_has_recommendation PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestRecoveryOrchestrator::test_overall_verdict_is_valid PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestOrchestratorNoBlocked::test_no_blocked_returns_resolved PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestOrchestratorReport::test_generate_report PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestOrchestratorReport::test_report_contains_all_skills PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestOrchestratorReport::test_report_contains_verdicts PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestOrchestratorReport::test_report_contains_strategies PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestOrchestratorReport::test_report_has_delimiters PASSED [ 70%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestGetSummaryIdempotent::test_get_summary_without_run PASSED [ 71%]
+ops/tests/test_docsreg_phase8_recovery_engine.py::TestGetSummaryIdempotent::test_get_skill_reports PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_quality_delta_no_improvement PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_quality_delta_marginal PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_quality_delta_moderate PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_quality_delta_good PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_quality_delta_excellent PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_retention_low PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_retention_moderate PASSED [ 71%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_retention_high PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBucketFunctions::test_retention_excellent PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_empty_dataset PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_balanced_dataset PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_failure_class_minimum_violation PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_skill_id_minimum_violation PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_failure_class_share_violation PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_blocked_verdict_violation PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_advisory_verdict_violation PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_distribution_buckets_populated PASSED [ 72%]
+ops/tests/test_docsreg_phase9_balance_analyzer.py::TestBalanceAnalyzer::test_passes_when_sufficient PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_build_from_records_basic PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_pipeline_produces_train_and_val PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_no_document_leakage PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_split_ratio_approximately_80_20 PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_rejected_examples_tracked PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_leakage_detection_runs PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_anonymization_applied PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_deduplication_runs PASSED [ 73%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_quality_report_generated PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_manifest_document_ids PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_empty_input PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_seed_reproducibility PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_build_from_evidence PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_builder.py::TestDatasetBuilder::test_build_from_examples PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestAdmissionVerdict::test_values PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestAdmissionVerdict::test_count PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestLeakageType::test_all_types PASSED [ 74%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestLeakageType::test_count PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestRejectionReason::test_count PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestRejectionReason::test_key_reasons PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestTrainingExample::test_create PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestTrainingExample::test_to_dict PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestTrainingExample::test_all_fields_present PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestLeakageFinding::test_create PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDatasetAdmissionResult::test_accepted PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDatasetAdmissionResult::test_rejected_with_reasons PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDeduplicationResult::test_no_duplicates PASSED [ 75%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDeduplicationResult::test_with_duplicates PASSED [ 76%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestBalanceReport::test_empty PASSED [ 76%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestBalanceReport::test_with_violations PASSED [ 76%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDatasetManifest::test_defaults PASSED [ 76%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDatasetManifest::test_serializable PASSED [ 76%]
+ops/tests/test_docsreg_phase9_dataset_models.py::TestDatasetQualityReport::test_defaults PASSED [ 76%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestNormalizeText::test_lowercase PASSED [ 76%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestNormalizeText::test_collapse_whitespace PASSED [ 76%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestNormalizeText::test_unicode_normalization PASSED [ 76%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestJaccardSimilarity::test_identical PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestJaccardSimilarity::test_completely_different PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestJaccardSimilarity::test_partial_overlap PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestJaccardSimilarity::test_both_empty PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestJaccardSimilarity::test_one_empty PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_no_duplicates PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_exact_duplicate PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_normalized_duplicate PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_near_duplicate PASSED [ 77%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_keeps_better_quality_delta PASSED [ 78%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_keeps_better_retention PASSED [ 78%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_keeps_newer_version_on_tie PASSED [ 78%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_empty_input PASSED [ 78%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_same_doc_class_output_duplicate PASSED [ 78%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_result_ids_tracked PASSED [ 78%]
+ops/tests/test_docsreg_phase9_deduplicator.py::TestDeduplicator::test_threshold_configurable PASSED [ 78%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_output_dir_created PASSED [ 78%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_generate_all_creates_9_files PASSED [ 78%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_training_jsonl_content PASSED [ 79%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_manifest_json_valid PASSED [ 79%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_leakage_report_with_findings PASSED [ 79%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_dedup_report_not_run PASSED [ 79%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_readiness_checklist_verdict PASSED [ 79%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_readiness_checklist_not_ready PASSED [ 79%]
+ops/tests/test_docsreg_phase9_evidence_generator.py::TestEvidenceGenerator::test_empty_jsonl_for_no_examples PASSED [ 79%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_build_single PASSED [ 79%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_build_from_records PASSED [ 79%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_build_from_records_skips_empty PASSED [ 79%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_quality_delta_computed PASSED [ 80%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_sha256_hashes_correct PASSED [ 80%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_build_from_evidence PASSED [ 80%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_build_from_evidence_empty PASSED [ 80%]
+ops/tests/test_docsreg_phase9_example_builder.py::TestExampleBuilder::test_examples_property PASSED [ 80%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_email PASSED [ 80%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_phone PASSED [ 80%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_company_name PASSED [ 80%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_company_siemens PASSED [ 80%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_person_name PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_ai_marker PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_ai_generated_label PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_unix_path PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_windows_path PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_author_metadata PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_approver PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_html_comment PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_bracket_comment PASSED [ 81%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_internal_id PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_logo_marker PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_hidden_text PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_tracked_change PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_clean_text_no_findings PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_has_leakage PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_anonymize_removes_email PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_anonymize_removes_company PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_anonymize_recomputes_hashes PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_anonymize_all PASSED [ 82%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_detect_all PASSED [ 83%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_scans_failure_context PASSED [ 83%]
+ops/tests/test_docsreg_phase9_leakage_detector.py::TestLeakageDetector::test_scans_repair_instruction PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_perfect_example_accepted PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_repair_not_promoted PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_retention_fail PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_retention_rate_low PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_retention_rate_boundary PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_loss_too_high PASSED [ 83%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_loss_boundary PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_field_preservation_low PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_section_preservation_low PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_no_quality_improvement PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_negative_quality_delta PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_identical_hashes PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_identical_text PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_empty_source PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_empty_repair PASSED [ 84%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_missing_failure_class PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_missing_skill_id PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_invalid_hash PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_multiple_rejections PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_validate_all PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_filter_accepted PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_filter_rejected PASSED [ 85%]
+ops/tests/test_docsreg_phase9_quality_validator.py::TestQualityValidator::test_notes_describe_rejection PASSED [ 85%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_long_plain_text_does_not_pass_without_master_package PASSED [ 85%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_word_count_only_sets_content_richness_not_final_quality PASSED [ 86%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_final_quality_is_min_of_component_scores PASSED [ 86%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_missing_retention_report_caps_quality PASSED [ 86%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_missing_alignment_report_caps_quality PASSED [ 86%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_good_long_document_with_retention_and_alignment_can_pass PASSED [ 86%]
+ops/tests/test_docsreg_quality_composite_gate.py::test_abs_raw_dump_with_poor_table_structure_remains_advisory PASSED [ 86%]
+ops/tests/test_docsreg_reference_governance.py::TestVerifiedIsoReferencePass::test_verified_iso_reference_passes PASSED [ 86%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedApiRefBlocksCertification::test_fabricated_api_ref_blocks_certification PASSED [ 86%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedApiRefBlocksCertification::test_api_580_appears_in_fabricated_references PASSED [ 86%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedApiRefBlocksCertification::test_fabricated_ref_action_is_remove PASSED [ 86%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedApiRefBlocksCertification::test_fabricated_ref_status_is_fabricated_suspected PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedNaceRefBlocksCertification::test_fabricated_nace_ref_blocks_certification PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedNaceRefBlocksCertification::test_nace_sp0169_detected PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedAsmeRefBlocksCertification::test_fabricated_asme_ref_blocks_certification PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestFabricatedAsmeRefBlocksCertification::test_asme_b313_detected PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestMultipleFabricatedRefsInDifferentSections::test_multiple_fabricated_refs_in_different_sections PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestMultipleFabricatedRefsInDifferentSections::test_sections_with_fabricated_contains_both PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestMultipleFabricatedRefsInDifferentSections::test_decision_is_certification_blocker PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestNoReferencesReturnsPass::test_no_references_returns_pass PASSED [ 87%]
+ops/tests/test_docsreg_reference_governance.py::TestNoReferencesReturnsPass::test_no_fabricated_means_no_blockers PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestNoReferencesReturnsPass::test_no_fabricated_means_empty_repair_plan PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestRepairPlanGeneratedForFabricatedRefs::test_repair_plan_generated_for_fabricated_refs PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestRepairPlanGeneratedForFabricatedRefs::test_repair_plan_contains_section_id PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestRepairPlanGeneratedForFabricatedRefs::test_repair_plan_entries_are_strings PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestRepairPlanGeneratedForFabricatedRefs::test_repair_plan_mentions_reference_text PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestCertificationBlockersPopulated::test_certification_blockers_populated PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestCertificationBlockersPopulated::test_certification_blockers_are_strings PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestCertificationBlockersPopulated::test_certification_blockers_mention_api PASSED [ 88%]
+ops/tests/test_docsreg_reference_governance.py::TestStripFabricatedStandardsRemovesApiLines::test_strip_fabricated_standards_removes_api_lines PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestStripFabricatedStandardsRemovesApiLines::test_removed_list_contains_api_line PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestStripFabricatedStandardsRemovesApiLines::test_cleaned_doc_preserves_non_fabricated_lines PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestStripPreservesIsoLines::test_strip_preserves_iso_lines PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestStripPreservesIsoLines::test_strip_preserves_iso_9000_lines PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestStripPreservesHeadingsWithFabricatedText::test_strip_preserves_headings_with_fabricated_text PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestStripPreservesHeadingsWithFabricatedText::test_body_line_with_api_is_removed_but_heading_kept PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsBlocked::test_select_reference_governance_recommendations_blocked PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsBlocked::test_blocked_result_has_expected_keys PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsBlocked::test_blocked_decision_value_is_string PASSED [ 89%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsBlocked::test_gate_version_is_v1 PASSED [ 90%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsPass::test_select_reference_governance_recommendations_pass PASSED [ 90%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsPass::test_pass_result_fabricated_count_is_zero PASSED [ 90%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsPass::test_pass_result_empty_repair_plan PASSED [ 90%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsPass::test_pass_result_empty_certification_blockers PASSED [ 90%]
+ops/tests/test_docsreg_reference_governance.py::TestSelectReferenceGovernanceRecommendationsPass::test_iso_only_doc_also_passes PASSED [ 90%]
+ops/tests/test_docsreg_registration_precheck.py::TestCleanDocQualityPass::test_can_proceed_is_true PASSED [ 90%]
+ops/tests/test_docsreg_registration_precheck.py::TestCleanDocQualityPass::test_overall_verdict_is_pass PASSED [ 90%]
+ops/tests/test_docsreg_registration_precheck.py::TestCleanDocQualityPass::test_no_blocking_gates PASSED [ 90%]
+ops/tests/test_docsreg_registration_precheck.py::TestCleanDocQualityPass::test_all_8_gates_present PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestFabricatedRefBlocksPrecheck::test_fabricated_ref_blocks_precheck PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestFabricatedRefBlocksPrecheck::test_overall_verdict_is_fail PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestFabricatedRefBlocksPrecheck::test_reference_governance_in_blocking_gates PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestLowQualityBlocksPrecheck::test_low_quality_blocks_precheck PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestLowQualityBlocksPrecheck::test_quality_gate_in_blocking_gates PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestLowQualityBlocksPrecheck::test_custom_threshold_passes_high_score PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestLowCoverageBlocksPrecheck::test_low_coverage_blocks_precheck PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestLowCoverageBlocksPrecheck::test_section_coverage_in_blocking_gates PASSED [ 91%]
+ops/tests/test_docsreg_registration_precheck.py::TestBothRefAndQualityBlocks::test_both_blockers_in_blocking_gates PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestBothRefAndQualityBlocks::test_can_proceed_is_false PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestBothRefAndQualityBlocks::test_multiple_blocking_gates_reported PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestSkippedGatesDontBlock::test_skipped_gates_dont_block PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestSkippedGatesDontBlock::test_skipped_gates_are_not_in_blocking_gates PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestMinimalPrecheckReturnsDict::test_minimal_precheck_returns_dict PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestMinimalPrecheckReturnsDict::test_minimal_precheck_has_expected_keys PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestMinimalPrecheckReturnsDict::test_minimal_precheck_pass_can_proceed PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestMinimalPrecheckReturnsDict::test_minimal_precheck_fail_on_fabricated PASSED [ 92%]
+ops/tests/test_docsreg_registration_precheck.py::TestMinimalPrecheckReturnsDict::test_minimal_precheck_has_3_gates PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestPrecheckResultHasAllGateResults::test_precheck_result_is_dataclass PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestPrecheckResultHasAllGateResults::test_gates_run_contains_all_8_gates PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestPrecheckResultHasAllGateResults::test_each_gate_result_has_verdict PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestPrecheckVersionIsV1::test_precheck_version_is_v1 PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestPrecheckVersionIsV1::test_minimal_precheck_version_is_v1 PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestPrecheckVersionIsV1::test_constant_is_v1 PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestWritePolicyBlockedFails::test_write_policy_blocked_fails PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestWritePolicyBlockedFails::test_write_policy_blocked_in_blocking_gates PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestWritePolicyBlockedFails::test_write_policy_allow_passes PASSED [ 93%]
+ops/tests/test_docsreg_registration_precheck.py::TestWritePolicyBlockedFails::test_write_policy_dry_run_passes PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestQualityGateUnit::test_passes_at_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestQualityGateUnit::test_passes_above_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestQualityGateUnit::test_fails_below_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestQualityGateUnit::test_custom_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestSectionCoverageGateUnit::test_passes_at_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestSectionCoverageGateUnit::test_fails_below_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestSectionCoverageGateUnit::test_custom_threshold PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestTraceabilityGateUnit::test_skipped_when_none PASSED [ 94%]
+ops/tests/test_docsreg_registration_precheck.py::TestTraceabilityGateUnit::test_passes_with_sources PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestTraceabilityGateUnit::test_fails_with_empty_list PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestDuplicateGateUnit::test_skipped_when_none PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestDuplicateGateUnit::test_fails_when_duplicate_found PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestDuplicateGateUnit::test_passes_when_no_duplicate PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestConflictGateUnit::test_skipped_when_none PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestConflictGateUnit::test_fails_when_conflict_found PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestConflictGateUnit::test_passes_when_no_conflict PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestEvidenceGateUnit::test_skipped_when_none PASSED [ 95%]
+ops/tests/test_docsreg_registration_precheck.py::TestEvidenceGateUnit::test_passes_when_files_exist PASSED [ 96%]
+ops/tests/test_docsreg_registration_precheck.py::TestEvidenceGateUnit::test_fails_when_file_missing PASSED [ 96%]
+ops/tests/test_docsreg_registration_precheck.py::TestReferenceGovernanceGateUnit::test_pass_on_clean_doc PASSED [ 96%]
+ops/tests/test_docsreg_registration_precheck.py::TestReferenceGovernanceGateUnit::test_fail_on_fabricated_doc PASSED [ 96%]
+ops/tests/test_docsreg_registration_precheck.py::TestReferenceGovernanceGateUnit::test_pass_on_iso_only_doc PASSED [ 96%]
+ops/tests/test_docsreg_registration_precheck.py::TestReferenceGovernanceGateUnit::test_repair_plan_in_details_on_fail PASSED [ 96%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t1_failed_audit_does_not_certify_document PASSED [ 96%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t2_failed_audit_does_not_write_to_master_documents PASSED [ 96%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t3_pending_status_does_not_write_to_master_documents PASSED [ 96%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t4_component_blocked_audit_does_not_certify PASSED [ 96%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t5_certified_status_writes_to_master_documents PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t6_rerun_certified_file_is_idempotent PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t7_rejected_then_retry_not_falsely_promoted PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t8_certified_with_complete_artifacts_writes_to_master PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t9_certified_missing_quality_report_skips_write PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t10_certified_empty_master_artifact_skips_write PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t11_certified_missing_source_sha256_skips_write PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t12_certified_metadata_safety_below_threshold_skips_write PASSED [ 97%]
+ops/tests/test_docsreg_registry_truthfulness.py::test_t13_rejected_always_standards_index_only PASSED [ 97%]
+ops/tests/test_docsreg_telegram_control_path.py::test_parse_creates_request_with_default_target_quality PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_parse_explicit_target_quality_stored PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_no_group_private_branching_same_handler PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_free_text_docsreg_trigger_parsed_to_request PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_run_one_cycle_uses_production_auditor_not_legacy PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_run_one_cycle_uses_default_threshold_when_target_quality_none PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_failed_doc_not_reported_as_certified PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_invalid_extension_rejected_safely PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_invalid_extension_via_parse PASSED [ 98%]
+ops/tests/test_docsreg_telegram_control_path.py::test_zip_path_rejected_not_supported PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_supported_extensions_set PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_cmd_docsreg_directory_creates_batch_job PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_cmd_docsreg_calls_real_run_one_cycle_path PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_cmd_docsreg_rejects_invalid_path PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_cmd_docsreg_status_reports_real_quality PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_cmd_docsreg_report_does_not_certify_failed_docs PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_group_chat_docsreg_allowed_for_registration_only PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_private_improvement_requires_explicit_command PASSED [ 99%]
+ops/tests/test_docsreg_telegram_control_path.py::test_zip_archive_behavior_documented PASSED [100%]
+
+=============================== warnings summary ===============================
+ops/tests/test_docsreg_phase2_phase3_integration.py: 10 warnings
+  /home/axi_omi_sphere/aims-workspace/ops/docgen/render_visual_qa.py:55: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    d["timestamp"] = datetime.utcnow().isoformat()
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_stage_result_is_frozen_dataclass
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:107: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_stage_result_is_frozen_dataclass
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:108: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    completed_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_universal_loop_result_is_frozen_dataclass
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:124: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestNoTextOnlySpecifications::test_universal_loop_result_is_frozen_dataclass
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:125: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    completed_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_stage_result_has_diagnostics_field
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:446: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_stage_result_has_diagnostics_field
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:447: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    completed_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_universal_loop_result_has_evidence_package_field
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:462: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase2_universal_loop_real_code.py::TestEvidencePackageCreated::test_universal_loop_result_has_evidence_package_field
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase2_universal_loop_real_code.py:463: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    completed_at=__import__("datetime").datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestDocumentFailureImmutability::test_failure_is_frozen
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:45: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestDocumentFailureImmutability::test_failure_preserves_all_fields
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:56: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+ops/tests/test_docsreg_phase4_failure_logging.py: 4 warnings
+ops/tests/test_docsreg_phase6_integration.py: 29 warnings
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/failure_classifier.py:96: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py: 11 warnings
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/failure_events.py:103: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cutoff_time = datetime.utcnow() - timedelta(minutes=minutes)
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_emit_failure_event_returns_event
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:229: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_emit_creates_unique_event_id
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:247: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_emit_copies_failure_fields
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:259: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_required_for_timeout
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:289: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_required_for_resource_exhaustion
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:307: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_required_for_bug
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:325: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_not_required_for_network_error
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:343: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_action_not_required_for_policy_violation
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:361: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_suggested_action_for_timeout
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:379: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_suggested_action_for_resource_exhaustion
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:397: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventEmission::test_suggested_action_for_bug
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:415: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_returns_all
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:437: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_returns_all
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:448: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_filters_by_document
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:469: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_filters_by_document
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:480: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_filters_by_time_window
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:497: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    old_time = datetime.utcnow() - timedelta(minutes=70)
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_filters_by_time_window
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:518: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_with_document_and_time_filter
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:535: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    old_time = datetime.utcnow() - timedelta(minutes=70)
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_with_document_and_time_filter
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:555: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventCollection::test_collect_events_with_document_and_time_filter
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:567: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_single
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:600: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_multiple
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_multiple
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_multiple
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:622: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_mixed
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_mixed
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_mixed
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_by_class_mixed
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:650: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_respects_time_window
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:665: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    old_time = datetime.utcnow() - timedelta(minutes=70)
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_respects_time_window
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:685: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_respects_document_filter
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:707: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase4_failure_logging.py::TestFailureEventClassAggregation::test_get_event_count_respects_document_filter
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase4_failure_logging.py:719: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairActionImmutability::test_repair_action_is_frozen
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:62: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairActionImmutability::test_repair_action_fields
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:71: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairOutcomeImmutability::test_repair_outcome_is_frozen
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:108: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRepairOutcomeImmutability::test_repair_outcome_fields
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:117: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_make_decision_from_timeout_event
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:233: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py: 27 warnings
+ops/tests/test_docsreg_phase6_integration.py: 16 warnings
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/meta_improvement_controller.py:135: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_make_decision_from_bug_event
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:255: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_decision_stored_in_actions_list
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:275: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_max_retries_set_based_on_decision
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:296: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestMakeRepairDecision::test_max_retries_set_based_on_decision
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:309: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestReasoningGeneration::test_reasoning_includes_failure_class
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:328: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestReasoningGeneration::test_reasoning_includes_decision_and_priority
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:348: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRecordRepairOutcome::test_record_successful_outcome
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:371: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py: 18 warnings
+ops/tests/test_docsreg_phase6_integration.py: 5 warnings
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/meta_improvement_controller.py:185: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRecordRepairOutcome::test_record_failed_outcome
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:398: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestRecordRepairOutcome::test_outcome_stored_in_outcomes_list
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:424: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_accept_repair_actions
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:454: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_accept_repair_actions
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:466: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_accept_repair_actions
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_escalate_actions
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_actions_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/meta_improvement_controller.py:203: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cutoff = datetime.utcnow() - __import__("datetime").timedelta(
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_escalate_actions
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_escalate_actions
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_escalate_actions
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:489: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_actions_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:508: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    old_time = datetime.utcnow() - timedelta(minutes=61)
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByDecision::test_get_actions_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:537: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_critical_priority_actions
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_critical_priority_actions
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:566: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_critical_priority_actions
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:578: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_critical_priority_actions
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_actions_by_priority_respects_max_age
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_get_repair_metrics_returns_success_rate
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_metrics_default_window_60_minutes
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_metrics_custom_window
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/meta_improvement_controller.py:224: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cutoff = datetime.utcnow() - __import__("datetime").timedelta(
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_actions_by_priority_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:595: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    old_time = datetime.utcnow() - timedelta(minutes=90)
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetActionsByPriority::test_get_actions_by_priority_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:615: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetOutcomesForAction::test_get_outcomes_for_action_id
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:643: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetOutcomesForAction::test_outcomes_isolated_by_action
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:683: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetOutcomesForAction::test_outcomes_isolated_by_action
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:694: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_all_successful
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:732: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_all_successful
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_all_failed
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_mixed
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_no_outcomes
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_respects_max_age
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_get_repair_metrics_returns_success_rate
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_metrics_default_window_60_minutes
+ops/tests/test_docsreg_phase6_integration.py::TestMetricsCollection::test_metrics_custom_window
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/archetype_policy_adapter/meta_improvement_controller.py:253: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    cutoff = datetime.utcnow() - __import__("datetime").timedelta(
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_all_failed
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:760: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_mixed
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:789: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:817: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    old_time = datetime.utcnow() - timedelta(minutes=90)
+
+ops/tests/test_docsreg_phase5_meta_improvement_controller.py::TestGetSuccessRate::test_success_rate_respects_max_age
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase5_meta_improvement_controller.py:837: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 24 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/synthetic_cases.py:58: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    base_time = datetime.utcnow() - timedelta(hours=1)
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 24 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/synthetic_cases.py:261: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    base_time = datetime.utcnow() - timedelta(hours=2)
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 24 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/synthetic_cases.py:464: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    base_time = datetime.utcnow() - timedelta(hours=3)
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 24 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/synthetic_cases.py:667: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    base_time = datetime.utcnow() - timedelta(hours=4)
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 24 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/synthetic_cases.py:870: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    base_time = datetime.utcnow() - timedelta(hours=5)
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 24 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/synthetic_cases.py:1073: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    base_time = datetime.utcnow() - timedelta(hours=6)
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+ops/tests/test_docsreg_phase7_result_aggregator.py: 22 warnings
+ops/tests/test_docsreg_phase7_skill_testing_framework.py: 19 warnings
+ops/tests/test_docsreg_phase8_recovery_engine.py: 1 warning
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/framework.py:70: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.executed_at = datetime.utcnow()
+
+ops/tests/test_docsreg_phase7_evidence_generator.py: 31 warnings
+  /home/axi_omi_sphere/aims-workspace/ops/docsreg/skills/testing/evidence_generator.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.generated_at = datetime.utcnow()
+
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillExecution::test_execution_sets_timestamp
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase7_skill_testing_framework.py:72: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    before = datetime.utcnow()
+
+ops/tests/test_docsreg_phase7_skill_testing_framework.py::TestSkillExecution::test_execution_sets_timestamp
+  /home/axi_omi_sphere/aims-workspace/ops/tests/test_docsreg_phase7_skill_testing_framework.py:74: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    after = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 924 passed, 5 skipped, 786 warnings in 5.63s =================

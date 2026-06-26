@@ -1,0 +1,1 @@
+VENV_MARKITDOWN_AVAILABLE <module 'markitdown' from '/home/axi_omi_sphere/aims-workspace/.venv-markitdown/lib/python3.12/site-packages/markitdown/__init__.py'>

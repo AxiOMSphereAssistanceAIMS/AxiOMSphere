@@ -34,7 +34,21 @@ from ops.docsreg.batch.archive_models import (
 
 log = logging.getLogger("docsreg.archive_extractor")
 
-SUPPORTED_EXTENSIONS = frozenset({".md", ".txt", ".rst", ".docx", ".pdf"})
+SUPPORTED_EXTENSIONS = frozenset(
+    {
+        ".md",
+        ".txt",
+        ".rst",
+        ".docx",
+        ".pdf",
+        ".pptx",
+        ".xlsx",
+        ".xls",
+        ".csv",
+        ".html",
+        ".htm",
+    }
+)
 ARCHIVE_EXTENSIONS = frozenset({".zip", ".7z", ".rar", ".tar", ".gz", ".tgz"})
 
 LIMITS: dict = {

@@ -112,24 +112,25 @@ def test_batch_processes_direct_and_extracted_files(tmp_path):
     assert "procedure.md" in direct_names
     assert "notes.txt" in direct_names
 
-    # Archive extracted: guide.pdf + spec.docx (from batch1.zip) + manual.rst (from batch2.tar.gz) = 3
+    # Archive extracted: guide.pdf + spec.docx + old.xls (from batch1.zip) + manual.rst = 4
     extracted_names = {p.name for p in call_paths}
     assert "guide.pdf" in extracted_names
     assert "spec.docx" in extracted_names
+    assert "old.xls" in extracted_names
     assert "manual.rst" in extracted_names
 
-    # Total processable calls: 2 direct + 3 extracted = 5
-    assert len(call_paths) == 5
+    # Total processable calls: 2 direct + 4 extracted = 6
+    assert len(call_paths) == 6
 
 
 def test_unsupported_inside_archives_not_counted_as_registration_failed(tmp_path):
-    """Unsupported members (e.g. .xls inside zip) must NOT count as failed registration."""
+    """Unsupported members (e.g. .tmp inside zip) must NOT count as failed registration."""
     input_root = tmp_path / "input"
     input_root.mkdir()
 
     _make_zip(input_root / "test.zip", {
         "good.pdf": b"%PDF-1.4",
-        "bad.xls": b"\xd0\xcf\x11\xe0",
+        "bad.tmp": b"temporary file",
     })
 
     mock_result = SimpleNamespace(passed=True, outcome="DOCUMENT_TYPE_CERTIFIED")
@@ -298,7 +299,7 @@ def test_summary_counts_match_reality(tmp_path, capsys):
     (input_root / "b.txt").write_text("B")
     # 1 direct unsupported
     (input_root / "c.doc").write_bytes(b"\xd0\xcf\x11\xe0")
-    # 1 archive with 1 processable + 1 unsupported
+    # 1 archive with 2 processable entries because MarkItDown handles .xls
     _make_zip(input_root / "pack.zip", {
         "d.pdf": b"%PDF",
         "e.xls": b"\xd0\xcf",
@@ -319,6 +320,6 @@ def test_summary_counts_match_reality(tmp_path, capsys):
 
     assert "Direct processable:         2" in captured
     assert "Archives found:             1" in captured
-    assert "Extracted processable:      1" in captured
-    assert "Registered:                 3" in captured  # 2 direct + 1 extracted
+    assert "Extracted processable:      2" in captured
+    assert "Registered:                 4" in captured  # 2 direct + 2 extracted
     assert "Failed registration:        0" in captured
