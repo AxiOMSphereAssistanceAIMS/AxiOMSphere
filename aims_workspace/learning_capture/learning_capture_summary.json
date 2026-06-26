@@ -1,0 +1,16 @@
+{
+  "status": "NOT_READY",
+  "capture_layer_created": true,
+  "agent_action_cases_log": true,
+  "training_candidates_log": true,
+  "skill_proposals_created": true,
+  "markitdown_case_registered": true,
+  "codex_repair_linked": true,
+  "approved_for_training_false": true,
+  "tests_passed": true,
+  "docsreg_regression_passed": false,
+  "remaining_blockers": [
+    "aims_workspace/axi_ft_log mirror log is blocked by root-owned directory permissions; canonical learning_capture/training_candidates.jsonl was written",
+    "DOCSREG regression command failed: 5 existing extension-gate expectation failures around .xlsx/.csv/.html/.pptx support"
+  ]
+}

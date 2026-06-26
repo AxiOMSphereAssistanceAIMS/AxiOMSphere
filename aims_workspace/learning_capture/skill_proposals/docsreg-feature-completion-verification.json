@@ -1,0 +1,24 @@
+{
+  "skill_name": "docsreg-feature-completion-verification",
+  "status": "PROPOSED",
+  "case_ids": [
+    "markitdown_slot32_training_assessment_20260626"
+  ],
+  "failure_modes": [
+    "evidence_only_completion_without_feature_implementation",
+    "missing_artifact_paths",
+    "missing_learning_entry",
+    "no_commit_after_implementation"
+  ],
+  "checklist": [
+    "Compare requested deliverables against actual files.",
+    "Verify production files exist in repo, not only evidence.",
+    "Verify entrypoint/wiring exists.",
+    "Verify tests exist and pass.",
+    "Verify limited production run exercises the new implementation.",
+    "Verify no mocked path is claimed as production.",
+    "If requested files are missing, report NOT READY, not COMPLETE."
+  ],
+  "approved_for_training": false,
+  "requires_human_approval": true
+}

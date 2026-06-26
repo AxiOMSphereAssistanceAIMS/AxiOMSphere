@@ -1,0 +1,1 @@
+{"case_id": "markitdown_slot32_training_assessment_20260626", "target": "aims_workspace/axi_ft_log/training_candidates.jsonl", "error": "PermissionError: [Errno 13] Permission denied: 'aims_workspace/axi_ft_log/training_candidates.jsonl'", "approved_for_training": false, "requires_human_approval": true}

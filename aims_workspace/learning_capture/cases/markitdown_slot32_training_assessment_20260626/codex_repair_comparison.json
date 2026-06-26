@@ -1,0 +1,13 @@
+{
+  "case_id": "markitdown_slot32_training_assessment_20260626",
+  "rejected_summary": "slot32-local on slot32; outcome=NEEDS_REVIEW; actual_deliverables=3/3; failure_modes=evidence_only_completion_without_feature_implementation, missing_artifact_paths, missing_learning_entry, no_commit_after_implementation",
+  "chosen_summary": "codex_commit=e56398f\ncodex_evidence_root=aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation\n# DOCSREG/DOCGEN MarkItDown Production Activation Status\n\nCreated: 2026-06-26T06:30:32.325723+00:00\nStatus: PASS_WITH_SAFETY_GATES\n\n## Result\n\nMarkItDown is active for DOCSREG extraction and DOCGEN standard comparison normalization. A real ABS standard reached extraction and quality_report. Raw extraction was not certified as a master package; downstream DOCSREG certification remained PENDING and Qdrant/document writes were skipped by existing gates.\n\n## Environment\n\n- Default Python direct import: False\n- .venv-markitdown import: True\n- Adapter runtime fallback: True\n- Observed MarkItDown version: 0.1.6\n\n## Verification\n\n- Focused MarkItDown tests: 25 passed\n- Full DOCSREG regression: 925 passed, 5 skipped\n- Real ABS extraction: 11990 words, 68930 chars\n- DOCSREG full cycle quality_report: True\n- Raw output certified without master: False\n- DOCGEN cycles: 3 final_state=PLATEAU_MODEL_TRAINING_REQUIRED\n\n## Remaining Blockers\n\n- Default /usr/bin/python still cannot directly import markit",
+  "rejected_diff_path": "aims_workspace/learning_capture/cases/markitdown_slot32_training_assessment_20260626/git_diff.patch",
+  "chosen_diff_path": "aims_workspace/learning_capture/cases/markitdown_slot32_training_assessment_20260626/codex_chosen_diff.patch",
+  "quality_delta": null,
+  "same_task_identity": true,
+  "eligible_for_sft": true,
+  "eligible_for_dpo": true,
+  "eligible_for_skill_update": true,
+  "approved_for_training": false
+}

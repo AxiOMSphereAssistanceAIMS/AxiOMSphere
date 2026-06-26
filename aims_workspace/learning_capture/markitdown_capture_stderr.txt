@@ -1,0 +1,2 @@
+case_id=markitdown_slot32_training_assessment_20260626
+case_path=aims_workspace/learning_capture/cases/markitdown_slot32_training_assessment_20260626/case.json

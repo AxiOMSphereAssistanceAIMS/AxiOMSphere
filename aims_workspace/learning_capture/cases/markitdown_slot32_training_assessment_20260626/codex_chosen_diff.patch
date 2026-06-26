@@ -1,0 +1,1709 @@
+commit e56398fc419855e656b162f42419950dd2f1c596
+Author:     AxiOMSphere <hello@axiomsphereai.com>
+AuthorDate: Fri Jun 26 10:31:27 2026 +0400
+Commit:     AxiOMSphere <hello@axiomsphereai.com>
+CommitDate: Fri Jun 26 10:31:27 2026 +0400
+
+    feat(markitdown): activate DOCGEN comparison normalization
+---
+ .../docgen_markitdown_abs_evidence_check.txt       |  84 +++++
+ .../docgen_quality_loop_summary_extract.txt        |  10 +
+ .../files_staged_for_activation_commit.txt         |  13 +
+ .../full_cycle_artifact_check.json                 |  36 ++
+ .../markitdown_production_activation_status.md     |  31 ++
+ .../markitdown_production_activation_summary.json  |  96 +++++
+ .../secret_scan_activation.txt                     |   1 +
+ ops/docgen/universal_pipeline/orchestrator.py      | 417 +++++++++++++++++++++
+ .../standard_markitdown_normalizer.py              | 238 ++++++++++++
+ ops/docgen/universal_pipeline/standards_binder.py  | 223 +++++++++++
+ ops/docsreg/extraction/markitdown_adapter.py       |  59 ++-
+ ops/docsreg/pipelines/run_batch.py                 |   9 +
+ ...est_docgen_markitdown_standard_normalization.py | 181 +++++++++
+ ops/tests/test_docsreg_batch_archives.py           |  25 ++
+ ops/tests/test_markitdown_real_abs_integration.py  | 117 ++++++
+ 15 files changed, 1536 insertions(+), 4 deletions(-)
+
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_markitdown_abs_evidence_check.txt b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_markitdown_abs_evidence_check.txt
+new file mode 100644
+index 0000000..606d26e
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_markitdown_abs_evidence_check.txt
+@@ -0,0 +1,84 @@
++aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/standard_normalization_summary.json
++{
++  "status": "PASS",
++  "enabled": true,
++  "standards_seen": 10,
++  "standards_extracted": 1,
++  "standards_failed": 0,
++  "standards_skipped": 9,
++  "generation_context_allowed": false,
++  "raw_markdown_in_generation_context": false
++}
++{
++  "standard_id": "ABS vessels classification",
++  "backend": "markitdown",
++  "comparison_only": true,
++  "generation_context_allowed": false,
++  "raw_markdown_in_generation_context": false,
++  "source_path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
++  "status": "PASS",
++  "extraction_status": "extracted",
++  "word_count": 11990,
++  "char_count": 68930,
++  "warnings": [],
++  "fallback_needed": false,
++  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/raw_extracted_text.md",
++  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/extraction_report.json",
++  "normalization_metadata_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/normalization_metadata.json"
++}
++aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/standard_normalization_summary.json
++{
++  "status": "PASS",
++  "enabled": true,
++  "standards_seen": 10,
++  "standards_extracted": 1,
++  "standards_failed": 0,
++  "standards_skipped": 9,
++  "generation_context_allowed": false,
++  "raw_markdown_in_generation_context": false
++}
++{
++  "standard_id": "ABS vessels classification",
++  "backend": "markitdown",
++  "comparison_only": true,
++  "generation_context_allowed": false,
++  "raw_markdown_in_generation_context": false,
++  "source_path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
++  "status": "PASS",
++  "extraction_status": "extracted",
++  "word_count": 11990,
++  "char_count": 68930,
++  "warnings": [],
++  "fallback_needed": false,
++  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/raw_extracted_text.md",
++  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/extraction_report.json",
++  "normalization_metadata_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/normalization_metadata.json"
++}
++aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/standard_normalization_summary.json
++{
++  "status": "PASS",
++  "enabled": true,
++  "standards_seen": 10,
++  "standards_extracted": 1,
++  "standards_failed": 0,
++  "standards_skipped": 9,
++  "generation_context_allowed": false,
++  "raw_markdown_in_generation_context": false
++}
++{
++  "standard_id": "ABS vessels classification",
++  "backend": "markitdown",
++  "comparison_only": true,
++  "generation_context_allowed": false,
++  "raw_markdown_in_generation_context": false,
++  "source_path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
++  "status": "PASS",
++  "extraction_status": "extracted",
++  "word_count": 11990,
++  "char_count": 68930,
++  "warnings": [],
++  "fallback_needed": false,
++  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/raw_extracted_text.md",
++  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/extraction_report.json",
++  "normalization_metadata_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/normalization_metadata.json"
++}
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_quality_loop_summary_extract.txt b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_quality_loop_summary_extract.txt
+new file mode 100644
+index 0000000..82dc9eb
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_quality_loop_summary_extract.txt
+@@ -0,0 +1,10 @@
++summary_path aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/quality_loop_summary.json
++{
++  "final_state": "PLATEAU_MODEL_TRAINING_REQUIRED",
++  "cycles_executed": 3,
++  "best_quality": 0.3913,
++  "target_quality": 0.9,
++  "automatic_training": false,
++  "automatic_promotion": false,
++  "teacher_invocation_enabled": false
++}
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/files_staged_for_activation_commit.txt b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/files_staged_for_activation_commit.txt
+new file mode 100644
+index 0000000..5b41e12
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/files_staged_for_activation_commit.txt
+@@ -0,0 +1,13 @@
++A	aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_markitdown_abs_evidence_check.txt
++A	aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_quality_loop_summary_extract.txt
++A	aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_artifact_check.json
++A	aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_status.md
++A	aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_summary.json
++A	ops/docgen/universal_pipeline/orchestrator.py
++A	ops/docgen/universal_pipeline/standard_markitdown_normalizer.py
++A	ops/docgen/universal_pipeline/standards_binder.py
++M	ops/docsreg/extraction/markitdown_adapter.py
++M	ops/docsreg/pipelines/run_batch.py
++A	ops/tests/test_docgen_markitdown_standard_normalization.py
++M	ops/tests/test_docsreg_batch_archives.py
++A	ops/tests/test_markitdown_real_abs_integration.py
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_artifact_check.json b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_artifact_check.json
+new file mode 100644
+index 0000000..61f4437
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_artifact_check.json
+@@ -0,0 +1,36 @@
++{
++  "raw_extracted_text": [
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/raw_extracted_text.md",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/raw_extracted_text.md",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/raw_extracted_text.md"
++  ],
++  "extraction_report": [
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/extraction_report.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/extraction_report.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/extraction_report.json"
++  ],
++  "quality_report": [
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/input/quality_report.json"
++  ],
++  "master_document": [],
++  "registration_manifest": [],
++  "cycle_record": [
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/cycle_record.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/cycle_record.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/cycle_record.json"
++  ],
++  "batch_results": [
++    "aims_workspace/docsreg_registered/batch_results.jsonl"
++  ],
++  "learning_files": [],
++  "extraction_reports_markitdown": [
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/extraction_report.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/extraction_report.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/extraction_report.json"
++  ],
++  "pending_not_certified": [
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/cycle_record.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/cycle_record.json",
++    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/cycle_record.json"
++  ]
++}
+\ No newline at end of file
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_status.md b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_status.md
+new file mode 100644
+index 0000000..982abc1
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_status.md
+@@ -0,0 +1,31 @@
++# DOCSREG/DOCGEN MarkItDown Production Activation Status
++
++Created: 2026-06-26T06:30:32.325723+00:00
++Status: PASS_WITH_SAFETY_GATES
++
++## Result
++
++MarkItDown is active for DOCSREG extraction and DOCGEN standard comparison normalization. A real ABS standard reached extraction and quality_report. Raw extraction was not certified as a master package; downstream DOCSREG certification remained PENDING and Qdrant/document writes were skipped by existing gates.
++
++## Environment
++
++- Default Python direct import: False
++- .venv-markitdown import: True
++- Adapter runtime fallback: True
++- Observed MarkItDown version: 0.1.6
++
++## Verification
++
++- Focused MarkItDown tests: 25 passed
++- Full DOCSREG regression: 925 passed, 5 skipped
++- Real ABS extraction: 11990 words, 68930 chars
++- DOCSREG full cycle quality_report: True
++- Raw output certified without master: False
++- DOCGEN cycles: 3 final_state=PLATEAU_MODEL_TRAINING_REQUIRED
++
++## Remaining Blockers
++
++- Default /usr/bin/python still cannot directly import markitdown; production path is unblocked by adapter fallback to .venv-markitdown site-packages or explicit AIMS_MARKITDOWN_SITE_PACKAGES.
++- DOCSREG full ABS cycle did not certify/register because existing package/audit gates kept certification_status=PENDING and skipped documents/Qdrant write.
++- No docsreg_learning.jsonl entry was found by artifact scan for the attempted ABS cycle.
++- DOCGEN self-improvement loop plateaued at quality 0.3913 and correctly did not train or promote automatically.
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_summary.json b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_summary.json
+new file mode 100644
+index 0000000..b3f5e05
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/markitdown_production_activation_summary.json
+@@ -0,0 +1,96 @@
++{
++  "created_at": "2026-06-26T06:30:32.325723+00:00",
++  "status": "PASS_WITH_SAFETY_GATES",
++  "status_rationale": "MarkItDown is active for DOCSREG extraction and DOCGEN standard comparison normalization. A real ABS standard reached extraction and quality_report. Raw extraction was not certified as a master package; downstream DOCSREG certification remained PENDING and Qdrant/document writes were skipped by existing gates.",
++  "backend_mode": {
++    "docsreg": "markitdown",
++    "docgen": "DOCGEN_MARKITDOWN_NORMALIZATION=1 comparison_only"
++  },
++  "markitdown_default_python_direct_import_available": false,
++  "markitdown_venv_available": true,
++  "markitdown_adapter_runtime_fallback_available": true,
++  "markitdown_version_observed": "0.1.6",
++  "real_abs_fixture": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
++  "real_abs_extraction": {
++    "status": "extracted",
++    "word_count": 11990,
++    "char_count": 68930
++  },
++  "focused_tests": {
++    "passed": true,
++    "count": 25,
++    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/final_focused_markitdown_tests.log"
++  },
++  "full_docsreg_regression": {
++    "passed": true,
++    "passed_count": 925,
++    "skipped_count": 5,
++    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_docsreg_regression_final.log"
++  },
++  "docsreg_full_cycle": {
++    "run": "DOCSREG_EXTRACTOR_BACKEND=markitdown with ABS PDF and Redis URL override",
++    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_run_abs_with_redis.log",
++    "extraction_report_exists": true,
++    "markitdown_extraction_reports": [
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/extraction_report.json",
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/extraction_report.json",
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/extraction_report.json"
++    ],
++    "raw_extracted_text_exists": true,
++    "raw_extracted_text": [
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/raw_extracted_text.md",
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/raw_extracted_text.md",
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/raw_extracted_text.md"
++    ],
++    "quality_report_exists": true,
++    "quality_report": [
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/input/quality_report.json"
++    ],
++    "master_document_exists": false,
++    "registration_manifest_exists": false,
++    "pending_not_certified_records": [
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/cycle_record.json",
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/cycle_record.json",
++      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/cycle_record.json"
++    ],
++    "registered_count": 0,
++    "failed_registration_count": 1,
++    "raw_output_certified_without_master": false,
++    "documents_qdrant_write_skipped_by_gate": true,
++    "learning_entry_written": false,
++    "learning_files": []
++  },
++  "docgen_full_quality_loop": {
++    "run": "DOCGEN_MARKITDOWN_NORMALIZATION=1 with ABS vessels classification comparison request",
++    "summary_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/quality_loop_summary.json",
++    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs.log",
++    "cycles_executed": 3,
++    "best_quality": 0.3913,
++    "target_quality": 0.9,
++    "final_state": "PLATEAU_MODEL_TRAINING_REQUIRED",
++    "automatic_training": false,
++    "automatic_promotion": false,
++    "teacher_invocation_enabled": false,
++    "abs_standard_normalization_passed": true,
++    "generation_context_allowed": false,
++    "raw_markdown_in_generation_context": false
++  },
++  "code_changes": {
++    "docsreg_runtime_fallback": "ops/docsreg/extraction/markitdown_adapter.py",
++    "docsreg_batch_redis_override": "ops/docsreg/pipelines/run_batch.py",
++    "docgen_comparison_normalizer": "ops/docgen/universal_pipeline/standard_markitdown_normalizer.py",
++    "docgen_binder_registered_source_paths": "ops/docgen/universal_pipeline/standards_binder.py",
++    "docgen_orchestrator_hook": "ops/docgen/universal_pipeline/orchestrator.py",
++    "tests": [
++      "ops/tests/test_docsreg_batch_archives.py",
++      "ops/tests/test_docgen_markitdown_standard_normalization.py",
++      "ops/tests/test_markitdown_real_abs_integration.py"
++    ]
++  },
++  "remaining_blockers": [
++    "Default /usr/bin/python still cannot directly import markitdown; production path is unblocked by adapter fallback to .venv-markitdown site-packages or explicit AIMS_MARKITDOWN_SITE_PACKAGES.",
++    "DOCSREG full ABS cycle did not certify/register because existing package/audit gates kept certification_status=PENDING and skipped documents/Qdrant write.",
++    "No docsreg_learning.jsonl entry was found by artifact scan for the attempted ABS cycle.",
++    "DOCGEN self-improvement loop plateaued at quality 0.3913 and correctly did not train or promote automatically."
++  ]
++}
+diff --git a/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/secret_scan_activation.txt b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/secret_scan_activation.txt
+new file mode 100644
+index 0000000..0b437f1
+--- /dev/null
++++ b/aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/secret_scan_activation.txt
+@@ -0,0 +1 @@
++SECRET_SCAN_CLEAN
+diff --git a/ops/docgen/universal_pipeline/orchestrator.py b/ops/docgen/universal_pipeline/orchestrator.py
+new file mode 100644
+index 0000000..8a74884
+--- /dev/null
++++ b/ops/docgen/universal_pipeline/orchestrator.py
+@@ -0,0 +1,417 @@
++from __future__ import annotations
++
++import shutil
++from dataclasses import dataclass
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any, Mapping
++
++from .boilerplate_detector import detect_boilerplate
++from .authored_section_loader import load_authored_sections
++from .source_only_compliance_matrix_builder import (
++    build_source_only_compliance_matrix,
++)
++from .compliance_matrix_validator import validate_compliance_matrix
++from .document_architecture_builder import build_document_architecture
++from .document_type_resolver import resolve_document_type
++from .source_only_draft_generator import generate_source_only_draft
++from .etalon_selector import select_etalon
++from .etalon_substance_gate import evaluate_etalon_substance
++from .evidence_writer import write_json, write_text
++from .gap_map_builder import build_gap_map
++from .generation_trace_writer import write_provenance_bundle
++from .implementation_model_builder import build_implementation_model
++from .quality_scorer import score_quality
++from .renderer import render_document
++from .reference_register_builder import build_reference_register
++from .repairer import repair_document
++from .request_interpreter import interpret_request
++from .source_only_requirement_compiler import (
++    compile_source_only_requirements,
++)
++from .reviewer import review_document
++from .section_model_builder import build_section_model
++from .source_only_section_content_planner import (
++    build_source_only_section_content_plan,
++)
++from .skeleton_builder import build_skeleton
++from .source_discovery import discover_sources
++from .standard_markitdown_normalizer import attach_standard_normalization_summary
++from .standard_substance_gate import evaluate_standard_substance
++from .standards_binder import bind_standards
++from ops.docgen.skills import build_skill_application_manifest
++from ops.docgen.archetypes import (
++    bind_structural_archetype,
++    validate_archetype_binding,
++)
++from .validator import validate_document
++from ops.docgen.quality_gates.generation_leakage_gate import (
++    evaluate_generation_leakage,
++)
++
++
++REPO_ROOT = Path(__file__).resolve().parents[3]
++DEFAULT_RUN_ROOT = REPO_ROOT / "aims_workspace" / "agent_architecture_status" / "universal_docgen_runs"
++
++
++@dataclass(frozen=True)
++class UniversalPipelineResult:
++    verdict: str
++    document_type: str
++    quality_score: float
++    evidence_dir: Path
++    final_docx: Path | None
++    final_pdf: Path | None
++    blockers: tuple[str, ...]
++
++    def to_dict(self) -> dict[str, Any]:
++        return {
++            "verdict": self.verdict,
++            "document_type": self.document_type,
++            "quality_score": self.quality_score,
++            "evidence_dir": str(self.evidence_dir),
++            "final_docx": str(self.final_docx) if self.final_docx else "",
++            "final_pdf": str(self.final_pdf) if self.final_pdf else "",
++            "blockers": list(self.blockers),
++        }
++
++
++def _timestamp() -> str:
++    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
++
++
++def run_universal_pipeline(
++    request_payload: str | Mapping[str, Any],
++    *,
++    project: str = "AIMS",
++    document_type: str | None = None,
++    title: str = "Generated Document",
++    output_dir: str | Path | None = None,
++    reference_path: str | None = None,
++    target_quality: float = 0.98,
++    improvement_level: int = 1,
++    applied_corrections: list[dict[str, Any]] | None = None,
++    adaptive_config: dict[str, Any] | None = None,
++    authoring_candidates_path: str | Path | None = None,
++) -> UniversalPipelineResult:
++    generation_started_at = datetime.now(timezone.utc).isoformat()
++    request = interpret_request(
++        request_payload,
++        project=project,
++        title=title,
++        document_type=document_type,
++        reference_path=reference_path,
++    )
++    resolved = resolve_document_type(request)
++    doc_type = resolved["document_type"]
++    run_id = f"{doc_type}_{project.lower()}_{_timestamp()}"
++    evidence_dir = Path(output_dir) if output_dir else DEFAULT_RUN_ROOT / run_id
++    evidence_dir.mkdir(parents=True, exist_ok=True)
++
++    write_json(evidence_dir / "request.json", request)
++    write_json(evidence_dir / "document_type_resolution.json", resolved)
++    write_json(evidence_dir / "adaptive_generation_config.json", adaptive_config or {})
++    structural_archetype = bind_structural_archetype(doc_type)
++    write_json(evidence_dir / "structural_archetype_binding.json", structural_archetype)
++    write_json(
++        evidence_dir / "structural_archetype_validation.json",
++        validate_archetype_binding(structural_archetype),
++    )
++
++    sources = discover_sources(request, resolved)
++    generation_sources = {
++        key: value for key, value in sources.items()
++        if key != "etalon_candidates"
++    }
++    generation_sources["evaluation_candidates_hidden_until_post_generation"] = True
++    write_json(evidence_dir / "source_discovery.json", generation_sources)
++    skill_manifest = build_skill_application_manifest(
++        document_type=doc_type,
++        project=project,
++        applied_corrections=applied_corrections,
++        adaptive_config=adaptive_config,
++    )
++    write_json(evidence_dir / "skill_application_manifest.json", skill_manifest)
++
++    standards = bind_standards(request, generation_sources)
++    standards = attach_standard_normalization_summary(standards, evidence_dir)
++    write_json(
++        evidence_dir / "standard_markitdown_normalization.json",
++        standards.get("markitdown_standard_normalization", {}),
++    )
++    write_json(evidence_dir / "standards_binding.json", standards)
++    reference_register = build_reference_register(standards)
++    write_json(evidence_dir / "reference_register.json", reference_register)
++    requirement_graph = compile_source_only_requirements(
++        request=request,
++        resolved=resolved,
++        source_selection={},
++        standards=standards,
++        source_documents=generation_sources,
++    )
++    write_json(evidence_dir / "compiled_requirements.json", requirement_graph)
++    write_json(
++        evidence_dir / "compiled_requirements_audit.json",
++        requirement_graph.get("compiled_requirements_audit", {}),
++    )
++    write_json(evidence_dir / "requirement_graph.json", requirement_graph)
++    architecture = build_document_architecture(
++        request,
++        requirement_graph,
++        structural_archetype=structural_archetype,
++    )
++    write_json(evidence_dir / "document_architecture.json", architecture)
++    section_model = build_section_model(architecture, requirement_graph)
++    write_json(evidence_dir / "section_model.json", section_model)
++    implementation_model = build_implementation_model(
++        request,
++        section_model,
++        improvement_level=improvement_level,
++    )
++    write_json(evidence_dir / "implementation_model.json", implementation_model)
++    section_content_plan = build_source_only_section_content_plan(
++        compiled_requirements=requirement_graph,
++        section_model=section_model,
++        implementation_model=implementation_model,
++        adaptive_config=adaptive_config,
++    )
++    authored_sections, authoring_binding = load_authored_sections(
++        authoring_candidates_path
++    )
++    if authoring_binding.get("status") == "FAIL":
++        write_json(
++            evidence_dir / "authoring_candidate_binding.json",
++            authoring_binding,
++        )
++        raise RuntimeError("SOURCE_ONLY_AUTHORING_CANDIDATES_REJECTED")
++    section_content_plan["authoring_candidate_binding"] = authoring_binding
++    write_json(evidence_dir / "section_content_plan.json", section_content_plan)
++    write_json(
++        evidence_dir / "authoring_candidate_binding.json",
++        authoring_binding,
++    )
++    write_json(evidence_dir / "section_content_plan_audit.json", section_content_plan.get("audit", {}))
++    leakage_gate = evaluate_generation_leakage(
++        requirement_graph,
++        section_content_plan,
++    )
++    write_json(
++        evidence_dir / "generation_leakage_gate.json",
++        leakage_gate,
++    )
++    if leakage_gate.get("gate") != "PASS":
++        raise RuntimeError("GENERATION_ETALON_LEAKAGE_DETECTED")
++    compliance_matrix = build_source_only_compliance_matrix(
++        compiled_requirements=requirement_graph,
++        section_content_plan=section_content_plan,
++        standards=standards,
++    )
++    write_json(evidence_dir / "compliance_matrix.json", compliance_matrix)
++    compliance_matrix_validation = validate_compliance_matrix(
++        compliance_matrix=compliance_matrix,
++        section_content_plan=section_content_plan,
++    )
++    write_json(evidence_dir / "compliance_matrix_validation.json", compliance_matrix_validation)
++    skeleton = build_skeleton(request, section_model)
++    write_json(evidence_dir / "skeleton.json", {k: v for k, v in skeleton.items() if k != "markdown"})
++    write_text(evidence_dir / "skeleton.md", skeleton["markdown"])
++
++    first_draft = generate_source_only_draft(
++        request=request,
++        section_model=section_model,
++        implementation_model=implementation_model,
++        section_content_plan=section_content_plan,
++        compliance_matrix=compliance_matrix,
++        reference_register=reference_register,
++        adaptive_config=adaptive_config,
++        authored_sections=authored_sections,
++        output_path=evidence_dir / "first_draft.docx",
++    )
++    review = review_document(
++        document_path=first_draft,
++        section_model=section_model,
++        implementation_model=implementation_model,
++        standards=standards,
++        compiled_requirements=requirement_graph,
++        section_content_plan=section_content_plan,
++    )
++    write_json(evidence_dir / "review_comments.json", review)
++    gap_map = build_gap_map(review)
++    write_json(evidence_dir / "gap_map.json", gap_map)
++    repair_plan = {
++        "status": "READY",
++        "target_document": str(first_draft),
++        "repair_same_document_lineage": True,
++        "actions": gap_map.get("gaps") or gap_map.get("items") or [],
++    }
++    write_json(evidence_dir / "repair_plan.json", repair_plan)
++    repair = repair_document(
++        first_draft=first_draft,
++        repaired_document=evidence_dir / "repaired_document.docx",
++        gap_map=gap_map,
++        compiled_requirements=requirement_graph,
++        section_content_plan=section_content_plan,
++    )
++    write_json(evidence_dir / "repair_evidence.json", repair)
++    final_docx = evidence_dir / "final_document.docx"
++    shutil.copy2(Path(repair["repaired_document"]), final_docx)
++
++    boilerplate_report = detect_boilerplate(
++        document_path=final_docx,
++        section_content_plan=section_content_plan,
++    )
++    write_json(evidence_dir / "boilerplate_report.json", boilerplate_report)
++    standard_substance_coverage = evaluate_standard_substance(
++        generated_docx=final_docx,
++        compiled_requirements=requirement_graph,
++        section_content_plan=section_content_plan,
++        compliance_matrix_validation=compliance_matrix_validation,
++    )
++    write_json(evidence_dir / "standard_substance_coverage.json", standard_substance_coverage)
++    etalon_substance_coverage = evaluate_etalon_substance(
++        generated_docx=final_docx,
++        section_content_plan=section_content_plan,
++        document_type=doc_type,
++    )
++    write_json(evidence_dir / "etalon_substance_coverage.json", etalon_substance_coverage)
++    final_review = review_document(
++        document_path=final_docx,
++        section_model=section_model,
++        implementation_model=implementation_model,
++        standards=standards,
++        compiled_requirements=requirement_graph,
++        section_content_plan=section_content_plan,
++        boilerplate_report=boilerplate_report,
++        standard_substance_coverage=standard_substance_coverage,
++        etalon_substance_coverage=etalon_substance_coverage,
++        compliance_matrix_validation=compliance_matrix_validation,
++    )
++    write_json(evidence_dir / "review_comments.json", final_review)
++    validation = validate_document(
++        final_docx=final_docx,
++        section_model=section_model,
++        review=final_review,
++        boilerplate_report=boilerplate_report,
++        standard_substance_coverage=standard_substance_coverage,
++        etalon_substance_coverage=etalon_substance_coverage,
++        compliance_matrix_validation=compliance_matrix_validation,
++    )
++    write_json(evidence_dir / "validation.json", validation)
++    render_metrics = render_document(final_docx, evidence_dir / "render")
++    write_json(evidence_dir / "render_metrics.json", render_metrics)
++    final_pdf = evidence_dir / "final_document.pdf"
++    rendered_pdf = Path(str(render_metrics.get("pdf_path") or ""))
++    if rendered_pdf.exists():
++        shutil.copy2(rendered_pdf, final_pdf)
++    command = (
++        "python -m ops.docgen.self_improvement.run_quality_loop "
++        f"--document-type {doc_type} --title {title!r} --project {project}"
++    )
++    if authoring_candidates_path:
++        command += (
++            " --authoring-candidates "
++            + str(authoring_candidates_path)
++        )
++    write_provenance_bundle(
++        evidence_dir=evidence_dir,
++        repo_root=REPO_ROOT,
++        generation_started_at=generation_started_at,
++        command=command,
++        section_content_plan=section_content_plan,
++        repair_plan=repair_plan,
++    )
++    # Blind evaluation starts only after the final artifact exists.
++    source_selection = select_etalon(request, sources)
++    write_json(
++        evidence_dir / "evaluation_candidate_inventory.json",
++        {
++            "request_domain": sources.get("request_domain"),
++            "candidates": sources.get("etalon_candidates", []),
++            "made_available_after_generation": True,
++        },
++    )
++    write_json(evidence_dir / "source_selection.json", source_selection)
++    selected = source_selection.get("selected") or {}
++    etalon_docx: Path | None = None
++    if selected.get("path"):
++        candidate = Path(str(selected["path"]))
++        etalon_docx = candidate if candidate.exists() else None
++    quality = score_quality(
++        final_docx=final_docx,
++        final_pdf=final_pdf if final_pdf.exists() else None,
++        etalon_docx=etalon_docx,
++        source_selection=source_selection,
++        requirement_graph=requirement_graph,
++        section_model=section_model,
++        implementation_model=implementation_model,
++        review=final_review,
++        validation=validation,
++        render_metrics=render_metrics,
++        boilerplate_report=boilerplate_report,
++        standard_substance_coverage=standard_substance_coverage,
++        etalon_substance_coverage=etalon_substance_coverage,
++        compliance_matrix_validation=compliance_matrix_validation,
++        section_content_plan=section_content_plan,
++        evidence_dir=evidence_dir,
++        request=request,
++    )
++    write_json(
++        evidence_dir / "requirement_transformation_gate.json",
++        quality.get("gates", {}).get("requirement_transformation", {}),
++    )
++    write_json(
++        evidence_dir / "context_accuracy_gate.json",
++        quality.get("gates", {}).get("context_accuracy", {}),
++    )
++    write_json(
++        evidence_dir / "generation_leakage_gate.json",
++        quality.get("gates", {}).get("generation_leakage", {}),
++    )
++    quality["target_quality"] = target_quality
++    quality["target_reached"] = (
++        quality["quality_score"] >= target_quality
++        and validation["status"] == "PASS"
++        and quality.get("hard_gates_passed") is True
++    )
++    write_json(evidence_dir / "quality_score.json", quality)
++
++    blockers = list(validation.get("blockers") or [])
++    blockers.extend(
++        str(item)
++        for item in quality.get("hard_gate_failures") or []
++        if str(item) not in blockers
++    )
++    if not quality["target_reached"]:
++        blockers.append("QUALITY_BELOW_TARGET")
++    verdict = "PASS" if not blockers else "NOT_PASSED"
++    final = {
++        "final_verdict": verdict,
++        "run_id": run_id,
++        "document_type": doc_type,
++        "quality_score": quality["quality_score"],
++        "quality_percent": quality["quality_percent"],
++        "target_quality": target_quality,
++        "blockers": blockers,
++        "etalon_source": source_selection.get("selected"),
++        "final_docx": str(final_docx),
++        "final_pdf": str(final_pdf) if final_pdf.exists() else "",
++        "evidence_dir": str(evidence_dir),
++    }
++    write_json(evidence_dir / "final_verdict.json", final)
++    write_provenance_bundle(
++        evidence_dir=evidence_dir,
++        repo_root=REPO_ROOT,
++        generation_started_at=generation_started_at,
++        command=command,
++        section_content_plan=section_content_plan,
++        repair_plan=repair_plan,
++    )
++    return UniversalPipelineResult(
++        verdict=verdict,
++        document_type=doc_type,
++        quality_score=float(quality["quality_score"]),
++        evidence_dir=evidence_dir,
++        final_docx=final_docx,
++        final_pdf=final_pdf if final_pdf.exists() else None,
++        blockers=tuple(blockers),
++    )
+diff --git a/ops/docgen/universal_pipeline/standard_markitdown_normalizer.py b/ops/docgen/universal_pipeline/standard_markitdown_normalizer.py
+new file mode 100644
+index 0000000..3a6feee
+--- /dev/null
++++ b/ops/docgen/universal_pipeline/standard_markitdown_normalizer.py
+@@ -0,0 +1,238 @@
++from __future__ import annotations
++
++import json
++import os
++import re
++from pathlib import Path
++from typing import Any
++
++from ops.docsreg.extraction.markitdown_adapter import (
++    MARKITDOWN_SUPPORTED_SUFFIXES,
++    extract_with_markitdown,
++    write_extraction_artifacts,
++)
++
++
++def markitdown_standard_normalization_enabled() -> bool:
++    return os.environ.get("DOCGEN_MARKITDOWN_NORMALIZATION", "").strip() in {
++        "1",
++        "true",
++        "TRUE",
++        "yes",
++        "YES",
++    }
++
++
++def _safe_id(value: str) -> str:
++    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", value.strip())[:96].strip("._-")
++    return safe or "standard"
++
++
++def _source_path_from_standard(record: dict[str, Any]) -> Path | None:
++    candidates = [
++        record.get("registered_source_path"),
++        record.get("source_path"),
++        record.get("path"),
++        record.get("source"),
++    ]
++    metadata = record.get("metadata")
++    if isinstance(metadata, dict):
++        candidates.extend(
++            [
++                metadata.get("source_path"),
++                metadata.get("file_path"),
++                metadata.get("path"),
++                metadata.get("source"),
++            ]
++        )
++    for value in candidates:
++        text = str(value or "").strip()
++        if not text:
++            continue
++        path = Path(text)
++        if path.exists() and path.is_file():
++            return path
++    return None
++
++
++def _is_forbidden_etalon_source(record: dict[str, Any], source_path: Path | None) -> bool:
++    values = [
++        record.get("source_type"),
++        record.get("source_id"),
++        record.get("standard_id"),
++        record.get("title"),
++        str(source_path or ""),
++    ]
++    return any("ETALON" in str(value or "").upper() for value in values)
++
++
++def normalize_standards_for_comparison(
++    standards: dict[str, Any],
++    output_dir: str | Path,
++    *,
++    enabled: bool | None = None,
++) -> dict[str, Any]:
++    """Normalize registered standard source files for DOCGEN comparison evidence.
++
++    The produced Markdown is comparison evidence only. It is never returned as
++    source text and must not be consumed by generation or authoring stages.
++    """
++
++    if enabled is None:
++        enabled = markitdown_standard_normalization_enabled()
++
++    root = Path(output_dir)
++    selected = list(standards.get("selected_standards") or [])
++    if not enabled:
++        return {
++            "status": "DISABLED",
++            "enabled": False,
++            "backend": "markitdown",
++            "comparison_only": True,
++            "generation_context_allowed": False,
++            "standards_seen": len(selected),
++            "entries": [],
++        }
++
++    root.mkdir(parents=True, exist_ok=True)
++    entries: list[dict[str, Any]] = []
++    extracted_count = 0
++    failed_count = 0
++    skipped_count = 0
++
++    for index, item in enumerate(selected, start=1):
++        record = dict(item)
++        standard_id = str(record.get("standard_id") or record.get("code") or f"STD-{index}")
++        source_path = _source_path_from_standard(record)
++        entry: dict[str, Any] = {
++            "standard_id": standard_id,
++            "backend": "markitdown",
++            "comparison_only": True,
++            "generation_context_allowed": False,
++            "raw_markdown_in_generation_context": False,
++        }
++
++        if source_path is None:
++            skipped_count += 1
++            entry.update(
++                {
++                    "status": "SKIPPED",
++                    "reason": "NO_REGISTERED_SOURCE_PATH",
++                    "fallback_needed": True,
++                }
++            )
++            entries.append(entry)
++            continue
++
++        entry["source_path"] = str(source_path)
++        if _is_forbidden_etalon_source(record, source_path):
++            skipped_count += 1
++            entry.update(
++                {
++                    "status": "BLOCKED",
++                    "reason": "ETALON_SOURCE_NOT_ALLOWED_IN_DOCGEN_GENERATION_CONTEXT",
++                    "fallback_needed": True,
++                }
++            )
++            entries.append(entry)
++            continue
++
++        if source_path.suffix.lower() not in MARKITDOWN_SUPPORTED_SUFFIXES:
++            skipped_count += 1
++            entry.update(
++                {
++                    "status": "SKIPPED",
++                    "reason": f"UNSUPPORTED_FORMAT:{source_path.suffix.lower() or 'none'}",
++                    "fallback_needed": True,
++                }
++            )
++            entries.append(entry)
++            continue
++
++        result = extract_with_markitdown(source_path)
++        standard_dir = root / _safe_id(standard_id)
++        artifacts = write_extraction_artifacts(result, standard_dir)
++        metadata_path = standard_dir / "normalization_metadata.json"
++        metadata = {
++            "standard_id": standard_id,
++            "source_path": str(source_path),
++            "backend": "markitdown",
++            "status": result.status,
++            "comparison_only": True,
++            "generation_context_allowed": False,
++            "raw_markdown_in_generation_context": False,
++            "word_count": result.word_count,
++            "char_count": result.char_count,
++            "warnings": result.warnings,
++            "metadata": result.metadata,
++            "artifacts": artifacts,
++        }
++        metadata_path.write_text(
++            json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
++            encoding="utf-8",
++        )
++        if result.status == "extracted":
++            extracted_count += 1
++            status = "PASS"
++        else:
++            failed_count += 1
++            status = "FAIL"
++        entry.update(
++            {
++                "status": status,
++                "extraction_status": result.status,
++                "word_count": result.word_count,
++                "char_count": result.char_count,
++                "warnings": result.warnings,
++                "fallback_needed": result.status != "extracted",
++                "raw_extracted_text_path": artifacts["raw_extracted_text"],
++                "extraction_report_path": artifacts["extraction_report"],
++                "normalization_metadata_path": str(metadata_path),
++            }
++        )
++        entries.append(entry)
++
++    overall = "PASS" if extracted_count and failed_count == 0 else "WARN"
++    if failed_count and extracted_count == 0:
++        overall = "FAIL"
++    if not entries:
++        overall = "WARN"
++
++    summary = {
++        "status": overall,
++        "enabled": True,
++        "backend": "markitdown",
++        "comparison_only": True,
++        "generation_context_allowed": False,
++        "raw_markdown_in_generation_context": False,
++        "standards_seen": len(selected),
++        "standards_extracted": extracted_count,
++        "standards_failed": failed_count,
++        "standards_skipped": skipped_count,
++        "entries": entries,
++    }
++    (root / "standard_normalization_summary.json").write_text(
++        json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
++        encoding="utf-8",
++    )
++    return summary
++
++
++def attach_standard_normalization_summary(
++    standards: dict[str, Any],
++    evidence_dir: str | Path,
++) -> dict[str, Any]:
++    payload = dict(standards)
++    summary = normalize_standards_for_comparison(
++        payload,
++        Path(evidence_dir) / "standard_comparison_normalization",
++    )
++    payload["markitdown_standard_normalization"] = {
++        key: value
++        for key, value in summary.items()
++        if key != "entries"
++    }
++    payload["markitdown_standard_normalization"]["entry_count"] = len(
++        summary.get("entries") or []
++    )
++    return payload
+diff --git a/ops/docgen/universal_pipeline/standards_binder.py b/ops/docgen/universal_pipeline/standards_binder.py
+new file mode 100644
+index 0000000..7b9670a
+--- /dev/null
++++ b/ops/docgen/universal_pipeline/standards_binder.py
+@@ -0,0 +1,223 @@
++from __future__ import annotations
++
++import re
++from pathlib import Path
++from typing import Any
++
++from ops.docsreg.standards_registry import list_registered_standard_records
++from ops.docgen.standards import official_standard_metadata
++
++
++def _base_id(value: str) -> str:
++    return re.sub(r":\d{4}(?:-[A-Z0-9]+)?$", "", value.strip(), flags=re.I)
++
++
++def _year(value: str) -> str:
++    match = re.search(r":(\d{4})(?:-[A-Z0-9]+)?$", value.strip(), flags=re.I)
++    return match.group(1) if match else ""
++
++
++def _metadata_index() -> dict[str, list[dict[str, Any]]]:
++    index: dict[str, list[dict[str, Any]]] = {}
++    for record in list_registered_standard_records():
++        index.setdefault(_base_id(str(record.get("standard_id") or "")), []).append(record)
++    return index
++
++
++def _registered_source_path(record: dict[str, Any]) -> str:
++    metadata = record.get("metadata")
++    if isinstance(metadata, dict):
++        for key in ("source_path", "file_path", "path"):
++            value = str(metadata.get(key) or "").strip()
++            if value:
++                return value
++    return str(record.get("source") or "").strip()
++
++
++def _registered_candidate(
++    standard_id: str,
++    metadata_index: dict[str, list[dict[str, Any]]],
++) -> dict[str, Any]:
++    candidates = metadata_index.get(_base_id(standard_id), [])
++    exact = next(
++        (
++            record for record in candidates
++            if str(record.get("standard_id") or "") == standard_id
++        ),
++        None,
++    )
++    titled = exact or next(
++        (record for record in candidates if str(record.get("title") or "").strip()),
++        None,
++    )
++    return dict(titled or {})
++
++
++def _registered_source_fields(record: dict[str, Any]) -> dict[str, Any]:
++    source_path = _registered_source_path(record)
++    return {
++        "registered_source_path": source_path,
++        "registered_source_exists": bool(source_path and Path(source_path).exists()),
++        "registered_source_status": str(record.get("status") or ""),
++        "registered_source_domain": str(record.get("domain") or ""),
++    }
++
++
++def _mentioned_registered_records(
++    request_text: str,
++    metadata_index: dict[str, list[dict[str, Any]]],
++) -> list[dict[str, Any]]:
++    lower = request_text.casefold()
++    matches: list[dict[str, Any]] = []
++    for records in metadata_index.values():
++        for record in records:
++            standard_id = str(record.get("standard_id") or "").strip()
++            title = str(record.get("title") or "").strip()
++            needles = [standard_id.casefold(), title.casefold()]
++            if any(len(needle) >= 4 and needle in lower for needle in needles):
++                matches.append(dict(record))
++                break
++    return matches
++
++
++def _standard_record(
++    standard_id: str,
++    *,
++    use: str,
++    metadata_index: dict[str, list[dict[str, Any]]],
++) -> dict[str, Any]:
++    official = official_standard_metadata(standard_id)
++    registered = _registered_candidate(standard_id, metadata_index)
++    if official:
++        reference_code = str(
++            official.get("content_basis_code")
++            or official.get("current_code")
++            or standard_id
++        )
++        reference_year = str(
++            official.get("content_basis_year")
++            or official.get("publication_year")
++            or ""
++        )
++        current_code = str(official.get("current_code") or standard_id)
++        return {
++            "standard_id": current_code,
++            "requested_standard_id": standard_id,
++            "code": reference_code,
++            "title": str(
++                official.get("content_basis_title")
++                or official.get("title")
++                or ""
++            ),
++            "publication_year": reference_year,
++            "edition_verified": bool(reference_year),
++            "metadata_source": str(official.get("metadata_source") or ""),
++            "official_url": str(official.get("official_url") or ""),
++            "use": use,
++            "currentness_status": str(
++                official.get("content_basis_status")
++                or official.get("status")
++                or "OFFICIAL_METADATA"
++            ),
++            "metadata_only": official.get("content_available") == "metadata_only",
++            "clause_content_authorized": False,
++            "metadata_verified_at": official.get("metadata_verified_at"),
++            "current_official_code": current_code,
++            "current_official_title": str(official.get("title") or ""),
++            "current_official_publication_year": str(
++                official.get("publication_year") or ""
++            ),
++            "current_official_publication_date": str(
++                official.get("publication_date") or ""
++            ),
++            "under_review_against_current_edition": reference_code != current_code,
++            **_registered_source_fields(registered),
++        }
++    candidates = metadata_index.get(_base_id(standard_id), [])
++    exact = next(
++        (
++            record for record in candidates
++            if str(record.get("standard_id") or "") == standard_id
++            and str(record.get("title") or "").strip()
++        ),
++        None,
++    )
++    titled = exact or next(
++        (record for record in candidates if str(record.get("title") or "").strip()),
++        {},
++    )
++    publication_year = _year(standard_id)
++    return {
++        "standard_id": standard_id,
++        "code": standard_id,
++        "title": str(titled.get("title") or "").strip(),
++        "publication_year": publication_year,
++        "edition_verified": bool(publication_year and exact),
++        "metadata_source": str(titled.get("source") or ""),
++        "official_url": str(titled.get("official_url") or ""),
++        "use": use,
++        "currentness_status": (
++            "REGISTERED_EDITION"
++            if publication_year and exact
++            else "SOURCE_SITE_CONFIRMATION_REQUIRED"
++        ),
++        **_registered_source_fields(dict(titled or {})),
++    }
++
++
++def bind_standards(request: dict[str, Any], sources: dict[str, Any]) -> dict[str, Any]:
++    standards = []
++    seen: set[str] = set()
++    metadata_index = _metadata_index()
++    for item in sources.get("standards") or []:
++        standard_id = str(item.get("standard_id") if isinstance(item, dict) else item).strip()
++        if standard_id and standard_id not in seen:
++            seen.add(standard_id)
++            standards.append(
++                _standard_record(
++                    standard_id,
++                    use="formation_or_discovery",
++                    metadata_index=metadata_index,
++                )
++            )
++    text = " ".join([str(request.get("request") or ""), str(request.get("title") or "")]).lower()
++    if "iso 55001" in text and "ISO 55001" not in seen:
++        standards.append(
++            _standard_record(
++                "ISO 55001",
++                use="domain_requirement",
++                metadata_index=metadata_index,
++            )
++        )
++    if "iso 55002" in text and "ISO 55002" not in seen:
++        standards.append(
++            _standard_record(
++                "ISO 55002",
++                use="domain_guidance",
++                metadata_index=metadata_index,
++            )
++        )
++    for record in _mentioned_registered_records(text, metadata_index):
++        standard_id = str(record.get("standard_id") or "").strip()
++        if standard_id and standard_id not in seen:
++            seen.add(standard_id)
++            standards.append(
++                _standard_record(
++                    standard_id,
++                    use="registered_request_match",
++                    metadata_index=metadata_index,
++                )
++            )
++    return {
++        "status": "PASS",
++        "selected_standards": standards,
++        "reference_register_ready": all(
++            item.get("code") and item.get("title") for item in standards
++        ),
++        "edition_verification_required": [
++            item["standard_id"]
++            for item in standards
++            if not item.get("edition_verified")
++        ],
++        "blockers": [],
++    }
+diff --git a/ops/docsreg/extraction/markitdown_adapter.py b/ops/docsreg/extraction/markitdown_adapter.py
+index f80f6d4..0617fe0 100644
+--- a/ops/docsreg/extraction/markitdown_adapter.py
++++ b/ops/docsreg/extraction/markitdown_adapter.py
+@@ -2,6 +2,8 @@ from __future__ import annotations
+ 
+ import importlib
+ import json
++import os
++import sys
+ import traceback
+ from importlib import metadata as importlib_metadata
+ from pathlib import Path
+@@ -32,13 +34,62 @@ def _markitdown_version(module: Any) -> str:
+         return str(getattr(module, "__version__", "unknown"))
+ 
+ 
++def _candidate_markitdown_site_packages() -> list[Path]:
++    configured = [
++        item
++        for value in (
++            os.environ.get("AIMS_MARKITDOWN_SITE_PACKAGES", ""),
++            os.environ.get("DOCSREG_MARKITDOWN_SITE_PACKAGES", ""),
++        )
++        for item in value.split(os.pathsep)
++        if item.strip()
++    ]
++    candidates = [Path(item).expanduser() for item in configured]
++    repo_root = Path(__file__).resolve().parents[3]
++    for venv_name in (".venv-markitdown",):
++        lib_root = repo_root / venv_name / "lib"
++        if lib_root.exists():
++            candidates.extend(sorted(lib_root.glob("python*/site-packages")))
++    seen: set[str] = set()
++    ordered: list[Path] = []
++    for candidate in candidates:
++        key = str(candidate)
++        if key not in seen:
++            seen.add(key)
++            ordered.append(candidate)
++    return ordered
++
++
++def _import_markitdown() -> tuple[type[Any], Any]:
++    module = importlib.import_module("markitdown")
++    return getattr(module, "MarkItDown"), module
++
++
+ def _load_markitdown() -> tuple[type[Any] | None, str, str]:
+     try:
+-        module = importlib.import_module("markitdown")
+-        markitdown_class = getattr(module, "MarkItDown")
++        markitdown_class, module = _import_markitdown()
+         return markitdown_class, _markitdown_version(module), ""
+-    except Exception as exc:
+-        return None, "unavailable", f"{exc.__class__.__name__}: {exc}"
++    except Exception as first_exc:
++        fallback_errors: list[str] = [f"{first_exc.__class__.__name__}: {first_exc}"]
++
++    attempted_paths: list[str] = []
++    for site_packages in _candidate_markitdown_site_packages():
++        if not site_packages.exists():
++            continue
++        site_packages_str = str(site_packages)
++        attempted_paths.append(site_packages_str)
++        if site_packages_str not in sys.path:
++            sys.path.append(site_packages_str)
++        try:
++            markitdown_class, module = _import_markitdown()
++            return markitdown_class, _markitdown_version(module), ""
++        except Exception as exc:
++            fallback_errors.append(f"{exc.__class__.__name__}: {exc}")
++
++    detail = "; ".join(fallback_errors)
++    if attempted_paths:
++        detail = f"{detail}; attempted_site_packages={attempted_paths}"
++    return None, "unavailable", detail
+ 
+ 
+ def _text_from_conversion(result: Any) -> str:
+diff --git a/ops/docsreg/pipelines/run_batch.py b/ops/docsreg/pipelines/run_batch.py
+index d7325d3..a44bf8d 100644
+--- a/ops/docsreg/pipelines/run_batch.py
++++ b/ops/docsreg/pipelines/run_batch.py
+@@ -19,6 +19,7 @@ from __future__ import annotations
+ import argparse
+ import json
+ import logging
++import os
+ import sys
+ import traceback
+ from dataclasses import asdict, dataclass
+@@ -116,6 +117,7 @@ def _run_batch(
+     teacher_mode: str = "noop",
+     target_quality: float = 0.98,
+     max_cycles: int = 7,
++    redis_url: str | None = None,
+ ) -> int:
+     """Core batch processing. Returns exit code (0=success, 1=partial failures)."""
+     output_root.mkdir(parents=True, exist_ok=True)
+@@ -247,6 +249,7 @@ def _run_batch(
+                 document_type=document_type,
+                 draft_path=fpath,
+                 evidence_root=file_evidence_root,
++                redis_url=redis_url or os.environ.get("AIMS_REDIS_URL", "redis://aims-redis:6379/0"),
+                 teacher_mode=teacher_mode,  # type: ignore[arg-type]
+                 target_quality=target_quality,
+                 max_cycles=max_cycles,
+@@ -363,6 +366,11 @@ def main(argv=None) -> int:
+                         help="Target quality score (default: 0.98).")
+     parser.add_argument("--max-cycles", type=int, default=7,
+                         help="Max improvement cycles per document (default: 7).")
++    parser.add_argument(
++        "--redis-url",
++        default=os.environ.get("AIMS_REDIS_URL", "redis://aims-redis:6379/0"),
++        help="Redis URL for DOCSREG scheduler (default: AIMS_REDIS_URL or redis://aims-redis:6379/0).",
++    )
+     parser.add_argument("--log-level", default="INFO",
+                         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+                         help="Logging level (default: INFO).")
+@@ -381,6 +389,7 @@ def main(argv=None) -> int:
+         teacher_mode=args.teacher_mode,
+         target_quality=args.target_quality,
+         max_cycles=args.max_cycles,
++        redis_url=args.redis_url,
+     )
+ 
+ 
+diff --git a/ops/tests/test_docgen_markitdown_standard_normalization.py b/ops/tests/test_docgen_markitdown_standard_normalization.py
+new file mode 100644
+index 0000000..3e12e26
+--- /dev/null
++++ b/ops/tests/test_docgen_markitdown_standard_normalization.py
+@@ -0,0 +1,181 @@
++from __future__ import annotations
++
++from pathlib import Path
++from types import SimpleNamespace
++
++import pytest
++
++from ops.docgen.universal_pipeline import standard_markitdown_normalizer as normalizer
++from ops.docgen.universal_pipeline import standards_binder
++from ops.docsreg.extraction import markitdown_adapter
++
++
++class _FakeMarkItDown:
++    def convert(self, source_path: str):
++        return SimpleNamespace(text_content=Path(source_path).read_text(encoding="utf-8"))
++
++
++def _install_fake_markitdown(monkeypatch: pytest.MonkeyPatch) -> None:
++    class _FakeModule:
++        MarkItDown = _FakeMarkItDown
++        __version__ = "test"
++
++    monkeypatch.setattr(
++        markitdown_adapter.importlib,
++        "import_module",
++        lambda name: _FakeModule() if name == "markitdown" else pytest.fail(name),
++    )
++    monkeypatch.setattr(
++        markitdown_adapter.importlib_metadata,
++        "version",
++        lambda name: "test" if name == "markitdown" else pytest.fail(name),
++    )
++
++
++def test_docgen_standard_normalizer_disabled_by_default(tmp_path: Path) -> None:
++    standards = {"selected_standards": [{"standard_id": "ISO 55001"}]}
++
++    summary = normalizer.normalize_standards_for_comparison(
++        standards,
++        tmp_path / "normalized",
++        enabled=False,
++    )
++
++    assert summary["status"] == "DISABLED"
++    assert summary["generation_context_allowed"] is False
++    assert summary["entries"] == []
++
++
++def test_docgen_standard_normalizer_writes_comparison_artifacts(
++    monkeypatch: pytest.MonkeyPatch,
++    tmp_path: Path,
++) -> None:
++    _install_fake_markitdown(monkeypatch)
++    source = tmp_path / "ISO_55001.docx"
++    source.write_text("# ISO 55001\n\nstandard comparison text " * 40, encoding="utf-8")
++    standards = {
++        "selected_standards": [
++            {
++                "standard_id": "ISO 55001",
++                "registered_source_path": str(source),
++            }
++        ]
++    }
++
++    summary = normalizer.normalize_standards_for_comparison(
++        standards,
++        tmp_path / "normalized",
++        enabled=True,
++    )
++
++    assert summary["status"] == "PASS"
++    assert summary["standards_extracted"] == 1
++    entry = summary["entries"][0]
++    assert entry["generation_context_allowed"] is False
++    assert entry["raw_markdown_in_generation_context"] is False
++    assert Path(entry["raw_extracted_text_path"]).exists()
++    report = Path(entry["extraction_report_path"]).read_text(encoding="utf-8")
++    assert '"extractor": "markitdown"' in report
++    assert "raw_markdown" not in report
++
++
++def test_docgen_standard_normalizer_blocks_etalon_source(tmp_path: Path) -> None:
++    source = tmp_path / "approved_etalon.docx"
++    source.write_text("must not enter generation context", encoding="utf-8")
++    standards = {
++        "selected_standards": [
++            {
++                "standard_id": "ETALON-ISO-55001",
++                "registered_source_path": str(source),
++            }
++        ]
++    }
++
++    summary = normalizer.normalize_standards_for_comparison(
++        standards,
++        tmp_path / "normalized",
++        enabled=True,
++    )
++
++    assert summary["status"] == "WARN"
++    assert summary["standards_skipped"] == 1
++    assert summary["entries"][0]["status"] == "BLOCKED"
++    assert "ETALON" in summary["entries"][0]["reason"]
++
++
++def test_docgen_standards_binder_preserves_registered_source_path(
++    monkeypatch: pytest.MonkeyPatch,
++    tmp_path: Path,
++) -> None:
++    source = tmp_path / "ISO_55001.pdf"
++    source.write_bytes(b"%PDF-1.4\n")
++    monkeypatch.setattr(
++        standards_binder,
++        "official_standard_metadata",
++        lambda standard_id: {},
++    )
++    monkeypatch.setattr(
++        standards_binder,
++        "list_registered_standard_records",
++        lambda: [
++            {
++                "standard_id": "ISO 55001",
++                "domain": "standards.ingested.iso",
++                "title": "Asset management systems",
++                "source": str(source),
++                "status": "certified",
++                "official_url": "",
++                "metadata": {"source_path": str(source)},
++            }
++        ],
++    )
++
++    result = standards_binder.bind_standards(
++        {"request": "use ISO 55001", "title": "AIMS"},
++        {"standards": ["ISO 55001"]},
++    )
++
++    record = result["selected_standards"][0]
++    assert record["registered_source_path"] == str(source)
++    assert record["registered_source_exists"] is True
++
++
++def test_docgen_standards_binder_selects_explicit_registered_abs_standard(
++    monkeypatch: pytest.MonkeyPatch,
++    tmp_path: Path,
++) -> None:
++    source = tmp_path / "ABS vessels classification.pdf"
++    source.write_bytes(b"%PDF-1.4\n")
++    monkeypatch.setattr(
++        standards_binder,
++        "official_standard_metadata",
++        lambda standard_id: {},
++    )
++    monkeypatch.setattr(
++        standards_binder,
++        "list_registered_standard_records",
++        lambda: [
++            {
++                "standard_id": "ABS vessels classification",
++                "domain": "standards.ingested.abs",
++                "title": "ABS vessels classification",
++                "source": str(source),
++                "status": "pending",
++                "official_url": "",
++                "metadata": {"source_path": str(source)},
++            }
++        ],
++    )
++
++    result = standards_binder.bind_standards(
++        {
++            "request": "Generate a comparison-aware policy using ABS vessels classification.",
++            "title": "AIMS ABS comparison",
++        },
++        {"standards": []},
++    )
++
++    record = result["selected_standards"][0]
++    assert record["standard_id"] == "ABS vessels classification"
++    assert record["use"] == "registered_request_match"
++    assert record["registered_source_path"] == str(source)
+diff --git a/ops/tests/test_docsreg_batch_archives.py b/ops/tests/test_docsreg_batch_archives.py
+index c829898..7c03f80 100644
+--- a/ops/tests/test_docsreg_batch_archives.py
++++ b/ops/tests/test_docsreg_batch_archives.py
+@@ -123,6 +123,31 @@ def test_batch_processes_direct_and_extracted_files(tmp_path):
+     assert len(call_paths) == 6
+ 
+ 
++def test_batch_passes_configured_redis_url_to_cycle(tmp_path):
++    """Batch CLI/core must not hard-code the Docker-only aims-redis hostname."""
++    input_root = tmp_path / "input"
++    input_root.mkdir()
++    (input_root / "standard.md").write_text("# Standard\n\nContent.")
++    captured = {}
++    mock_result = SimpleNamespace(passed=True, outcome="DOCUMENT_TYPE_CERTIFIED")
++
++    def mock_cycle(**kwargs):
++        captured.update(kwargs)
++        return mock_result
++
++    from ops.docsreg.pipelines.run_batch import _run_batch
++
++    with patch("ops.docsreg.pipelines.run_batch.run_docsreg_cycle", mock_cycle):
++        _run_batch(
++            input_root=input_root,
++            output_root=tmp_path / "output",
++            evidence_root=tmp_path / "evidence",
++            redis_url="redis://172.18.0.29:6379/0",
++        )
++
++    assert captured["redis_url"] == "redis://172.18.0.29:6379/0"
++
++
+ def test_unsupported_inside_archives_not_counted_as_registration_failed(tmp_path):
+     """Unsupported members (e.g. .tmp inside zip) must NOT count as failed registration."""
+     input_root = tmp_path / "input"
+diff --git a/ops/tests/test_markitdown_real_abs_integration.py b/ops/tests/test_markitdown_real_abs_integration.py
+new file mode 100644
+index 0000000..896b82a
+--- /dev/null
++++ b/ops/tests/test_markitdown_real_abs_integration.py
+@@ -0,0 +1,117 @@
++from __future__ import annotations
++
++import json
++from pathlib import Path
++
++import pytest
++
++from ops.docgen.universal_pipeline.standard_markitdown_normalizer import (
++    normalize_standards_for_comparison,
++)
++from ops.docsreg.docsreg_evidence_checkpoint import DocsregEvidenceCheckpoint
++from ops.docsreg.docsreg_run_manifest import DocsregRunManifest
++from ops.docsreg.docsreg_tasks import task_extraction_ready
++from ops.docsreg.extraction.markitdown_adapter import extract_with_markitdown
++
++
++ABS_STANDARD = Path(
++    "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/"
++    "ABS vessels classification.pdf"
++)
++
++pytestmark = pytest.mark.integration
++
++
++class _MemoryScheduler:
++    run_id = "real-abs-markitdown"
++
++    def __init__(self) -> None:
++        self.contracts = {}
++
++    def save_contract(self, contract) -> None:
++        self.contracts[contract.stage] = contract
++
++    def load_contract(self, stage: str):
++        return self.contracts.get(stage)
++
++
++def _require_abs_standard() -> Path:
++    if not ABS_STANDARD.exists():
++        pytest.skip(f"ABS real standard fixture not mounted: {ABS_STANDARD}")
++    return ABS_STANDARD
++
++
++def test_real_abs_standard_extracts_with_markitdown_from_default_python() -> None:
++    source = _require_abs_standard()
++
++    result = extract_with_markitdown(source)
++
++    assert result.status == "extracted"
++    assert result.extractor == "markitdown"
++    assert result.word_count >= 1000
++    assert result.char_count >= 5000
++    assert result.metadata["markitdown_version"] != "unavailable"
++
++
++def test_real_abs_standard_docsreg_extraction_contract_writes_raw_artifacts(
++    monkeypatch: pytest.MonkeyPatch,
++    tmp_path: Path,
++) -> None:
++    source = _require_abs_standard()
++    evidence_dir = tmp_path / "docsreg_extraction"
++    monkeypatch.setenv("DOCSREG_EXTRACTOR_BACKEND", "markitdown")
++    monkeypatch.setenv("DOCSREG_EXTRACTION_ARTIFACT_DIR", str(evidence_dir))
++
++    manifest = DocsregRunManifest.create(
++        run_id="real-abs-markitdown",
++        draft_path=str(source),
++    )
++    checkpoint = DocsregEvidenceCheckpoint(_MemoryScheduler())
++
++    contract = task_extraction_ready(manifest, checkpoint)
++
++    assert contract.gates["extraction_gate"] == "PASS"
++    assert contract.metrics["extraction_method"] == "markitdown"
++    assert contract.metrics["extraction_status"] == "extracted"
++    assert contract.metrics["word_count"] >= 1000
++    raw_path = Path(contract.output_artifacts["raw_extracted_text"])
++    report_path = Path(contract.output_artifacts["extraction_report"])
++    assert raw_path.exists()
++    report = json.loads(report_path.read_text(encoding="utf-8"))
++    assert report["extractor"] == "markitdown"
++    assert report["status"] == "extracted"
++    assert "raw_markdown" not in report
++
++
++def test_real_abs_standard_docgen_comparison_normalization_writes_artifacts(
++    tmp_path: Path,
++) -> None:
++    source = _require_abs_standard()
++    standards = {
++        "selected_standards": [
++            {
++                "standard_id": "ABS Vessels Classification",
++                "title": "ABS vessels classification",
++                "registered_source_path": str(source),
++            }
++        ]
++    }
++
++    summary = normalize_standards_for_comparison(
++        standards,
++        tmp_path / "docgen_standard_comparison",
++        enabled=True,
++    )
++
++    assert summary["status"] == "PASS"
++    assert summary["standards_extracted"] == 1
++    assert summary["comparison_only"] is True
++    assert summary["generation_context_allowed"] is False
++    entry = summary["entries"][0]
++    assert entry["generation_context_allowed"] is False
++    assert entry["raw_markdown_in_generation_context"] is False
++    assert Path(entry["raw_extracted_text_path"]).exists()
++    report = json.loads(Path(entry["extraction_report_path"]).read_text(encoding="utf-8"))
++    assert report["extractor"] == "markitdown"
++    assert report["word_count"] >= 1000
++    assert "raw_markdown" not in report
