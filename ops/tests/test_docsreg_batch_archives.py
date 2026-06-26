@@ -123,6 +123,31 @@ def test_batch_processes_direct_and_extracted_files(tmp_path):
     assert len(call_paths) == 6
 
 
+def test_batch_passes_configured_redis_url_to_cycle(tmp_path):
+    """Batch CLI/core must not hard-code the Docker-only aims-redis hostname."""
+    input_root = tmp_path / "input"
+    input_root.mkdir()
+    (input_root / "standard.md").write_text("# Standard\n\nContent.")
+    captured = {}
+    mock_result = SimpleNamespace(passed=True, outcome="DOCUMENT_TYPE_CERTIFIED")
+
+    def mock_cycle(**kwargs):
+        captured.update(kwargs)
+        return mock_result
+
+    from ops.docsreg.pipelines.run_batch import _run_batch
+
+    with patch("ops.docsreg.pipelines.run_batch.run_docsreg_cycle", mock_cycle):
+        _run_batch(
+            input_root=input_root,
+            output_root=tmp_path / "output",
+            evidence_root=tmp_path / "evidence",
+            redis_url="redis://172.18.0.29:6379/0",
+        )
+
+    assert captured["redis_url"] == "redis://172.18.0.29:6379/0"
+
+
 def test_unsupported_inside_archives_not_counted_as_registration_failed(tmp_path):
     """Unsupported members (e.g. .tmp inside zip) must NOT count as failed registration."""
     input_root = tmp_path / "input"

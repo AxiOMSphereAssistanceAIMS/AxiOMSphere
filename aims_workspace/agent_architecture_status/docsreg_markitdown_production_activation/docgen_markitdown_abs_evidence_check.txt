@@ -1,0 +1,84 @@
+aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/standard_normalization_summary.json
+{
+  "status": "PASS",
+  "enabled": true,
+  "standards_seen": 10,
+  "standards_extracted": 1,
+  "standards_failed": 0,
+  "standards_skipped": 9,
+  "generation_context_allowed": false,
+  "raw_markdown_in_generation_context": false
+}
+{
+  "standard_id": "ABS vessels classification",
+  "backend": "markitdown",
+  "comparison_only": true,
+  "generation_context_allowed": false,
+  "raw_markdown_in_generation_context": false,
+  "source_path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
+  "status": "PASS",
+  "extraction_status": "extracted",
+  "word_count": 11990,
+  "char_count": 68930,
+  "warnings": [],
+  "fallback_needed": false,
+  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/raw_extracted_text.md",
+  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/extraction_report.json",
+  "normalization_metadata_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_1/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/normalization_metadata.json"
+}
+aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/standard_normalization_summary.json
+{
+  "status": "PASS",
+  "enabled": true,
+  "standards_seen": 10,
+  "standards_extracted": 1,
+  "standards_failed": 0,
+  "standards_skipped": 9,
+  "generation_context_allowed": false,
+  "raw_markdown_in_generation_context": false
+}
+{
+  "standard_id": "ABS vessels classification",
+  "backend": "markitdown",
+  "comparison_only": true,
+  "generation_context_allowed": false,
+  "raw_markdown_in_generation_context": false,
+  "source_path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
+  "status": "PASS",
+  "extraction_status": "extracted",
+  "word_count": 11990,
+  "char_count": 68930,
+  "warnings": [],
+  "fallback_needed": false,
+  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/raw_extracted_text.md",
+  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/extraction_report.json",
+  "normalization_metadata_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_2/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/normalization_metadata.json"
+}
+aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/standard_normalization_summary.json
+{
+  "status": "PASS",
+  "enabled": true,
+  "standards_seen": 10,
+  "standards_extracted": 1,
+  "standards_failed": 0,
+  "standards_skipped": 9,
+  "generation_context_allowed": false,
+  "raw_markdown_in_generation_context": false
+}
+{
+  "standard_id": "ABS vessels classification",
+  "backend": "markitdown",
+  "comparison_only": true,
+  "generation_context_allowed": false,
+  "raw_markdown_in_generation_context": false,
+  "source_path": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
+  "status": "PASS",
+  "extraction_status": "extracted",
+  "word_count": 11990,
+  "char_count": 68930,
+  "warnings": [],
+  "fallback_needed": false,
+  "raw_extracted_text_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/raw_extracted_text.md",
+  "extraction_report_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/extraction_report.json",
+  "normalization_metadata_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/cycle_3/pipeline_run/standard_comparison_normalization/ABS_vessels_classification/normalization_metadata.json"
+}

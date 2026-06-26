@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 import traceback
 from dataclasses import asdict, dataclass
@@ -116,6 +117,7 @@ def _run_batch(
     teacher_mode: str = "noop",
     target_quality: float = 0.98,
     max_cycles: int = 7,
+    redis_url: str | None = None,
 ) -> int:
     """Core batch processing. Returns exit code (0=success, 1=partial failures)."""
     output_root.mkdir(parents=True, exist_ok=True)
@@ -247,6 +249,7 @@ def _run_batch(
                 document_type=document_type,
                 draft_path=fpath,
                 evidence_root=file_evidence_root,
+                redis_url=redis_url or os.environ.get("AIMS_REDIS_URL", "redis://aims-redis:6379/0"),
                 teacher_mode=teacher_mode,  # type: ignore[arg-type]
                 target_quality=target_quality,
                 max_cycles=max_cycles,
@@ -363,6 +366,11 @@ def main(argv=None) -> int:
                         help="Target quality score (default: 0.98).")
     parser.add_argument("--max-cycles", type=int, default=7,
                         help="Max improvement cycles per document (default: 7).")
+    parser.add_argument(
+        "--redis-url",
+        default=os.environ.get("AIMS_REDIS_URL", "redis://aims-redis:6379/0"),
+        help="Redis URL for DOCSREG scheduler (default: AIMS_REDIS_URL or redis://aims-redis:6379/0).",
+    )
     parser.add_argument("--log-level", default="INFO",
                         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
                         help="Logging level (default: INFO).")
@@ -381,6 +389,7 @@ def main(argv=None) -> int:
         teacher_mode=args.teacher_mode,
         target_quality=args.target_quality,
         max_cycles=args.max_cycles,
+        redis_url=args.redis_url,
     )
 
 

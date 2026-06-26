@@ -1,0 +1,10 @@
+summary_path aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/quality_loop_summary.json
+{
+  "final_state": "PLATEAU_MODEL_TRAINING_REQUIRED",
+  "cycles_executed": 3,
+  "best_quality": 0.3913,
+  "target_quality": 0.9,
+  "automatic_training": false,
+  "automatic_promotion": false,
+  "teacher_invocation_enabled": false
+}

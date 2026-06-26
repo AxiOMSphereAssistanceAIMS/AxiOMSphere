@@ -1,0 +1,96 @@
+{
+  "created_at": "2026-06-26T06:30:32.325723+00:00",
+  "status": "PASS_WITH_SAFETY_GATES",
+  "status_rationale": "MarkItDown is active for DOCSREG extraction and DOCGEN standard comparison normalization. A real ABS standard reached extraction and quality_report. Raw extraction was not certified as a master package; downstream DOCSREG certification remained PENDING and Qdrant/document writes were skipped by existing gates.",
+  "backend_mode": {
+    "docsreg": "markitdown",
+    "docgen": "DOCGEN_MARKITDOWN_NORMALIZATION=1 comparison_only"
+  },
+  "markitdown_default_python_direct_import_available": false,
+  "markitdown_venv_available": true,
+  "markitdown_adapter_runtime_fallback_available": true,
+  "markitdown_version_observed": "0.1.6",
+  "real_abs_fixture": "/media/axi_omi_sphere/FDF0-25E2/Documents/Standards/ABS/ABS/ABS vessels classification.pdf",
+  "real_abs_extraction": {
+    "status": "extracted",
+    "word_count": 11990,
+    "char_count": 68930
+  },
+  "focused_tests": {
+    "passed": true,
+    "count": 25,
+    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/final_focused_markitdown_tests.log"
+  },
+  "full_docsreg_regression": {
+    "passed": true,
+    "passed_count": 925,
+    "skipped_count": 5,
+    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_docsreg_regression_final.log"
+  },
+  "docsreg_full_cycle": {
+    "run": "DOCSREG_EXTRACTOR_BACKEND=markitdown with ABS PDF and Redis URL override",
+    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_run_abs_with_redis.log",
+    "extraction_report_exists": true,
+    "markitdown_extraction_reports": [
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/extraction_report.json",
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/extraction_report.json",
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/extraction_report.json"
+    ],
+    "raw_extracted_text_exists": true,
+    "raw_extracted_text": [
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/raw_extracted_text.md",
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/raw_extracted_text.md",
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/raw_extracted_text.md"
+    ],
+    "quality_report_exists": true,
+    "quality_report": [
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/input/quality_report.json"
+    ],
+    "master_document_exists": false,
+    "registration_manifest_exists": false,
+    "pending_not_certified_records": [
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/cycle_record.json",
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/cycle_record.json",
+      "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/cycle_record.json"
+    ],
+    "registered_count": 0,
+    "failed_registration_count": 1,
+    "raw_output_certified_without_master": false,
+    "documents_qdrant_write_skipped_by_gate": true,
+    "learning_entry_written": false,
+    "learning_files": []
+  },
+  "docgen_full_quality_loop": {
+    "run": "DOCGEN_MARKITDOWN_NORMALIZATION=1 with ABS vessels classification comparison request",
+    "summary_path": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs/quality_loop_summary.json",
+    "log": "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/docgen_full_quality_loop_markitdown_abs.log",
+    "cycles_executed": 3,
+    "best_quality": 0.3913,
+    "target_quality": 0.9,
+    "final_state": "PLATEAU_MODEL_TRAINING_REQUIRED",
+    "automatic_training": false,
+    "automatic_promotion": false,
+    "teacher_invocation_enabled": false,
+    "abs_standard_normalization_passed": true,
+    "generation_context_allowed": false,
+    "raw_markdown_in_generation_context": false
+  },
+  "code_changes": {
+    "docsreg_runtime_fallback": "ops/docsreg/extraction/markitdown_adapter.py",
+    "docsreg_batch_redis_override": "ops/docsreg/pipelines/run_batch.py",
+    "docgen_comparison_normalizer": "ops/docgen/universal_pipeline/standard_markitdown_normalizer.py",
+    "docgen_binder_registered_source_paths": "ops/docgen/universal_pipeline/standards_binder.py",
+    "docgen_orchestrator_hook": "ops/docgen/universal_pipeline/orchestrator.py",
+    "tests": [
+      "ops/tests/test_docsreg_batch_archives.py",
+      "ops/tests/test_docgen_markitdown_standard_normalization.py",
+      "ops/tests/test_markitdown_real_abs_integration.py"
+    ]
+  },
+  "remaining_blockers": [
+    "Default /usr/bin/python still cannot directly import markitdown; production path is unblocked by adapter fallback to .venv-markitdown site-packages or explicit AIMS_MARKITDOWN_SITE_PACKAGES.",
+    "DOCSREG full ABS cycle did not certify/register because existing package/audit gates kept certification_status=PENDING and skipped documents/Qdrant write.",
+    "No docsreg_learning.jsonl entry was found by artifact scan for the attempted ABS cycle.",
+    "DOCGEN self-improvement loop plateaued at quality 0.3913 and correctly did not train or promote automatically."
+  ]
+}

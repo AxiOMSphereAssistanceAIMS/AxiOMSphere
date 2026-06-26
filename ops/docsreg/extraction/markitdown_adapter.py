@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
+import sys
 import traceback
 from importlib import metadata as importlib_metadata
 from pathlib import Path
@@ -32,13 +34,62 @@ def _markitdown_version(module: Any) -> str:
         return str(getattr(module, "__version__", "unknown"))
 
 
+def _candidate_markitdown_site_packages() -> list[Path]:
+    configured = [
+        item
+        for value in (
+            os.environ.get("AIMS_MARKITDOWN_SITE_PACKAGES", ""),
+            os.environ.get("DOCSREG_MARKITDOWN_SITE_PACKAGES", ""),
+        )
+        for item in value.split(os.pathsep)
+        if item.strip()
+    ]
+    candidates = [Path(item).expanduser() for item in configured]
+    repo_root = Path(__file__).resolve().parents[3]
+    for venv_name in (".venv-markitdown",):
+        lib_root = repo_root / venv_name / "lib"
+        if lib_root.exists():
+            candidates.extend(sorted(lib_root.glob("python*/site-packages")))
+    seen: set[str] = set()
+    ordered: list[Path] = []
+    for candidate in candidates:
+        key = str(candidate)
+        if key not in seen:
+            seen.add(key)
+            ordered.append(candidate)
+    return ordered
+
+
+def _import_markitdown() -> tuple[type[Any], Any]:
+    module = importlib.import_module("markitdown")
+    return getattr(module, "MarkItDown"), module
+
+
 def _load_markitdown() -> tuple[type[Any] | None, str, str]:
     try:
-        module = importlib.import_module("markitdown")
-        markitdown_class = getattr(module, "MarkItDown")
+        markitdown_class, module = _import_markitdown()
         return markitdown_class, _markitdown_version(module), ""
-    except Exception as exc:
-        return None, "unavailable", f"{exc.__class__.__name__}: {exc}"
+    except Exception as first_exc:
+        fallback_errors: list[str] = [f"{first_exc.__class__.__name__}: {first_exc}"]
+
+    attempted_paths: list[str] = []
+    for site_packages in _candidate_markitdown_site_packages():
+        if not site_packages.exists():
+            continue
+        site_packages_str = str(site_packages)
+        attempted_paths.append(site_packages_str)
+        if site_packages_str not in sys.path:
+            sys.path.append(site_packages_str)
+        try:
+            markitdown_class, module = _import_markitdown()
+            return markitdown_class, _markitdown_version(module), ""
+        except Exception as exc:
+            fallback_errors.append(f"{exc.__class__.__name__}: {exc}")
+
+    detail = "; ".join(fallback_errors)
+    if attempted_paths:
+        detail = f"{detail}; attempted_site_packages={attempted_paths}"
+    return None, "unavailable", detail
 
 
 def _text_from_conversion(result: Any) -> str:

@@ -1,0 +1,36 @@
+{
+  "raw_extracted_text": [
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/raw_extracted_text.md",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/raw_extracted_text.md",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/raw_extracted_text.md"
+  ],
+  "extraction_report": [
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/extraction_report.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/extraction_report.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/extraction_report.json"
+  ],
+  "quality_report": [
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/input/quality_report.json"
+  ],
+  "master_document": [],
+  "registration_manifest": [],
+  "cycle_record": [
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/cycle_record.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/cycle_record.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/cycle_record.json"
+  ],
+  "batch_results": [
+    "aims_workspace/docsreg_registered/batch_results.jsonl"
+  ],
+  "learning_files": [],
+  "extraction_reports_markitdown": [
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/extraction_report.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/extraction_report.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/extraction_report.json"
+  ],
+  "pending_not_certified": [
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle001_20260626_061610_0f2b7982/cycle_record.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle000_20260626_061559_85f7e13b/cycle_record.json",
+    "aims_workspace/agent_architecture_status/docsreg_markitdown_production_activation/full_cycle_evidence/0001_ABS vessels classification/standard/standard_cycle002_20260626_061622_cd23f2c9/cycle_record.json"
+  ]
+}
