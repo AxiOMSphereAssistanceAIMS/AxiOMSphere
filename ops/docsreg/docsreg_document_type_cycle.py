@@ -425,6 +425,10 @@ class DocumentTypeCertificationLoop:
                     _qr = _json.loads(_qr_path.read_text(encoding="utf-8"))
                     _qr["audit_status"] = audit_status
                     _qr_path.write_text(_json.dumps(_qr, indent=2), encoding="utf-8")
+                    (cycle_evidence_dir / "quality_report.json").write_text(
+                        _json.dumps(_qr, indent=2),
+                        encoding="utf-8",
+                    )
             except Exception:
                 pass
 
@@ -522,6 +526,26 @@ class DocumentTypeCertificationLoop:
         draft_path: str = "",
     ) -> DocsregRunManifest:
         """Create a new :class:`DocsregRunManifest` for a fresh-start cycle."""
+        if len(self._document_text or "") > 60_000:
+            from ops.context.payload_broker import prepare_payload  # noqa: PLC0415
+
+            payload_ref = prepare_payload(
+                task_id=f"docsreg_{cycle_id}",
+                source_text=self._document_text,
+                source_kind="document_text",
+                requested_mode="auto",
+                metadata={
+                    "document_type": document_type,
+                    "bridge": "DocumentTypeCertificationLoop.start_fresh_run",
+                    "original_draft_path": draft_path,
+                },
+            )
+            return DocsregRunManifest.create(
+                run_id=cycle_id,
+                draft_path=payload_ref.source_path or draft_path or f"draft_{document_type}",
+                document_text="",
+                document_type=document_type,
+            )
         return DocsregRunManifest.create(
             run_id=cycle_id,
             draft_path=draft_path or f"draft_{document_type}",

@@ -159,6 +159,28 @@ def test_batch_attempt_writes_learning_entry(tmp_path: Path) -> None:
     assert learning[0]["outcome"]["audit_status"] == "COMPONENT_PASS"
 
 
+def test_nested_cycle_quality_report_writes_learning_entry(tmp_path: Path) -> None:
+    source_dir = tmp_path / "input"
+    source = source_dir / "ABS vessels classification.pdf"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text("ABS content", encoding="utf-8")
+
+    nested_cycle_dir = tmp_path / "evidence" / "0001_ABS vessels classification" / "procedure" / "procedure_cycle000_123"
+    _write_quality_report(nested_cycle_dir, quality=0.85, audit_status="COMPONENT_PASS")
+
+    workspace = tmp_path / "workspace"
+    record_attempted_cycle_learning(
+        result=SimpleNamespace(outcome="PENDING"),
+        source_file=source,
+        evidence_root=tmp_path / "evidence",
+        workspace_dir=workspace,
+    )
+
+    learning = _read_jsonl(workspace / "axi_ft_log" / "docsreg_learning.jsonl")
+    assert len(learning) == 1
+    assert learning[0]["outcome"]["audit_status"] == "COMPONENT_PASS"
+
+
 def test_pending_diagnostics_reports_failed_gates(tmp_path: Path) -> None:
     evidence_root = tmp_path / "evidence"
     input_dir = evidence_root / "input"
@@ -196,3 +218,23 @@ def test_pending_diagnostics_does_not_certify(tmp_path: Path) -> None:
 
     assert report["certification_status"] != "CERTIFIED"
     assert report["can_certify_if_fixed"] is False
+
+
+def test_learning_entry_never_auto_approved_for_training(tmp_path: Path) -> None:
+    source_dir = tmp_path / "input"
+    source = source_dir / "ABS vessels classification.pdf"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text("ABS content", encoding="utf-8")
+    _write_quality_report(source_dir, quality=0.85, audit_status="COMPONENT_PASS")
+
+    workspace = tmp_path / "workspace"
+    record_attempted_cycle_learning(
+        result=SimpleNamespace(outcome="PENDING"),
+        source_file=source,
+        evidence_root=tmp_path / "evidence",
+        workspace_dir=workspace,
+    )
+
+    learning = _read_jsonl(workspace / "axi_ft_log" / "docsreg_learning.jsonl")
+    assert len(learning) == 1
+    assert learning[0]["approved_for_training"] is False

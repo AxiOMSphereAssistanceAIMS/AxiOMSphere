@@ -155,21 +155,21 @@ def _read_jsonl(path: Path) -> list[dict]:
     return [json.loads(ln) for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
 
 
-# ── C1 / C8: unsupported formats rejected at parse gate ───────────────────────
+# ── C1 / C8: supported formats route to the right layer ──────────────────────
 
 
-def test_c8_xlsx_rejected_at_parse_gate(tmp_path: Path) -> None:
-    """C8a — .xlsx is not in SUPPORTED_DRAFT_EXTENSIONS; rejected by _resolve_draft_path."""
-    assert ".xlsx" not in SUPPORTED_DRAFT_EXTENSIONS
+def test_c8_xlsx_supported_at_parse_gate(tmp_path: Path) -> None:
+    """C8a — .xlsx is supported and resolves to the batch pipeline."""
+    assert ".xlsx" in SUPPORTED_DRAFT_EXTENSIONS
 
     bad = tmp_path / "fail_doc.xlsx"
     bad.write_bytes(b"PK\x03\x04")  # ZIP/OOXML magic
 
     resolved, fmt, err = _resolve_draft_path(str(bad))
 
-    assert resolved is None, "xlsx must not resolve to a valid path"
-    assert err is not None, "Must return a user-readable error"
-    assert isinstance(err, str) and len(err) > 5
+    assert resolved is not None, "xlsx must resolve to a valid path"
+    assert err is None
+    assert fmt == "xlsx"
 
 
 def test_c8_zip_rejected_at_parse_gate(tmp_path: Path) -> None:
@@ -348,8 +348,8 @@ def test_c1_all_five_inputs_no_exception(tmp_path: Path) -> None:
     """C1 — The full batch of 5 inputs finishes without an uncaught exception.
 
     Runs each input through the correct layer:
-      Unsupported (.xlsx, .zip) → _resolve_draft_path only
-      Supported (.md, .pdf)     → _run_one_cycle (run_docsreg_cycle mocked)
+      Supported (.xlsx, .md, .pdf) → _run_one_cycle (run_docsreg_cycle mocked)
+      Unsupported (.zip)            → parse gate or unsupported branch
     """
     workspace = tmp_path / "workspace"
     workspace.mkdir()
@@ -373,9 +373,10 @@ def test_c1_all_five_inputs_no_exception(tmp_path: Path) -> None:
     supported = [
         (pass_md,  True,  0.91, "CERTIFIED_MASTER_READY"),
         (pass_pdf, True,  0.88, "CERTIFIED_MASTER_READY"),
+        (fail_xlsx, True,  0.79, "CERTIFIED_MASTER_READY"),
         (empty_md, False, 0.31, "QUALITY_INSUFFICIENT"),
     ]
-    unsupported = [fail_xlsx, zip_arc]
+    unsupported = [zip_arc]
 
     completed: list[str] = []
     rejected:  list[str] = []
@@ -386,7 +387,12 @@ def test_c1_all_five_inputs_no_exception(tmp_path: Path) -> None:
         assert resolved is None, f"{path.name} must be rejected at parse gate"
         assert err is not None
         rejected.append(path.name)
-        completed.append(path.name)
+
+    # ── Supported xlsx now enters the batch path ──────────────────────────────
+    resolved, fmt, err = _resolve_draft_path(str(fail_xlsx))
+    assert resolved is not None
+    assert fmt == "xlsx"
+    assert err is None
 
     # ── Supported: full cycle path ─────────────────────────────────────────────
     call_idx = [0]  # closure counter
@@ -411,17 +417,16 @@ def test_c1_all_five_inputs_no_exception(tmp_path: Path) -> None:
             _record_cycle_learning(result, draft, ev)
             completed.append(draft.name)
 
-    # C1 — all 5 inputs processed without exception
-    assert len(completed) == 5, f"Expected 5 completed, got: {completed}"
-    # C8 — 2 rejected at parse
-    assert len(rejected) == 2
-    assert "fail_doc.xlsx" in rejected
+    # C1 — all 4 supported inputs processed without exception
+    assert len(completed) == 4, f"Expected 4 completed, got: {completed}"
+    # C8 — only the archive is rejected at parse
+    assert len(rejected) == 1
     assert "archive.zip" in rejected
 
-    # C9 — 3 learning entries (supported docs only)
+    # C9 — 4 learning entries (supported docs only)
     learning = _read_jsonl(workspace / "axi_ft_log" / "docsreg_learning.jsonl")
-    assert len(learning) == 3, f"Expected 3 learning entries, got {len(learning)}"
+    assert len(learning) == 4, f"Expected 4 learning entries, got {len(learning)}"
 
-    # C10 — 2 gold pairs (pass docs only)
+    # C10 — 2 gold pairs (high-quality pass docs only)
     gold = _read_jsonl(workspace / "axi_ft_log" / "gold_pairs.jsonl")
     assert len(gold) == 2, f"Expected 2 gold pairs, got {len(gold)}"

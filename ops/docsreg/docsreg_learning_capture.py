@@ -20,20 +20,32 @@ def _first_existing_path(paths: list[Path]) -> Path | None:
 
 def _candidate_quality_report_paths(source_file: Path, evidence_root: Path) -> list[Path]:
     source_dir = source_file.parent
-    return [
-        source_dir / "quality_report.json",
+    candidates = [
         evidence_root / "quality_report.json",
-        source_dir / "pipeline_run" / "quality_report.json",
     ]
+    candidates.extend(sorted(evidence_root.rglob("quality_report.json")))
+    candidates.extend(
+        [
+            source_dir / "quality_report.json",
+            source_dir / "pipeline_run" / "quality_report.json",
+        ]
+    )
+    return candidates
 
 
 def _candidate_artifact_paths(source_file: Path, evidence_root: Path, filename: str) -> list[Path]:
     source_dir = source_file.parent
-    return [
-        source_dir / filename,
+    candidates = [
         evidence_root / filename,
-        source_dir / "pipeline_run" / filename,
     ]
+    candidates.extend(sorted(evidence_root.rglob(filename)))
+    candidates.extend(
+        [
+            source_dir / filename,
+            source_dir / "pipeline_run" / filename,
+        ]
+    )
+    return candidates
 
 
 def _select_workspace_dir(workspace_dir: Path | None) -> Path:

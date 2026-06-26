@@ -264,29 +264,29 @@ def test_invalid_extension_rejected_safely(tmp_path: Path) -> None:
     The error must be non-fatal (returns str, no exception) so cmd_docsreg can
     surface it as a user-readable Telegram reply.
     """
-    # Write a real file with an unsupported extension
-    bad_file = tmp_path / "report.xlsx"
-    bad_file.write_bytes(b"PK\x03\x04")  # ZIP magic (xlsx is a zip)
+    # Write a real file with an unsupported media extension.
+    bad_file = tmp_path / "image.png"
+    bad_file.write_bytes(b"\x89PNG\r\n")
 
     resolved_path, fmt, err = _resolve_draft_path(str(bad_file))
 
     assert resolved_path is None, "Unsupported extension must not resolve to a path"
     assert err is not None, "Must return an error string for unsupported extensions"
-    assert "Unsupported DOCSREG launch format" in err or ".xlsx" in err, (
+    assert "Unsupported DOCSREG launch format" in err or ".png" in err, (
         f"Error should name the bad extension, got: {err!r}"
     )
 
 
 def test_invalid_extension_via_parse(tmp_path: Path) -> None:
     """parse_docsreg_launch_spec propagates _resolve_draft_path errors as parse errors."""
-    bad_file = tmp_path / "data.csv"
-    bad_file.write_text("col1,col2\n1,2\n", encoding="utf-8")
+    bad_file = tmp_path / "image.jpg"
+    bad_file.write_bytes(b"not ocr input")
 
     request, err = parse_docsreg_launch_spec(f"/docsreg {bad_file}")
 
     assert request is None
     assert err is not None
-    assert ".csv" in err or "Unsupported" in err
+    assert ".jpg" in err or "Unsupported" in err
 
 
 # ── Test 7: .zip path rejected — not in SUPPORTED_DRAFT_EXTENSIONS ────────────
@@ -320,7 +320,19 @@ def test_zip_path_rejected_not_supported(tmp_path: Path) -> None:
 
 def test_supported_extensions_set() -> None:
     """Document the current supported extensions set as a contract test."""
-    assert SUPPORTED_DRAFT_EXTENSIONS == frozenset({".md", ".txt", ".rst", ".docx", ".pdf"})
+    assert SUPPORTED_DRAFT_EXTENSIONS == frozenset({
+        ".csv",
+        ".docx",
+        ".html",
+        ".htm",
+        ".md",
+        ".pdf",
+        ".pptx",
+        ".rst",
+        ".txt",
+        ".xls",
+        ".xlsx",
+    })
 
 
 # ── Handler-level smoke tests — call cmd_docsreg() as a real coroutine ─────────
@@ -538,7 +550,7 @@ async def test_cmd_docsreg_status_reports_real_quality(tmp_path: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_cmd_docsreg_report_does_not_certify_failed_docs(tmp_path: Path) -> None:
-    """A doc that fails quality gate appears as 'failed', never as 'registered'.
+    """A doc that fails quality gate appears as pending/failed, never as certified.
 
     This closes the risk that a false-positive reply could mislead operators
     into believing a low-quality document was accepted into the registry.
@@ -563,7 +575,8 @@ async def test_cmd_docsreg_report_does_not_certify_failed_docs(tmp_path: Path) -
 
     final = str(upd.message.reply_text.call_args_list[-1])
     assert "Registered 0" in final, f"Failed doc must not be registered: {final}"
-    assert "Failed registration 1" in final, f"Expected failed count 1: {final}"
+    assert "Pending / needs repair: 1" in final or "Advisory: 1" in final
+    assert "Failed registration 0" in final, f"Expected failed count 0: {final}"
     # Confirm 'registered' label is absent for the failed file
     batch_reply_texts = [str(c) for c in upd.message.reply_text.call_args_list]
     for txt in batch_reply_texts:

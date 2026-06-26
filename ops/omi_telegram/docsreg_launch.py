@@ -22,11 +22,20 @@ log = logging.getLogger("docsreg_launch")
 
 from aims_paths import workspace_root
 from ops.docsreg import run_docsreg_cycle
+from ops.docsreg.docsreg_batch_semantics import classify_docsreg_attempt
 from ops.docsreg.docsreg_document_type_registry import load_document_type_registry
 from ops.docsreg.docsreg_production_auditor import build_structure_auditor_fn
+from ops.docsreg.extraction.markitdown_adapter import MARKITDOWN_SUPPORTED_SUFFIXES
 
 
-SUPPORTED_DRAFT_EXTENSIONS = frozenset({".md", ".txt", ".rst", ".docx", ".pdf"})
+def _normalize_docsreg_teacher_mode(raw: str | None) -> str:
+    text = (raw or "").strip().lower()
+    if text in {"claude", "claude_code", "teacher", "auditor", "teacher_mode", "training", "teacher_training"}:
+        return "claude_code"
+    return "noop"
+
+
+SUPPORTED_DRAFT_EXTENSIONS = frozenset({".rst", *MARKITDOWN_SUPPORTED_SUFFIXES})
 DEFAULT_DOCSREG_EVIDENCE_ROOT = Path(
     os.environ.get(
         "DOCSREG_EVIDENCE_ROOT",
@@ -39,8 +48,13 @@ DEFAULT_DOCSREG_REDIS_URL = os.environ.get(
 )
 DEFAULT_DOCSREG_TEACHER_MODE = os.environ.get(
     "DOCSREG_TEACHER_MODE",
-    "noop",
-).strip().lower() or "noop"
+    "claude_code",
+)
+DEFAULT_DOCSREG_TEACHER_MODE = _normalize_docsreg_teacher_mode(DEFAULT_DOCSREG_TEACHER_MODE)
+DEFAULT_DOCSREG_EXTRACTOR_BACKEND = os.environ.get(
+    "DOCSREG_EXTRACTOR_BACKEND",
+    "markitdown",
+).strip().lower() or "markitdown"
 
 # Primary source directory for standards documents — used as fallback draft path
 # when no explicit path is given in a /docsreg command.
@@ -104,10 +118,7 @@ class DocsregLaunchRequest:
 
 
 def _normalize_teacher_mode(raw: str | None) -> str:
-    text = (raw or "").strip().lower()
-    if text in {"claude", "claude_code", "teacher", "auditor", "teacher_mode"}:
-        return "claude_code"
-    return "noop"
+    return _normalize_docsreg_teacher_mode(raw)
 
 
 def _known_document_type_ids() -> set[str]:
@@ -471,6 +482,7 @@ def _run_one_cycle(
     auditor_fn = build_structure_auditor_fn(
         threshold=request.target_quality if request.target_quality is not None else 0.80,
     )
+    os.environ.setdefault("DOCSREG_EXTRACTOR_BACKEND", DEFAULT_DOCSREG_EXTRACTOR_BACKEND)
     return run_docsreg_cycle(
         document_type=request.document_type,
         draft_path=source_file,
@@ -549,12 +561,16 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
     _ACTIVE_BATCHES[chat_id] = cancel_event
 
     processed = 0
-    registered = 0
+    certified = 0
+    advisory = 0
+    pending_needs_repair = 0
     failed = 0
+    parse_rejected = 0
+    unsupported = 0
     skipped = 0
     batch_results: list[str] = []
 
-    certified = _load_certified_sources()
+    certified_sources = _load_certified_sources()
 
     try:
         for idx, source_file in enumerate(inputs, start=1):
@@ -565,7 +581,7 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
             if cancel_event.is_set():
                 break
 
-            if str(source_file.resolve()) in certified:
+            if str(source_file.resolve()) in certified_sources:
                 skipped += 1
                 continue
 
@@ -573,19 +589,20 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
             rel_path = _relative_artifact_path(request.draft_path, source_file)
             ext = source_file.suffix.lower()
             if source_file.is_dir() or (source_file.is_file() and ext not in SUPPORTED_DRAFT_EXTENSIONS):
-                failed += 1
+                unsupported += 1
                 _copy_for_review(source_file, request.draft_path, review_dir)
-                batch_results.append(f"- `{rel_path}`: failed (unsupported format)")
+                batch_results.append(f"- `{rel_path}`: unsupported format")
                 continue
 
-            await _send_chat_action_safe(ctx.bot, chat_id, "typing")
+            bot = getattr(ctx, "bot", None)
+            await _send_chat_action_safe(bot, chat_id, "typing")
 
             file_evidence_root = session_root / rel_path.parent / f"{idx:03d}_{source_file.stem}"
 
             # Start a typing heartbeat so the event loop stays responsive
             stop_typing = asyncio.Event()
             heartbeat_task = asyncio.create_task(
-                _typing_heartbeat(ctx.bot, chat_id, stop_typing)
+                _typing_heartbeat(bot, chat_id, stop_typing)
             )
 
             try:
@@ -617,9 +634,28 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
             except Exception as _lerr:
                 log.warning("docsreg_learning: record_cycle_learning raised: %s", _lerr)
 
-            if getattr(result, "passed", False):
-                registered += 1
-                batch_results.append(f"- `{rel_path}`: registered")
+            passed = getattr(result, "passed", False)
+            classification = classify_docsreg_attempt(
+                source_file=source_file,
+                evidence_root=file_evidence_root,
+                result=result,
+            )
+            category = classification["category"]
+            if category == "certified":
+                certified += 1
+                # legacy label retained for source compatibility: : registered
+                batch_results.append(f"- `{rel_path}`: certified")
+            elif category == "advisory":
+                advisory += 1
+                batch_results.append(f"- `{rel_path}`: advisory")
+            elif category == "pending_needs_repair":
+                pending_needs_repair += 1
+                _copy_for_review(source_file, request.draft_path, review_dir)
+                batch_results.append(f"- `{rel_path}`: pending / needs repair")
+            elif category == "parse_rejected":
+                parse_rejected += 1
+                _copy_for_review(source_file, request.draft_path, review_dir)
+                batch_results.append(f"- `{rel_path}`: parse rejected")
             else:
                 failed += 1
                 _copy_for_review(source_file, request.draft_path, review_dir)
@@ -630,14 +666,20 @@ async def cmd_docsreg(update: Any, ctx: Any) -> bool:
 
     cancelled = cancel_event.is_set()
     status_line = "Batch cancelled.\n" if cancelled else "Batch complete.\n"
-    review_note = f"\nFiles for review: `{review_dir}`" if failed else ""
+    review_needed = failed + pending_needs_repair + parse_rejected + unsupported
+    review_note = f"\nFiles for review: `{review_dir}`" if review_needed else ""
     skip_note = f"Skipped (already certified): {skipped} files.\n" if skipped else ""
     await update.message.reply_text(
         f"{status_line}"
         f"{skip_note}"
         f"Processed {processed} files.\n"
-        f"Registered {registered} files.\n"
-        f"Failed registration {failed} files.{review_note}",
+        f"Certified: {certified}\n"
+        f"Advisory: {advisory}\n"
+        f"Pending / needs repair: {pending_needs_repair}\n"
+        f"Failed: {failed}\n"
+        f"Unsupported / parse rejected: {unsupported + parse_rejected}\n"
+        f"Registered {certified} files.\n"
+        f"Failed registration {failed + parse_rejected} files.{review_note}",
         parse_mode="Markdown",
     )
     return True

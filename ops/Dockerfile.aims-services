@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends curl git && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir \
+    fastapi \
+    "uvicorn[standard]" \
+    "pydantic>=2" \
+    "redis>=5" \
+    anthropic \
+    httpx \
+    openpyxl \
+    python-docx \
+    markitdown==0.1.6 \
+    claude-code
+
+RUN pip install --no-cache-dir pypdf
+
+RUN pip install --no-cache-dir --default-timeout 1000 "markitdown[pdf]==0.1.6"
+
+WORKDIR /ops
+ENV PYTHONPATH=/ops

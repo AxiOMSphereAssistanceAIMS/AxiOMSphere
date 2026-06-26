@@ -31,6 +31,7 @@ from ops.docsreg.batch.archive_extractor import (
     SUPPORTED_EXTENSIONS,
     extract_archive,
 )
+from ops.docsreg.docsreg_batch_semantics import classify_docsreg_attempt
 from ops.docsreg.batch.archive_models import (
     ArchiveRecord,
     ArchiveStatus,
@@ -42,6 +43,16 @@ from ops.docsreg import run_docsreg_cycle  # noqa: E402 — module-level for moc
 from ops.docsreg.docsreg_learning_capture import record_attempted_cycle_learning
 
 log = logging.getLogger("docsreg.run_batch")
+
+
+def _normalize_teacher_mode(raw: str | None) -> str:
+    text = (raw or "").strip().lower()
+    if text in {"claude", "claude_code", "teacher", "auditor", "teacher_mode", "training", "teacher_training"}:
+        return "claude_code"
+    return "noop"
+
+
+DEFAULT_TEACHER_MODE = _normalize_teacher_mode(os.environ.get("DOCSREG_TEACHER_MODE", "claude_code"))
 
 # Files that are completely ignored (system metadata, thumbnails, etc.)
 _SKIP_NAMES: frozenset = frozenset({
@@ -116,7 +127,7 @@ def _run_batch(
     evidence_root: Path,
     workspace_dir: Path | None = None,
     document_type: str = "procedure",
-    teacher_mode: str = "noop",
+    teacher_mode: str = DEFAULT_TEACHER_MODE,
     target_quality: float = 0.98,
     max_cycles: int = 7,
     redis_url: str | None = None,
@@ -240,8 +251,11 @@ def _run_batch(
     # --- Phase 4: run docsreg_cycle for each file ---
     batch_results: List[BatchResult] = []
     processed = 0
-    registered = 0
-    failed_registration = 0
+    certified = 0
+    advisory = 0
+    pending_needs_repair = 0
+    real_failed = 0
+    parse_rejected = 0
 
     for fpath, provenance in full_queue:
         processed += 1
@@ -269,27 +283,31 @@ def _run_batch(
                     fpath,
                     exc,
                 )
-            passed = getattr(result, "passed", False)
-            outcome = getattr(result, "outcome", "UNKNOWN")
-            if passed:
-                registered += 1
-                batch_results.append(BatchResult(
-                    path=str(fpath),
-                    provenance=provenance,
-                    outcome="registered",
-                    passed=True,
-                ))
+            classification = classify_docsreg_attempt(
+                source_file=Path(fpath),
+                evidence_root=file_evidence_root,
+                result=result,
+            )
+            category = classification["category"]
+            if category == "certified":
+                certified += 1
+            elif category == "advisory":
+                advisory += 1
+            elif category == "pending_needs_repair":
+                pending_needs_repair += 1
+            elif category == "parse_rejected":
+                parse_rejected += 1
             else:
-                failed_registration += 1
-                batch_results.append(BatchResult(
-                    path=str(fpath),
-                    provenance=provenance,
-                    outcome="failed",
-                    error=str(outcome),
-                    passed=False,
-                ))
+                real_failed += 1
+            batch_results.append(BatchResult(
+                path=str(fpath),
+                provenance=provenance,
+                outcome=category,
+                error=str(getattr(result, "outcome", "UNKNOWN")),
+                passed=bool(getattr(result, "passed", False)),
+            ))
         except Exception as exc:  # noqa: BLE001
-            failed_registration += 1
+            real_failed += 1
             batch_results.append(BatchResult(
                 path=str(fpath),
                 provenance=provenance,
@@ -352,14 +370,19 @@ def _run_batch(
     print(f"Unsupported direct:         {len(unsupported_files)}")
     print(f"Unsupported inside archives: {unsupported_in_archives}")
     print(f"Processed:                  {processed}")
-    print(f"Registered:                 {registered}")
-    print(f"Failed registration:        {failed_registration}")
+    print(f"Certified:                  {certified}")
+    print(f"Advisory:                   {advisory}")
+    print(f"Pending / needs repair:     {pending_needs_repair}")
+    print(f"Failed:                     {real_failed}")
+    print(f"Parse rejected:             {parse_rejected}")
+    print(f"Registered:                 {certified}")
+    print(f"Failed registration:        {real_failed + parse_rejected}")
     print(f"Skipped unsupported:        {skipped_unsupported}")
     print(f"Archive extraction failed:  {extraction_failures}")
     print(f"Evidence path:              {evidence_root}")
     print("")
 
-    return 0 if failed_registration == 0 else 1
+    return 0 if (real_failed + parse_rejected) == 0 else 1
 
 
 def main(argv=None) -> int:
@@ -374,9 +397,9 @@ def main(argv=None) -> int:
                         help="Directory for DOCSREG cycle evidence artifacts.")
     parser.add_argument("--document-type", default="procedure",
                         help="DOCSREG document type (default: procedure).")
-    parser.add_argument("--teacher-mode", default="noop",
+    parser.add_argument("--teacher-mode", default=DEFAULT_TEACHER_MODE,
                         choices=["noop", "claude_code"],
-                        help="Teacher/auditor mode (default: noop).")
+                        help=f"Teacher/auditor mode (default: {DEFAULT_TEACHER_MODE}).")
     parser.add_argument("--target-quality", type=float, default=0.98,
                         help="Target quality score (default: 0.98).")
     parser.add_argument("--max-cycles", type=int, default=7,

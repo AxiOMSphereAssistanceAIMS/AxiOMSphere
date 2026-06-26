@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from ops.docsreg.extraction.markitdown_adapter import (
+from ops.document_normalization.markitdown_adapter import (
     MARKITDOWN_SUPPORTED_SUFFIXES,
     extract_with_markitdown,
     write_extraction_artifacts,
