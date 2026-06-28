@@ -105,6 +105,11 @@ QWEN_PC_ASSIST_WARM_ON_TELEGRAM = os.environ.get(
     "QWEN_PC_ASSIST_WARM_ON_TELEGRAM", "1"
 ).strip().lower() in ("1", "true", "yes", "on")
 
+# TODO(AIMS_CONTEXT_VIRTUALIZATION_LAYER_V1): virtualize oversized Telegram
+# text/uploads through ops.context.payload_broker before chat/model handoff.
+# Omi has several document-ingest routes; patch each route with a context
+# handle before enabling large user-upload pass-through.
+
 
 def _parse_owner_chat_ids() -> frozenset[int]:
     """Чаты владельца: могут добавлять правила поведения бота (OMI_OWNER_CHAT_IDS)."""
@@ -622,6 +627,16 @@ logging.basicConfig(
 log = logging.getLogger("omi")
 
 try:
+    from registry_audit import (
+        cmd_registry_audit as _registry_audit_cmd_handler,
+        maybe_handle_registry_audit_message as _maybe_handle_registry_audit_message,
+    )
+except Exception as _registry_audit_import_err:  # pragma: no cover - optional audit helper
+    _registry_audit_cmd_handler = None  # type: ignore[assignment]
+    _maybe_handle_registry_audit_message = None  # type: ignore[assignment]
+    log.warning("registry audit helpers unavailable: %s", _registry_audit_import_err)
+
+try:
     from docsreg_launch import (
         cmd_docsreg as _docsreg_cmd_handler,
         maybe_handle_docsreg_message as _maybe_handle_docsreg_message,
@@ -960,8 +975,8 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "/tasks `[pending|done|all]` — очередь задач для структуры БД\n"
         "/close_task `[task_id]` — закрыть зависшую задачу в Task Registry\n"
         "/skills — список skills для Omi-LLM\n"
-        "/docgen — собрать .docx из реестра (`/docgen` без аргументов — справка)\n"
-        "/docgen_upgrade — private-only DOCGEN upgrade batch (no group self-improvement)\n"
+        "/docgen — one-pass generation only: собрать .docx из реестра (`/docgen` без аргументов — справка)\n"
+        "/docgen_upgrade — private-only DOCGEN upgrade batch (no group self-improvement; private chat only)\n"
         "/docsreg — запустить DOCSREG по draft-файлу или папке на DGX\n"
         "/docsreg_start_media — batch alias for folder-based DOCSREG\n"
         "/selftest `[quick|full]` — единый тестовый прогон + чеклист (владелец)\n"
@@ -1774,6 +1789,8 @@ async def _handle_group_doc_synthesis(update: Update, ctx: ContextTypes.DEFAULT_
     chat_id = update.effective_chat.id if update.effective_chat else None
     if chat_id is None:
         return False
+    run_tag = f"group_docgen_{chat_id}_{int(time.time())}"
+    run_root = None
 
     thinking = await update.message.reply_text(
         "⚙️ Omi: генерирую документ…" if lang == "ru" else "⚙️ Omi: generating document…"
@@ -1872,7 +1889,10 @@ async def _handle_group_doc_synthesis(update: Update, ctx: ContextTypes.DEFAULT_
     try:
         _api_url = os.environ.get("DOC_AGENT_API_URL", "http://doc-agent:8767")
         _gen_dir = getattr(storage, "workspace", None)
-        _out_dir = str(Path(_gen_dir) / "generated") if _gen_dir else None
+        if _gen_dir:
+            run_root = Path(_gen_dir) / "generated" / "docgen_one_pass" / run_tag
+            run_root.mkdir(parents=True, exist_ok=True)
+        _out_dir = str(run_root) if run_root else None
         result = DocAgentClient(_api_url).generate_dual(
             clean,
             title=f"{doc_type.replace('_', ' ').title()}",
@@ -1919,7 +1939,11 @@ async def _handle_group_doc_synthesis(update: Update, ctx: ContextTypes.DEFAULT_
                 "aims_process": "DOCGEN",
                 "source_text": clean,
                 "architecture": graph.to_dict(),
+                "cleanup_dir": str(run_root or path.parent),
+                "review_mode": "customer_approval",
+                "run_tag": run_tag,
             },
+            approval_buttons=("approve", "rework"),
         )
         _tr_done(task_id, summary=f"docgen:{path.name}")
         return True
@@ -2440,20 +2464,44 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
     _chat_id = update.effective_chat.id if update.effective_chat else None
     log.info("handle_chat: chat=%s text=%r", _chat_id, (update.message.text or "")[:80])
+    text = update.message.text.strip()
+
+    if not _chat_allowed(update):
+        log.info("handle_chat: chat %s not allowed (ALLOWED_CHATS=%s)", _chat_id, sorted(ALLOWED_CHATS))
+        return
+
+    chat_type = update.effective_chat.type if update.effective_chat else getattr(getattr(update.message, "chat", None), "type", "")
+    bot_username = ctx.bot.username
+    # В группе: по умолчанию только @бот или префикс «omi…» — иначе молчим (см. OMI_GROUP_REQUIRE_MENTION).
+    # Исключение: короткое подтверждение ("yes", "да", "👍" …) пропускается если есть ожидающее подтверждение.
+    if chat_type in ("group", "supergroup") and OMI_GROUP_REQUIRE_MENTION:
+        named_in_text = _mentions_omi(text)
+        log.info(
+            "handle_chat: group mention check named=%s @mentioned=%s text=%r",
+            named_in_text,
+            f"@{bot_username}" in text,
+            text[:60],
+        )
+        if f"@{bot_username}" not in text and not named_in_text:
+            # Allow bare affirmatives through when Omi is waiting for a confirmation
+            if _chat_id and _is_short_affirmative(text) and _has_pending_confirm(ctx, _chat_id):
+                log.info("handle_chat: bare affirmative %r passed — pending confirm for chat %s", text, _chat_id)
+            else:
+                return
+
+    if _maybe_handle_registry_audit_message is not None:
+        try:
+            if await _maybe_handle_registry_audit_message(update, ctx, update.message.text or ""):
+                return
+        except Exception as e:
+            log.warning("registry audit routing failed: %s", e)
     if _maybe_handle_docsreg_message is not None:
         try:
             if await _maybe_handle_docsreg_message(update, ctx, update.message.text or ""):
                 return
         except Exception as e:
             log.warning("docsreg launch handling failed: %s", e)
-    if not _chat_allowed(update):
-        log.info("handle_chat: chat %s not allowed (ALLOWED_CHATS=%s)", _chat_id, sorted(ALLOWED_CHATS))
-        return
-    text = update.message.text.strip()
 
-    # В группе: по умолчанию только @бот или префикс «omi…» — иначе молчим (см. OMI_GROUP_REQUIRE_MENTION).
-    # Исключение: короткое подтверждение ("yes", "да", "👍" …) пропускается если есть ожидающее подтверждение.
-    chat_type = update.message.chat.type
     # Та же линия, что AXI_CHAT_NIM_UNTIL_OLLAMA_READY + фоновый warm: подгрузка OMI_MODEL в Ollama
     # на каждое сообщение (без обязательного ответа Omi), чтобы при @Omi уже шёл qwen/локалка.
     try:
@@ -2463,17 +2511,6 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             _schedule_ollama_background_warm()
     except Exception:
         log.debug("handle_chat: Ollama warm schedule failed", exc_info=True)
-
-    bot_username = ctx.bot.username
-    if chat_type in ("group", "supergroup") and OMI_GROUP_REQUIRE_MENTION:
-        named_in_text = _mentions_omi(text)
-        log.info("handle_chat: group mention check named=%s @mentioned=%s text=%r", named_in_text, f"@{bot_username}" in text, text[:60])
-        if f"@{bot_username}" not in text and not named_in_text:
-            # Allow bare affirmatives through when Omi is waiting for a confirmation
-            if _chat_id and _is_short_affirmative(text) and _has_pending_confirm(ctx, _chat_id):
-                log.info("handle_chat: bare affirmative %r passed — pending confirm for chat %s", text, _chat_id)
-            else:
-                return
 
     # Убрать упоминание бота из текста (@ и словесный префикс "Omi,")
     clean = text.replace(f"@{bot_username}", "").strip()
@@ -2643,6 +2680,31 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     except Exception as _reg_err:
         log.warning("aims_report fast-path failed: %s", _reg_err)
 
+    # ── Contextual document-work routing: choose DOCSREG vs DOCGEN from intent ─
+    try:
+        from chat_intent_router import DOCUMENT_WORK_CMDS, classify  # noqa: PLC0415
+
+        _doc_dialog = _omi_dialog_messages_for_llm(ctx, _chat_id)
+        _doc_routed = await asyncio.to_thread(
+            classify,
+            clean,
+            DOCUMENT_WORK_CMDS,
+            dialog_messages=_doc_dialog,
+        )
+        if _doc_routed:
+            _doc_cmd = _doc_routed[0]
+            if _doc_cmd == "docsreg" and _maybe_handle_docsreg_message is not None:
+                try:
+                    if await _maybe_handle_docsreg_message(update, ctx, clean):
+                        return
+                except Exception as e:
+                    log.warning("docsreg launch handling failed: %s", e)
+            elif _doc_cmd == "docgen":
+                if await _handle_group_doc_synthesis(update, ctx, clean, _reply_lang(clean)):
+                    return
+    except Exception as e:
+        log.debug("document work routing failed: %s", e, exc_info=True)
+
     # NLP intent routing — deterministic pipeline via registry
     try:
         from pipeline_registry import OMI_REGISTRY, params_check, args_to_params  # noqa: PLC0415
@@ -2697,6 +2759,31 @@ async def handle_chat(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 return
     except Exception:
         pass
+
+    try:
+        from bot.axi_scope_guard import ScopeDecision, build_safe_internal_replacement_plan, classify_omi_scope
+        from bot.axi_response_templates import REFUSAL_UNRELATED
+        from bot.axi_public_answers import try_public_answer
+
+        guard = classify_omi_scope(clean)
+        if not guard.allowed:
+            reply = guard.response or REFUSAL_UNRELATED
+            if guard.decision == ScopeDecision.SENSITIVE_INTERNAL_REQUEST:
+                low = clean.lower()
+                if any(term in low for term in ("code", "python", "implement", "build")):
+                    reply = (
+                        f"{reply}\n\n"
+                        f"{build_safe_internal_replacement_plan('AIMS admin workflow integration')}"
+                    )
+            await update.message.reply_text(reply)
+            return
+
+        public_answer = try_public_answer(clean)
+        if public_answer:
+            await update.message.reply_text(public_answer)
+            return
+    except ImportError:
+        log.warning("bot scope guard unavailable for Omi; continuing without guard")
 
     task_seq = _next_task_seq(ctx)
     # Не «task #N» — у Axi это номер пайплайн-задачи; здесь только порядковый номер запроса к Omi.
@@ -3249,7 +3336,7 @@ async def handle_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "📋 *DOCSREG — регистрация документов*\n\n"
             "Проверяет и регистрирует стандарты из папки или файла.\n"
-            "Поддерживаемые форматы: `.md` `.txt` `.rst` `.docx` `.pdf`\n\n"
+            "Поддерживаемые форматы: `.md` `.txt` `.rst` `.docx` `.pdf` `.pptx` `.xlsx` `.xls` `.csv` `.html`\n\n"
             "*Запуск:*\n"
             "`/docsreg` — обработать папку Standards по умолчанию\n"
             "`/docsreg /media/.../Standards` — указать папку явно\n"
@@ -4221,6 +4308,7 @@ async def _post_init_omi_commands(app: Application) -> None:
         BotCommand("docgen", "Сборка .docx из реестра"),
         BotCommand("docgen_upgrade", "Запуск DOCGEN upgrade batch (private only)"),
         BotCommand("docsreg", "Запуск DOCSREG по файлу на DGX"),
+        BotCommand("registry_audit", "Read-only registry consistency audit"),
         BotCommand("docsreg_start_media", "DOCSREG batch launch from folder on DGX"),
         BotCommand("gocsreg_start_media", "Alias: DOCSREG batch launch from folder on DGX"),
         BotCommand("rename_by_context", "Переименовать файлы по контексту"),
@@ -4234,15 +4322,11 @@ async def _post_init_omi_commands(app: Application) -> None:
     except Exception as e:
         log.warning("set_my_commands failed: %s", e)
     try:
-        from ollama_resolve import (
-            ollama_ensure_small_warm_after_heavy_gone_watcher,
-            ollama_warm_small_when_heavy_absent,
-        )
-
-        ollama_warm_small_when_heavy_absent()
-        ollama_ensure_small_warm_after_heavy_gone_watcher()
+        from ollama_resolve import ollama_schedule_telegram_stack_warm
+        ollama_schedule_telegram_stack_warm()
+        log.info("omi post_init: model warm scheduled (heavy=SLOT32 + small=SLOT14)")
     except Exception as e:
-        log.debug("omi post_init: small warm watcher: %s", e)
+        log.warning("omi post_init: model warm failed: %s", e)
     if app.job_queue is not None:
         try:
             from cross_bot_handoff import handoff_delivery_enabled, handoff_poll_interval_sec
@@ -4308,6 +4392,8 @@ def main():
     app.add_handler(CommandHandler("docsreg",    cmd_docsreg))
     app.add_handler(CommandHandler("docsreg_start_media", cmd_docsreg))
     app.add_handler(CommandHandler("gocsreg_start_media", cmd_docsreg))
+    if _registry_audit_cmd_handler is not None:
+        app.add_handler(CommandHandler("registry_audit", _registry_audit_cmd_handler))
     app.add_handler(CommandHandler("nightplan",  cmd_nightplan))
     app.add_handler(CommandHandler("backup_now", cmd_backup_now))
     app.add_handler(CommandHandler("backup_list", cmd_backup_list))
