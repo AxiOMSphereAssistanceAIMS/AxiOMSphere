@@ -17,6 +17,11 @@ DEBUG_FILE="$CHECKPOINT_DIR/slot32_claude_debug_latest.log"
 CONTEXT_BUDGET_FILE="$CHECKPOINT_DIR/slot32_context_budget_latest.json"
 LAUNCHER_HEALTH_FILE="$CHECKPOINT_DIR/slot32_launcher_health_latest.json"
 SESSION_SETTINGS_FILE="$CHECKPOINT_DIR/slot32_session_settings_latest.json"
+SESSION_SETTINGS_FILE_ONESHOT="$CHECKPOINT_DIR/slot32_session_settings_oneshot_latest.json"
+LOCK_STATUS_FILE="$CHECKPOINT_DIR/slot32_lock_status.json"
+TRANSCRIPT_GUARD_FILE="$CHECKPOINT_DIR/transcript_guard_report.json"
+LAUNCHER_HEALTH_ALIAS_FILE="$CHECKPOINT_DIR/launcher_health.json"
+CONTEXT_BUDGET_ALIAS_FILE="$CHECKPOINT_DIR/context_budget.json"
 COMPACT_INTERVAL="${SLOT32_COMPACT_INTERVAL_S:-60}"
 PROJECT_TRANSCRIPTS_DIR="$HOME/.claude/projects/-home-axi-omi-sphere-aims-workspace"
 USER_MEMORY_FILE="$HOME/.claude/projects/-home-axi-omi-sphere-aims-workspace/memory/MEMORY.md"
@@ -51,7 +56,8 @@ for path in sorted(project_root.glob("*.jsonl")):
         warned.append({"path": str(path), "size_bytes": size, "action": "force_checkpoint_new_session"})
 
 payload = {"archived": archived, "warned": warned}
-print(json.dumps(payload, ensure_ascii=False, indent=2))
+out = Path("/home/axi_omi_sphere/aims-workspace/aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/transcript_guard_report.json")
+out.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 }
 
@@ -60,8 +66,24 @@ write_session_settings() {
     cat > "$SESSION_SETTINGS_FILE" <<'JSON'
 {
   "autoMemoryEnabled": false,
+  "autoCompactEnabled": false,
+  "awaySummaryEnabled": false,
+  "showThinkingSummaries": false,
   "outputStyle": "default",
   "prefersReducedMotion": true
+}
+JSON
+    cat > "$SESSION_SETTINGS_FILE_ONESHOT" <<'JSON'
+{
+  "autoMemoryEnabled": false,
+  "autoCompactEnabled": false,
+  "awaySummaryEnabled": false,
+  "showThinkingSummaries": false,
+  "outputStyle": "default",
+  "prefersReducedMotion": true,
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true
+  }
 }
 JSON
 }
@@ -111,6 +133,8 @@ budget = {
 
 out = root / "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_context_budget_latest.json"
 out.write_text(json.dumps(budget, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+alias = root / "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/context_budget.json"
+alias.write_text(json.dumps(budget, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 }
 
@@ -129,9 +153,58 @@ health = {
     "context_budget_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_context_budget_latest.json",
     "checkpoint_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_auto_checkpoint_latest.md",
     "session_settings_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_session_settings_latest.json",
+    "lock_status_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_lock_status.json",
+    "transcript_guard_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/transcript_guard_report.json",
+    "disable_compact": True,
 }
 out = Path("/home/axi_omi_sphere/aims-workspace/aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_launcher_health_latest.json")
 out.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+alias = Path("/home/axi_omi_sphere/aims-workspace/aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/launcher_health.json")
+alias.write_text(json.dumps(health, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
+}
+
+write_lock_status() {
+    reason="${1:-preflight}"
+    mkdir -p "$CHECKPOINT_DIR"
+    python3 - "$reason" <<'PY'
+import fcntl
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+reason = sys.argv[1]
+lock_path = Path(os.environ.get("SLOT32_CLAUDE_LOCK_FILE", "/tmp/claude_local_slot32.lock"))
+status = {
+    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+    "reason": reason,
+    "lock_file": str(lock_path),
+    "pid": os.getpid(),
+    "ppid": os.getppid(),
+    "busy": None,
+    "compact_skipped_reason": None,
+}
+try:
+    fd = os.open(str(lock_path), os.O_RDWR | os.O_CREAT, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        status["busy"] = False
+        status["compact_skipped_reason"] = "none"
+        fcntl.flock(fd, fcntl.LOCK_UN)
+    except BlockingIOError:
+        status["busy"] = True
+        status["compact_skipped_reason"] = "slot32_busy"
+    finally:
+        os.close(fd)
+except Exception as exc:
+    status["busy"] = True
+    status["compact_skipped_reason"] = f"lock_probe_error:{type(exc).__name__}"
+    status["error"] = repr(exc)
+
+out = Path("/home/axi_omi_sphere/aims-workspace/aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_lock_status.json")
+out.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 }
 
@@ -199,6 +272,7 @@ write_checkpoint() {
 
 auto_compact_loop() {
     while true; do
+        write_lock_status "background_compacter"
         write_checkpoint "periodic"
         sleep "$COMPACT_INTERVAL"
     done
@@ -224,6 +298,7 @@ cd "$ROOT"
 
 archive_large_transcripts
 write_session_settings
+write_lock_status "preflight"
 write_checkpoint "preflight"
 write_context_budget
 write_launcher_health
@@ -234,6 +309,7 @@ if ! flock -n 9; then
     echo "Check: ps -ef | grep -E 'claude|claude_local_slot32' | grep -v grep" >&2
     exit 75
 fi
+write_lock_status "foreground_acquired"
 
 echo "[slot32-wrapper] checking proxy: $PROXY_CONTAINER"
 
@@ -285,10 +361,15 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+SESSION_SETTINGS_IN_USE="$SESSION_SETTINGS_FILE"
+if [ "$ONESHOT_MODE" = "1" ]; then
+    SESSION_SETTINGS_IN_USE="$SESSION_SETTINGS_FILE_ONESHOT"
+fi
+
 claude_cmd=(
     claude
     --model "$MODEL"
-    --settings "$SESSION_SETTINGS_FILE"
+    --settings "$SESSION_SETTINGS_IN_USE"
     --exclude-dynamic-system-prompt-sections
     --debug api
     --debug-file "$DEBUG_FILE"
@@ -298,13 +379,31 @@ if [ "$ONESHOT_MODE" = "1" ]; then
     claude_cmd+=(-p "$ONE_SHOT_PROMPT")
 fi
 
-exec env -u ANTHROPIC_CUSTOM_HEADERS \
-    -u ANTHROPIC_AUTH_TOKEN \
-    -u CLAUDE_CODE_OAUTH_TOKEN \
-    ANTHROPIC_BASE_URL="$BASE_URL" \
-    ANTHROPIC_API_KEY="$API_KEY" \
-    ANTHROPIC_MODEL="$MODEL" \
-    CLAUDE_CODE_ENABLE_TELEMETRY=0 \
-    CLAUDE_AUTOCOMPACT_PCT_OVERRIDE="${CLAUDE_AUTOCOMPACT_PCT_OVERRIDE:-55}" \
+env_cmd=(
+    env
+    -u ANTHROPIC_CUSTOM_HEADERS
+    -u ANTHROPIC_AUTH_TOKEN
+    -u CLAUDE_CODE_OAUTH_TOKEN
+    ANTHROPIC_BASE_URL="$BASE_URL"
+    ANTHROPIC_API_KEY="$API_KEY"
+    ANTHROPIC_MODEL="$MODEL"
+    CLAUDE_CODE_ENABLE_TELEMETRY=0
+    DISABLE_AUTOUPDATER=1
+    DISABLE_UPDATES=1
+    DISABLE_COMPACT=1
+    CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=0
+    CLAUDE_MEM_CONTEXT_OBSERVATIONS=10
+    CLAUDE_MEM_CONTEXT_SESSION_COUNT=3
+    CLAUDE_MEM_CONTEXT_FULL_COUNT=1
+)
+
+if [ "$ONESHOT_MODE" = "1" ]; then
+    env_cmd+=(
+        CLAUDE_CODE_SIMPLE=1
+        CLAUDE_CODE_DISABLE_CLAUDE_MDS=1
+    )
+fi
+
+exec "${env_cmd[@]}" \
     "${claude_cmd[@]}" \
     "$@"

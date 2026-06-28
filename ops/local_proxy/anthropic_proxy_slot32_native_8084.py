@@ -15,7 +15,7 @@ MODEL = os.environ.get("SLOT32_PROXY_MODEL", "axi_omi_sphere:latest")
 UPSTREAM_TIMEOUT_S = int(os.environ.get("SLOT32_PROXY_UPSTREAM_TIMEOUT_S", "240"))
 MAX_OUTPUT_TOKENS = int(os.environ.get("SLOT32_MAX_OUTPUT_TOKENS", "512"))
 MAX_REQUEST_CHARS = int(os.environ.get("SLOT32_MAX_REQUEST_CHARS", "300000"))
-LOCK_WAIT_TIMEOUT_S = int(os.environ.get("SLOT32_LOCK_WAIT_TIMEOUT_S", "5"))
+LOCK_WAIT_TIMEOUT_S = int(os.environ.get("SLOT32_LOCK_WAIT_TIMEOUT_S", "240"))
 
 app = FastAPI()
 OLLAMA_LOCK = asyncio.Lock()
