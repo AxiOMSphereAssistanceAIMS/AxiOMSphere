@@ -115,16 +115,16 @@ def test_unknown_service_returns_blocked():
 # ─── confirm_action ──────────────────────────────────────────────────────────
 
 def test_confirm_valid_action_returns_passed():
-    """Valid CONFIRM of a healthcheck → PASSED + HEALTH running (or failed if container down)."""
+    """Valid CONFIRM of logi-bot healthcheck → PASSED + HEALTH running via self_process."""
     resp = request_healthcheck("logi-bot", "user_4", "healthcheck logi-bot")
     action_id = resp["action_id"]
 
     result = confirm_action(action_id)
-    # Status is PASSED (running) or FAILED (not running) — never an error class
-    assert result["status"] in ("PASSED", "FAILED")
+    # logi-bot uses self_process — always PASSED when this code is running
+    assert result["status"] == "PASSED"
     assert result["action_type"] == "healthcheck_service"
     assert result["service"] == "axiomsphere-logi-bot"
-    assert result.get("health") is not None
+    assert result.get("health") == "running"
 
 
 def test_completed_confirmation_json_created():
@@ -209,7 +209,7 @@ def test_orchestrator_healthcheck_returns_requires_confirmation():
 
 
 def test_orchestrator_confirm_flow_end_to_end():
-    """Full two-step flow through orchestrator."""
+    """Full two-step flow through orchestrator — logi-bot uses self_process."""
     resp1 = _orch("Логи, healthcheck logi-bot")
     assert "REQUIRES_CONFIRMATION" in resp1
 
@@ -220,6 +220,64 @@ def test_orchestrator_confirm_flow_end_to_end():
     assert action_id, "No ACTION_ID in step 1 response"
 
     resp2 = _orch(f"CONFIRM {action_id}")
-    assert "STATUS: PASSED" in resp2 or "STATUS: FAILED" in resp2
+    assert "STATUS: PASSED" in resp2
     assert "ACTION_TYPE: healthcheck_service" in resp2
-    assert "HEALTH:" in resp2
+    assert "HEALTH: running" in resp2
+
+
+# ─── self_process backend (no docker) ─────────────────────────────────────────
+
+def test_logi_bot_healthcheck_uses_self_process():
+    """healthcheck for logi-bot returns PASSED via self_process without docker."""
+    from ops.agents.logi_confirmation_flow import _healthcheck_self_process
+    result = _healthcheck_self_process()
+    assert result["status"] == "PASSED"
+    assert result["health"] == "running"
+    assert result["method"] == "self_process"
+    assert "pid" in result
+
+
+def test_logi_bot_healthcheck_does_not_need_docker():
+    """Even if docker CLI is absent, logi-bot healthcheck must return PASSED."""
+    from ops.agents.logi_confirmation_flow import _run_healthcheck
+    from unittest.mock import patch
+
+    # Simulate docker CLI being absent — should never be reached for logi-bot
+    with patch("subprocess.run", side_effect=FileNotFoundError("docker not found")):
+        result = _run_healthcheck("axiomsphere-logi-bot")
+
+    # self_process is used before docker is ever attempted
+    assert result["status"] == "PASSED"
+    assert result["health"] == "running"
+    assert result["method"] == "self_process"
+
+
+def test_run_healthcheck_logi_bot_full():
+    """_run_healthcheck('axiomsphere-logi-bot') → PASSED, running, self_process."""
+    from ops.agents.logi_confirmation_flow import _run_healthcheck
+    result = _run_healthcheck("axiomsphere-logi-bot")
+    assert result["status"] == "PASSED"
+    assert result["health"] == "running"
+    assert result.get("method") == "self_process"
+
+
+def test_unknown_service_still_blocked():
+    """Unknown container not in allowlist returns structured UNKNOWN_SERVICE."""
+    from ops.agents.logi_confirmation_flow import _run_healthcheck
+    result = _run_healthcheck("some-random-container")
+    assert result["status"] == "FAILED"
+    assert result.get("error_class") == "UNKNOWN_SERVICE"
+
+
+def test_confirmation_confirm_passes_without_docker():
+    """Full confirmation cycle for logi-bot — no docker dependency."""
+    from ops.agents.logi_confirmation_flow import request_healthcheck, confirm_action
+    from unittest.mock import patch
+
+    with patch("subprocess.run", side_effect=FileNotFoundError("no docker")):
+        resp = request_healthcheck("logi-bot", "test_user", "healthcheck logi-bot")
+        action_id = resp["action_id"]
+        result = confirm_action(action_id)
+
+    assert result["status"] == "PASSED"
+    assert result["health"] == "running"

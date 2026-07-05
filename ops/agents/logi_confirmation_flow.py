@@ -159,22 +159,91 @@ def _resolve_service(raw_name: str) -> tuple[str | None, str]:
 
 # ─── Healthcheck execution ────────────────────────────────────────────────────
 
-def _run_healthcheck(container_name: str) -> dict:
+# HTTP health endpoints for services reachable from inside the container network.
+# Both logi-cc-bridge and logi-cc-slot32-proxy run on the host network, so
+# 127.0.0.1 works both from the host and from host-networked containers.
+_HTTP_HEALTH_ENDPOINTS: dict[str, str] = {
+    "axiomsphere-logi-cc-slot32-proxy": os.environ.get(
+        "SLOT32_PROXY_HEALTH_URL", "http://127.0.0.1:8084/health"
+    ),
+    "axiomsphere-logi-cc-bridge": os.environ.get(
+        "LOGI_BRIDGE_HEALTH_URL", "http://127.0.0.1:8086/health"
+    ),
+}
+
+
+def _healthcheck_self_process() -> dict:
+    """Self-process healthcheck for axiomsphere-logi-bot.
+
+    If this code is executing, the Logi process is alive and handling the request.
+    No docker CLI or socket required.
     """
-    Check container health using hardcoded docker inspect invocation.
-    No shell=True. container_name is resolved from allowlist — never user-controlled.
+    import os as _os
+    return {
+        "status": "PASSED",
+        "health": "running",
+        "method": "self_process",
+        "pid": _os.getpid(),
+    }
+
+
+def _healthcheck_http(container_name: str) -> dict:
+    """HTTP GET healthcheck for services with known health endpoints.
+
+    No docker CLI. No shell=True. Endpoint is hardcoded from _HTTP_HEALTH_ENDPOINTS.
     """
-    # Verify the container name is in our allowlist values (double-check)
-    allowed_containers = set(SERVICE_ALIASES.values())
-    if container_name not in allowed_containers:
+    url = _HTTP_HEALTH_ENDPOINTS.get(container_name)
+    if not url:
         return {
             "status": "FAILED",
-            "error": f"container {container_name!r} not in allowed set",
             "health": "unknown",
+            "error_class": "HEALTHCHECK_BACKEND_UNAVAILABLE",
+            "detail": f"no health URL configured for {container_name}",
         }
 
+    import urllib.request
+    import urllib.error
+
     try:
-        # Hardcoded command — no shell=True, no user-controlled args
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            if resp.status == 200:
+                return {
+                    "status": "PASSED",
+                    "health": "running",
+                    "method": "http_health",
+                    "url": url,
+                }
+            return {
+                "status": "FAILED",
+                "health": "http_error",
+                "method": "http_health",
+                "detail": f"HTTP {resp.status}",
+            }
+    except urllib.error.URLError as exc:
+        return {
+            "status": "FAILED",
+            "health": "unknown",
+            "error_class": "HEALTHCHECK_BACKEND_UNAVAILABLE",
+            "method": "http_health",
+            "detail": str(exc.reason),
+        }
+    except Exception as exc:
+        return {
+            "status": "FAILED",
+            "health": "unknown",
+            "error_class": "HEALTHCHECK_BACKEND_UNAVAILABLE",
+            "method": "http_health",
+            "detail": str(exc),
+        }
+
+
+def _healthcheck_docker(container_name: str) -> dict:
+    """Docker CLI healthcheck — last-resort fallback when no other method works.
+
+    No shell=True. container_name is resolved from allowlist only.
+    """
+    try:
         result = subprocess.run(
             ["docker", "inspect", container_name, "--format", "{{.State.Running}}"],
             capture_output=True,
@@ -189,16 +258,50 @@ def _run_healthcheck(container_name: str) -> dict:
 
         running = result.stdout.strip().lower()
         if running == "true":
-            return {"status": "PASSED", "health": "running", "container": container_name}
-        return {"status": "FAILED", "health": "not_running", "container": container_name}
+            return {"status": "PASSED", "health": "running", "method": "docker_inspect",
+                    "container": container_name}
+        return {"status": "FAILED", "health": "not_running", "method": "docker_inspect",
+                "container": container_name}
 
     except subprocess.TimeoutExpired:
         return {"status": "FAILED", "health": "timeout", "detail": "docker inspect timed out"}
     except FileNotFoundError:
-        return {"status": "FAILED", "health": "docker_not_found",
-                "detail": "docker CLI not available"}
+        return {
+            "status": "FAILED",
+            "health": "unknown",
+            "error_class": "HEALTHCHECK_BACKEND_UNAVAILABLE",
+            "detail": "docker CLI not available",
+        }
     except Exception as exc:
         return {"status": "FAILED", "health": "error", "detail": str(exc)}
+
+
+def _run_healthcheck(container_name: str) -> dict:
+    """
+    Select the best healthcheck backend for a known allowlisted container.
+
+    Priority order (no docker CLI required for logi-bot):
+      1. axiomsphere-logi-bot   → self_process (if we're running, bot is running)
+      2. axiomsphere-logi-cc-slot32-proxy / logi-cc-bridge → HTTP health endpoint
+      3. Other allowlisted containers → docker inspect fallback
+    """
+    allowed_containers = set(SERVICE_ALIASES.values())
+    if container_name not in allowed_containers:
+        return {
+            "status": "FAILED",
+            "health": "unknown",
+            "error_class": "UNKNOWN_SERVICE",
+            "detail": f"container {container_name!r} not in allowed set",
+        }
+
+    if container_name == "axiomsphere-logi-bot":
+        return _healthcheck_self_process()
+
+    if container_name in _HTTP_HEALTH_ENDPOINTS:
+        return _healthcheck_http(container_name)
+
+    # Last-resort: docker CLI (may not be available inside containers)
+    return _healthcheck_docker(container_name)
 
 
 # ─── Public API ──────────────────────────────────────────────────────────────
