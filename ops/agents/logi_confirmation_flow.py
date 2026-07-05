@@ -3,7 +3,9 @@ logi_confirmation_flow.py
 
 Two-step confirmation flow for protected allowlisted actions in Logi Telegram.
 
-Phase 1 — healthcheck_service (read-only).
+Supported action types:
+  - healthcheck_service   (read-only, Phase 1)
+  - read_logs_allowlisted (read-only, Phase 2)
 
 Flow:
   Step 1: User sends intent → REQUIRES_CONFIRMATION + ACTION_ID
@@ -14,7 +16,8 @@ Constraints:
   - Only known service aliases allowed (SERVICE_ALIASES).
   - Pending confirmation expires after 10 minutes.
   - No shell=True. No user-controlled args.
-  - healthcheck_service uses hardcoded subprocess invocation only.
+  - healthcheck_service uses self_process / HTTP / docker-inspect.
+  - read_logs_allowlisted reads known local log files only — no docker CLI needed.
   - Dangerous words/metacharacters blocked at intent parse time.
 """
 from __future__ import annotations
@@ -36,7 +39,7 @@ _CONFIRMATION_TTL_SECONDS = 600  # 10 minutes
 
 # ─── Allowlists ──────────────────────────────────────────────────────────────
 
-ALLOWLISTED_ACTION_TYPES = {"healthcheck_service"}
+ALLOWLISTED_ACTION_TYPES = {"healthcheck_service", "read_logs_allowlisted"}
 
 SERVICE_ALIASES: dict[str, str] = {
     "logi-bot":         "axiomsphere-logi-bot",
@@ -72,6 +75,43 @@ _HEALTHCHECK_RE = re.compile(
     re.IGNORECASE | re.VERBOSE,
 )
 
+# Matches log-read intents. Groups: (1) optional line count, (2) service alias.
+# Supports: "покажи последние 50 строк logi-bot", "show last 100 lines logi-bot",
+#            "read logs logi-bot", "покажи логи logi-bot"
+_READ_LOGS_RE = re.compile(
+    r"""(?:
+        покажи\s+(?:последние\s+)?(?:(\d+)\s+строк\w*\s+)?(?:лог\w*\s+)?
+      | show\s+(?:last\s+)?(?:(\d+)\s+lines?\s+)?(?:logs?\s+)?
+      | read\s+logs?\s+
+    )
+    ([a-zA-Z0-9\-_]+)
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+_READ_LOGS_DEFAULT_LINES = 50
+_READ_LOGS_MIN_LINES = 10
+_READ_LOGS_MAX_LINES = 200
+
+# Known log file paths for each allowlisted container.
+# Paths are tried in order; the first readable file is used.
+# Paths are absolute inside the container (/workspace mount) and also
+# accessible from the host as aims_workspace/logs/v2/<name>.
+_LOG_FILE_CANDIDATES: dict[str, list[Path]] = {
+    "axiomsphere-logi-bot": [
+        _ROOT / "aims_workspace" / "logs" / "v2" / "logi_bot.log",
+        Path("/workspace/aims_workspace/logs/v2/logi_bot.log"),
+    ],
+    "axiomsphere-logi-cc-bridge": [
+        _ROOT / "aims_workspace" / "logs" / "v2" / "anthropic_gateway.log",
+        Path("/workspace/aims_workspace/logs/v2/anthropic_gateway.log"),
+    ],
+    "axiomsphere-logi-cc-slot32-proxy": [
+        _ROOT / "aims_workspace" / "logs" / "v2" / "anthropic_gateway.log",
+        Path("/workspace/aims_workspace/logs/v2/anthropic_gateway.log"),
+    ],
+}
+
 # CONFIRM flow — "CONFIRM <action_id>"
 _CONFIRM_RE = re.compile(r"^\s*CONFIRM\s+([a-f0-9]{8,})\s*$", re.IGNORECASE)
 
@@ -86,6 +126,11 @@ class PendingConfirmation:
     expires_at: str          # ISO UTC
     requested_by: str
     original_message: str
+    params: dict = None      # type: ignore  # action-specific parameters
+
+    def __post_init__(self):
+        if self.params is None:
+            self.params = {}
 
     def is_expired(self) -> bool:
         exp = datetime.fromisoformat(self.expires_at.replace("Z", "+00:00"))
@@ -96,7 +141,8 @@ class PendingConfirmation:
 
     @classmethod
     def from_dict(cls, d: dict) -> "PendingConfirmation":
-        return cls(**{k: d[k] for k in cls.__dataclass_fields__})
+        known = set(cls.__dataclass_fields__)
+        return cls(**{k: d[k] for k in known if k in d})
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -304,6 +350,60 @@ def _run_healthcheck(container_name: str) -> dict:
     return _healthcheck_docker(container_name)
 
 
+# ─── Read-logs execution ─────────────────────────────────────────────────────
+
+def _run_read_logs(container_name: str, lines: int) -> dict:
+    """
+    Read the last `lines` lines from the known local log file for `container_name`.
+
+    No docker CLI. No shell=True. No user-controlled path components.
+    Log file path is resolved from the hardcoded _LOG_FILE_CANDIDATES map only.
+    """
+    candidates = _LOG_FILE_CANDIDATES.get(container_name, [])
+    log_path: Path | None = None
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file():
+            log_path = candidate
+            break
+
+    if log_path is None:
+        return {
+            "status": "FAILED",
+            "health": "unknown",
+            "error_class": "LOG_BACKEND_UNAVAILABLE",
+            "detail": f"no readable log file found for {container_name}",
+            "method": "local_file",
+        }
+
+    try:
+        # Read the file and return the last `lines` lines without subprocess.
+        text_content = log_path.read_text(encoding="utf-8", errors="replace")
+        all_lines = text_content.splitlines()
+        tail = all_lines[-lines:] if len(all_lines) > lines else all_lines
+        return {
+            "status": "PASSED",
+            "log_tail": "\n".join(tail),
+            "lines_returned": len(tail),
+            "total_lines": len(all_lines),
+            "method": "local_file",
+            "log_file": str(log_path),
+        }
+    except PermissionError as exc:
+        return {
+            "status": "FAILED",
+            "error_class": "LOG_BACKEND_UNAVAILABLE",
+            "detail": f"permission denied: {exc}",
+            "method": "local_file",
+        }
+    except Exception as exc:
+        return {
+            "status": "FAILED",
+            "error_class": "LOG_BACKEND_UNAVAILABLE",
+            "detail": str(exc),
+            "method": "local_file",
+        }
+
+
 # ─── Public API ──────────────────────────────────────────────────────────────
 
 def parse_healthcheck_intent(text: str) -> dict | None:
@@ -320,6 +420,47 @@ def parse_healthcheck_intent(text: str) -> dict | None:
         return None
 
     return {"action_type": "healthcheck_service", "raw_service": m.group(1)}
+
+
+def parse_read_logs_intent(text: str) -> dict | None:
+    """
+    Return parsed intent dict if text is a read-logs request, else None.
+
+    Returns dict with:
+      action_type, raw_service, lines, lines_clamped (bool)
+    Or {"blocked": True, "reason": ...} if message fails validation.
+    """
+    ok, reason = _validate_message(text or "")
+    if not ok:
+        return {"blocked": True, "reason": reason}
+
+    m = _READ_LOGS_RE.search(text or "")
+    if not m:
+        return None
+
+    # Group layout: Russian match puts count in group(1), English in group(2), service in group(3)
+    count_str = m.group(1) or m.group(2) or ""
+    raw_service = m.group(3)
+
+    try:
+        requested_lines = int(count_str) if count_str.strip() else _READ_LOGS_DEFAULT_LINES
+    except ValueError:
+        requested_lines = _READ_LOGS_DEFAULT_LINES
+
+    clamped = False
+    if requested_lines < _READ_LOGS_MIN_LINES:
+        requested_lines = _READ_LOGS_MIN_LINES
+        clamped = True
+    elif requested_lines > _READ_LOGS_MAX_LINES:
+        requested_lines = _READ_LOGS_MAX_LINES
+        clamped = True
+
+    return {
+        "action_type": "read_logs_allowlisted",
+        "raw_service": raw_service,
+        "lines": requested_lines,
+        "lines_clamped": clamped,
+    }
 
 
 def parse_confirm_intent(text: str) -> str | None:
@@ -367,6 +508,55 @@ def request_healthcheck(raw_service: str, requested_by: str, original_message: s
     }
 
 
+def request_read_logs(
+    raw_service: str,
+    lines: int,
+    lines_clamped: bool,
+    requested_by: str,
+    original_message: str,
+) -> dict:
+    """
+    Step 1: Create a pending confirmation for a read_logs_allowlisted request.
+    """
+    container, err = _resolve_service(raw_service)
+    if not container:
+        return {
+            "status": "BLOCKED",
+            "action_type": "read_logs_allowlisted",
+            "error_class": "UNKNOWN_SERVICE",
+            "detail": err,
+        }
+
+    now = _now_utc()
+    expires = (datetime.now(timezone.utc) + timedelta(seconds=_CONFIRMATION_TTL_SECONDS)).isoformat()
+    action_id = _action_id("read_logs_allowlisted", container, now)
+
+    pending = PendingConfirmation(
+        action_id=action_id,
+        action_type="read_logs_allowlisted",
+        service=container,
+        created_at=now,
+        expires_at=expires,
+        requested_by=requested_by,
+        original_message=original_message,
+        params={"lines": lines, "lines_clamped": lines_clamped},
+    )
+    _write_json(_pending_path(action_id), pending.to_dict())
+
+    resp: dict = {
+        "status": "REQUIRES_CONFIRMATION",
+        "action_type": "read_logs_allowlisted",
+        "service": container,
+        "lines": lines,
+        "action_id": action_id,
+        "expires_at": expires,
+        "reply_with": f"CONFIRM {action_id}",
+    }
+    if lines_clamped:
+        resp["lines_clamped"] = True
+    return resp
+
+
 def confirm_action(action_id: str) -> dict:
     """
     Step 2: Execute a confirmed pending action.
@@ -412,6 +602,9 @@ def confirm_action(action_id: str) -> dict:
     # Execute
     if pending.action_type == "healthcheck_service":
         result = _run_healthcheck(pending.service)
+    elif pending.action_type == "read_logs_allowlisted":
+        lines = int((pending.params or {}).get("lines", _READ_LOGS_DEFAULT_LINES))
+        result = _run_read_logs(pending.service, lines)
     else:
         result = {"status": "FAILED", "error": "unhandled action type"}
 
@@ -419,6 +612,7 @@ def confirm_action(action_id: str) -> dict:
         "action_id": action_id,
         "action_type": pending.action_type,
         "service": pending.service,
+        "params": pending.params or {},
         "executed_at": _now_utc(),
         "result": result,
     }
@@ -426,14 +620,26 @@ def confirm_action(action_id: str) -> dict:
     # Remove from pending
     _pending_path(action_id).unlink(missing_ok=True)
 
-    return {
+    resp: dict = {
         "status": result.get("status", "FAILED"),
         "action_type": pending.action_type,
         "service": pending.service,
         "action_id": action_id,
-        "health": result.get("health"),
-        "detail": result.get("detail"),
     }
+    if pending.action_type == "healthcheck_service":
+        resp["health"] = result.get("health")
+        if result.get("detail"):
+            resp["detail"] = result["detail"]
+    elif pending.action_type == "read_logs_allowlisted":
+        resp["lines"] = (pending.params or {}).get("lines", _READ_LOGS_DEFAULT_LINES)
+        if result.get("status") == "PASSED":
+            resp["log_tail"] = result.get("log_tail", "")
+            resp["lines_returned"] = result.get("lines_returned")
+        else:
+            resp["error_class"] = result.get("error_class", "LOG_BACKEND_UNAVAILABLE")
+            if result.get("detail"):
+                resp["detail"] = result["detail"]
+    return resp
 
 
 def format_confirmation_response(resp: dict) -> str:
@@ -457,6 +663,16 @@ def format_confirmation_response(resp: dict) -> str:
     if health:
         lines.append(f"HEALTH: {health}")
 
+    # read_logs_allowlisted fields
+    line_count = resp.get("lines")
+    if line_count is not None:
+        lines.append(f"LINES: {line_count}")
+    if resp.get("lines_clamped"):
+        lines.append("LINES_CLAMPED: true")
+    lines_returned = resp.get("lines_returned")
+    if lines_returned is not None:
+        lines.append(f"LINES_RETURNED: {lines_returned}")
+
     reply_with = resp.get("reply_with")
     if reply_with:
         lines.append(f"REPLY_WITH: {reply_with}")
@@ -472,5 +688,10 @@ def format_confirmation_response(resp: dict) -> str:
     expired_at = resp.get("expired_at")
     if expired_at:
         lines.append(f"EXPIRED_AT: {expired_at}")
+
+    # Log tail — appended last to keep header fields readable
+    log_tail = resp.get("log_tail")
+    if log_tail and status == "PASSED":
+        lines.append(f"LOG_TAIL:\n{log_tail}")
 
     return "\n".join(lines)
