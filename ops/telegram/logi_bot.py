@@ -453,10 +453,6 @@ def handle_message(msg: dict) -> None:
         )
         return
 
-    if LOGI_CLAUDE_CODE_DEFAULT:
-        _handle_claude_code_run(chat_id, user_id, text, route_name=None)
-        return
-
     # ── Logi Assistant Gateway (Логи, / /logi prefix only) ──────────────
     try:
         from ops.telegram.logi_bot_assistant import (
@@ -465,12 +461,16 @@ def handle_message(msg: dict) -> None:
         if should_route_to_gateway(text):
             send(chat_id, handle_gateway_message(
                 text, str(chat_id),
-                str(message.get("from", {}).get("id", ""))
+                str(msg.get("from", {}).get("id", ""))
             ))
             return
     except Exception:
         pass  # Never break the existing bot
     # ────────────────────────────────────────────────────────────────────
+
+    if LOGI_CLAUDE_CODE_DEFAULT:
+        _handle_claude_code_run(chat_id, user_id, text, route_name=None)
+        return
 
     routed = route_intent(text)
     if routed.intent == "skills_query":
