@@ -25,8 +25,59 @@ if _ops not in sys.path:
 
 from logi.conversational_orchestrator import LogiAgent
 from logi.plans import list_plans, load_plan
+from logi.project_goal_intake import ingest_telegram_goal_text
+from logi.project_goal_intake import DEFAULT_ARCHITECTURE_ROOT, GOAL_INDEX_JSON
+from logi.project_goal_autorunner import AutorunnerConfig, status as autorunner_status
 from logi.syntax_interpreter import interpret_syntax_intent
 from logi.syntax_policy import evaluate_intent_policy, render_policy_response
+from logi.ai_intent_router import route_intent
+from logi.claude_skill_index import skill_context_preamble
+from logi.skills_view import render_skills, render_skills_refresh
+
+try:
+    from logi.claude_code_executor import (
+        ClaudeCodeExecutionError,
+        run_claude_code_sync,
+        select_route,
+    )
+except Exception:  # Keep Telegram Logi bootable if Claude Code bridge is unavailable.
+    ClaudeCodeExecutionError = RuntimeError
+    run_claude_code_sync = None
+    select_route = None
+
+# ── Learning Loop Consumer (EventBus → Phase 2B learning) ─────────────────────
+_LEARNING_LOOP_ENABLED = os.environ.get("AIMS_LEARNING_LOOP_ENABLED", "false").lower() in ("true", "1", "yes")
+
+
+def _start_learning_loop_background():
+    """Start LearningLoopConsumer in a background daemon thread."""
+    import asyncio
+
+    async def _run_consumer():
+        try:
+            from logi.learning_loop_consumer import create_learning_loop_consumer
+            consumer = await create_learning_loop_consumer()
+            if consumer:
+                log.info("LearningLoopConsumer started — subscribed to EventBus")
+                # Keep alive until process exits
+                while not _stop_event.is_set():
+                    await asyncio.sleep(5)
+            else:
+                log.warning("LearningLoopConsumer creation returned None — EventBus may be down")
+        except Exception as exc:
+            log.error("LearningLoopConsumer failed: %s", exc)
+
+    def _thread_target():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_run_consumer())
+        finally:
+            loop.close()
+
+    t = threading.Thread(target=_thread_target, name="learning-loop", daemon=True)
+    t.start()
+    log.info("Learning loop background thread started")
 
 # Setup logging
 log = logging.getLogger(__name__)
@@ -56,6 +107,23 @@ TOKEN = (
 ).strip()
 
 ALLOWED_USERS_RAW = os.environ.get("LOGI_ALLOWED_USERS", "").strip()
+PROJECT_GOALS_ENABLED = os.environ.get("LOGI_TELEGRAM_PROJECT_GOALS_ENABLED", "true").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+PROJECT_GOAL_INTAKE_MODE = os.environ.get("LOGI_TELEGRAM_GOAL_INTAKE_MODE", "private_text").strip().lower()
+
+# Claude Code CLI backend for Telegram-facing Logi.
+# false = keep legacy LogiAgent as default; /cc still uses Claude Code.
+# true  = plain text uses Claude Code slot32 by default.
+LOGI_CLAUDE_CODE_DEFAULT = os.environ.get("LOGI_CLAUDE_CODE_DEFAULT", "false").lower() in (
+    "true",
+    "1",
+    "yes",
+)
+LOGI_CLAUDE_CODE_PREFIX = os.environ.get("LOGI_CLAUDE_CODE_PREFIX", "/cc").strip() or "/cc"
+LOGI_CLAUDE_CODE_REASONING_PREFIX = os.environ.get("LOGI_CLAUDE_CODE_REASONING_PREFIX", "/ccr").strip() or "/ccr"
 
 if not TOKEN:
     raise SystemExit("Missing LOGI_BOT_TOKEN")
@@ -107,14 +175,84 @@ def _get_lock(user_id: int) -> threading.Lock:
 
 # ── message handling ───────────────────────────────────────────────────────────
 
-def _proxy_health() -> str:
-    try:
-        with urllib.request.urlopen("http://127.0.0.1:8082/health", timeout=10) as r:
-            data = json.loads(r.read())
-        return json.dumps(data, ensure_ascii=False, indent=2)
-    except Exception as e:
-        return f"Proxy unavailable: {e}"
+def _command_of(text: str) -> str:
+    if not text.startswith("/"):
+        return ""
+    return text.split()[0].split("@", 1)[0].strip().lower()
 
+def _proxy_health() -> str:
+    checks = {
+        "legacy_8082": "http://127.0.0.1:8082/health",
+        "slot32_claude_code_8084": "http://127.0.0.1:8084/health",
+        "reasoning_8086": "http://127.0.0.1:8086/health",
+    }
+    result = {}
+    for name, url in checks.items():
+        try:
+            with urllib.request.urlopen(url, timeout=5) as r:
+                raw = r.read().decode("utf-8", errors="replace")
+            try:
+                result[name] = json.loads(raw)
+            except Exception:
+                result[name] = raw[:500]
+        except Exception as e:
+            result[name] = f"unavailable: {e}"
+    result["logi_claude_code_default"] = LOGI_CLAUDE_CODE_DEFAULT
+    result["claude_code_prefix"] = LOGI_CLAUDE_CODE_PREFIX
+    result["claude_code_reasoning_prefix"] = LOGI_CLAUDE_CODE_REASONING_PREFIX
+    return json.dumps(result, ensure_ascii=False, indent=2)
+
+
+
+def _handle_claude_code_run(
+    chat_id: int,
+    user_id: int,
+    text: str,
+    route_name: str | None = None,
+) -> None:
+    lock = _get_lock(user_id)
+    if not lock.acquire(blocking=False):
+        send(chat_id, "Still processing your previous request...")
+        return
+
+    try:
+        if run_claude_code_sync is None:
+            send(chat_id, "Claude Code backend is unavailable: import failed.")
+            return
+
+        clean_text = text.strip()
+        if clean_text.startswith(LOGI_CLAUDE_CODE_REASONING_PREFIX):
+            clean_text = clean_text[len(LOGI_CLAUDE_CODE_REASONING_PREFIX):].strip()
+            route_name = route_name or "reasoning"
+        elif clean_text.startswith(LOGI_CLAUDE_CODE_PREFIX):
+            clean_text = clean_text[len(LOGI_CLAUDE_CODE_PREFIX):].strip()
+            route_name = route_name or "slot32"
+
+        if not clean_text:
+            send(
+                chat_id,
+                "Usage:\n"
+                f"{LOGI_CLAUDE_CODE_PREFIX} <task>  — Claude Code slot32\n"
+                f"{LOGI_CLAUDE_CODE_REASONING_PREFIX} <task> — Claude Code reasoning",
+            )
+            return
+
+        selected_route = route_name or (select_route(clean_text) if select_route else "slot32")
+        send(chat_id, f"Logi → Claude Code CLI started. route={selected_route}")
+
+        preamble = skill_context_preamble(clean_text, top_k=5)
+        backend_prompt = (
+            f"{preamble}\n\nUser task:\n{clean_text}"
+            if preamble else clean_text
+        )
+        result = run_claude_code_sync(backend_prompt, route_name=selected_route)
+        send(chat_id, result)
+    except ClaudeCodeExecutionError as exc:
+        send(chat_id, "Claude Code backend error:\n" + str(exc)[-3000:])
+    except Exception:
+        send(chat_id, "Claude Code bridge error:\n" + traceback.format_exc()[-3000:])
+    finally:
+        lock.release()
 
 def _handle_run(chat_id: int, user_id: int, text: str) -> None:
     lock = _get_lock(user_id)
@@ -134,12 +272,56 @@ def _handle_run(chat_id: int, user_id: int, text: str) -> None:
         lock.release()
 
 
+def _handle_project_goal_intake(chat_id: int, user_id: int, msg: dict, text: str) -> None:
+    try:
+        record = ingest_telegram_goal_text(
+            text=text,
+            chat_id=chat_id,
+            user_id=user_id,
+            message_id=int(msg.get("message_id", 0) or 0),
+            chat_type=str(msg.get("chat", {}).get("type") or "private"),
+        )
+        send(
+            chat_id,
+            "Project goal registered for Logi automation.\n"
+            f"Goal ID: {record.goal_id}\n"
+            f"Status: {record.status}\n"
+            f"Architecture: {record.architecture_dir}\n"
+            f"Queued: {record.autorunner_request_path}\n\n"
+            "The Telegram message is now a project architecture artifact; the queue item is transport only.",
+        )
+    except Exception:
+        send(chat_id, "Project goal intake error:\n" + traceback.format_exc()[-2000:])
+
+
+def _project_goal_index_text(limit: int = 10) -> str:
+    index_path = DEFAULT_ARCHITECTURE_ROOT / GOAL_INDEX_JSON
+    if not index_path.exists():
+        return "No project goals registered yet."
+    try:
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+    except Exception:
+        return "Project goal index exists but could not be read."
+    goals = index.get("goals") or []
+    if not goals:
+        return "No project goals registered yet."
+    lines = ["Project goals:"]
+    for item in goals[:limit]:
+        lines.append(
+            f"- {item.get('goal_id')} [{item.get('status')}] "
+            f"{item.get('title')} — {item.get('architecture_dir')}"
+        )
+    return "\n".join(lines)
+
+
 def handle_message(msg: dict) -> None:
     chat_id = msg["chat"]["id"]
+    chat_type = str(msg.get("chat", {}).get("type") or "")
     user_id = int(msg.get("from", {}).get("id", 0))
     text = (msg.get("text") or "").strip()
+    command = _command_of(text)
 
-    if text.startswith("/whoami"):
+    if command == "/whoami":
         send(chat_id, f"Your Telegram user id: {user_id}")
         return
 
@@ -147,38 +329,74 @@ def handle_message(msg: dict) -> None:
         send(chat_id, f"Access denied. Your id: {user_id}")
         return
 
-    if text.startswith("/start") or text.startswith("/help"):
+    if command in {"/start", "/help"}:
         send(chat_id, (
-            "LogiAgent — AIMS orchestrator\n\n"
-            "Just type your request in plain language.\n\n"
+            "LogiAgent — AIMS AI-first project operator\n\n"
+            "Plain text is treated as a request/question first. Project goals are registered only "
+            "through /goal or an explicit request to register a project goal.\n\n"
             "Commands:\n"
+            "/skills — show indexed Claude Code/AIMS skills and capabilities\n"
+            "/skills refresh — rebuild the compact skills index\n"
+            "/goal <text> — register a project goal from this private chat\n"
+            "/goals — list registered project goals\n"
             "/plans — list your plans\n"
             "/plan <id> — show plan details\n"
             "/clear — reset conversation history\n"
-            "/status — proxy + agent status\n"
-            "/whoami — show your user id\n\n"
+            "/status — proxy, agent, and project automation status\n"
+            "/whoami — show your user id\n"
+            f"{LOGI_CLAUDE_CODE_PREFIX} <task> — run task through Claude Code CLI slot32\n"
+            f"{LOGI_CLAUDE_CODE_REASONING_PREFIX} <task> — run task through Claude Code CLI reasoning route\n\n"
             "Examples:\n"
-            "• Создай план для разработки процедуры по HSE для бурения\n"
-            "• Найди документы по ISO 45001\n"
-            "• Что у нас есть по ПЛА?\n"
-            "• Добавь шаг в план: поиск нормативных требований\n"
-            "• Выполни план"
+            "• Build the Logi project automation executor for Telegram goals\n"
+            "• Register the DOCGEN quality loop as a project automation objective\n"
+            "• Create an implementation plan for AIMS maintenance strategy generation\n"
+            "• Verify current project automation readiness"
         ))
         return
 
-    if text.startswith("/clear"):
+    if command == "/clear":
         _agent.clear_history(user_id)
         send(chat_id, "Conversation history cleared.")
         return
 
-    if text.startswith("/status"):
+    if command == "/skills":
+        arg = text.split(maxsplit=1)[1].strip() if len(text.split(maxsplit=1)) > 1 else ""
+        if arg.lower() == "refresh":
+            send(chat_id, render_skills_refresh())
+        else:
+            send(chat_id, render_skills(arg))
+        return
+
+    if command == LOGI_CLAUDE_CODE_REASONING_PREFIX.lower():
+        _handle_claude_code_run(chat_id, user_id, text, route_name="reasoning")
+        return
+
+    if command == LOGI_CLAUDE_CODE_PREFIX.lower():
+        _handle_claude_code_run(chat_id, user_id, text, route_name="slot32")
+        return
+
+    if command == "/status":
         health = _proxy_health()
         plans = list_plans(user_id)
         active = [p for p in plans if p.status in ("draft", "active")]
-        send(chat_id, f"Proxy health:\n{health}\n\nActive plans: {len(active)}")
+        auto = autorunner_status(AutorunnerConfig())
+        send(
+            chat_id,
+            f"Proxy health:\n{health}\n\n"
+            f"Active plans: {len(active)}\n\n"
+            "Project automation:\n"
+            f"- status: {auto.get('status')}\n"
+            f"- pid_alive: {auto.get('pid_alive')}\n"
+            f"- pending goals: {auto.get('pending_count')}\n"
+            f"- inbox: {auto.get('inbox_dir')}",
+        )
         return
 
-    if text.startswith("/plans"):
+    if command == "/goals":
+        send(chat_id, _project_goal_index_text())
+        return
+
+    if command == "/plans":
         plans = list_plans(user_id)
         if not plans:
             send(chat_id, "No plans found.")
@@ -189,14 +407,22 @@ def handle_message(msg: dict) -> None:
         send(chat_id, "\n".join(lines))
         return
 
-    # Natural-language-first intent routing for planning/status UX.
-    intent = evaluate_intent_policy(interpret_syntax_intent(text))
-    if intent.intent_type != "unknown":
-        send(chat_id, render_policy_response(intent))
+    if command == "/goal":
+        goal_text = text.split(" ", 1)[1].strip() if " " in text else ""
+        if not goal_text:
+            send(chat_id, "Usage: /goal <project goal text>")
+            return
+        if chat_type != "private":
+            send(chat_id, "Project goals are accepted only from the personal Logi chat.")
+            return
+        _handle_project_goal_intake(chat_id, user_id, msg, goal_text)
         return
 
-    if text.startswith("/plan "):
-        plan_id = text.split(" ", 1)[1].strip()
+    if command == "/plan":
+        plan_id = text.split(" ", 1)[1].strip() if " " in text else ""
+        if not plan_id:
+            send(chat_id, "Usage: /plan <id>")
+            return
         # Prevent legacy /plan <id> route from consuming reserved planning horizons.
         if plan_id.lower() in {"day", "week", "month", "strategic"}:
             send(
@@ -217,6 +443,50 @@ def handle_message(msg: dict) -> None:
             if s.result:
                 lines.append(f"\nStep {s.id} result:\n{s.result[:400]}")
         send(chat_id, "\n".join(lines))
+        return
+
+    if text.startswith("/") and command:
+        send(
+            chat_id,
+            "Unknown Logi command. Use /help or /skills. "
+            "This was not registered as a project goal.",
+        )
+        return
+
+    if LOGI_CLAUDE_CODE_DEFAULT:
+        _handle_claude_code_run(chat_id, user_id, text, route_name=None)
+        return
+
+    # ── Logi Assistant Gateway (Логи, / /logi prefix only) ──────────────
+    try:
+        from ops.telegram.logi_bot_assistant import (
+            should_route_to_gateway, handle_gateway_message,
+        )
+        if should_route_to_gateway(text):
+            send(chat_id, handle_gateway_message(
+                text, str(chat_id),
+                str(message.get("from", {}).get("id", ""))
+            ))
+            return
+    except Exception:
+        pass  # Never break the existing bot
+    # ────────────────────────────────────────────────────────────────────
+
+    routed = route_intent(text)
+    if routed.intent == "skills_query":
+        send(chat_id, render_skills(text))
+        return
+    if routed.intent == "register_goal" and routed.confidence >= 0.9:
+        if chat_type != "private":
+            send(chat_id, "Project goals are accepted only from the personal Logi chat.")
+            return
+        _handle_project_goal_intake(chat_id, user_id, msg, text)
+        return
+
+    # Natural-language-first intent routing for planning/status UX.
+    intent = evaluate_intent_policy(interpret_syntax_intent(text))
+    if intent.intent_type != "unknown":
+        send(chat_id, render_policy_response(intent))
         return
 
     if not text:
@@ -244,6 +514,12 @@ def main() -> None:
 
     print(f"LogiAgent Telegram Bot started")
     print(f"Allowed users: {sorted(ALLOWED_USERS) if ALLOWED_USERS else 'NONE'}")
+
+    # Start learning loop consumer in background if enabled
+    if _LEARNING_LOOP_ENABLED:
+        _start_learning_loop_background()
+    else:
+        print("Learning loop consumer disabled (set AIMS_LEARNING_LOOP_ENABLED=true to enable)")
 
     # Clear any webhook so long-polling works
     try:
