@@ -388,6 +388,31 @@ class LogiAgent:
             pass  # Never break main bot on confirmation errors
         # ─────────────────────────────────────────────────────────────────────
 
+        # ── Confirmation flow: diagnose_service_allowlisted intent ────────────
+        try:
+            from ops.agents.logi_confirmation_flow import (
+                parse_diagnose_intent,
+                request_diagnose,
+                format_confirmation_response,
+            )
+            intent = parse_diagnose_intent(text or "")
+            if intent is not None:
+                if intent.get("blocked"):
+                    return (
+                        "STATUS: BLOCKED\n"
+                        f"ERROR_CLASS: COMMAND_BLOCKED\n"
+                        f"REASON: {intent.get('reason', '')}"
+                    )
+                resp = request_diagnose(
+                    raw_service=intent["raw_service"],
+                    requested_by=str(user_id),
+                    original_message=text or "",
+                )
+                return format_confirmation_response(resp)
+        except Exception:
+            pass  # Never break main bot on confirmation errors
+        # ─────────────────────────────────────────────────────────────────────
+
         # Dedicated Claude Code review transport path must create a real queue request.
         if self._is_claude_review_transport_request(text):
             return self._handle_claude_review_transport(text)

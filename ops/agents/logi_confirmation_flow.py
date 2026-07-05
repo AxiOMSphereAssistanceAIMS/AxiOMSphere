@@ -39,7 +39,11 @@ _CONFIRMATION_TTL_SECONDS = 600  # 10 minutes
 
 # ─── Allowlists ──────────────────────────────────────────────────────────────
 
-ALLOWLISTED_ACTION_TYPES = {"healthcheck_service", "read_logs_allowlisted"}
+ALLOWLISTED_ACTION_TYPES = {
+    "healthcheck_service",
+    "read_logs_allowlisted",
+    "diagnose_service_allowlisted",
+}
 
 SERVICE_ALIASES: dict[str, str] = {
     "logi-bot":         "axiomsphere-logi-bot",
@@ -111,6 +115,31 @@ _LOG_FILE_CANDIDATES: dict[str, list[Path]] = {
         Path("/workspace/aims_workspace/logs/v2/anthropic_gateway.log"),
     ],
 }
+
+# Matches diagnose intents. Group 1 = service alias.
+# Supports: "диагностируй logi-bot", "диагностика logi-bot",
+#           "Diagnose logi-bot", "Run diagnostics logi-bot"
+_DIAGNOSE_RE = re.compile(
+    r"""(?:
+        диагностируй\w*
+      | диагностик\w+
+      | diagnose
+      | run\s+diagnostics?
+    )
+    \s+
+    ([a-zA-Z0-9\-_]+)
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+# Log patterns that indicate problems — compiled once at module load.
+_ERROR_PATTERNS = re.compile(
+    r"ERROR|Traceback|Exception|failed|unavailable|timeout"
+    r"|connection\s+refused|cannot\s+import|ModuleNotFoundError|AttributeError",
+    re.IGNORECASE,
+)
+
+_DIAGNOSE_SCAN_LINES = 50  # default lines to scan for diagnose
 
 # CONFIRM flow — "CONFIRM <action_id>"
 _CONFIRM_RE = re.compile(r"^\s*CONFIRM\s+([a-f0-9]{8,})\s*$", re.IGNORECASE)
@@ -404,6 +433,69 @@ def _run_read_logs(container_name: str, lines: int) -> dict:
         }
 
 
+# ─── Diagnose execution ──────────────────────────────────────────────────────
+
+def _run_diagnose(container_name: str) -> dict:
+    """
+    Read-only diagnostic for an allowlisted container:
+      1. Run healthcheck (self_process / HTTP / docker fallback).
+      2. Read the last _DIAGNOSE_SCAN_LINES lines of the service log.
+      3. Scan for error patterns and summarise findings.
+
+    No docker CLI required for logi-bot. No shell=True.
+    """
+    # Step 1: healthcheck
+    health_result = _run_healthcheck(container_name)
+
+    # Step 2: read logs
+    log_result = _run_read_logs(container_name, _DIAGNOSE_SCAN_LINES)
+    log_available = log_result.get("status") == "PASSED"
+    log_text = log_result.get("log_tail", "") if log_available else ""
+    log_lines = log_text.splitlines() if log_text else []
+
+    # Step 3: scan for error patterns
+    findings: list[str] = []
+    for i, line in enumerate(log_lines):
+        if _ERROR_PATTERNS.search(line):
+            # Truncate long lines to keep output Telegram-safe
+            snippet = line.strip()[:120]
+            findings.append(f"line {len(log_lines) - len(log_lines) + i + 1}: {snippet}")
+        if len(findings) >= 5:
+            break
+
+    errors_found = len(findings)
+    no_errors = errors_found == 0
+
+    # Determine overall status
+    health_ok = health_result.get("status") == "PASSED"
+    if health_ok and no_errors:
+        status = "PASSED"
+    else:
+        status = "DEGRADED"
+
+    result: dict = {
+        "status": status,
+        "health": health_result.get("health", "unknown"),
+        "health_method": health_result.get("method"),
+        "log_lines_scanned": len(log_lines),
+        "errors_found": errors_found,
+        "top_findings": findings if findings else ["No critical patterns found in last 50 lines."],
+        "log_available": log_available,
+    }
+
+    if no_errors and health_ok:
+        result["recommended_next_action"] = "No action required."
+    else:
+        parts = []
+        if not health_ok:
+            parts.append(f"healthcheck failed: {health_result.get('health', 'unknown')}")
+        if errors_found > 0:
+            parts.append(f"{errors_found} error pattern(s) found — run read_logs_allowlisted for full view")
+        result["recommended_next_action"] = "; ".join(parts) if parts else "Inspect service logs."
+
+    return result
+
+
 # ─── Public API ──────────────────────────────────────────────────────────────
 
 def parse_healthcheck_intent(text: str) -> dict | None:
@@ -460,6 +552,62 @@ def parse_read_logs_intent(text: str) -> dict | None:
         "raw_service": raw_service,
         "lines": requested_lines,
         "lines_clamped": clamped,
+    }
+
+
+def parse_diagnose_intent(text: str) -> dict | None:
+    """
+    Return parsed intent dict if text is a diagnose request, else None.
+    Result: {action_type, raw_service} or {"blocked": True, "reason": ...}.
+    """
+    ok, reason = _validate_message(text or "")
+    if not ok:
+        return {"blocked": True, "reason": reason}
+
+    m = _DIAGNOSE_RE.search(text or "")
+    if not m:
+        return None
+
+    return {"action_type": "diagnose_service_allowlisted", "raw_service": m.group(1)}
+
+
+def request_diagnose(raw_service: str, requested_by: str, original_message: str) -> dict:
+    """
+    Step 1: Create a pending confirmation for a diagnose_service_allowlisted request.
+    """
+    container, err = _resolve_service(raw_service)
+    if not container:
+        return {
+            "status": "BLOCKED",
+            "action_type": "diagnose_service_allowlisted",
+            "error_class": "UNKNOWN_SERVICE",
+            "detail": err,
+        }
+
+    now = _now_utc()
+    expires = (datetime.now(timezone.utc) + timedelta(seconds=_CONFIRMATION_TTL_SECONDS)).isoformat()
+    action_id = _action_id("diagnose_service_allowlisted", container, now)
+
+    pending = PendingConfirmation(
+        action_id=action_id,
+        action_type="diagnose_service_allowlisted",
+        service=container,
+        created_at=now,
+        expires_at=expires,
+        requested_by=requested_by,
+        original_message=original_message,
+        params={"lines": _DIAGNOSE_SCAN_LINES},
+    )
+    _write_json(_pending_path(action_id), pending.to_dict())
+
+    return {
+        "status": "REQUIRES_CONFIRMATION",
+        "action_type": "diagnose_service_allowlisted",
+        "service": container,
+        "lines": _DIAGNOSE_SCAN_LINES,
+        "action_id": action_id,
+        "expires_at": expires,
+        "reply_with": f"CONFIRM {action_id}",
     }
 
 
@@ -605,6 +753,8 @@ def confirm_action(action_id: str) -> dict:
     elif pending.action_type == "read_logs_allowlisted":
         lines = int((pending.params or {}).get("lines", _READ_LOGS_DEFAULT_LINES))
         result = _run_read_logs(pending.service, lines)
+    elif pending.action_type == "diagnose_service_allowlisted":
+        result = _run_diagnose(pending.service)
     else:
         result = {"status": "FAILED", "error": "unhandled action type"}
 
@@ -639,6 +789,14 @@ def confirm_action(action_id: str) -> dict:
             resp["error_class"] = result.get("error_class", "LOG_BACKEND_UNAVAILABLE")
             if result.get("detail"):
                 resp["detail"] = result["detail"]
+    elif pending.action_type == "diagnose_service_allowlisted":
+        resp["health"] = result.get("health")
+        resp["log_lines_scanned"] = result.get("log_lines_scanned", 0)
+        resp["errors_found"] = result.get("errors_found", 0)
+        resp["top_findings"] = result.get("top_findings", [])
+        resp["recommended_next_action"] = result.get("recommended_next_action", "")
+        if not result.get("log_available", True):
+            resp["error_class"] = "LOG_BACKEND_UNAVAILABLE"
     return resp
 
 
@@ -688,6 +846,22 @@ def format_confirmation_response(resp: dict) -> str:
     expired_at = resp.get("expired_at")
     if expired_at:
         lines.append(f"EXPIRED_AT: {expired_at}")
+
+    # diagnose_service_allowlisted fields
+    log_lines_scanned = resp.get("log_lines_scanned")
+    if log_lines_scanned is not None:
+        lines.append(f"LOG_LINES_SCANNED: {log_lines_scanned}")
+    errors_found = resp.get("errors_found")
+    if errors_found is not None:
+        lines.append(f"ERRORS_FOUND: {errors_found}")
+    top_findings = resp.get("top_findings")
+    if top_findings:
+        lines.append("TOP_FINDINGS:")
+        for finding in top_findings:
+            lines.append(f"- {finding}")
+    recommended = resp.get("recommended_next_action")
+    if recommended:
+        lines.append(f"RECOMMENDED_NEXT_ACTION: {recommended}")
 
     # Log tail — appended last to keep header fields readable
     log_tail = resp.get("log_tail")
