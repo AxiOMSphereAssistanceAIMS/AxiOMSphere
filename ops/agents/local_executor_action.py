@@ -27,6 +27,26 @@ _EXECUTOR_TIMEOUT = 60
 
 _BLOCKED_PATH_RE = re.compile(r"\.\.|[;&|`$><!\*\?{}\[\]\\]")
 
+# Canonical executor task intent regex — covers English strict/natural + Russian/mixed forms.
+# Group 1 captures the .json path.
+# Path validation (traversal, absolute, metacharacters) is done by _validate_task_path
+# and validate_executor_message separately.
+EXECUTOR_TASK_RE = re.compile(
+    r"""(?:
+        # English: strict / natural
+        run[_\s]+(?:approved[_\s]+)?local[_\s]+executor[_\s]+task
+      | run_local_executor_task
+        # Russian/mixed: запусти/выполни + optional утвержд/approved + optional task/задачу
+      | (?:запуст|выполн)\w*\s+(?:утвержд\w+\s+)?(?:approved\s+)?(?:local\s+)?(?:executor\s+)?(?:task|задач\w+)\s*
+        # Russian: проверь через локальный executor + optional задачу
+      | проверь\s+через\s+локальный\s+executor\s*(?:задач\w+)?\s*
+    )
+    (?:[:\s]+)?
+    ([a-zA-Z0-9_\-./]+\.json)
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
 # Shell metacharacters and dangerous command words that must not appear
 # anywhere in a run_local_executor_task message.
 _BLOCKED_MSG_CHARS_RE = re.compile(r"[;&|`$<>\r\n\\]")
@@ -35,6 +55,31 @@ _BLOCKED_MSG_COMMANDS_RE = re.compile(
     r"|codex\s+login|claude\s+login)\b",
     re.IGNORECASE,
 )
+
+
+# Detects Russian/mixed execution-intent keywords — used to catch dangerous
+# commands that look like executor requests but lack an approved .json path.
+_RUSSIAN_EXEC_INTENT_RE = re.compile(
+    r"\b(?:запуст|выполн|провер)\w*\b",
+    re.IGNORECASE,
+)
+
+
+def is_dangerous_execution_intent(text: str) -> bool:
+    """
+    Return True if the message has execution intent keywords + dangerous command
+    words but does NOT match the approved executor task regex.
+
+    Used to block "Логи, выполни rm -rf ..." and similar without returning
+    a plain ack.
+    """
+    if not _RUSSIAN_EXEC_INTENT_RE.search(text or ""):
+        return False
+    # If it already matches the approved executor pattern, let that path handle it
+    if EXECUTOR_TASK_RE.search(text or ""):
+        return False
+    # Has execution intent + a dangerous word → block
+    return bool(_BLOCKED_MSG_COMMANDS_RE.search(text or ""))
 
 
 def validate_executor_message(full_message: str) -> tuple[bool, str]:

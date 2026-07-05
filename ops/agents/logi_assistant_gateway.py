@@ -23,14 +23,9 @@ from ops.agents.m10_safety_adapter import check_m10_safety
 from ops.agents.operational_context_merger import is_operational_question, merge_operational_context
 from ops.agents.telegram_context_ingestor import load_operational_context
 
-# Pattern to detect run_local_executor_task requests.
-# Matches: "run approved local executor task: aims_workspace/test_tasks/foo.json"
-# or "/logi run_local_executor_task aims_workspace/test_tasks/foo.json"
-_EXECUTOR_TASK_RE = re.compile(
-    r"(?:run[_\s]+(?:approved[_\s]+)?local[_\s]+executor[_\s]+task|run_local_executor_task)"
-    r"[:\s]+([^\s\n]+\.json)",
-    re.IGNORECASE,
-)
+# Import canonical executor task regex from local_executor_action (single source of truth).
+# Covers English strict/natural + Russian/mixed forms.
+from ops.agents.local_executor_action import EXECUTOR_TASK_RE as _EXECUTOR_TASK_RE
 
 _ROOT = Path(__file__).resolve().parents[2]
 

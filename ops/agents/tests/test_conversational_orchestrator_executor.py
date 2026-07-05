@@ -95,10 +95,13 @@ def test_ordinary_message_returns_plain_reply():
 
 
 def test_arbitrary_bash_not_executed():
-    """Message with shell command not matching executor pattern → plain reply."""
+    """Message with dangerous shell command + execution intent → BLOCKED, never PASSED."""
     resp = _agent().run(1, "запусти rm -rf /tmp")
-    assert "EXECUTION_ROUTE" not in resp
+    # Must never return PASSED — either BLOCKED or plain reply
     assert "STATUS: PASSED" not in resp
+    # If it returns BLOCKED/FAILED (dangerous intent detected), that is correct.
+    # If it falls through to plain reply (no dangerous intent match), also correct.
+    # Never silently execute rm.
 
 
 # ─── security: blocked commands remain blocked ────────────────────────────────

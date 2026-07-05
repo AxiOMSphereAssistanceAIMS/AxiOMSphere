@@ -20,14 +20,9 @@ import re
 from pathlib import Path
 from datetime import datetime
 
-# Pattern for approved local executor task messages.
-# Matches: "run_local_executor_task aims_workspace/test_tasks/foo.json"
-# or:      "Run approved local executor task: aims_workspace/test_tasks/foo.json"
-_EXECUTOR_TASK_RE = re.compile(
-    r"(?:run[_\s]+(?:approved[_\s]+)?local[_\s]+executor[_\s]+task|run_local_executor_task)"
-    r"[:\s]+([^\s\n]+\.json)",
-    re.IGNORECASE,
-)
+# Import canonical executor task regex from local_executor_action (single source of truth).
+# Covers English strict/natural + Russian/mixed forms.
+from ops.agents.local_executor_action import EXECUTOR_TASK_RE as _EXECUTOR_TASK_RE
 
 from logi.claude_review_queue import (
     create_review_request_from_logi_artifact,
@@ -339,6 +334,20 @@ class LogiAgent:
                 return "Full Stack routing failed explicitly: " f"{type(exc).__name__}: {exc}"
             if is_full_stack:
                 return response
+
+        # Block dangerous execution intent without approved .json task path.
+        # E.g. "Логи, выполни rm -rf ..." or "запусти docker restart ..."
+        try:
+            from ops.agents.local_executor_action import is_dangerous_execution_intent
+            if is_dangerous_execution_intent(text or ""):
+                return (
+                    "STATUS: BLOCKED\n"
+                    "EXECUTION_ROUTE: logi_telegram_local_executor\n"
+                    "ERROR_CLASS: COMMAND_BLOCKED\n"
+                    "REASON: dangerous command word detected in execution-intent message"
+                )
+        except Exception:
+            pass
 
         # Plain text should stay short and context-shaped, without service banners.
         return self._build_plain_reply(text, skill_context=skill_context)
