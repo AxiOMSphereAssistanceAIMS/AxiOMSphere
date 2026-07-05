@@ -1,0 +1,1 @@
+{"ok":true,"model":"axi_omi_sphere:latest","backend":"ollama_native_api_chat","think":false,"single_flight":true,"max_output_tokens":512,"max_request_chars":300000,"lock_wait_timeout_s":240,"upstream_timeout_s":170}

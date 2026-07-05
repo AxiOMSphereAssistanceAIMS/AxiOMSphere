@@ -1,0 +1,32 @@
+{
+  "status": "PASSED",
+  "task": "LOCAL_SLOT32_EXECUTOR_CONTRACT_FIX",
+  "launcher": "ops/scripts/claude_local_slot32.sh",
+  "verification_script": "ops/scripts/verify_slot32_executor_contract.sh",
+  "checks_passed": 8,
+  "checks_failed": 0,
+  "anthropic_base_url": "http://127.0.0.1:8084",
+  "anthropic_model": "slot32",
+  "proxy_model": "axi_omi_sphere:latest",
+  "claude_code_use_bedrock": "explicitly_unset_in_launcher",
+  "superpowers_disabled_in_session_settings": true,
+  "desktop_commander_disabled_in_session_settings": true,
+  "executor_lite_contract_in_system_prompt": true,
+  "need_execution_format_in_system_prompt": true,
+  "final_format_in_system_prompt": true,
+  "changes_made": [
+    "write_session_settings() now sets enabledPlugins.superpowers@claude-plugins-official=false",
+    "write_session_settings() now sets enabledPlugins.desktop-commander@claude-plugins-official=false",
+    "--append-system-prompt replaced with full LOCAL SLOT32 EXECUTOR-LITE CONTRACT",
+    "New verification script: ops/scripts/verify_slot32_executor_contract.sh"
+  ],
+  "not_changed": [
+    "ANTHROPIC_BASE_URL stays http://127.0.0.1:8084",
+    "ANTHROPIC_MODEL stays slot32",
+    "Backend model stays axi_omi_sphere:latest",
+    "Proxy container axiomsphere-logi-cc-slot32-proxy unchanged",
+    "CLAUDE_CODE_USE_BEDROCK not re-enabled"
+  ],
+  "evidence_dir": "aims_workspace/agent_architecture_status/local_slot32_executor_contract_fix_20260705T083349Z",
+  "generated_utc": "2026-07-05T08:33:49Z"
+}

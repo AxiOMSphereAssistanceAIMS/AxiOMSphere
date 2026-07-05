@@ -1,0 +1,14 @@
+=== slot32 executor-lite contract verification ===
+
+  ✅ Launcher explicitly unsets CLAUDE_CODE_USE_BEDROCK
+  ✅ Launcher sets ANTHROPIC_BASE_URL=http://127.0.0.1:8084
+  ✅ Launcher sets ANTHROPIC_MODEL=slot32
+  ✅ Launcher unsets CLAUDE_CODE_USE_BEDROCK
+  ✅ Proxy health returns ok=true, model=axi_omi_sphere:latest
+     proxy model: axi_omi_sphere:latest
+  ✅ Session settings disable superpowers and desktop-commander
+  ✅ Launcher system prompt contains executor-lite contract
+  ✅ Launcher system prompt contains FINAL response format
+
+=== Results: 8 passed, 0 failed ===
+Exit: 0

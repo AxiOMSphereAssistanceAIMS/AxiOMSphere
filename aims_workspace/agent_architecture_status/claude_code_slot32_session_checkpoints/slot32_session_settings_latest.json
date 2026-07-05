@@ -1,0 +1,12 @@
+{
+  "autoMemoryEnabled": false,
+  "autoCompactEnabled": false,
+  "awaySummaryEnabled": false,
+  "showThinkingSummaries": false,
+  "outputStyle": "default",
+  "prefersReducedMotion": true,
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": false,
+    "desktop-commander@claude-plugins-official": false
+  }
+}

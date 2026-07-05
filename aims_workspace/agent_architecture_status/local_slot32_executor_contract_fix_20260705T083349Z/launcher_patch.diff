@@ -1,0 +1,126 @@
+diff --git a/ops/scripts/claude_local_slot32.sh b/ops/scripts/claude_local_slot32.sh
+index 070f42e..6335a7d 100755
+--- a/ops/scripts/claude_local_slot32.sh
++++ b/ops/scripts/claude_local_slot32.sh
+@@ -1,4 +1,11 @@
+ #!/usr/bin/env bash
++
++# AIMS terminal usability guard:
++# Keep normal terminal scrollback/copy/paste/mouse selection behavior.
++export CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1
++export CLAUDE_CODE_DISABLE_MOUSE=1
++unset CLAUDE_CODE_NO_FLICKER
++
+ set -euo pipefail
+ 
+ ROOT="${AIMS_ROOT:-$HOME/aims-workspace}"
+@@ -7,7 +14,22 @@ PROXY_HEALTH_URL="${SLOT32_PROXY_HEALTH_URL:-http://127.0.0.1:8084/health}"
+ LOCK_FILE="${SLOT32_CLAUDE_LOCK_FILE:-/tmp/claude_local_slot32.lock}"
+ TRANSCRIPT_ARCHIVE_ROOT="${SLOT32_TRANSCRIPT_ARCHIVE_ROOT:-$HOME/claude_transcript_archive}"
+ 
+-MODEL="${SLOT32_CLAUDE_MODEL:-axi_omi_sphere:latest}"
++MODEL="${SLOT32_CLAUDE_MODEL:-slot32}"
++
++# Force local Anthropic-compatible proxy route; do not inherit AWS Bedrock/SSO route.
++unset CLAUDE_CODE_USE_BEDROCK
++unset CLAUDE_CODE_USE_VERTEX
++unset AWS_PROFILE
++unset AWS_ACCESS_KEY_ID
++unset AWS_SECRET_ACCESS_KEY
++unset AWS_SESSION_TOKEN
++unset AWS_REGION
++unset AWS_DEFAULT_REGION
++unset ANTHROPIC_AUTH_TOKEN
++
++export ANTHROPIC_BASE_URL="http://127.0.0.1:8084"
++export ANTHROPIC_API_KEY="aims-local-repair-token"
++
+ API_KEY="${SLOT32_CLAUDE_API_KEY:-aims-local-repair-token}"
+ BASE_URL="${SLOT32_CLAUDE_BASE_URL:-http://127.0.0.1:8084}"
+ 
+@@ -63,6 +85,9 @@ PY
+ 
+ write_session_settings() {
+     mkdir -p "$CHECKPOINT_DIR"
++    # Local slot32 disables superpowers and desktop-commander.
++    # These plugins push the local model into long planning/debugging loops
++    # and simulate command output instead of executing real tools.
+     cat > "$SESSION_SETTINGS_FILE" <<'JSON'
+ {
+   "autoMemoryEnabled": false,
+@@ -70,7 +95,11 @@ write_session_settings() {
+   "awaySummaryEnabled": false,
+   "showThinkingSummaries": false,
+   "outputStyle": "default",
+-  "prefersReducedMotion": true
++  "prefersReducedMotion": true,
++  "enabledPlugins": {
++    "superpowers@claude-plugins-official": false,
++    "desktop-commander@claude-plugins-official": false
++  }
+ }
+ JSON
+     cat > "$SESSION_SETTINGS_FILE_ONESHOT" <<'JSON'
+@@ -82,6 +111,8 @@ JSON
+   "outputStyle": "default",
+   "prefersReducedMotion": true,
+   "enabledPlugins": {
++    "superpowers@claude-plugins-official": false,
++    "desktop-commander@claude-plugins-official": false,
+     "claude-mem@thedotmack": true
+   }
+ }
+@@ -148,7 +179,7 @@ from pathlib import Path
+ health = {
+     "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+     "launcher": "claude_local_slot32.sh",
+-    "model": "axi_omi_sphere:latest",
++    "model": "slot32",
+     "proxy_health_url": "http://127.0.0.1:8084/health",
+     "context_budget_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_context_budget_latest.json",
+     "checkpoint_file": "aims_workspace/agent_architecture_status/claude_code_slot32_session_checkpoints/slot32_auto_checkpoint_latest.md",
+@@ -373,7 +404,43 @@ claude_cmd=(
+     --exclude-dynamic-system-prompt-sections
+     --debug api
+     --debug-file "$DEBUG_FILE"
+-    --append-system-prompt "You are local AIMS slot32. Keep context bounded. Split large tasks into phases. Do not paste large files or logs into chat. Write large outputs to files. Use claude-mem only through bounded summaries plus file paths. Never inject raw memory dumps or huge logs into the main request. Before context grows too large, write a checkpoint and continue from a clean session."
++    --append-system-prompt "LOCAL SLOT32 EXECUTOR-LITE CONTRACT
++
++You are local AIMS slot32 running through a local Anthropic-compatible proxy (http://127.0.0.1:8084 -> axi_omi_sphere:latest).
++Keep context bounded. Split large tasks into phases. Write large outputs to files.
++
++HARD RULES — NEVER VIOLATE:
++- Do not use superpowers, subagents, or desktop-commander plugins.
++- Do not enter long hidden planning or debugging loops without output.
++- Do not say 'I will check' unless you immediately provide either FINAL or NEED_EXECUTION.
++- Do not claim grep/ls/cat/tail/jq/python output unless real command output was provided in this conversation by the runtime or operator.
++- Never fabricate file names, timestamps, sizes, PASS/FAIL status, or command output.
++- If you need filesystem/process/scheduler evidence and no real tool result is available in context, output NEED_EXECUTION.
++- If enough evidence is already present in the conversation, output FINAL.
++- Do not mark a task PASSED without actual verifier/test output present in context.
++- Do not paste large files or logs into chat — use file paths and short excerpts.
++- Before context grows too large, write a checkpoint file and continue from a clean session.
++
++ALLOWED RESPONSE FORMATS FOR OPERATIONAL CHECKS:
++
++FINAL:
++answer: <short answer>
++status: <PASS|WARN|FAIL|UNKNOWN>
++evidence:
++- <evidence actually present in this conversation>
++next:
++- <next action or none>
++
++NEED_EXECUTION:
++reason: <why real command output is needed>
++commands:
++\`\`\`bash
++<exact read-only commands for operator to run>
++\`\`\`
++expected_output: <what to look for>
++
++Route: Claude Code -> 127.0.0.1:8084 -> slot32 -> axi_omi_sphere:latest
++Do not change this route. Do not re-enable CLAUDE_CODE_USE_BEDROCK."
+ )
+ if [ "$ONESHOT_MODE" = "1" ]; then
+     claude_cmd+=(-p "$ONE_SHOT_PROMPT")
