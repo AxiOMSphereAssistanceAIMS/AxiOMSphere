@@ -27,6 +27,37 @@ _EXECUTOR_TIMEOUT = 60
 
 _BLOCKED_PATH_RE = re.compile(r"\.\.|[;&|`$><!\*\?{}\[\]\\]")
 
+# Shell metacharacters and dangerous command words that must not appear
+# anywhere in a run_local_executor_task message.
+_BLOCKED_MSG_CHARS_RE = re.compile(r"[;&|`$<>\r\n\\]")
+_BLOCKED_MSG_COMMANDS_RE = re.compile(
+    r"\b(?:rm|sudo|docker|curl|wget|chmod|chown|dd|mkfs|systemctl|aws"
+    r"|codex\s+login|claude\s+login)\b",
+    re.IGNORECASE,
+)
+
+
+def validate_executor_message(full_message: str) -> tuple[bool, str]:
+    """
+    Validate the *full* executor task message text before extracting the path.
+
+    Rejects:
+      - shell metacharacters anywhere in the message (; & | ` $ < > \\)
+      - dangerous command words (rm, sudo, docker, curl, etc.)
+      - \\n or \\r in the message (multi-line injection)
+
+    Returns (ok, reason). Call this before run_local_executor_task.
+    """
+    if _BLOCKED_MSG_CHARS_RE.search(full_message):
+        m = _BLOCKED_MSG_CHARS_RE.search(full_message)
+        return False, f"shell metacharacter in message: {m.group(0)!r}"
+
+    if _BLOCKED_MSG_COMMANDS_RE.search(full_message):
+        m = _BLOCKED_MSG_COMMANDS_RE.search(full_message)
+        return False, f"blocked command word in message: {m.group(0)!r}"
+
+    return True, ""
+
 
 @dataclass
 class LocalExecutorActionResult:

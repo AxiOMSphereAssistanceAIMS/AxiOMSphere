@@ -101,7 +101,35 @@ def process_gateway_message(
         from ops.agents.local_executor_action import (
             run_local_executor_task,
             format_telegram_executor_result,
+            validate_executor_message,
+            LocalExecutorActionResult,
         )
+        # Validate full message text before executing — rejects trailing injection
+        msg_ok, msg_reason = validate_executor_message(text or "")
+        if not msg_ok:
+            blocked = LocalExecutorActionResult(
+                status="FAILED",
+                execution_route="logi_telegram_local_executor",
+                task_json=task_json,
+                stdout="", stderr=msg_reason, exit_code=1,
+                executor_result={},
+                file_created=False, content_verified=False,
+                sha256=None, error_class="COMMAND_BLOCKED",
+            )
+            return {
+                "status": "FAILED",
+                "action_type": "run_local_executor_task",
+                "execution_route": "logi_telegram_local_executor",
+                "task_json": task_json,
+                "file_created": False,
+                "content_verified": False,
+                "sha256": None,
+                "error_class": "COMMAND_BLOCKED",
+                "executor_result": {},
+                "summary": format_telegram_executor_result(blocked),
+                "source": source,
+                "now_utc": ctx.now_utc,
+            }
         exec_result = run_local_executor_task(task_json)
         return {
             "status": exec_result.status,
