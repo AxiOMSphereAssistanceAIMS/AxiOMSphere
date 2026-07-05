@@ -1,0 +1,38 @@
+You are an external code auditor. Review the following task and output ONLY valid JSON.
+
+TASK ID: sample-001
+OBJECTIVE: Add Redis test config resolver
+
+CONSTRAINTS:
+- No hardcoded IPs
+- No host port publishing
+
+FILES CHANGED:
+- ops/scheduler/redis_test_config.py
+
+EVIDENCE FILES:
+- aims_workspace/.../final_status.json
+
+TEST LOGS:
+- pytest: 20 passed
+
+ACTOR OUTPUT:
+Created central Redis resolver. Tests pass.
+
+SELF-CHECK OUTPUT:
+{"status": "PASS", "findings": []}
+
+Output schema (JSON only, no markdown):
+{
+  "status": "PASSED | WARN | BLOCKED",
+  "findings": [
+    {
+      "severity": "INFO | WARN | BLOCKING",
+      "category": "evidence | tests | policy | implementation | safety | learning",
+      "finding": "...",
+      "recommendation": "...",
+      "evidence_reference": "..."
+    }
+  ],
+  "recommended_next_action": "..."
+}

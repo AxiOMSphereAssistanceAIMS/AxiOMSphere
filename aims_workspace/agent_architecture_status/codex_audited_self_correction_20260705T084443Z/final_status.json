@@ -1,0 +1,19 @@
+{
+  "status": "PARTIAL",
+  "task": "CODEX_AUDITED_SELF_CORRECTION",
+  "codex_adapter_exists": true,
+  "codex_cli_available": false,
+  "codex_cli_note": "npx codex v0.2.3 is a static site generator, not LLM auditor. Set AIMS_CODEX_CLI_CMD to wire real auditor.",
+  "codex_unavailable_degrades_safely": true,
+  "model_self_check_exists": true,
+  "audited_correction_loop_exists": true,
+  "learning_event_recorder_exists": true,
+  "codex_blocking_finding_blocks_pass": true,
+  "final_pass_requires_deterministic_verifier": true,
+  "learning_requires_verified_event": true,
+  "agents_suite_passed": true,
+  "agents_suite_count": 396,
+  "new_tests": 31,
+  "partial_reason": "Codex CLI not available as LLM auditor in this environment. All modules implemented and tested with mocked Codex. Real auditor can be wired via AIMS_CODEX_CLI_CMD env var.",
+  "evidence_dir": "aims_workspace/agent_architecture_status/codex_audited_self_correction_20260705T084443Z"
+}

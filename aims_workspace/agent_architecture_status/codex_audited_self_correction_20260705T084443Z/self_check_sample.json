@@ -1,0 +1,16 @@
+{
+  "status": "MISMATCH",
+  "mistake_class": "STATIC_ONLY_OPERATIONAL",
+  "findings": [
+    "Operational/current-status query answered from static config only — live Telegram/scheduler context not loaded",
+    "Possible intent mismatch: user asked about ['сегодня', 'обучение'] but actor output does not mention these topics"
+  ],
+  "evidence_gaps": [
+    "Live operational context not fetched"
+  ],
+  "correction_recommendations": [
+    "Load live operational context before answering today/current/running queries. If unavailable, disclose explicitly.",
+    "Verify actor addressed the actual user request"
+  ],
+  "learning_candidate": true
+}

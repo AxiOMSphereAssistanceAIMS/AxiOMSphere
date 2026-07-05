@@ -1,0 +1,14 @@
+# Codex CLI Discovery
+
+Date: 2026-07-05
+which codex: not in PATH directly
+npx codex --version: 0.2.3 (static site generator — NOT a LLM auditor)
+AIMS_CODEX_CLI_CMD: not set
+Result: NO_USABLE_LLM_AUDITOR_CLI_FOUND
+
+The `codex` available via npx is a static site code generator, not an
+AI code review CLI. The adapter returns SKIPPED when no LLM auditor CLI
+is available. To wire a real auditor, set:
+  AIMS_CODEX_CLI_CMD=claude -p    (Claude Code CLI in non-interactive mode)
+or
+  AIMS_CODEX_CLI_CMD=<any-cli> that accepts a prompt string and returns JSON
