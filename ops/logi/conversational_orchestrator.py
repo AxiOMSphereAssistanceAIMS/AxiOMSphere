@@ -16,8 +16,18 @@ from __future__ import annotations
 
 import os
 import json
+import re
 from pathlib import Path
 from datetime import datetime
+
+# Pattern for approved local executor task messages.
+# Matches: "run_local_executor_task aims_workspace/test_tasks/foo.json"
+# or:      "Run approved local executor task: aims_workspace/test_tasks/foo.json"
+_EXECUTOR_TASK_RE = re.compile(
+    r"(?:run[_\s]+(?:approved[_\s]+)?local[_\s]+executor[_\s]+task|run_local_executor_task)"
+    r"[:\s]+([^\s\n]+\.json)",
+    re.IGNORECASE,
+)
 
 from logi.claude_review_queue import (
     create_review_request_from_logi_artifact,
@@ -27,6 +37,7 @@ from logi.claude_review_queue import (
     apply_review_recommendations,
 )
 from logi.claude_review_transport_policy import is_claude_code_auto_review_enabled
+from logi.syntax_intent_schema import SyntaxIntent
 
 # Phase 1 Skill: context-compression
 try:
@@ -170,6 +181,29 @@ class LogiAgent:
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return str(path)
 
+    def _build_plain_reply(self, text: str, skill_context: str = "") -> str:
+        """Return a short answer for ordinary Telegram chat."""
+        lowered = text.lower().strip()
+
+        readiness_markers = (
+            "ты готов работать",
+            "готов работать",
+            "ready to work",
+            "are you ready",
+            "can you work",
+        )
+        if any(marker in lowered for marker in readiness_markers):
+            return "Да, готов."
+
+        if lowered.endswith("?"):
+            if skill_context:
+                return "Да. Разберу вопрос по контексту и отвечу кратко."
+            return "Да. Разберу вопрос и отвечу кратко."
+
+        if skill_context:
+            return "Принял. Работаю по контексту."
+        return "Принял. Работаю."
+
     def _handle_claude_review_transport(self, text: str) -> str:
         """Create a review request and report queue status without fake acknowledgements."""
         artifact_path = self._ensure_transport_artifact(text)
@@ -229,10 +263,6 @@ class LogiAgent:
                 "- verdict: pending",
             ])
 
-        lines.append("Task-scope execution allowed.")
-        lines.append("Claude Code review required.")
-        lines.append("Final safety gate pending or passed at task end.")
-        lines.append("Exception actions remain blocked_out_of_policy.")
         return "\n".join(lines)
 
     def run(self, user_id: int, text: str, notify_callback=None, skill_context: str = "") -> str:
@@ -265,21 +295,26 @@ class LogiAgent:
         }
         _ = self._compress_context(context_for_compression)
 
-        # Check if continuous work mode is enabled
-        if LOGI_CONTINUOUS_WORK_MODE_ENABLED and self.claude_code_gate:
-            gate_status = self.claude_code_gate.summarize_gate_status()
-            mode_indicator = (
-                f"\n[🟢 CONTINUOUS WORK MODE ACTIVE]\n"
-                f"Planning/analysis work always allowed. Task-scope execution is allowed for in-scope work.\n"
-                f"Claude Code review required; exception actions are blocked_out_of_policy. Gate status: {gate_status['pending_reviews']} pending, "
-                f"{gate_status['approved_for_execution']} approved for execution.\n"
-            )
-        else:
-            mode_indicator = ""
+        # ── Approved local executor route ────────────────────────────────────
+        # Narrow allowlisted path: only python3 aims_local_executor.py <task_json>
+        # under aims_workspace/test_tasks/. No arbitrary shell execution.
+        _executor_match = _EXECUTOR_TASK_RE.search(text or "")
+        if _executor_match:
+            task_json = _executor_match.group(1).strip()
+            try:
+                from ops.agents.local_executor_action import (
+                    run_local_executor_task,
+                    format_telegram_executor_result,
+                )
+                result = run_local_executor_task(task_json)
+                return format_telegram_executor_result(result)
+            except Exception as exc:
+                return f"STATUS: FAILED\nERROR_CLASS: EXECUTOR_IMPORT_ERROR\nDETAIL: {exc}"
+        # ─────────────────────────────────────────────────────────────────────
 
         # Dedicated Claude Code review transport path must create a real queue request.
         if self._is_claude_review_transport_request(text):
-            return mode_indicator + self._handle_claude_review_transport(text)
+            return self._handle_claude_review_transport(text)
 
         # Route Full Stack requests to supervised delivery (if enabled and available)
         if (LOGI_SUPERVISED_FULL_STACK_MODE_ENABLED and
@@ -287,16 +322,12 @@ class LogiAgent:
             try:
                 is_full_stack, response, scenario = self.handle_full_stack(user_id, text, skill_context)
             except Exception as exc:
-                return mode_indicator + (
-                    "Full Stack routing failed explicitly: "
-                    f"{type(exc).__name__}: {exc}"
-                )
+                return "Full Stack routing failed explicitly: " f"{type(exc).__name__}: {exc}"
             if is_full_stack:
-                return mode_indicator + response
+                return response
 
-        # Placeholder response with skill context acknowledgment and mode indicator
-        ctx_indicator = " [with strategy context]" if skill_context else " [no context]"
-        return mode_indicator + f"Logi acknowledged: {text[:100]}{ctx_indicator}"
+        # Plain text should stay short and context-shaped, without service banners.
+        return self._build_plain_reply(text, skill_context=skill_context)
 
     def get_phase1_skill_status(self) -> dict:
         """Get status of Phase 1 deployed skills.

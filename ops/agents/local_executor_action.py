@@ -78,6 +78,14 @@ def _validate_task_path(task_json: str) -> tuple[bool, str]:
     return True, str(resolved)
 
 
+def _first_failed_action_error_class(executor_result: dict) -> str | None:
+    """Extract error_class from the first FAILED action in executor result."""
+    for action in executor_result.get("actions_executed", []):
+        if action.get("status") == "FAILED" and action.get("error_class"):
+            return action["error_class"]
+    return None
+
+
 def run_local_executor_task(task_json: str) -> LocalExecutorActionResult:
     """
     Execute python3 ops/scripts/aims_local_executor.py <task_json>.
@@ -162,6 +170,16 @@ def run_local_executor_task(task_json: str) -> LocalExecutorActionResult:
 
     overall = "PASSED" if proc.returncode == 0 and executor_status == "PASSED" else "FAILED"
 
+    # Propagate specific error_class from executor result when available
+    if overall == "PASSED":
+        specific_error_class = None
+    else:
+        specific_error_class = (
+            executor_result.get("error_class")
+            or _first_failed_action_error_class(executor_result)
+            or "EXECUTOR_FAILED"
+        )
+
     return LocalExecutorActionResult(
         status=overall,
         execution_route="logi_telegram_local_executor",
@@ -173,7 +191,7 @@ def run_local_executor_task(task_json: str) -> LocalExecutorActionResult:
         file_created=file_created,
         content_verified=content_verified,
         sha256=sha256,
-        error_class=None if overall == "PASSED" else "EXECUTOR_FAILED",
+        error_class=specific_error_class,
     )
 
 
