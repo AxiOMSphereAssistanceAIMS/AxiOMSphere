@@ -321,6 +321,46 @@ class LogiAgent:
                 return f"STATUS: FAILED\nERROR_CLASS: EXECUTOR_IMPORT_ERROR\nDETAIL: {exc}"
         # ─────────────────────────────────────────────────────────────────────
 
+        # ── Confirmation flow: CONFIRM <action_id> ────────────────────────────
+        try:
+            from ops.agents.logi_confirmation_flow import (
+                parse_confirm_intent,
+                confirm_action,
+                format_confirmation_response,
+            )
+            confirm_id = parse_confirm_intent(text or "")
+            if confirm_id is not None:
+                result = confirm_action(confirm_id)
+                return format_confirmation_response(result)
+        except Exception as exc:
+            pass  # Never break main bot on confirmation errors
+        # ─────────────────────────────────────────────────────────────────────
+
+        # ── Confirmation flow: healthcheck intent ─────────────────────────────
+        try:
+            from ops.agents.logi_confirmation_flow import (
+                parse_healthcheck_intent,
+                request_healthcheck,
+                format_confirmation_response,
+            )
+            intent = parse_healthcheck_intent(text or "")
+            if intent is not None:
+                if intent.get("blocked"):
+                    return (
+                        "STATUS: BLOCKED\n"
+                        f"ERROR_CLASS: COMMAND_BLOCKED\n"
+                        f"REASON: {intent.get('reason', '')}"
+                    )
+                resp = request_healthcheck(
+                    raw_service=intent["raw_service"],
+                    requested_by=str(user_id),
+                    original_message=text or "",
+                )
+                return format_confirmation_response(resp)
+        except Exception:
+            pass  # Never break main bot on confirmation errors
+        # ─────────────────────────────────────────────────────────────────────
+
         # Dedicated Claude Code review transport path must create a real queue request.
         if self._is_claude_review_transport_request(text):
             return self._handle_claude_review_transport(text)
