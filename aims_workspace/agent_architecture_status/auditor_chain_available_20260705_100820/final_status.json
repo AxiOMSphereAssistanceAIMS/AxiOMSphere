@@ -1,0 +1,10 @@
+{
+  "status": "PASSED",
+  "corrected_classification": "CODEX_AND_BEDROCK_AUDITOR_CHAIN_AVAILABLE",
+  "primary_codex": "AVAILABLE",
+  "secondary_codex": "AVAILABLE",
+  "claude_bedrock": "AVAILABLE",
+  "active_auditor": "primary_codex",
+  "chain_status": "AVAILABLE",
+  "next_required_action": null
+}

@@ -1,0 +1,2 @@
+{"status":"AVAILABLE","binary":"/usr/bin/claude","provider":"bedrock","auth_required":false}
+bedrock exit: 0

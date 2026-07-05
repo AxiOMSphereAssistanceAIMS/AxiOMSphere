@@ -1,0 +1,2 @@
+{"status":"AVAILABLE","binary":"/home/axi_omi_sphere/.nvm/versions/node/v22.22.2/bin/codex","auth_required":false}
+primary exit: 0

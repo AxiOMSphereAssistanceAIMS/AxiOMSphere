@@ -60,17 +60,30 @@ _validate_binary() {
     local bin="$1"
     [ -z "$bin" ] && return 1
     [ -x "$bin" ] || return 1
-    # Run --version or --help; reject if output mentions static site / template
-    local info
-    info="$("$bin" --version 2>/dev/null || "$bin" --help 2>/dev/null || true)"
-    if echo "$info" | grep -qiE "static site|template|render your codex|build.*outDir|skeleton site"; then
-        return 1  # Wrong binary — static site generator
+
+    local version help
+    version="$("$bin" --version 2>/dev/null || true)"
+    help="$("$bin" --help 2>/dev/null || true)"
+
+    # Reject known wrong/non-LLM codex binaries.
+    if printf '%s\n%s\n' "$version" "$help" | grep -qiE "static site|template|render your codex|build.*outDir|skeleton site"; then
+        return 1
     fi
-    # Must mention some LLM / AI / code review capability
-    if echo "$info" | grep -qiE "openai|model|llm|ai|code\s*review|agent|gpt|claude"; then
+
+    # Accept official Codex CLI shape observed on host:
+    # version: codex-cli 0.142.4
+    # help: Codex CLI + exec/review/login/doctor commands.
+    if printf '%s\n' "$version" | grep -qiE '^codex-cli[[:space:]]+[0-9]'; then
+        if printf '%s\n' "$help" | grep -qE '(^|[[:space:]])exec[[:space:]]+Run Codex non-interactively|Run Codex non-interactively'; then
+            return 0
+        fi
+    fi
+
+    # Fallback accept if help clearly identifies Codex CLI with non-interactive exec.
+    if printf '%s\n' "$help" | grep -qi "Codex CLI" && printf '%s\n' "$help" | grep -qi "Run Codex non-interactively"; then
         return 0
     fi
-    # If neither pattern matches, reject (unknown binary)
+
     return 1
 }
 
@@ -89,9 +102,8 @@ if [ "$_MODE" = "preflight" ]; then
 
     # Check auth — run a trivial non-interactive probe with very short timeout
     # Do NOT run any login command
-    _probe_output="$(timeout 15 "$_CODEX_BIN" \
+    _probe_output="$(timeout 30 "$_CODEX_BIN" exec \
         ${AIMS_CODEX_PRIMARY_EXTRA_ARGS:-} \
-        --no-interactive \
         "Output only: {\"status\":\"PREFLIGHT_OK\"}" 2>&1 || true)"
     _probe_exit=$?
 
@@ -128,9 +140,8 @@ if [ "$_MODE" = "audit" ]; then
     _PROMPT="$(cat "$_PROMPT_FILE")"
     _timeout="${AIMS_AUDITOR_TIMEOUT_SECONDS:-300}"
 
-    _output="$(timeout "$_timeout" "$_CODEX_BIN" \
+    _output="$(timeout "$_timeout" "$_CODEX_BIN" exec \
         ${AIMS_CODEX_PRIMARY_EXTRA_ARGS:-} \
-        --no-interactive \
         "$_PROMPT" 2>&1)" || _exit=$?
 
     if [ "${_exit:-0}" -eq 124 ]; then

@@ -15,6 +15,23 @@ _SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=load_auditor_env.sh
 source "$_SCRIPT_DIR/load_auditor_env.sh"
 
+# Translate safe AIMS-scoped Bedrock config into the raw env expected by Claude CLI.
+# Keep this local to the launcher; do not require exporting raw AWS/Claude variables globally.
+export CLAUDE_CODE_USE_BEDROCK="${CLAUDE_CODE_USE_BEDROCK:-1}"
+
+if [ -n "${AIMS_CLAUDE_BEDROCK_AWS_PROFILE:-}" ] && [ -z "${AWS_PROFILE:-}" ]; then
+    export AWS_PROFILE="$AIMS_CLAUDE_BEDROCK_AWS_PROFILE"
+fi
+
+if [ -n "${AIMS_CLAUDE_BEDROCK_AWS_REGION:-}" ]; then
+    export AWS_REGION="${AWS_REGION:-$AIMS_CLAUDE_BEDROCK_AWS_REGION}"
+    export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-$AIMS_CLAUDE_BEDROCK_AWS_REGION}"
+fi
+
+if [ -n "${AIMS_CLAUDE_BEDROCK_MODEL:-}" ] && [ -z "${ANTHROPIC_MODEL:-}" ]; then
+    export ANTHROPIC_MODEL="$AIMS_CLAUDE_BEDROCK_MODEL"
+fi
+
 _MODE=""
 _PROMPT_FILE=""
 

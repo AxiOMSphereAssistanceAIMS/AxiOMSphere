@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # codex_auditor_secondary.sh
-# Secondary Codex LLM auditor launcher (second subscription/profile).
+# Secondary Codex LLM auditor launcher.
 #
-# Same interface as codex_auditor_primary.sh but uses secondary profile/binary.
-# Must not reuse primary profile unless AIMS_CODEX_SECONDARY_* is explicitly set
-# to the same value as primary.
+# Interface:
+#   --preflight        Exit 0 if auditor is available and authenticated.
+#   --audit <file>     Run audit with prompt from <file>, print JSON to stdout.
 #
-# Interface: --preflight | --audit <prompt_file>
-# Exit codes: same as primary (0/10/11/12/13/14/15/16)
+# Exit codes:
+#   0  AVAILABLE / audit success
+#   10 AUTH_REQUIRED
+#   11 WRONG_BINARY (static site generator, wrong codex)
+#   12 RATE_LIMITED
+#   13 NOT_CONFIGURED
+#   14 TIMEOUT
+#   15 AUDIT_FAILED
+#   16 INVALID_USAGE
 #
 # Never initiates login. Never opens browser. Never asks for password.
 
@@ -42,60 +49,75 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-# Secondary uses its own binary/profile env vars
+# Resolve binary
 _CODEX_BIN="${AIMS_CODEX_SECONDARY_BIN:-}"
 if [ -z "$_CODEX_BIN" ]; then
-    # Try secondary home first, then fall back to PATH
-    if [ -n "${AIMS_CODEX_SECONDARY_HOME:-}" ] && [ -x "$AIMS_CODEX_SECONDARY_HOME/codex" ]; then
-        _CODEX_BIN="$AIMS_CODEX_SECONDARY_HOME/codex"
-    else
-        _CODEX_BIN="$(command -v codex 2>/dev/null || true)"
-    fi
+    _CODEX_BIN="$(command -v codex 2>/dev/null || true)"
 fi
 
+# Validate binary is an LLM auditor, not the static site generator
 _validate_binary() {
     local bin="$1"
     [ -z "$bin" ] && return 1
     [ -x "$bin" ] || return 1
-    local info
-    info="$("$bin" --version 2>/dev/null || "$bin" --help 2>/dev/null || true)"
-    if echo "$info" | grep -qiE "static site|template|render your codex|build.*outDir|skeleton site"; then
+
+    local version help
+    version="$("$bin" --version 2>/dev/null || true)"
+    help="$("$bin" --help 2>/dev/null || true)"
+
+    # Reject known wrong/non-LLM codex binaries.
+    if printf '%s\n%s\n' "$version" "$help" | grep -qiE "static site|template|render your codex|build.*outDir|skeleton site"; then
         return 1
     fi
-    if echo "$info" | grep -qiE "openai|model|llm|ai|code\s*review|agent|gpt|claude"; then
+
+    # Accept official Codex CLI shape observed on host:
+    # version: codex-cli 0.142.4
+    # help: Codex CLI + exec/review/login/doctor commands.
+    if printf '%s\n' "$version" | grep -qiE '^codex-cli[[:space:]]+[0-9]'; then
+        if printf '%s\n' "$help" | grep -qE '(^|[[:space:]])exec[[:space:]]+Run Codex non-interactively|Run Codex non-interactively'; then
+            return 0
+        fi
+    fi
+
+    # Fallback accept if help clearly identifies Codex CLI with non-interactive exec.
+    if printf '%s\n' "$help" | grep -qi "Codex CLI" && printf '%s\n' "$help" | grep -qi "Run Codex non-interactively"; then
         return 0
     fi
+
     return 1
 }
 
 if [ "$_MODE" = "preflight" ]; then
+    # Check binary exists
     if [ -z "$_CODEX_BIN" ]; then
-        echo '{"status":"NOT_CONFIGURED","reason":"secondary codex binary not found","auth_required":false}'
+        echo '{"status":"NOT_CONFIGURED","reason":"codex binary not found","auth_required":false}'
         exit 13
     fi
 
+    # Check it is the right binary
     if ! _validate_binary "$_CODEX_BIN"; then
-        echo '{"status":"WRONG_BINARY","reason":"binary is not an LLM auditor","binary":"'"$_CODEX_BIN"'","auth_required":false}'
+        echo '{"status":"WRONG_BINARY","reason":"binary is not an LLM auditor (static site generator or unknown)","binary":"'"$_CODEX_BIN"'","auth_required":false}'
         exit 11
     fi
 
-    _probe_output="$(timeout 15 "$_CODEX_BIN" \
+    # Check auth — run a trivial non-interactive probe with very short timeout
+    # Do NOT run any login command
+    _probe_output="$(timeout 30 "$_CODEX_BIN" exec \
         ${AIMS_CODEX_SECONDARY_EXTRA_ARGS:-} \
-        --no-interactive \
         "Output only: {\"status\":\"PREFLIGHT_OK\"}" 2>&1 || true)"
     _probe_exit=$?
 
     if [ "$_probe_exit" -eq 124 ]; then
-        echo '{"status":"TIMEOUT","reason":"secondary preflight probe timed out","auth_required":false}'
+        echo '{"status":"TIMEOUT","reason":"preflight probe timed out after 15s","auth_required":false}'
         exit 14
     fi
 
     if echo "$_probe_output" | grep -qiE "(login|authenticate|sign.?in|auth.*required|token.*expired|unauthorized|401|403)"; then
-        echo '{"status":"AUTH_REQUIRED","reason":"secondary auditor requires authentication","auth_required":true}'
+        echo '{"status":"AUTH_REQUIRED","reason":"auditor requires authentication","auth_required":true}'
         exit 10
     fi
 
-    echo '{"status":"AVAILABLE","binary":"'"$_CODEX_BIN"'","profile":"secondary","auth_required":false}'
+    echo '{"status":"AVAILABLE","binary":"'"$_CODEX_BIN"'","auth_required":false}'
     exit 0
 fi
 
@@ -106,7 +128,7 @@ if [ "$_MODE" = "audit" ]; then
     fi
 
     if [ -z "$_CODEX_BIN" ]; then
-        echo '{"status":"NOT_CONFIGURED","reason":"secondary codex binary not found"}' >&2
+        echo '{"status":"NOT_CONFIGURED","reason":"codex binary not found"}' >&2
         exit 13
     fi
 
@@ -117,18 +139,18 @@ if [ "$_MODE" = "audit" ]; then
 
     _PROMPT="$(cat "$_PROMPT_FILE")"
     _timeout="${AIMS_AUDITOR_TIMEOUT_SECONDS:-300}"
-    _output="$(timeout "$_timeout" "$_CODEX_BIN" \
+
+    _output="$(timeout "$_timeout" "$_CODEX_BIN" exec \
         ${AIMS_CODEX_SECONDARY_EXTRA_ARGS:-} \
-        --no-interactive \
         "$_PROMPT" 2>&1)" || _exit=$?
 
     if [ "${_exit:-0}" -eq 124 ]; then
-        echo '{"status":"TIMEOUT","reason":"secondary audit timed out"}' >&2
+        echo '{"status":"TIMEOUT","reason":"audit timed out"}' >&2
         exit 14
     fi
 
     if echo "$_output" | grep -qiE "(login|authenticate|sign.?in|auth.*required|token.*expired|unauthorized|401|403)"; then
-        echo '{"status":"AUTH_REQUIRED","reason":"secondary auditor requires authentication"}' >&2
+        echo '{"status":"AUTH_REQUIRED","reason":"auditor requires authentication"}' >&2
         exit 10
     fi
 
