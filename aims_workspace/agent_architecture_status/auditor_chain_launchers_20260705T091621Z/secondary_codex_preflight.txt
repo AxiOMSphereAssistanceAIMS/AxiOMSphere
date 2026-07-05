@@ -1,0 +1,2 @@
+{"status":"WRONG_BINARY","reason":"binary is not an LLM auditor","binary":"/path/to/real/codex","auth_required":false}
+exit:11

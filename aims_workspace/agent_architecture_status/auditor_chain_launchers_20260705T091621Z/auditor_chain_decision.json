@@ -1,0 +1,9 @@
+{
+  "primary_codex_status": "NOT_CONFIGURED",
+  "secondary_codex_status": "NOT_CONFIGURED",
+  "claude_bedrock_status": "AVAILABLE",
+  "auditor_used": "none (no audit run in evidence collection — preflight only)",
+  "interactive_login_attempted": false,
+  "wrong_codex_binary_detected": true,
+  "note": "npx codex v0.2.3 is a static site generator. Primary/secondary return NOT_CONFIGURED. Claude Bedrock returns AVAILABLE (CLAUDE_CODE_USE_BEDROCK=1 + claude binary present)."
+}

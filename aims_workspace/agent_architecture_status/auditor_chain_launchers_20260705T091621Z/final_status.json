@@ -1,0 +1,20 @@
+{
+  "status": "PARTIAL",
+  "task": "AUDITOR_CHAIN_LAUNCHERS",
+  "launchers_exist": true,
+  "env_loader_exists": true,
+  "adapter_uses_chain_priority": true,
+  "primary_codex_status": "NOT_CONFIGURED",
+  "secondary_codex_status": "NOT_CONFIGURED",
+  "claude_bedrock_status": "AVAILABLE",
+  "auditor_used": "none_authenticated_for_real_audit",
+  "wrong_codex_binary_detected": true,
+  "wrong_codex_binary_rejected": true,
+  "auth_required_detected_without_hanging": true,
+  "no_interactive_login_attempted": true,
+  "adapter_never_calls_raw_path_codex": true,
+  "tests_passed": 14,
+  "agents_suite_total": 402,
+  "partial_reason": "Codex primary/secondary not authenticated in this environment. Claude Bedrock launcher returns AVAILABLE but real audit not executed in evidence collection (preflight only). All chain logic tested with mocks.",
+  "evidence_dir": "aims_workspace/agent_architecture_status/auditor_chain_launchers_20260705T091621Z"
+}

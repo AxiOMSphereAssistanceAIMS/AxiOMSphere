@@ -1,29 +1,38 @@
 """
 codex_auditor_adapter.py
 
-External code review channel via Codex CLI (or compatible LLM auditor CLI).
+External code review channel via a three-tier auditor chain:
 
-If Codex CLI is unavailable or not a supported non-interactive LLM auditor,
-returns CodexAuditResult with status=SKIPPED — the deterministic flow continues
-uninterrupted. Never fabricates auditor output.
-
-Detection priority:
-  1. AIMS_CODEX_CLI_CMD env var (explicit path/command override)
-  2. which claude-code / which cc (Claude Code CLI in non-interactive mode)
-  3. which codex (must be OpenAI Codex-style CLI, not static site generator)
+  1. AIMS_CODEX_AUDITOR_CMD         (primary Codex launcher)
+  2. AIMS_CODEX_AUDITOR_FALLBACK_CMD (secondary Codex launcher)
+  3. AIMS_CLAUDE_BEDROCK_AUDITOR_CMD (Claude Code via AWS Bedrock)
   4. SKIPPED — no usable auditor found
 
-Note on this environment: `npx codex` resolves to a static site generator
-(v0.2.3), not an LLM auditor CLI. AIMS_CODEX_CLI_CMD must be set explicitly
-to use a different auditor.
+Each launcher implements:
+  --preflight   → exit 0 if available, non-zero otherwise
+  --audit <file> → run audit, print JSON or text to stdout
+
+Exit code semantics from launchers:
+  0  available / success
+  10 AUTH_REQUIRED
+  11 WRONG_BINARY
+  12 RATE_LIMITED
+  13 NOT_CONFIGURED
+  14 TIMEOUT
+  15 AUDIT_FAILED
+  16 INVALID_USAGE
+
+The adapter never calls raw `codex` from PATH — only configured launchers.
+The adapter never initiates login. Never hangs on browser/device prompts.
+Returns SKIPPED if all launchers fail/unavailable — deterministic flow continues.
 """
 from __future__ import annotations
 
 import json
 import os
-import shlex
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -57,29 +66,96 @@ class CodexAuditResult:
     raw_output_path: str | None = None
     command_used: list[str] = field(default_factory=list)
     auditor_available: bool = False
+    auditor_name: str = "none"            # primary_codex | secondary_codex | claude_bedrock | none
 
 
-_SKIPPED_REASON = (
-    "No usable Codex-style LLM auditor CLI found. "
-    "Set AIMS_CODEX_CLI_CMD to a non-interactive LLM auditor command. "
-    "Deterministic flow continues uninterrupted."
-)
+_SCRIPTS_DIR = Path(__file__).resolve().parents[2] / "ops" / "scripts"
+
+# Launcher exit codes
+_EXIT_AUTH_REQUIRED = 10
+_EXIT_WRONG_BINARY = 11
+_EXIT_RATE_LIMITED = 12
+_EXIT_NOT_CONFIGURED = 13
+_EXIT_TIMEOUT = 14
+_EXIT_AUDIT_FAILED = 15
+_EXIT_INVALID_USAGE = 16
+
+# Exit codes where we should try the next auditor
+_SKIP_TO_NEXT_CODES = {
+    _EXIT_AUTH_REQUIRED, _EXIT_WRONG_BINARY,
+    _EXIT_NOT_CONFIGURED, _EXIT_TIMEOUT,
+    _EXIT_AUDIT_FAILED,
+}
 
 
-def _detect_auditor() -> list[str] | None:
-    """Return the auditor command list, or None if no usable auditor found."""
-    # 1. Explicit override
-    override = os.environ.get("AIMS_CODEX_CLI_CMD", "").strip()
-    if override:
-        parts = shlex.split(override)
-        if parts and shutil.which(parts[0]):
-            return parts
+def _auditor_chain() -> list[tuple[str, str]]:
+    """
+    Return ordered list of (auditor_name, launcher_script_path).
+    Only includes auditors whose launcher script exists on disk.
+    Never falls back to raw PATH `codex`.
+    """
+    candidates = [
+        ("primary_codex",    os.environ.get("AIMS_CODEX_AUDITOR_CMD",
+                             str(_SCRIPTS_DIR / "codex_auditor_primary.sh"))),
+        ("secondary_codex",  os.environ.get("AIMS_CODEX_AUDITOR_FALLBACK_CMD",
+                             str(_SCRIPTS_DIR / "codex_auditor_secondary.sh"))),
+        ("claude_bedrock",   os.environ.get("AIMS_CLAUDE_BEDROCK_AUDITOR_CMD",
+                             str(_SCRIPTS_DIR / "claude_bedrock_auditor.sh"))),
+    ]
+    return [(name, path) for name, path in candidates if Path(path).exists()]
 
-    # 2. claude CLI in non-interactive mode (if available and not slot32 proxy)
-    if shutil.which("claude"):
-        return ["claude", "-p"]
 
-    return None
+def _run_preflight(launcher: str, preflight_timeout: int = 30) -> tuple[bool, str]:
+    """
+    Run --preflight on a launcher. Returns (available, status_string).
+    Never raises.
+    """
+    try:
+        result = subprocess.run(
+            [launcher, "--preflight"],
+            capture_output=True,
+            text=True,
+            timeout=preflight_timeout,
+        )
+        output = (result.stdout or result.stderr or "").strip()
+        if result.returncode == 0:
+            return True, "AVAILABLE"
+        # Parse status from JSON output if possible
+        try:
+            data = json.loads(output)
+            status = data.get("status", f"FAILED_RC_{result.returncode}")
+        except (json.JSONDecodeError, ValueError):
+            status = f"FAILED_RC_{result.returncode}"
+        return False, status
+    except subprocess.TimeoutExpired:
+        return False, "TIMEOUT"
+    except Exception as exc:
+        return False, f"ERROR_{type(exc).__name__}"
+
+
+def _run_audit(
+    launcher: str,
+    prompt_file: str,
+    timeout_seconds: int,
+) -> tuple[int, str]:
+    """
+    Run --audit <prompt_file> on a launcher.
+    Returns (returncode, raw_output_text).
+    Never raises.
+    """
+    try:
+        result = subprocess.run(
+            [launcher, "--audit", prompt_file],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+        raw = result.stdout or result.stderr or ""
+        return result.returncode, raw
+    except subprocess.TimeoutExpired:
+        return _EXIT_TIMEOUT, f"TIMEOUT after {timeout_seconds}s"
+    except Exception as exc:
+        return _EXIT_AUDIT_FAILED, f"EXCEPTION: {exc}"
 
 
 def _build_audit_prompt(request: CodexAuditRequest) -> str:
@@ -130,7 +206,6 @@ Output schema (JSON only, no markdown):
 def _parse_findings(raw: str) -> tuple[str, list[CodexAuditFinding]]:
     """Parse JSON output from auditor. Returns (status, findings)."""
     text = raw.strip()
-    # Strip markdown code fences if present
     if text.startswith("```"):
         lines = text.splitlines()
         text = "\n".join(
@@ -152,12 +227,12 @@ def _parse_findings(raw: str) -> tuple[str, list[CodexAuditFinding]]:
                 evidence_reference=f.get("evidence_reference"),
             ))
         return status, findings
-    except (json.JSONDecodeError, KeyError):
+    except (json.JSONDecodeError, KeyError, ValueError):
         return "WARN", [CodexAuditFinding(
             severity="WARN",
             category="auditor_format",
-            finding="Codex output was not valid JSON",
-            recommendation="Review raw output manually or improve Codex audit prompt",
+            finding="Auditor output was not valid JSON",
+            recommendation="Review raw output manually or improve audit prompt",
             evidence_reference="codex_audit_raw.txt",
         )]
 
@@ -168,111 +243,92 @@ def run_codex_audit(
     timeout_seconds: int = 300,
 ) -> CodexAuditResult:
     """
-    Run a Codex-style CLI audit against the request.
+    Run audit through the three-tier auditor chain.
 
-    Returns SKIPPED if no usable auditor is available.
-    Never fabricates auditor output.
+    Tries each launcher in priority order:
+      1. primary_codex (AIMS_CODEX_AUDITOR_CMD)
+      2. secondary_codex (AIMS_CODEX_AUDITOR_FALLBACK_CMD)
+      3. claude_bedrock (AIMS_CLAUDE_BEDROCK_AUDITOR_CMD)
+
+    Returns SKIPPED if all launchers are unavailable/fail.
+    Never fabricates auditor output. Never initiates login.
     """
     ev = Path(evidence_dir)
     ev.mkdir(parents=True, exist_ok=True)
 
-    # Detect auditor
-    cmd_base = _detect_auditor()
-    if cmd_base is None:
-        # Save discovery note
-        (ev / "codex_cli_discovery.txt").write_text(
-            f"# Codex CLI Discovery — {datetime.now(timezone.utc).isoformat()}\n\n"
-            f"Result: NO_USABLE_AUDITOR_FOUND\n\n"
-            f"AIMS_CODEX_CLI_CMD: {os.environ.get('AIMS_CODEX_CLI_CMD', 'not set')}\n"
-            f"which claude: {shutil.which('claude') or 'not found'}\n"
-            f"Reason: {_SKIPPED_REASON}\n",
-            encoding="utf-8",
-        )
-        return CodexAuditResult(
-            status="SKIPPED",
-            findings=[],
-            raw_output_path=None,
-            command_used=[],
-            auditor_available=False,
-        )
-
-    prompt = _build_audit_prompt(request)
+    # Write audit prompt to a temp file (launchers read it as a file)
+    prompt_text = _build_audit_prompt(request)
     prompt_path = ev / "codex_audit_prompt.txt"
-    prompt_path.write_text(prompt, encoding="utf-8")
+    prompt_path.write_text(prompt_text, encoding="utf-8")
 
-    raw_path = ev / "codex_audit_raw.txt"
-    cmd = cmd_base + [prompt]
+    chain = _auditor_chain()
+    chain_log: list[dict] = []
 
-    # Save discovery
-    (ev / "codex_cli_discovery.txt").write_text(
-        f"# Codex CLI Discovery — {datetime.now(timezone.utc).isoformat()}\n\n"
-        f"Result: AUDITOR_FOUND\n"
-        f"Command: {' '.join(cmd_base)}\n",
-        encoding="utf-8",
-    )
+    # Discovery file
+    discovery_lines = [
+        f"# Auditor Chain Discovery — {datetime.now(timezone.utc).isoformat()}\n",
+        f"Chain candidates: {[name for name, _ in chain]}\n",
+        f"AIMS_CODEX_AUDITOR_CMD: {os.environ.get('AIMS_CODEX_AUDITOR_CMD', 'default')}\n",
+        f"AIMS_CODEX_AUDITOR_FALLBACK_CMD: {os.environ.get('AIMS_CODEX_AUDITOR_FALLBACK_CMD', 'default')}\n",
+        f"AIMS_CLAUDE_BEDROCK_AUDITOR_CMD: {os.environ.get('AIMS_CLAUDE_BEDROCK_AUDITOR_CMD', 'default')}\n",
+    ]
 
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            cwd=str(Path(evidence_dir).parent.parent),
-        )
-        raw_output = result.stdout or result.stderr or ""
+    for auditor_name, launcher_path in chain:
+        # Preflight
+        available, preflight_status = _run_preflight(launcher_path)
+        chain_log.append({
+            "auditor": auditor_name,
+            "launcher": launcher_path,
+            "preflight_status": preflight_status,
+        })
+        discovery_lines.append(f"\n{auditor_name}: preflight={preflight_status}\n")
+
+        if not available:
+            continue
+
+        # Preflight passed — run audit
+        raw_path = ev / f"codex_audit_raw_{auditor_name}.txt"
+        returncode, raw_output = _run_audit(launcher_path, str(prompt_path), timeout_seconds)
         raw_path.write_text(raw_output, encoding="utf-8")
+        chain_log[-1]["audit_rc"] = returncode
+        chain_log[-1]["raw_path"] = str(raw_path)
 
-        if result.returncode != 0 and not raw_output.strip():
-            return CodexAuditResult(
-                status="ERROR",
-                findings=[CodexAuditFinding(
-                    severity="WARN",
-                    category="auditor_format",
-                    finding=f"Auditor exited with code {result.returncode} and no output",
-                    recommendation="Check auditor command and credentials",
-                    evidence_reference=str(raw_path),
-                )],
-                raw_output_path=str(raw_path),
-                command_used=cmd,
-                auditor_available=True,
-            )
+        if returncode not in (0,) and returncode in _SKIP_TO_NEXT_CODES:
+            # This auditor failed — try next
+            chain_log[-1]["outcome"] = "skipped_to_next"
+            continue
 
+        # Parse output
         status, findings = _parse_findings(raw_output)
+        chain_log[-1]["outcome"] = "used"
+
+        (ev / "codex_cli_discovery.txt").write_text(
+            "".join(discovery_lines), encoding="utf-8"
+        )
+
         return CodexAuditResult(
             status=status,
             findings=findings,
             raw_output_path=str(raw_path),
-            command_used=cmd,
+            command_used=[launcher_path, "--audit", str(prompt_path)],
             auditor_available=True,
+            auditor_name=auditor_name,
         )
 
-    except subprocess.TimeoutExpired:
-        raw_path.write_text(f"TIMEOUT after {timeout_seconds}s", encoding="utf-8")
-        return CodexAuditResult(
-            status="ERROR",
-            findings=[CodexAuditFinding(
-                severity="WARN",
-                category="auditor_format",
-                finding=f"Auditor timed out after {timeout_seconds}s",
-                recommendation="Increase timeout or reduce audit scope",
-                evidence_reference=str(raw_path),
-            )],
-            raw_output_path=str(raw_path),
-            command_used=cmd,
-            auditor_available=True,
-        )
-    except Exception as exc:
-        raw_path.write_text(f"EXCEPTION: {exc}", encoding="utf-8")
-        return CodexAuditResult(
-            status="ERROR",
-            findings=[CodexAuditFinding(
-                severity="WARN",
-                category="auditor_format",
-                finding=f"Auditor raised exception: {type(exc).__name__}: {exc}",
-                recommendation="Check auditor availability and configuration",
-                evidence_reference=str(raw_path),
-            )],
-            raw_output_path=str(raw_path),
-            command_used=cmd,
-            auditor_available=True,
-        )
+    # All auditors failed or unavailable
+    (ev / "codex_cli_discovery.txt").write_text(
+        "".join(discovery_lines) + "\nResult: ALL_AUDITORS_UNAVAILABLE\n",
+        encoding="utf-8",
+    )
+    (ev / "auditor_chain_log.json").write_text(
+        json.dumps(chain_log, indent=2), encoding="utf-8"
+    )
+
+    return CodexAuditResult(
+        status="SKIPPED",
+        findings=[],
+        raw_output_path=None,
+        command_used=[],
+        auditor_available=False,
+        auditor_name="none",
+    )

@@ -1,0 +1,11 @@
+{
+  "AIMS_CODEX_AUDITOR_CMD": "not_set",
+  "AIMS_CODEX_AUDITOR_FALLBACK_CMD": "not_set",
+  "AIMS_CLAUDE_BEDROCK_AUDITOR_CMD": "not_set",
+  "AIMS_AUDITOR_TIMEOUT_SECONDS": "not_set",
+  "AIMS_CODEX_PRIMARY_BIN": "not_set",
+  "AIMS_CODEX_SECONDARY_BIN": "not_set",
+  "CLAUDE_CODE_USE_BEDROCK": "1",
+  "AWS_PROFILE": "AdministratorAccess-445100240501",
+  "AWS_REGION": "us-west-2"
+}

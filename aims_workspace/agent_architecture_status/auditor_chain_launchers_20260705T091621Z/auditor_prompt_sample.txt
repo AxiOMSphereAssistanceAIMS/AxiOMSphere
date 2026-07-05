@@ -1,0 +1,28 @@
+You are an external code auditor. Review the following task and output ONLY valid JSON.
+
+TASK ID: sample-audit-001
+OBJECTIVE: Verify Redis test config fix
+
+CONSTRAINTS:
+- No hardcoded IPs
+- No host port publishing
+
+FILES CHANGED:
+- ops/scheduler/redis_test_config.py
+
+EVIDENCE FILES:
+- aims_workspace/.../final_status.json
+
+TEST LOGS:
+- pytest: 20/20 passed
+
+ACTOR OUTPUT:
+Resolver created and deployed.
+
+SELF-CHECK OUTPUT:
+{"status":"PASS"}
+
+Output schema (JSON only, no markdown):
+{
+  "status": "PA
+...[truncated]
