@@ -1,0 +1,13 @@
+{
+  "task_id": "executor_test_03_missing_file_failure",
+  "description": "Attempt to read missing file — expected status FAILED, error_class FILE_NOT_FOUND",
+  "expected_status": "FAILED",
+  "expected_error_class": "FILE_NOT_FOUND",
+  "actions": [
+    {
+      "type": "read_file",
+      "path": "/tmp/aims_missing_executor_test.txt"
+    }
+  ],
+  "verify": {}
+}

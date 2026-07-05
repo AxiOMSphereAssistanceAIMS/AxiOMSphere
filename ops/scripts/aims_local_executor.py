@@ -62,6 +62,7 @@ class ActionResult:
     stdout: str = ""
     stderr: str = ""
     exit_code: int | None = None
+    error_class: str | None = None  # e.g. FILE_NOT_FOUND, COMMAND_BLOCKED
 
 
 @dataclass
@@ -123,7 +124,8 @@ def _do_read_file(action: dict) -> ActionResult:
         content = Path(path).read_text(encoding="utf-8")
         return ActionResult("read_file", "PASSED", f"read {len(content)} bytes", stdout=content)
     except FileNotFoundError:
-        return ActionResult("read_file", "FAILED", f"file not found: {path}")
+        return ActionResult("read_file", "FAILED", f"file not found: {path}",
+                            error_class="FILE_NOT_FOUND")
     except Exception as exc:
         return ActionResult("read_file", "FAILED", f"read error: {exc}")
 
@@ -152,7 +154,8 @@ def _do_command(action: dict) -> ActionResult:
 
     allowed, reason = _check_command_allowed(cmd)
     if not allowed:
-        return ActionResult("command", "FAILED", f"command rejected: {reason}")
+        return ActionResult("command", "FAILED", f"command rejected: {reason}",
+                            error_class="COMMAND_BLOCKED")
 
     try:
         if shell:
@@ -290,7 +293,8 @@ def run_task(task: dict) -> ExecutorResult:
 
         if result.status == "FAILED":
             overall_status = "FAILED"
-            error_class = f"ACTION_FAILED:{action_type}"
+            # Use specific error_class from action if present, else generic
+            error_class = result.error_class or f"ACTION_FAILED:{action_type}"
             # Continue to collect evidence but mark overall as FAILED
 
     # Run verification

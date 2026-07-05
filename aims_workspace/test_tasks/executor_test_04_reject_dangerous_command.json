@@ -1,0 +1,13 @@
+{
+  "task_id": "executor_test_04_reject_dangerous_command",
+  "description": "Attempt rm -rf — expected status FAILED, error_class COMMAND_BLOCKED",
+  "expected_status": "FAILED",
+  "expected_error_class": "COMMAND_BLOCKED",
+  "actions": [
+    {
+      "type": "command",
+      "command": ["rm", "-rf", "/tmp/aims_executor_test_01.txt"]
+    }
+  ],
+  "verify": {}
+}

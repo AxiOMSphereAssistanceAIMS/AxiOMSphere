@@ -1,0 +1,22 @@
+{
+  "task_id": "executor_test_05_workspace_artifact",
+  "description": "Write workspace artifact to aims_workspace/runtime_status/executor_controlled_artifact.txt and verify",
+  "actions": [
+    {
+      "type": "write_file",
+      "path": "aims_workspace/runtime_status/executor_controlled_artifact.txt",
+      "content": "AIMS_EXECUTOR_WORKSPACE_ARTIFACT_PASS\n"
+    },
+    {
+      "type": "sha256_file",
+      "path": "aims_workspace/runtime_status/executor_controlled_artifact.txt"
+    }
+  ],
+  "verify": {
+    "file_exists": "aims_workspace/runtime_status/executor_controlled_artifact.txt",
+    "content_equals": {
+      "path": "aims_workspace/runtime_status/executor_controlled_artifact.txt",
+      "content": "AIMS_EXECUTOR_WORKSPACE_ARTIFACT_PASS"
+    }
+  }
+}
