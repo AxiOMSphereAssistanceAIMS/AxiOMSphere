@@ -54,15 +54,18 @@ def _chain_override(primary_rc=13, secondary_rc=13, bedrock_rc=13,
 # ─── chain ordering ─────────────────────────────────────────────────────────
 
 def test_adapter_tries_primary_first(tmp_path):
-    """Adapter must try primary auditor before secondary or Bedrock."""
+    """Adapter must try primary auditor before secondary or Bedrock (no status file)."""
     preflight_calls = []
 
     def mock_run(cmd, **kwargs):
         preflight_calls.append(cmd)
         return _make_proc(returncode=13, stdout='{"status":"NOT_CONFIGURED"}')
 
-    with patch("subprocess.run", side_effect=mock_run):
-        result = run_codex_audit(_sample_request(), str(tmp_path))
+    # Patch status file to a non-existent path so fast-path is bypassed
+    missing_status = tmp_path / "nonexistent_status.json"
+    with patch("ops.agents.codex_auditor_adapter._STATUS_FILE", missing_status):
+        with patch("subprocess.run", side_effect=mock_run):
+            result = run_codex_audit(_sample_request(), str(tmp_path))
 
     # At least the primary launcher was first
     assert len(preflight_calls) >= 1

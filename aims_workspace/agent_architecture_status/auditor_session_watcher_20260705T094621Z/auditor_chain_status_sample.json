@@ -1,0 +1,35 @@
+{
+  "updated_at_utc": "2026-07-05T09:41:14.363784+00:00",
+  "primary_codex": {
+    "status": "NOT_CONFIGURED",
+    "home": "/home/axi_omi_sphere/.codex-primary",
+    "interactive_login_attempted": false,
+    "preflight_detail": {
+      "status": "NOT_CONFIGURED",
+      "exit": 13
+    }
+  },
+  "secondary_codex": {
+    "status": "NOT_CONFIGURED",
+    "home": "/home/axi_omi_sphere/.codex-secondary",
+    "interactive_login_attempted": false,
+    "preflight_detail": {
+      "status": "NOT_CONFIGURED",
+      "exit": 13
+    }
+  },
+  "claude_bedrock": {
+    "status": "AVAILABLE",
+    "aws_profile": "AdministratorAccess-445100240501",
+    "region": "us-west-2",
+    "interactive_login_attempted": false,
+    "preflight_detail": {
+      "status": "AVAILABLE",
+      "binary": "/usr/bin/claude",
+      "provider": "bedrock",
+      "auth_required": false
+    }
+  },
+  "active_auditor": "claude_bedrock",
+  "chain_status": "DEGRADED"
+}

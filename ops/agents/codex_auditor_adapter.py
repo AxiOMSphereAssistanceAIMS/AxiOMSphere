@@ -70,6 +70,9 @@ class CodexAuditResult:
 
 
 _SCRIPTS_DIR = Path(__file__).resolve().parents[2] / "ops" / "scripts"
+_ROOT = Path(__file__).resolve().parents[2]
+_STATUS_FILE = _ROOT / "aims_workspace" / "runtime_status" / "auditor_chain_status.json"
+_STATUS_STALE_SECONDS = 900  # 15 minutes
 
 # Launcher exit codes
 _EXIT_AUTH_REQUIRED = 10
@@ -86,6 +89,38 @@ _SKIP_TO_NEXT_CODES = {
     _EXIT_NOT_CONFIGURED, _EXIT_TIMEOUT,
     _EXIT_AUDIT_FAILED,
 }
+
+
+def _read_status_file() -> dict | None:
+    """
+    Read auditor chain status JSON if it exists and is fresh (< _STATUS_STALE_SECONDS).
+    Returns None if missing, unreadable, or stale.
+    """
+    import time
+    if not _STATUS_FILE.exists():
+        return None
+    try:
+        age = time.time() - _STATUS_FILE.stat().st_mtime
+        if age > _STATUS_STALE_SECONDS:
+            return None
+        return json.loads(_STATUS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _active_auditor_from_status(status: dict) -> tuple[str, str] | None:
+    """
+    Given a fresh status dict, return (auditor_name, launcher_path) for
+    the active auditor, or None if none available.
+    """
+    active = status.get("active_auditor", "none")
+    if active == "none":
+        return None
+    chain = _auditor_chain()
+    for name, path in chain:
+        if name == active:
+            return name, path
+    return None
 
 
 def _auditor_chain() -> list[tuple[str, str]]:
@@ -263,6 +298,37 @@ def run_codex_audit(
 
     chain = _auditor_chain()
     chain_log: list[dict] = []
+
+    # Optimisation: if a fresh status file exists with an active auditor,
+    # try that auditor first (skip preflight for it) before falling back
+    # to the full chain scan.
+    _cached_status = _read_status_file()
+    _fast_path: tuple[str, str] | None = None
+    if _cached_status:
+        _fast_path = _active_auditor_from_status(_cached_status)
+
+    if _fast_path:
+        fast_name, fast_launcher = _fast_path
+        raw_path = ev / f"codex_audit_raw_{fast_name}.txt"
+        returncode, raw_output = _run_audit(fast_launcher, str(prompt_path), timeout_seconds)
+        raw_path.write_text(raw_output, encoding="utf-8")
+        if returncode == 0 or returncode not in _SKIP_TO_NEXT_CODES:
+            status, findings = _parse_findings(raw_output)
+            (ev / "codex_cli_discovery.txt").write_text(
+                f"# Fast-path from status file: {fast_name}\n"
+                f"active_auditor: {fast_name}\n"
+                f"launcher: {fast_launcher}\n",
+                encoding="utf-8",
+            )
+            return CodexAuditResult(
+                status=status,
+                findings=findings,
+                raw_output_path=str(raw_path),
+                command_used=[fast_launcher, "--audit", str(prompt_path)],
+                auditor_available=True,
+                auditor_name=fast_name,
+            )
+        # Fast-path failed — fall through to full chain scan
 
     # Discovery file
     discovery_lines = [

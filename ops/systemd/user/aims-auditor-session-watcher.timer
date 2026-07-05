@@ -1,0 +1,15 @@
+[Unit]
+Description=AIMS Auditor Session Watcher timer — run at login and every 10 minutes
+Requires=aims-auditor-session-watcher.service
+
+[Timer]
+# Run shortly after user session starts (30 seconds delay)
+OnStartupSec=30s
+# Then every 10 minutes
+OnUnitActiveSec=10min
+# Persist so it runs at next login if missed while system was off
+Persistent=true
+Unit=aims-auditor-session-watcher.service
+
+[Install]
+WantedBy=timers.target

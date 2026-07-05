@@ -1,0 +1,13 @@
+[Unit]
+Description=AIMS Auditor Session Watcher — checks auditor chain availability
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/axi_omi_sphere/aims-workspace/ops/scripts/auditor_session_watcher.sh
+WorkingDirectory=/home/axi_omi_sphere/aims-workspace
+StandardOutput=journal
+StandardError=journal
+# No interactive login — if auth required, service exits cleanly
+SuccessExitStatus=0 1

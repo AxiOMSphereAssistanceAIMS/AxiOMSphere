@@ -1,0 +1,8 @@
+PRIMARY_CODEX:    NOT_CONFIGURED
+SECONDARY_CODEX:  NOT_CONFIGURED
+CLAUDE_BEDROCK:   AVAILABLE
+ACTIVE_AUDITOR:   claude_bedrock
+CHAIN_STATUS:     DEGRADED
+UPDATED_AT:       2026-07-05T09:41:14.363784+00:00
+
+NEXT_REQUIRED_ACTION: claude_bedrock is active (degraded). Restore primary/secondary Codex when convenient.

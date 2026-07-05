@@ -1,0 +1,18 @@
+{
+  "status": "PARTIAL",
+  "task": "AUDITOR_SESSION_WATCHER",
+  "primary_codex_checked": true,
+  "secondary_codex_checked": true,
+  "claude_bedrock_checked": true,
+  "systemd_user_timer_created": true,
+  "interactive_login_attempted": false,
+  "status_json_written": true,
+  "active_auditor": "claude_bedrock",
+  "chain_status": "DEGRADED",
+  "agents_tests_passed": true,
+  "agents_tests_total": 414,
+  "watcher_tests": 12,
+  "adapter_tests": 14,
+  "partial_reason": "Primary and secondary Codex LLM CLI not installed/authenticated. Claude Bedrock is AVAILABLE and active. Full PASSED requires Codex CLI installation and authentication.",
+  "evidence_dir": "aims_workspace/agent_architecture_status/auditor_session_watcher_20260705T094621Z"
+}
