@@ -23,6 +23,15 @@ from ops.agents.m10_safety_adapter import check_m10_safety
 from ops.agents.operational_context_merger import is_operational_question, merge_operational_context
 from ops.agents.telegram_context_ingestor import load_operational_context
 
+# Pattern to detect run_local_executor_task requests.
+# Matches: "run approved local executor task: aims_workspace/test_tasks/foo.json"
+# or "/logi run_local_executor_task aims_workspace/test_tasks/foo.json"
+_EXECUTOR_TASK_RE = re.compile(
+    r"(?:run[_\s]+(?:approved[_\s]+)?local[_\s]+executor[_\s]+task|run_local_executor_task)"
+    r"[:\s]+([^\s\n]+\.json)",
+    re.IGNORECASE,
+)
+
 _ROOT = Path(__file__).resolve().parents[2]
 
 _STATIC_SCHEDULE = {
@@ -84,6 +93,31 @@ def process_gateway_message(
     from_user: str = "",
 ) -> dict:
     ctx = _parse_context(text, source, chat_id, from_user)
+
+    # ── run_local_executor_task: narrow approved execution path ──────────────
+    executor_match = _EXECUTOR_TASK_RE.search(text or "")
+    if executor_match:
+        task_json = executor_match.group(1).strip()
+        from ops.agents.local_executor_action import (
+            run_local_executor_task,
+            format_telegram_executor_result,
+        )
+        exec_result = run_local_executor_task(task_json)
+        return {
+            "status": exec_result.status,
+            "action_type": "run_local_executor_task",
+            "execution_route": exec_result.execution_route,
+            "task_json": task_json,
+            "file_created": exec_result.file_created,
+            "content_verified": exec_result.content_verified,
+            "sha256": exec_result.sha256,
+            "error_class": exec_result.error_class,
+            "executor_result": exec_result.executor_result,
+            "summary": format_telegram_executor_result(exec_result),
+            "source": source,
+            "now_utc": ctx.now_utc,
+        }
+    # ─────────────────────────────────────────────────────────────────────────
 
     # M10 safety check
     safety = check_m10_safety(text, source, intent_confidence=0.85)
