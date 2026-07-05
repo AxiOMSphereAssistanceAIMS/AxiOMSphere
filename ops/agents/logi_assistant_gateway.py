@@ -183,14 +183,28 @@ def process_gateway_message(
             f"[USER QUERY]\n{text}"
         )
 
-    # Delegate to LogiAgent
+    # Delegate to LogiAgent — compatibility helper: tries .chat() then .run()
     logi_response: str | None = None
+    logi_error: str | None = None
+    logi_error_class: str | None = None
     try:
         from ops.logi.conversational_orchestrator import LogiAgent
         agent = LogiAgent()
-        logi_response = agent.chat(enriched_text)
-    except Exception:
-        logi_response = None
+        if callable(getattr(agent, "chat", None)):
+            logi_response = agent.chat(enriched_text)
+        elif callable(getattr(agent, "run", None)):
+            # run(user_id, text) — use chat_id as user_id, falling back to 0
+            try:
+                uid = int(chat_id) if chat_id else 0
+            except (ValueError, TypeError):
+                uid = 0
+            logi_response = agent.run(uid, enriched_text)
+        else:
+            logi_error = "LogiAgent has neither .chat() nor .run()"
+            logi_error_class = "LOGI_AGENT_METHOD_MISSING"
+    except Exception as exc:
+        logi_error = f"{type(exc).__name__}: {exc}"
+        logi_error_class = "LOGI_AGENT_DELEGATION_FAILED"
 
     # Build result
     result: dict = {
@@ -209,11 +223,21 @@ def process_gateway_message(
     if logi_response:
         result["logi_response"] = logi_response
         result["summary"] = logi_response
+    elif logi_error:
+        # Delegation failed — surface the error explicitly, never swallow silently
+        result["status"] = "DEGRADED"
+        result["warning"] = "LogiAgent delegation failed"
+        result["error_class"] = logi_error_class
+        result["error_message"] = logi_error
+        if operational_ctx and operational_ctx.get("answer_summary"):
+            result["summary"] = operational_ctx["answer_summary"]
+        else:
+            result["summary"] = f"LogiAgent delegation failed: {logi_error}"
     elif operational_ctx and operational_ctx.get("answer_summary"):
         result["summary"] = operational_ctx["answer_summary"]
         result["warning"] = "LogiAgent unavailable — returning operational context only"
     else:
-        result["summary"] = "LogiAgent unavailable and no operational context found."
-        result["warning"] = "LogiAgent unavailable"
+        result["summary"] = "No response available."
+        result["warning"] = "LogiAgent produced no output"
 
     return result
