@@ -1,0 +1,13 @@
+{
+  "status": "PARTIAL",
+  "task": "TELEGRAM_OPERATIONAL_CONTEXT_PATCH",
+  "telegram_context_ingestor_exists": true,
+  "operational_context_merger_exists": true,
+  "traini_training_message_parsed": true,
+  "static_schedule_and_telegram_merged": true,
+  "today_training_question_uses_live_context": true,
+  "static_only_answer_discloses_live_context_unavailable": true,
+  "agents_suite_passed": true,
+  "note": "PARTIAL — reads aims_workspace/logs/v2/*.log; live capture from running Telegram bot requires deployment step",
+  "evidence_dir": "aims_workspace/agent_architecture_status/telegram_operational_context_patch_20260705T073210Z"
+}

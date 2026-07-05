@@ -1,0 +1,15 @@
+{
+  "status": "OK",
+  "source": "cli",
+  "language": "ru",
+  "mentioned_area": null,
+  "mentioned_task_id": null,
+  "now_utc": "2026-07-05T07:32:36.805305+00:00",
+  "operational_status": "TRAINING_SCHEDULED_TODAY",
+  "operational_summary": "Static schedule: 00:01 UTC: training_ingest — new documents; 00:30 UTC: training_generate_pairs — 32B (~60–90 min); 02:30 UTC: ft_prepare_chain_run — QLoRA 14B.\nLive Telegram/Argus/Traini context was not available; answer based only on static schedule.",
+  "sources_used": [
+    "static_schedule"
+  ],
+  "summary": "Static schedule: 00:01 UTC: training_ingest — new documents; 00:30 UTC: training_generate_pairs — 32B (~60–90 min); 02:30 UTC: ft_prepare_chain_run — QLoRA 14B.\nLive Telegram/Argus/Traini context was not available; answer based only on static schedule.",
+  "warning": "LogiAgent unavailable — returning operational context only"
+}

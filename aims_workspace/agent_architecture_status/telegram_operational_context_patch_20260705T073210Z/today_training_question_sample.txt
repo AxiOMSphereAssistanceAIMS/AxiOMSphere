@@ -1,0 +1,14 @@
+{
+  "status": "TRAINING_SCHEDULED_TODAY",
+  "confidence": 0.5,
+  "sources_used": [
+    "static_schedule"
+  ],
+  "static_schedule_match": true,
+  "live_signal_match": false,
+  "model_slot": null,
+  "candidate": null,
+  "scheduled_at_utc": null,
+  "answer_summary": "Static schedule: 00:30 UTC: training_generate_pairs — 32B.\nLive Telegram/Argus/Traini context was not available; answer based only on static schedule.",
+  "now_utc": "2026-07-04T18:00:00Z"
+}
