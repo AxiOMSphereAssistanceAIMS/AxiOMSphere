@@ -1,0 +1,22 @@
+{
+  "task_id": "executor_test_01",
+  "description": "Create /tmp/aims_executor_test_01.txt with exact content, verify, compute sha256",
+  "actions": [
+    {
+      "type": "write_file",
+      "path": "/tmp/aims_executor_test_01.txt",
+      "content": "AIMS_EXECUTOR_TEST_01_PASS\n"
+    },
+    {
+      "type": "sha256_file",
+      "path": "/tmp/aims_executor_test_01.txt"
+    }
+  ],
+  "verify": {
+    "file_exists": "/tmp/aims_executor_test_01.txt",
+    "content_equals": {
+      "path": "/tmp/aims_executor_test_01.txt",
+      "content": "AIMS_EXECUTOR_TEST_01_PASS"
+    }
+  }
+}
