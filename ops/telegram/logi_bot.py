@@ -445,14 +445,6 @@ def handle_message(msg: dict) -> None:
         send(chat_id, "\n".join(lines))
         return
 
-    if text.startswith("/") and command:
-        send(
-            chat_id,
-            "Unknown Logi command. Use /help or /skills. "
-            "This was not registered as a project goal.",
-        )
-        return
-
     # ── Logi Assistant Gateway (Логи, / /logi prefix only) ──────────────
     try:
         from ops.telegram.logi_bot_assistant import (
@@ -467,6 +459,14 @@ def handle_message(msg: dict) -> None:
     except Exception:
         pass  # Never break the existing bot
     # ────────────────────────────────────────────────────────────────────
+
+    if text.startswith("/") and command:
+        send(
+            chat_id,
+            "Unknown Logi command. Use /help or /skills. "
+            "This was not registered as a project goal.",
+        )
+        return
 
     if LOGI_CLAUDE_CODE_DEFAULT:
         _handle_claude_code_run(chat_id, user_id, text, route_name=None)
