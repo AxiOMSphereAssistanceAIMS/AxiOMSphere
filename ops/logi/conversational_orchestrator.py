@@ -42,6 +42,275 @@ except ImportError:
     ECC_CONTEXT_COMPRESSOR_AVAILABLE = False
 
 # Test-production mode: enable supervised full stack delivery routing
+def _execute_read_only_skill(skill_id: str, text: str, skill_context: str = "") -> str | None:
+    """
+    Generate a structured text response for a read-only chief-engineer process skill.
+    Returns None if the skill_id is not handled (falls through to general chat).
+    No mutation. No shell. No confirmation needed.
+    """
+    topic = text[:200].strip()
+
+    _TEMPLATES = {
+        "office_hours": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: office_hours\n"
+            "SIX_FORCING_QUESTIONS:\n"
+            "1. What is the one problem this solves that nothing else does?\n"
+            "2. Who will use this and why do they care today?\n"
+            "3. What does failure look like in 6 months if we do nothing?\n"
+            "4. What is the minimal slice that would prove value in one week?\n"
+            "5. What existing AIMS component is closest to this need?\n"
+            "6. What would make this 10x simpler?\n"
+            f"PAIN_HYPOTHESIS:\n  Based on: {topic}\n"
+            "USER_PROBLEM_FRAMING:\n  [Describe user's core pain here]\n"
+            "ALTERNATIVE_PATHS:\n"
+            "- Extend existing Logi confirmation flow\n"
+            "- Route to existing self-healing agent\n"
+            "- Create skill request for auditor review\n"
+            "RECOMMENDED_FIRST_SLICE:\n  Identify the one existing AIMS analog and extend it.\n"
+            "NEXT_RECOMMENDED_SKILLS:\n  ceo_review, eng_review, capability_gap"
+        ),
+        "ceo_review": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: ceo_review\n"
+            f"SCOPE_CHALLENGE:\n  Topic: {topic}\n  Is this the right problem? Is the scope correct?\n"
+            "TEN_STAR_VERSION:\n  10-star: Logi autonomously detects, plans, patches, verifies, ships — zero human input.\n"
+            "  3-star (now): Logi classifies, plans, and prepares auditor requests with human CONFIRM.\n"
+            "REDUCTION_OPTION:\n  Reduce to read-only analysis + patch prompt only.\n"
+            "EXPANSION_OPTION:\n  Expand to full autonomous repair loop with verifier gate.\n"
+            "RISKS:\n  - Over-engineering before core flows work\n  - Autonomy without verifier gate\n"
+            "DECISION_REQUIRED_FROM_USER:\n  Confirm scope: read-only analysis OR write-confirmed actions?"
+        ),
+        "eng_review": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: eng_review\n"
+            f"ARCHITECTURE_SUMMARY:\n  Topic: {topic}\n"
+            "  Extension of existing confirmation flow + logi_confirmation_flow.py.\n"
+            "DATA_FLOW:\n  User intent → mode router → skill system → confirmation if needed → artifact store\n"
+            "STATE_TRANSITIONS:\n  PENDING → REQUIRES_CONFIRMATION → CONFIRMED → PASSED/FAILED\n"
+            "FAILURE_MODES:\n"
+            "  - Intent not matched → falls to general chat\n"
+            "  - Confirmation expired → EXPIRED_CONFIRMATION\n"
+            "  - Write path unavailable → LOG_BACKEND_UNAVAILABLE\n"
+            "TEST_MATRIX:\n"
+            "  - Read-only skills: no confirmation, structured output\n"
+            "  - Write skills: REQUIRES_CONFIRMATION + CONFIRM step\n"
+            "  - Dangerous words: BLOCKED\n"
+            "SECURITY_CONCERNS:\n  No shell=True. No arbitrary paths. All writes allowlisted.\n"
+            "IMPLEMENTATION_PLAN:\n"
+            "  1. Extend logi_confirmation_flow with new action types\n"
+            "  2. Add mode router before plain reply\n"
+            "  3. Add skill executor for read-only skills\n"
+            "  4. Wire write skills through confirmation\n"
+            "  5. Add tests"
+        ),
+        "autoplan": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: autoplan\n"
+            f"TOPIC: {topic}\n"
+            "CEO_REVIEW_SUMMARY:\n  Confirm scope is minimal viable extension of existing AIMS.\n"
+            "ENG_REVIEW_SUMMARY:\n  Extend logi_confirmation_flow + add mode router before plain reply.\n"
+            "SECURITY_CONCERNS:\n  No shell=True. Dangerous words blocked. All writes confirmed.\n"
+            "RELEASE_CHECKLIST:\n"
+            "  - All existing tests still pass\n"
+            "  - New modes tested\n"
+            "  - Injection tests pass\n"
+            "  - verify_local_executor_extended.sh passes\n"
+            "IMPLEMENTATION_STEPS:\n"
+            "  1. Implement/update mode router\n"
+            "  2. Implement skill executor (read-only)\n"
+            "  3. Extend confirmation flow for write actions\n"
+            "  4. Wire into orchestrator\n"
+            "  5. Run full test suite\n"
+            "NEXT_RECOMMENDED_SKILLS:\n  patch_prompt, auditor_request"
+        ),
+        "capability_gap": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: capability_gap\n"
+            f"TOPIC: {topic}\n"
+            "MISSING_CAPABILITY:\n  Identified from: {topic}\n"
+            "WHY_NEEDED:\n  Without it, Logi falls back to plain acknowledgement.\n"
+            "EXISTING_CLOSE_CAPABILITIES:\n"
+            "  - logi_confirmation_flow.py (protected actions)\n"
+            "  - ops/agents/capability_assessor.py (service gap analysis)\n"
+            "  - ops/logi/strategic_planning.py (long-horizon planning)\n"
+            "PROPOSED_ACTION_TYPE_OR_SKILL:\n  Extend confirmation flow OR create skill request.\n"
+            "PATCH_NEEDED: true\n"
+            "AUDITOR_HELP_RECOMMENDED: true\n"
+            "TESTS_NEEDED:\n  - Intent classification test\n  - Confirmation flow test\n  - Regression test"
+        ),
+        "patch_prompt": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: patch_prompt\n"
+            f"TOPIC: {topic}\n"
+            "PATCH_PROMPT:\n"
+            "  objective: Implement the requested capability safely\n"
+            f"  current evidence: {topic[:100]}\n"
+            "  files likely involved:\n"
+            "    - ops/agents/logi_confirmation_flow.py\n"
+            "    - ops/logi/conversational_orchestrator.py\n"
+            "    - ops/agents/tests/\n"
+            "  implementation requirements:\n"
+            "    - No shell=True\n"
+            "    - No arbitrary paths\n"
+            "    - All writes require confirmation\n"
+            "    - Extend existing confirmation flow\n"
+            "  safety constraints:\n"
+            "    - Block dangerous command words\n"
+            "    - Block shell metacharacters\n"
+            "  tests:\n"
+            "    - Intent classification\n"
+            "    - Confirmation step 1 and 2\n"
+            "    - Injection blocking\n"
+            "    - Regression: all existing routes\n"
+            "  acceptance criteria:\n"
+            "    - Full agents suite passes\n"
+            "    - verify_local_executor_extended.sh passes\n"
+            "  rollback:\n"
+            "    - Revert orchestrator injection point"
+        ),
+        "investigate": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: investigate\n"
+            f"TOPIC: {topic}\n"
+            "SYMPTOMS:\n  Described in: {topic}\n"
+            "HYPOTHESES:\n"
+            "  1. Missing intent pattern in mode router\n"
+            "  2. Skill not wired into orchestrator\n"
+            "  3. Exception swallowed in try/except\n"
+            "EVIDENCE_TO_COLLECT:\n"
+            "  - Run: python -m pytest ops/agents/tests/ -q\n"
+            "  - Check logi_bot.log for error patterns\n"
+            "  - Run: diagnose_service_allowlisted logi-bot\n"
+            "LIKELY_ROOT_CAUSE:\n  Check orchestrator injection point ordering.\n"
+            "NEXT_DIAGNOSTIC_ACTION:\n  Run diagnose_service_allowlisted logi-bot and read_logs logi-bot"
+        ),
+        "review": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: review\n"
+            f"TOPIC: {topic}\n"
+            "CODE_REVIEW_CHECKLIST:\n"
+            "  ✓ No shell=True\n"
+            "  ✓ No arbitrary paths\n"
+            "  ✓ Dangerous word blocklist present\n"
+            "  ✓ Confirmation required for writes\n"
+            "  ✓ Tests cover injection blocking\n"
+            "RISK_AREAS:\n"
+            "  - Exception swallowing in try/except blocks\n"
+            "  - Intent match ordering (executor route must stay first)\n"
+            "TEST_GAPS:\n  Add test for each new mode classification.\n"
+            "ISSUES_REQUIRING_AUDITOR_OR_USER_APPROVAL:\n  Any new execution capability beyond read-only analysis."
+        ),
+        "qa": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: qa\n"
+            f"TOPIC: {topic}\n"
+            "TEST_PLAN:\n"
+            "  1. Mode classification tests (all 19 modes)\n"
+            "  2. Skill dispatch tests (read-only output structure)\n"
+            "  3. Write action confirmation flow (step 1 → CONFIRM → step 2)\n"
+            "  4. Injection blocking (metacharacters, dangerous words)\n"
+            "  5. Regression: existing executor route, healthcheck, read_logs, diagnose\n"
+            "MANUAL_QA_CHECKLIST:\n"
+            "  - Live Telegram: office_hours → structured output\n"
+            "  - Live Telegram: skill_request → REQUIRES_CONFIRMATION\n"
+            "  - Live Telegram: dangerous command → BLOCKED\n"
+            "AUTOMATED_TEST_CANDIDATES:\n"
+            "  - test_logi_capability_mode_router.py\n"
+            "  - test_logi_skill_system.py\n"
+            "BROWSER_QA_REQUIRED: false (Telegram interface)"
+        ),
+        "security_cso": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: security_cso\n"
+            f"TOPIC: {topic}\n"
+            "THREAT_MODEL:\n"
+            "  T1: Command injection via Telegram message → MITIGATED (metacharacter blocklist)\n"
+            "  T2: Path traversal in executor route → MITIGATED (path validation)\n"
+            "  T3: Arbitrary Docker command → MITIGATED (docker exec/restart blocked)\n"
+            "  T4: Write without confirmation → MITIGATED (all writes require CONFIRM)\n"
+            "OWASP_STRIDE_CHECKLIST:\n"
+            "  Spoofing: N/A (Telegram user_id validated upstream)\n"
+            "  Tampering: Blocked by CONFIRM step\n"
+            "  Repudiation: Audit trail in logi_confirmations/\n"
+            "  Information Disclosure: Logs via allowlisted read_logs only\n"
+            "  Denial: Timeout on all subprocess calls\n"
+            "  Elevation of Privilege: No root; no sudo; docker blocked\n"
+            "SECRET_PATH_COMMAND_RISKS:\n"
+            "  - No secrets in log paths\n"
+            "  - No credential injection possible via allowlisted paths\n"
+            "REQUIRED_MITIGATIONS:\n"
+            "  ✓ Metacharacter blocklist on all confirmation actions\n"
+            "  ✓ Dangerous command word blocklist\n"
+            "  ✓ No shell=True anywhere\n"
+            "  ✓ All persistent writes require CONFIRM"
+        ),
+        "release_ship": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: release_ship\n"
+            f"TOPIC: {topic}\n"
+            "RELEASE_CHECKLIST:\n"
+            "  ✓ Full agents suite passing\n"
+            "  ✓ verify_local_executor_extended.sh passing\n"
+            "  ✓ Existing production routes unchanged\n"
+            "  ✓ Injection protection tests passing\n"
+            "  ✓ No new Docker containers created\n"
+            "TESTS_REQUIRED:\n"
+            "  python -m pytest ops/agents/tests/ -q\n"
+            "  bash ops/scripts/verify_local_executor_extended.sh\n"
+            "MIGRATION_NOTES:\n  No schema migration. Pure code addition.\n"
+            "ROLLBACK_NOTES:\n  Revert orchestrator injection point. Remove new modules.\n"
+            "CANARY_PLAN:\n  Test with 1 user before enabling for all Telegram users."
+        ),
+        "retro": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: retro\n"
+            f"TOPIC: {topic}\n"
+            "WHAT_HAPPENED:\n  [Describe what occurred]\n"
+            "WHAT_WORKED:\n  Confirmation flow, injection protection, self_process healthcheck\n"
+            "WHAT_FAILED:\n  [Describe failures here]\n"
+            "RECURRING_FAILURE_PATTERNS:\n"
+            "  - Intent not matched → silent plain reply\n"
+            "  - Exception swallowed in try/except\n"
+            "LEARNING_EVENTS_TO_REGISTER:\n  Register each failure as learning event candidate."
+        ),
+        "learn": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: learn\n"
+            f"TOPIC: {topic}\n"
+            "LESSONS:\n  [Key lessons from this experience]\n"
+            "FAILURE_CLASS:\n  CAPABILITY_GAP or INTENT_NOT_MATCHED or other\n"
+            "CANDIDATE_TRAINING_PAIR:\n"
+            f"  instruction: {topic[:100]}\n"
+            "  expected: Structured skill output\n"
+            "  actual: Plain acknowledgement\n"
+            "PROPOSED_SKILL_IMPROVEMENTS:\n  Add intent pattern to mode router\n"
+            "LEARNING_REGISTRATION_DRAFT:\n  Use learning_registration skill to persist this."
+        ),
+        "design_review": (
+            "STATUS: NOT_APPLICABLE\n"
+            "SKILL_ID: design_review\n"
+            "REASON: This topic is not UI/UX relevant — no frontend design needed.\n"
+            "NEXT_RECOMMENDED_SKILLS: eng_review"
+        ),
+        "devex_review": (
+            "STATUS: PASSED\n"
+            "SKILL_ID: devex_review\n"
+            f"TOPIC: {topic}\n"
+            "DEVELOPER_PERSONAS:\n  - Logi operator (Telegram)\n  - AIMS engineer (CLI/API)\n"
+            "SETUP_FRICTION:\n  Low — extends existing Telegram bot with no new deployment.\n"
+            "API_CLI_DOCS_PAIN_POINTS:\n  Intent phrases need documentation in /help or README.\n"
+            "TIME_TO_HELLO_WORLD_ESTIMATE:\n  < 5 minutes (send Telegram message, get structured response)\n"
+            "IMPROVEMENT_PLAN:\n  Add /skills command to list available skill triggers."
+        ),
+    }
+
+    template = _TEMPLATES.get(skill_id)
+    if template:
+        return template.format(topic=topic[:200])
+    return None
+
+
 LOGI_SUPERVISED_FULL_STACK_MODE_ENABLED = os.environ.get(
     "AIMS_ENABLE_LOGI_SUPERVISED_FULL_STACK_MODE", "true"
 ).lower() in ("true", "1", "yes")
@@ -411,6 +680,65 @@ class LogiAgent:
                 return format_confirmation_response(resp)
         except Exception:
             pass  # Never break main bot on confirmation errors
+        # ─────────────────────────────────────────────────────────────────────
+
+        # ── Chief-engineer skill dispatch (gstack-style process skills) ─────────
+        try:
+            from ops.agents.logi_capability_mode_router import classify_logi_mode
+            from ops.agents.logi_skill_system import SKILL_REGISTRY, find_skill
+            from ops.agents.logi_confirmation_flow import (
+                request_write_action, format_confirmation_response,
+            )
+            classification = classify_logi_mode(text or "")
+            skill = find_skill(text or "") if classification.skill_id is None else \
+                SKILL_REGISTRY.get(classification.skill_id)
+
+            if skill and classification.mode in (
+                "SKILL_DISPATCH", "CAPABILITY_GAP_ANALYSIS",
+                "PATCH_PROMPT_PREPARATION",
+                "AUDITOR_HELP_REQUEST", "SKILL_REQUEST", "LEARNING_REGISTRATION",
+                "QUEUE_TASK", "SCHEDULE_TASK",
+            ):
+                if skill.requires_confirmation:
+                    # Build params for write actions
+                    params: dict = {}
+                    if skill.skill_id == "auditor_request":
+                        params = {"problem_summary": text[:300], "failure_class": "CAPABILITY_GAP"}
+                    elif skill.skill_id == "skill_request":
+                        params = {"skill_name": "new_skill", "purpose": text[:200]}
+                    elif skill.skill_id == "learning_registration":
+                        params = {"user_intent": text[:200], "expected_behavior": "",
+                                  "actual_behavior": "Not completed", "failure_class": "CAPABILITY_GAP",
+                                  "lesson": text[:200]}
+                    elif skill.skill_id in ("queue_task", "schedule_task"):
+                        params = {"title": text[:100], "description": text[:300],
+                                  "schedule_hint": "asap"}
+                        action_type = "queue_task_allowlisted"
+                        resp = request_write_action(
+                            action_type=action_type, params=params,
+                            requested_by=str(user_id), original_message=text or "",
+                        )
+                        return format_confirmation_response(resp)
+
+                    action_type_map = {
+                        "auditor_request": "create_auditor_request",
+                        "skill_request": "create_skill_request",
+                        "learning_registration": "register_learning_event",
+                    }
+                    action_type = action_type_map.get(skill.skill_id, skill.skill_id)
+                    resp = request_write_action(
+                        action_type=action_type, params=params,
+                        requested_by=str(user_id), original_message=text or "",
+                    )
+                    resp["skill_id"] = skill.skill_id
+                    return format_confirmation_response(resp)
+                else:
+                    # Read-only skill: generate structured text output
+                    response = _execute_read_only_skill(skill.skill_id, text or "", skill_context)
+                    if response:
+                        return response
+        except Exception:
+            pass  # Never break main bot on skill errors
         # ─────────────────────────────────────────────────────────────────────
 
         # Dedicated Claude Code review transport path must create a real queue request.

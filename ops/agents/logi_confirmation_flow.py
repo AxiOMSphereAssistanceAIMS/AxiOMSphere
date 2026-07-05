@@ -43,6 +43,10 @@ ALLOWLISTED_ACTION_TYPES = {
     "healthcheck_service",
     "read_logs_allowlisted",
     "diagnose_service_allowlisted",
+    "create_auditor_request",
+    "create_skill_request",
+    "register_learning_event",
+    "queue_task_allowlisted",
 }
 
 SERVICE_ALIASES: dict[str, str] = {
@@ -611,6 +615,43 @@ def request_diagnose(raw_service: str, requested_by: str, original_message: str)
     }
 
 
+def request_write_action(
+    action_type: str,
+    params: dict,
+    requested_by: str,
+    original_message: str,
+    service: str = "",
+) -> dict:
+    """
+    Generic step-1 for write actions that need confirmation:
+    create_auditor_request, create_skill_request, register_learning_event, queue_task_allowlisted.
+    """
+    now = _now_utc()
+    expires = (datetime.now(timezone.utc) + timedelta(seconds=_CONFIRMATION_TTL_SECONDS)).isoformat()
+    action_id = _action_id(action_type, params.get("title", "write"), now)
+
+    pending = PendingConfirmation(
+        action_id=action_id,
+        action_type=action_type,
+        service=service or action_type,
+        created_at=now,
+        expires_at=expires,
+        requested_by=requested_by,
+        original_message=original_message,
+        params=params,
+    )
+    _write_json(_pending_path(action_id), pending.to_dict())
+
+    return {
+        "status": "REQUIRES_CONFIRMATION",
+        "action_type": action_type,
+        "action_id": action_id,
+        "expires_at": expires,
+        "reply_with": f"CONFIRM {action_id}",
+        "params_summary": {k: str(v)[:100] for k, v in params.items()},
+    }
+
+
 def parse_confirm_intent(text: str) -> str | None:
     """Return action_id if text is a CONFIRM <id> message, else None."""
     m = _CONFIRM_RE.match(text or "")
@@ -755,6 +796,52 @@ def confirm_action(action_id: str) -> dict:
         result = _run_read_logs(pending.service, lines)
     elif pending.action_type == "diagnose_service_allowlisted":
         result = _run_diagnose(pending.service)
+    elif pending.action_type == "create_auditor_request":
+        from ops.agents.logi_auditor_request import write_auditor_request
+        rec = write_auditor_request(
+            problem_summary=(pending.params or {}).get("problem_summary", ""),
+            original_message=pending.original_message,
+            requested_by=pending.requested_by,
+            failure_class=(pending.params or {}).get("failure_class", "CAPABILITY_GAP"),
+        )
+        result = {"status": "PASSED", "request_id": rec.request_id,
+                  "path": str(_ROOT / "aims_workspace" / "logi_auditor_requests" / "pending" / f"{rec.request_id}.json")}
+    elif pending.action_type == "create_skill_request":
+        from ops.agents.logi_skill_request import write_skill_request
+        rec = write_skill_request(
+            skill_name=(pending.params or {}).get("skill_name", "unnamed_skill"),
+            purpose=(pending.params or {}).get("purpose", ""),
+            original_message=pending.original_message,
+            requested_by=pending.requested_by,
+            auditor_review_required=True,
+        )
+        result = {"status": "PASSED", "request_id": rec.request_id,
+                  "path": str(_ROOT / "aims_workspace" / "logi_skill_requests" / "pending" / f"{rec.request_id}.json"),
+                  "auditor_review_required": True}
+    elif pending.action_type == "register_learning_event":
+        from ops.agents.logi_learning_recorder import write_learning_event_candidate
+        ev = write_learning_event_candidate(
+            source_message=pending.original_message,
+            user_intent=(pending.params or {}).get("user_intent", pending.original_message),
+            expected_behavior=(pending.params or {}).get("expected_behavior", ""),
+            actual_behavior=(pending.params or {}).get("actual_behavior", ""),
+            failure_class=(pending.params or {}).get("failure_class", "CAPABILITY_GAP"),
+            lesson=(pending.params or {}).get("lesson", ""),
+            requested_by=pending.requested_by,
+        )
+        result = {"status": "PASSED", "event_id": ev.event_id,
+                  "path": str(_ROOT / "aims_workspace" / "logi_learning_events" / "pending" / f"{ev.event_id}.json"),
+                  "training_eligible": False}
+    elif pending.action_type == "queue_task_allowlisted":
+        from ops.agents.logi_task_queue import write_pending_task
+        rec = write_pending_task(
+            title=(pending.params or {}).get("title", "unnamed_task"),
+            description=(pending.params or {}).get("description", pending.original_message),
+            requested_by=pending.requested_by,
+            schedule_hint=(pending.params or {}).get("schedule_hint", "asap"),
+        )
+        result = {"status": "PASSED", "task_id": rec.task_id,
+                  "path": str(_ROOT / "aims_workspace" / "logi_tasks" / "pending" / f"{rec.task_id}.json")}
     else:
         result = {"status": "FAILED", "error": "unhandled action type"}
 
@@ -797,6 +884,16 @@ def confirm_action(action_id: str) -> dict:
         resp["recommended_next_action"] = result.get("recommended_next_action", "")
         if not result.get("log_available", True):
             resp["error_class"] = "LOG_BACKEND_UNAVAILABLE"
+    elif pending.action_type in ("create_auditor_request", "create_skill_request",
+                                  "register_learning_event", "queue_task_allowlisted"):
+        if result.get("status") == "PASSED":
+            resp["path"] = result.get("path", "")
+            if "auditor_review_required" in result:
+                resp["auditor_review_required"] = result["auditor_review_required"]
+            if "training_eligible" in result:
+                resp["training_eligible"] = result["training_eligible"]
+        else:
+            resp["error_class"] = result.get("error", "WRITE_FAILED")
     return resp
 
 
@@ -862,6 +959,15 @@ def format_confirmation_response(resp: dict) -> str:
     recommended = resp.get("recommended_next_action")
     if recommended:
         lines.append(f"RECOMMENDED_NEXT_ACTION: {recommended}")
+
+    # Write-action result fields
+    path = resp.get("path")
+    if path and status == "PASSED":
+        lines.append(f"PATH: {path}")
+    if resp.get("auditor_review_required") is True:
+        lines.append("AUDITOR_REVIEW_REQUIRED: true")
+    if resp.get("training_eligible") is False and "training_eligible" in resp:
+        lines.append("TRAINING_ELIGIBLE: false (requires verifier)")
 
     # Log tail — appended last to keep header fields readable
     log_tail = resp.get("log_tail")
