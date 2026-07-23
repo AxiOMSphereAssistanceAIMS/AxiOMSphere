@@ -147,6 +147,38 @@ def resolve_before_msdg(row, queue_type=None):
     4. queue_type is fallback hint only, never forced classification
     5. Standards require ISO/IEC markers in name or content
     """
+    # PHASE 2: Master type → form.* mapping for queue dispatch
+    master_type_to_form = {
+        'technical_standard': 'form.standard',
+        'management_process_standard': 'form.standard',
+        'equipment_specification': 'form.standard',
+        'technical_system_specification': 'form.standard',
+        'service_work_specification': 'form.standard',
+        'equipment_procedure': 'form.procedure',
+        'technical_system_procedure': 'form.procedure',
+        'business_process_procedure': 'form.procedure',
+        'physical_task_work_instruction': 'form.procedure',
+        'administrative_process_instruction': 'form.procedure',
+        'administrative_process_work_instruction': 'form.procedure',
+        'strategy': 'form.strategy',
+        'asset_technical_system_strategy': 'form.strategy',
+        'corporate_functional_strategy': 'form.strategy',
+        'plan': 'form.plan',
+        'asset_equipment_plan': 'form.plan',
+        'system_facility_plan': 'form.plan',
+        'programme_functional_plan': 'form.plan',
+        'test_verification_report': 'form.test_report',
+        'performance_report': 'form.performance_report',
+        'progress_status_report': 'form.progress_report',
+        'technical_asset_system_assessment_report': 'form.assessment_report',
+        'change_request': 'form.change_request',
+        'approval_signoff_record': 'form.approval',
+        'asset_system_register': 'form.register',
+        'checklist': 'form.checklist',
+        'material_service_request': 'form.material_request',
+        'meeting_minutes_decision_record': 'form.meeting_minutes',
+    }
+
     name = str(row.get("document") or row.get("title") or row.get("path") or "")
     parent = str(row.get("directory_context") or Path(str(row.get("path") or "")).parent)
     resolution = triage_resolve(name, parent)
@@ -200,9 +232,11 @@ def resolve_before_msdg(row, queue_type=None):
     # Type is resolved to specific master type
     # Proceed to MSDG even if text_quality is poor (OCR will handle)
     # PHASE 1 RECOVERY: Lowered threshold from 0.6 → 0.45 to enable more documents
+    form_key = master_type_to_form.get(resolved_type, f"form.{resolved_type}")
     if resolution_status == "RESOLVED_TRIAGE_ONLY" or confidence >= 0.45:
         return dict(resolution,
                    master_type_id=resolved_type,
+                   form_key=form_key,
                    content_text_quality_ok=text_quality,
                    resolver_version="type_resolution_gate_v3",
                    gate_status="PASS")
@@ -212,6 +246,7 @@ def resolve_before_msdg(row, queue_type=None):
     if confidence >= 0.4:
         return dict(resolution,
                    master_type_id=resolved_type,
+                   form_key=form_key,
                    content_text_quality_ok=text_quality,
                    resolver_version="type_resolution_gate_v3",
                    gate_status="PASS_LOW_CONFIDENCE",
@@ -320,8 +355,10 @@ def main():
             if not target_type:
                 # Safety check: should not reach here after resolve_before_msdg
                 raise RuntimeError(f"TYPE_RESOLUTION_FAILED: no master_type_id determined (queue_type={typ}, resolver_result={resolution.get('resolution')})")
+            # PHASE 2: Use form_key if available (maps master_type_id → manifest key)
+            process_type = resolution.get("form_key", target_type)
             try:
-                result=process_one(target_type,source,row,out,seq,recovery or web_row)
+                result=process_one(process_type,source,row,out,seq,recovery or web_row)
                 result["type_resolution"] = resolution
                 tledger["processed"]+=1; tledger["committed"]+=1
                 write_json(out/"QUEUE_PROGRESS.json",ledger|{"current":result})
