@@ -234,7 +234,9 @@ def resolve_before_msdg(row, queue_type=None):
     # PHASE 1 RECOVERY: Lowered threshold from 0.6 → 0.45 to enable more documents
     form_key = master_type_to_form.get(resolved_type, f"form.{resolved_type}")
     if resolution_status == "RESOLVED_TRIAGE_ONLY" or confidence >= 0.45:
+        # CRITICAL: Override resolution status to indicate PASS (not held)
         return dict(resolution,
+                   resolution="RESOLVED_BY_GATE",
                    master_type_id=resolved_type,
                    form_key=form_key,
                    content_text_quality_ok=text_quality,
@@ -244,7 +246,9 @@ def resolve_before_msdg(row, queue_type=None):
     # Type exists but low confidence and not fully resolved
     # For specific types (not form.standard), proceed anyway
     if confidence >= 0.4:
+        # Override resolution status for low-confidence pass
         return dict(resolution,
+                   resolution="RESOLVED_BY_GATE_LOW_CONFIDENCE",
                    master_type_id=resolved_type,
                    form_key=form_key,
                    content_text_quality_ok=text_quality,
@@ -322,7 +326,8 @@ def main():
                     resolution = {"resolution": "RESOLVED_EXTERNAL_SOURCE", "master_type_id": typ, "confidence": 1.0}
 
             # If resolver cannot determine type → HOLD for manual review
-            if resolution.get("resolution") == "TYPE_RESOLUTION_HELD":
+            # (RESOLVED_BY_GATE* means document PASSED the gate and proceeds to MSDG)
+            if resolution.get("resolution") in ("TYPE_RESOLUTION_HELD",):
                 hold_reason = resolution.get("hold_reason", "UNKNOWN")
                 held = {"sequence": seq,
                         "document_type": typ,  # Queue key (legacy)
