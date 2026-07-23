@@ -39,8 +39,9 @@ import sys
 import threading
 import time
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import httpx
@@ -137,6 +138,7 @@ from ft_lifecycle import (
     version_paths as ft_version_paths,
 )
 import argus_diagnose as _diag
+from core.runtime_names import QUEUE_PENDING, QUEUE_PROCESSING
 
 # ── Phase 5: EventBus bridge (Logi orchestration) ──────────────────────────────
 try:
@@ -1999,6 +2001,27 @@ def _tasks_fetch(stuck_only: bool) -> list[dict]:
     return []
 
 
+def _tasks_cancel(task_id: str, reason: str = "cancelled by operator") -> tuple[bool, str]:
+    """Cancel a task in task-registry."""
+    try:
+        r = httpx.patch(
+            f"{TASK_REG_URL}/tasks/{task_id}/cancel",
+            json={"reason": reason},
+            timeout=5.0,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            return True, f"task_id={data.get('task_id', task_id)} cancelled"
+        try:
+            body = r.json()
+            return False, body.get("error", f"HTTP {r.status_code}")
+        except Exception:
+            return False, f"HTTP {r.status_code}"
+    except Exception as exc:
+        log.debug("tasks_cancel: %s", exc)
+        return False, str(exc)
+
+
 def _fmt_tasks(rows: list[dict], stuck_only: bool) -> str:
     if not rows:
         return "Нет задач ✅" if stuck_only else "Реестр пуст"
@@ -2062,6 +2085,8 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         "/installed [node] — установленные модели\n"
         "/tasks [stuck] — реестр задач\n"
         "/incidents [N] [svc] — последние инциденты\n\n"
+        "<b>Logi Claude Code</b>\n"
+        "/Logi_CC_start — поднять/проверить Logi CC bridge + slot32 proxy\n\n"
         "<b>Контейнеры</b>\n"
         "/restart &lt;name&gt; — перезапустить контейнер (без пересборки)\n"
         "/rebuild &lt;name&gt; [no_cache] — пересобрать образ + запустить\n"
@@ -2073,11 +2098,17 @@ async def cmd_help(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         "/unload &lt;model&gt; [node] — выгрузить из VRAM\n"
         "/pull &lt;model&gt; [node] — скачать модель\n"
         "/delete &lt;model&gt; [node] — удалить с диска узла\n\n"
+        "<b>Задачи</b>\n"
+        "/task_cancel &lt;task_id&gt; [reason] — отменить task registry task\n\n"
         "<b>FT (fine-tuning)</b>\n"
         "/ft &lt;14|32|70|72&gt; — проверить готовность тюнинга и ночной шаг\n"
         "/ft &lt;14|32|70|72&gt; run — запустить сейчас (после подтверждения кнопкой)\n"
         "/ft log [14|70|72|qwen3] — хвост лога тренировки\n"
         "/ft download — прогресс загрузок HF-моделей\n\n"
+        "<b>Slot14 lifecycle</b>\n"
+        "/slot14 report — eval report + delete request + PC pin decision\n"
+        "/slot14 cleanup — only cleanup request for losers\n"
+        "/slot14 pin — current PC Andrei pin decision\n\n"
         "<b>Eval и деплой</b>\n"
         "/eval &lt;candidate&gt; [baseline] — A/B сравнение по golden_v2 suite\n"
         "/deploy &lt;model&gt; [andrei] — перенести модель с DGX на PC Andrei\n\n"
@@ -2193,6 +2224,153 @@ async def cmd_status(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
 
+def _run_logi_cc_launcher() -> tuple[bool, dict[str, Any] | str]:
+    cmd = [
+        "python3",
+        "/workspace/ops/logi/logi_cc_launcher.py",
+        "start",
+        "--smoke",
+        "--json",
+    ]
+    try:
+        completed = subprocess.run(
+            cmd,
+            cwd="/workspace",
+            text=True,
+            capture_output=True,
+            timeout=240,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return False, "launcher timeout after 240s"
+    except Exception as exc:
+        return False, repr(exc)
+
+    raw = (completed.stdout or "").strip()
+    if not raw:
+        raw = (completed.stderr or "").strip()
+    try:
+        payload = json.loads(raw)
+    except Exception:
+        return False, raw[-3000:] or f"launcher rc={completed.returncode}"
+    return completed.returncode == 0 and bool(payload.get("ok")), payload
+
+
+def _fmt_logi_cc_launcher(payload: dict[str, Any]) -> str:
+    status = payload.get("status") or {}
+    slot32 = status.get("slot32") or {}
+    bridge = status.get("bridge") or {}
+    logi = status.get("logi") or {}
+    smoke = status.get("smoke") or {}
+    smoke_payload = smoke.get("payload") if isinstance(smoke, dict) else {}
+    answer = ""
+    backend = ""
+    if isinstance(smoke_payload, dict):
+        answer = str(smoke_payload.get("answer") or "")
+        backend = str(smoke_payload.get("backend") or smoke_payload.get("backend_mode") or "")
+
+    def _container_line(name: str, item: dict[str, Any]) -> str:
+        container = item.get("container") or {}
+        running = container.get("running")
+        policy = container.get("restart_policy") or "n/a"
+        return f"{name}: ok={bool(item.get('ok', running))} running={running} restart={policy}"
+
+    lines = [
+        "<b>Logi CC start</b>",
+        f"overall: <code>{_h(str(payload.get('ok')))}</code>",
+        _container_line("slot32", slot32),
+        _container_line("bridge", bridge),
+        _container_line("logi", logi),
+        f"slot32_url: <code>{_h(str(slot32.get('url')))}</code>",
+        f"bridge_url: <code>{_h(str(bridge.get('url')))}</code>",
+    ]
+    if answer:
+        lines.append(f"smoke: <code>{_h(answer[:160])}</code>")
+    if backend:
+        lines.append(f"backend: <code>{_h(backend)}</code>")
+    if payload.get("artifact"):
+        lines.append(f"artifact: <code>{_h(str(payload.get('artifact')))}</code>")
+    return "\n".join(lines)
+
+
+async def cmd_logi_cc_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not _allowed(update):
+        return
+    await update.message.chat.send_action(ChatAction.TYPING)
+    ok, result = await asyncio.to_thread(_run_logi_cc_launcher)
+    if isinstance(result, dict):
+        text = _fmt_logi_cc_launcher(result)
+    else:
+        text = f"<b>Logi CC start</b>\nlauncher_failed: <code>{_h(str(result)[-2500:])}</code>"
+    if not ok and isinstance(result, dict):
+        text += "\nstatus: <code>launcher returned non-ok</code>"
+    await update.message.reply_text(text[:3600], parse_mode=ParseMode.HTML)
+
+
+def _run_repairman_audit_autonomy_launcher() -> tuple[bool, dict[str, Any] | str]:
+    cmd = [
+        "bash",
+        "/workspace/ops/scripts/Repairman_Audit_Autonomy_start.sh",
+    ]
+    try:
+        completed = subprocess.run(
+            cmd,
+            cwd="/workspace",
+            text=True,
+            capture_output=True,
+            timeout=540,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return False, "repairman audit autonomy launcher timeout after 540s"
+    except Exception as exc:
+        return False, repr(exc)
+
+    raw = (completed.stdout or "").strip()
+    if not raw:
+        raw = (completed.stderr or "").strip()
+    try:
+        payload = json.loads(raw)
+    except Exception:
+        return False, raw[-3000:] or f"launcher rc={completed.returncode}"
+    return completed.returncode == 0 and bool(payload.get("ok")), payload
+
+
+def _fmt_repairman_audit_autonomy_launcher(payload: dict[str, Any]) -> str:
+    evidence = payload.get("evidence_paths") if isinstance(payload.get("evidence_paths"), dict) else {}
+    lines = [
+        "<b>Repairman Audit Autonomy</b>",
+        f"overall: <code>{_h(str(payload.get('ok')))}</code>",
+        f"autonomy_level: <code>{_h(str(payload.get('autonomy_level')))}</code>",
+        f"apply_mode: <code>{_h(str(payload.get('apply_mode')))}</code>",
+        f"auditor_backend: <code>{_h(str(payload.get('auditor_backend')))}</code>",
+        f"real_bedrock_enabled: <code>{_h(str(payload.get('real_bedrock_enabled')))}</code>",
+        f"logi_cc_bridge_ok: <code>{_h(str(payload.get('logi_cc_bridge_ok')))}</code>",
+        f"bedrock_auditor_smoke_ok: <code>{_h(str(payload.get('bedrock_auditor_smoke_ok')))}</code>",
+        f"repairman_smoke_ok: <code>{_h(str(payload.get('repairman_audit_window_smoke_ok')))}</code>",
+        f"ready_for_auto_safe_apply: <code>{_h(str(payload.get('ready_for_auto_safe_apply')))}</code>",
+    ]
+    if payload.get("bedrock_unavailable_blocks_apply"):
+        lines.append("bedrock: <code>unavailable blocks main-tree auto-apply</code>")
+    if evidence.get("report_json"):
+        lines.append(f"evidence: <code>{_h(str(evidence.get('report_json')))}</code>")
+    return "\n".join(lines)
+
+
+async def cmd_repairman_audit_autonomy_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not _allowed(update):
+        return
+    await update.message.chat.send_action(ChatAction.TYPING)
+    ok, result = await asyncio.to_thread(_run_repairman_audit_autonomy_launcher)
+    if isinstance(result, dict):
+        text = _fmt_repairman_audit_autonomy_launcher(result)
+    else:
+        text = f"<b>Repairman Audit Autonomy</b>\nlauncher_failed: <code>{_h(str(result)[-2500:])}</code>"
+    if not ok and isinstance(result, dict):
+        text += "\nstatus: <code>not ready for auto-safe apply</code>"
+    await update.message.reply_text(text[:3600], parse_mode=ParseMode.HTML)
+
+
 async def cmd_models(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if not _allowed(update):
         return
@@ -2209,6 +2387,18 @@ async def cmd_models(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         text = await asyncio.to_thread(tmp_mgr.full_status_summary)
     else:
         text = await asyncio.to_thread(ollama_mgr.full_status_summary)
+
+    # Check if any node is unreachable and publish escalation event
+    if "❌" in text and ("DGX" in text or "OLLAMA" in text):
+        # Node unreachable — trigger full-stack repair workflow
+        await _on_monitor_event(MonitorEvent(
+            service="argus_models",
+            event_type="model_missing",
+            message=f"/models: Ollama node unreachable — requesting full-stack repair. Output: {text[:200]}",
+            log_snippet=text[:500],
+            severity="critical",
+        ))
+
     await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
 
@@ -2273,8 +2463,14 @@ async def cmd_rebuild(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     ok, msg = await asyncio.to_thread(docker_mgr.rebuild, svc, no_cache)
     await asyncio.to_thread(storage.log_action, svc, "rebuild", "ok" if ok else msg[:100])
     icon = "✅" if ok else "❌"
+    # On success show only the last 6 lines (container up/recreate lines).
+    # On failure show more context for debugging.
+    if ok:
+        tail = "\n".join(msg.splitlines()[-6:])
+    else:
+        tail = msg[-800:]
     await update.message.reply_text(
-        f"{icon} rebuild <code>{_h(svc)}</code>\n<pre>{_h(msg[-800:])}</pre>",
+        f"{icon} rebuild <code>{_h(svc)}</code>\n<pre>{_h(tail)}</pre>",
         parse_mode=ParseMode.HTML,
     )
 
@@ -2466,6 +2662,26 @@ async def cmd_tasks(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     header = "⏳ Зависшие задачи" if stuck_only else "📋 Реестр задач (последние 25)"
     await update.message.reply_text(
         f"<b>{header}</b>\n<pre>{_h(text)}</pre>",
+        parse_mode=ParseMode.HTML,
+    )
+
+
+async def cmd_task_cancel(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    if not _allowed(update):
+        return
+    if not ctx.args:
+        await update.message.reply_text(
+            "Использование: /task_cancel <task_id> [reason]",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+    task_id = ctx.args[0].strip()
+    reason = " ".join(ctx.args[1:]).strip() or "cancelled by operator"
+    await update.message.chat.send_action(ChatAction.TYPING)
+    ok, msg = await asyncio.to_thread(_tasks_cancel, task_id, reason)
+    icon = "✅" if ok else "❌"
+    await update.message.reply_text(
+        f"{icon} cancel <code>{_h(task_id)}</code>\n<pre>{_h(msg[:400])}</pre>",
         parse_mode=ParseMode.HTML,
     )
 
@@ -2984,17 +3200,8 @@ async def cmd_train(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     if sub == "night":
-        # Trigger tonight's training pipeline immediately
-        steps_to_run = ["training_ingest_new_docs", "training_generate_pairs", "training_dataset_status"]
-        fired = []
-        for sid in steps_to_run:
-            step = next((s for s in orchestrator._steps if s.id == sid), None)
-            if step:
-                ok, detail = await asyncio.to_thread(orchestrator._execute_action, step)
-                fired.append(f"{'✅' if ok else '❌'} {sid}")
-        result = "\n".join(fired) or "Шаги не найдены"
         await update.message.reply_text(
-            f"▶️ <b>Ночной pipeline запущен сейчас</b>\n\n{result}",
+            _slot32_night_autopilot_status_reply(),
             parse_mode=ParseMode.HTML,
         )
         return
@@ -3273,6 +3480,60 @@ async def cmd_eval(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
     if log:
         body += f"<pre>{_h(log[-1500:])}</pre>"
     await update.message.reply_text(body, parse_mode=ParseMode.HTML)
+
+
+# ── /slot14 lifecycle ────────────────────────────────────────────────────────
+
+async def cmd_slot14(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
+    """Slot14 multi-model report / cleanup request / pin decision."""
+    if not _allowed(update):
+        return
+
+    args = [a.strip().lower() for a in (ctx.args or []) if a.strip()]
+    mode = args[0] if args else "report"
+    if mode not in {"report", "cleanup", "pin", "emit"}:
+        await update.message.reply_text(
+            "Использование:\n"
+            "  /slot14 report   — full report + cleanup request + pin decision\n"
+            "  /slot14 cleanup  — only cleanup request for losers\n"
+            "  /slot14 pin      — only pin decision",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    await update.message.chat.send_action(ChatAction.TYPING)
+
+    def _run() -> tuple[bool, str]:
+        proc = subprocess.run(
+            [
+                "python3",
+                "ops/traini/slot14_lifecycle_report.py",
+                "emit" if mode in {"report", "emit"} else mode,
+                "--pc-url",
+                os.environ.get("PC_ANDREY_OLLAMA_URL", "http://10.77.77.2:11434"),
+            ],
+            cwd="/workspace",
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        stdout = (proc.stdout or "").strip()
+        stderr = (proc.stderr or "").strip()
+        combined = "\n".join(filter(None, [stdout, stderr])).strip()
+        return proc.returncode == 0, combined or "(no output)"
+
+    ok, body = await asyncio.to_thread(_run)
+    icon = "✅" if ok else "❌"
+    title = {
+        "report": "Slot14 report",
+        "emit": "Slot14 report",
+        "cleanup": "Slot14 cleanup request",
+        "pin": "Slot14 pin decision",
+    }.get(mode, "Slot14 report")
+    await update.message.reply_text(
+        f"{icon} <b>{title}</b>\n<pre>{_h(body[:3500])}</pre>",
+        parse_mode=ParseMode.HTML,
+    )
 
 
 # ── /deploy ───────────────────────────────────────────────────────────────────
@@ -4199,6 +4460,80 @@ def _detect_ft_version_query(user_text: str) -> bool:
     return True
 
 
+def _detect_slot32_night_training_query(user_text: str) -> bool:
+    """Detect natural-language requests about the canonical slot32 night Traini run."""
+    t = (user_text or "").lower()
+    has_training_context = re.search(r"(traini|трейни|training|train|тренинг|обучен|ft|fine[\s\-]*tun|qwen32|qwen3|slot\s*32|слот\s*32|32b)", t) is not None
+    has_night_or_schedule = re.search(r"(ноч|night|cron|schedule|scheduler|график|расписан|заплан|автомат)", t) is not None
+    has_status_or_start = re.search(r"(статус|готов|провер|запуск|старт|run|start|ready|будет|пойдет|пройдет)", t) is not None
+    return bool(has_training_context and has_night_or_schedule and has_status_or_start)
+
+
+def _slot32_night_autopilot_status_reply() -> str:
+    """Grounded status for the canonical slot32 Traini night pipeline. No LLM."""
+    try:
+        from ops.ft.traini.autopilot import traini_autopilot as ta  # noqa: PLC0415
+        profile = ta.load_slot_profile("32")
+        dataset = ta._resolve_dataset(profile)
+        allowed_now = ta.night_window_allows(profile)
+        resume_root = ta._latest_post_merge_resume_ready_run(profile)
+        workspace = Path(os.environ.get("AIMS_WORKSPACE", "/workspace"))
+        cron = subprocess.run(
+            ["bash", "-lc", "crontab -l 2>/dev/null | grep -F 'night-tuning --slot 32' || true"],
+            cwd=str(workspace),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=10,
+        )
+        cron_line = (cron.stdout or "").strip()
+        schedule_path = workspace / "ops" / "schedule" / "registry" / "active_schedule.json"
+        schedule_entry = ""
+        if schedule_path.exists():
+            try:
+                schedule = json.loads(schedule_path.read_text(encoding="utf-8"))
+                for task in schedule.get("tasks", []) or []:
+                    if "night-tuning --slot 32" in str(task.get("entrypoint", "")):
+                        schedule_entry = (
+                            f"{task.get('task_id', 'slot32-night')} "
+                            f"status={task.get('status', '-')} "
+                            f"start={task.get('start_time_scheduled', '-')}"
+                        )
+                        break
+            except Exception:
+                schedule_entry = "schedule_registry_unreadable"
+        next_action = "resume_after_merge" if resume_root else "new_training_sequence"
+        lines = [
+            "📌 Slot32 Traini night run status (факты, без LLM):",
+            f"- canonical command: python3 -m ops.ft.traini.autopilot.traini_autopilot night-tuning --slot 32 --telegram",
+            f"- night window: {profile.night_window_start}-{profile.night_window_end} {profile.night_window_timezone}",
+            f"- allowed now: {'yes' if allowed_now else 'no'}",
+            f"- dataset: {dataset.get('approved_pairs', 0)}/{profile.minimum_approved_pairs} approved pairs",
+            f"- candidate: {profile.candidate_model}",
+            f"- next mode: {next_action}",
+        ]
+        if resume_root:
+            lines.append(f"- resume run: {resume_root}")
+        if cron_line:
+            lines.append("- host/user cron: visible and configured")
+            lines.append(f"- cron line: {cron_line[:260]}")
+        else:
+            lines.append("- host/user cron: not visible from this container runtime")
+        if schedule_entry:
+            lines.append(f"- schedule registry: {schedule_entry}")
+        else:
+            lines.append("- schedule registry: no slot32 night-tuning entry found")
+        if not allowed_now:
+            lines.append("Ночной блокиратор активен: heavy run не стартует днем без AIMS_TRAINI_ALLOW_DAY_TRAINING=1.")
+        lines.append("Источник: Traini autopilot profile, dataset resolver, cron, local artifacts.")
+        return "\n".join(lines)
+    except Exception as exc:
+        return (
+            "❌ Slot32 Traini night status unavailable from this ARGUS runtime.\n"
+            f"Reason: {type(exc).__name__}: {str(exc)[:400]}"
+        )
+
+
 def _detect_ft_family(user_text: str) -> str:
     """Best-effort family detection from free text; default 14."""
     t = (user_text or "").lower()
@@ -4834,6 +5169,9 @@ async def _on_chat_message_locked(
     if _detect_ft_version_query(text):
         await msg.reply_text(_ft_version_factual_reply(text))
         return
+    if _detect_slot32_night_training_query(text):
+        await msg.reply_text(await asyncio.to_thread(_slot32_night_autopilot_status_reply))
+        return
 
     if LLM_BACKEND == "claude_code" and (_looks_like_write_request(text) or semantic_intent == "code_write"):
         if not _is_owner(update):
@@ -4927,7 +5265,7 @@ async def _on_chat_message_locked(
             "dgx": cmd_dgx, "wake": cmd_wake, "sleep": cmd_sleep,
             "digest": cmd_digest, "plan": cmd_plan,
             "ft_log": cmd_ft_log, "ft_download": cmd_ft_download,
-            "eval": cmd_eval, "deploy": cmd_deploy,
+            "eval": cmd_eval, "deploy": cmd_deploy, "slot14": cmd_slot14,
         }
         _handler = _cmd_dispatch.get(_intent_cmd)
         if _handler:
@@ -5303,15 +5641,8 @@ async def on_callback(update: Update, ctx: ContextTypes.DEFAULT_TYPE) -> None:
 
     if data == "train_night":
         await query.edit_message_reply_markup(None)
-        steps_to_run = ["training_ingest_new_docs", "training_generate_pairs", "training_dataset_status"]
-        fired = []
-        for sid in steps_to_run:
-            step = next((s for s in orchestrator._steps if s.id == sid), None)
-            if step:
-                ok, detail = await asyncio.to_thread(orchestrator._execute_action, step)
-                fired.append(f"{'✅' if ok else '❌'} {sid}")
         await query.message.reply_text(
-            f"▶️ <b>Pipeline запущен</b>\n\n" + "\n".join(fired),
+            _slot32_night_autopilot_status_reply(),
             parse_mode=ParseMode.HTML,
         )
         return
@@ -5460,6 +5791,8 @@ async def _post_init(app: Application) -> None:
         BotCommand("production", "Production mode (autoheal, no Telegram alerts)"),
         BotCommand("tuningmode", "Tuning mode (no starts, no Telegram alerts)"),
         BotCommand("status",    "Статус контейнеров"),
+        BotCommand("logi_cc_start", "Start Logi Claude Code bridge"),
+        BotCommand("repairman_audit_autonomy_start", "Start Repairman audit-window autonomy"),
         BotCommand("models",    "VRAM Ollama"),
         BotCommand("installed", "Установленные модели"),
         BotCommand("logs",      "Логи сервиса"),
@@ -5488,6 +5821,8 @@ async def _post_init(app: Application) -> None:
         BotCommand("digest",    "Утренний дайджест прямо сейчас"),
         BotCommand("train",     "Обучение моделей: статус датасета / запуск"),
         BotCommand("ft",        "FT skill: 14/32/70/72 (check + run now)"),
+        BotCommand("slot14",    "Slot14 eval report / cleanup request / pin decision"),
+        BotCommand("task_cancel", "Отменить task registry задачу"),
         BotCommand("code",      "Контроль кода: status/review"),
         BotCommand("help",      "Справка"),
     ])
@@ -5522,6 +5857,8 @@ def main() -> None:
     app.add_handler(CommandHandler("production", cmd_production))
     app.add_handler(CommandHandler("tuningmode", cmd_tuningmode))
     app.add_handler(CommandHandler("status",    cmd_status))
+    app.add_handler(CommandHandler("logi_cc_start", cmd_logi_cc_start))
+    app.add_handler(CommandHandler("repairman_audit_autonomy_start", cmd_repairman_audit_autonomy_start))
     app.add_handler(CommandHandler("models",    cmd_models))
     app.add_handler(CommandHandler("installed", cmd_installed))
     app.add_handler(CommandHandler("logs",      cmd_logs))
@@ -5534,6 +5871,7 @@ def main() -> None:
     app.add_handler(CommandHandler("pull",      cmd_pull))
     app.add_handler(CommandHandler("delete",    cmd_delete))
     app.add_handler(CommandHandler("tasks",     cmd_tasks))
+    app.add_handler(CommandHandler("task_cancel", cmd_task_cancel))
     app.add_handler(CommandHandler("scheduler", cmd_scheduler))
     app.add_handler(CommandHandler("incidents", cmd_incidents))
     app.add_handler(CommandHandler("diagnose",  cmd_diagnose))
@@ -5552,8 +5890,11 @@ def main() -> None:
     app.add_handler(CommandHandler("train",     cmd_train))
     app.add_handler(CommandHandler("ft",        cmd_ft))
     app.add_handler(CommandHandler("eval",      cmd_eval))
+    app.add_handler(CommandHandler("slot14",    cmd_slot14))
     app.add_handler(CommandHandler("deploy",    cmd_deploy))
     app.add_handler(CommandHandler("code",      cmd_code))
+    app.add_handler(MessageHandler(filters.Regex(r"^/(?:Logi_CC_start|logi_cc_start)(?:@\w+)?(?:\s|$)"), cmd_logi_cc_start))
+    app.add_handler(MessageHandler(filters.Regex(r"^/(?:Repairman_Audit_Autonomy_start|repairman_audit_autonomy_start)(?:@\w+)?(?:\s|$)"), cmd_repairman_audit_autonomy_start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_chat_message))
     app.add_handler(CallbackQueryHandler(on_callback))
     app.add_error_handler(_error_handler)
