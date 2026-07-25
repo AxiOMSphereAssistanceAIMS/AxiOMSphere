@@ -213,3 +213,41 @@ def test_judge_disagreement_demotes_completed(sandbox):
         notify=lambda t: True,
         judge=lambda *a: {"solved": False, "confidence": 0.8, "reason": "evidence weak"})
     assert result.outcome == "needs_approval"
+
+
+def test_zero_evidence_never_completes(sandbox):
+    _seed_task(sandbox)
+    env = qp.collect_problems()[0]
+
+    def llm_no_verify(e):
+        a = _analysis()
+        a["verification_commands"] = []
+        return a
+
+    result = qp.process_case(
+        env, llm=llm_no_verify,
+        notify=lambda t: True, judge=lambda *a: {"solved": True})
+    assert result.outcome == "needs_approval"
+
+
+def test_env_loader_strips_quotes(tmp_path, monkeypatch):
+    root = tmp_path
+    (root / ".env").write_text('LOGI_TEST_QUOTED="secret-value"\n', encoding="utf-8")
+    monkeypatch.setattr(qp, "_ROOT", root)
+    monkeypatch.delenv("LOGI_TEST_QUOTED", raising=False)
+    qp._load_env_bom_safe()
+    import os
+    assert os.environ["LOGI_TEST_QUOTED"] == "secret-value"
+
+
+def test_report_embeds_evidence(sandbox):
+    _seed_task(sandbox)
+    env = qp.collect_problems()[0]
+    result = qp.process_case(
+        env, llm=lambda e: _analysis(),
+        notify=lambda t: True, judge=lambda *a: {"solved": True})
+    report = [a for a in result.artifacts if a.endswith(".md")][0]
+    text = Path(report).read_text(encoding="utf-8")
+    assert "Доказательства" in text
+    assert "$ ls -la ops/agents" in text
+    assert "exit=0" in text

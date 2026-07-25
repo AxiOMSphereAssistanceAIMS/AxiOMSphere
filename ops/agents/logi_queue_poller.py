@@ -107,7 +107,10 @@ def _load_env_bom_safe() -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         k, _, v = line.partition("=")
-        os.environ.setdefault(k.strip(), v.strip())
+        v = v.strip()
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            v = v[1:-1]
+        os.environ.setdefault(k.strip(), v)
 
 
 # ── Intake ───────────────────────────────────────────────────────────────────
@@ -383,7 +386,28 @@ def record_feedback(env: FailureEnvelope, analysis: dict, verify_pass: bool) -> 
 
 # ── Reporting ────────────────────────────────────────────────────────────────
 
-def write_human_report(env: FailureEnvelope, analysis: dict, verify_pass: bool) -> Path:
+def _evidence_section(workdir: Path) -> str:
+    """Render executed commands and their outputs so the report carries proof."""
+    lines = []
+    for label in ("diagnostics", "verification"):
+        f = workdir / f"{label}.json"
+        if not f.exists():
+            continue
+        try:
+            entries = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        for e in entries:
+            if not e.get("allowed"):
+                lines.append(f"$ {e['command']}\n  (отклонено: вне read-only allowlist)")
+                continue
+            out = (e.get("stdout") or e.get("stderr") or "").strip()
+            lines.append(f"$ {e['command']}\n  exit={e.get('exit_code')}\n  {out[:500] or '(нет вывода)'}")
+    return "\n\n".join(lines) or "команды не выполнялись"
+
+
+def write_human_report(env: FailureEnvelope, analysis: dict, verify_pass: bool,
+                       workdir: Path | None = None) -> Path:
     _REPORT_DIR.mkdir(parents=True, exist_ok=True)
     path = _REPORT_DIR / f"logi_report_{env.support_case_id}.md"
     status_ru = {"completed": "решена успешно", "needs_approval": "разобрана, ждёт подтверждения",
@@ -397,6 +421,7 @@ def write_human_report(env: FailureEnvelope, analysis: dict, verify_pass: bool) 
         f"## Разбор\n{analysis.get('human_report_ru', 'см. артефакты')}\n\n"
         f"## Гипотеза первопричины\n{analysis.get('root_cause_hypothesis', '—')}\n\n"
         f"## Проверка\n{'пройдена' if verify_pass else 'не пройдена / не выполнялась'}\n\n"
+        f"## Доказательства (команды и выводы)\n```\n{_evidence_section(workdir) if workdir else 'см. артефакты'}\n```\n\n"
         f"## Артефакты\n" + "\n".join(f"- {a}" for a in env.artifacts) + "\n",
         encoding="utf-8")
     return path
@@ -456,8 +481,9 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         vres = run_allowlisted(analysis.get("verification_commands", []), workdir, "verification")
         ran = [r for r in vres if r.get("allowed")]
         verify_pass = bool(ran) and all(r.get("exit_code") == 0 for r in ran)
-        if env.outcome == "completed" and ran and not verify_pass:
-            env.outcome = "failed"
+        if env.outcome == "completed" and not verify_pass:
+            # completed requires real passed evidence; zero evidence is never a pass
+            env.outcome = "failed" if ran else "needs_approval"
 
         # Independent judge (advisory): a disagreeing judge demotes 'completed'
         # to needs_approval — a human look, never a silent pass.
@@ -473,7 +499,7 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
             str(p.relative_to(_ROOT)) if p.is_relative_to(_ROOT) else str(p)
             for p in sorted(workdir.glob("*.json"))
         ]
-        report = write_human_report(env, analysis, verify_pass)
+        report = write_human_report(env, analysis, verify_pass, workdir=workdir)
         env.artifacts.append(str(report))
         shutil.rmtree(tmpdir, ignore_errors=True)          # CLEANUP intermediates
         status_ru = {"completed": "✅ решена успешно", "needs_approval": "🟡 разобрана, нужен approve на ремонт",
