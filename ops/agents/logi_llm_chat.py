@@ -70,13 +70,11 @@ def build_chat_context_prompt(text: str, history: list[str], skill_context: str 
         parts.append("ПОСЛЕДНИЕ СООБЩЕНИЯ ДИАЛОГА:\n" + "\n".join(f"- {h}" for h in history[-5:]))
     if recent_case:
         parts.append(
-            "ПОСЛЕДНИЙ РАЗОБРАННЫЙ КЕЙС:\n"
+            "ПОСЛЕДНИЙ РАЗОБРАННЫЙ КЕЙС (полный отчёт ниже):\n"
             f"название: {recent_case.get('title', '')}\n"
             f"источник: {recent_case.get('source', '')}\n"
             f"итог: {recent_case.get('outcome', '')}\n"
-            f"суть: {recent_case.get('problem_summary_ru', '')}\n"
-            f"разбор: {recent_case.get('human_report_ru', '')}\n"
-            f"гипотеза первопричины: {recent_case.get('root_cause_hypothesis', '')}"
+            f"{recent_case.get('human_report_ru', '')}"
         )
     if skill_context:
         parts.append(f"ДОП. КОНТЕКСТ СТРАТЕГИИ:\n{skill_context[:1500]}")

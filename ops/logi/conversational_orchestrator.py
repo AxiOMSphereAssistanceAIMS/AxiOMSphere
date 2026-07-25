@@ -597,6 +597,48 @@ class LogiAgent:
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return str(path)
 
+    def _latest_poller_case_context(self, max_age_sec: int = 3600) -> dict | None:
+        """Return a compact summary of the most recent closed-loop poller case
+        (if any, and if recent) so chat replies can be grounded in it."""
+        import time as _time
+        cases_root = Path("aims_workspace/logi_artifacts/queue_poller")
+        if not cases_root.exists():
+            return None
+        candidates = [p for p in cases_root.glob("case_*/case.json") if p.is_file()]
+        if not candidates:
+            return None
+        newest = max(candidates, key=lambda p: p.stat().st_mtime)
+        if _time.time() - newest.stat().st_mtime > max_age_sec:
+            return None
+        try:
+            case = json.loads(newest.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+        report_text = ""
+        report_paths = [a for a in case.get("artifacts", []) if str(a).endswith(".md")]
+        if report_paths:
+            report_path = Path(report_paths[0])
+            if report_path.exists():
+                report_text = report_path.read_text(encoding="utf-8", errors="replace")[:2500]
+        return {
+            "title": case.get("title", ""),
+            "source": case.get("source", ""),
+            "outcome": case.get("outcome", ""),
+            "human_report_ru": report_text,
+        }
+
+    def _chat_reply(self, user_id: int, text: str, skill_context: str = "") -> str:
+        """Real, context-grounded chat reply via SLOT32. Falls back to the
+        canned reply only when the model is unreachable — never crashes."""
+        try:
+            from ops.agents.logi_llm_chat import slot32_chat, build_chat_context_prompt
+            history = self.user_history.get(user_id, [])[:-1]  # exclude current msg
+            recent_case = self._latest_poller_case_context()
+            prompt = build_chat_context_prompt(text, history, skill_context, recent_case)
+            return slot32_chat(prompt, max_tokens=500)
+        except Exception:
+            return self._build_plain_reply(text, skill_context=skill_context)
+
     def _build_plain_reply(self, text: str, skill_context: str = "") -> str:
         """Return a short answer for ordinary Telegram chat."""
         lowered = text.lower().strip()
@@ -699,7 +741,11 @@ class LogiAgent:
 
         if text.startswith(_GROUNDED_INTERNAL_PREFIX):
             body = text[len(_GROUNDED_INTERNAL_PREFIX):].strip()
-            return self._build_plain_reply(body, skill_context=skill_context)
+            try:
+                from ops.agents.logi_llm_chat import slot32_chat
+                return slot32_chat(body)
+            except Exception:
+                return self._build_plain_reply(body, skill_context=skill_context)
 
         # Store in history
         if user_id not in self.user_history:
@@ -1187,8 +1233,9 @@ class LogiAgent:
         except Exception:
             pass
 
-        # Plain text should stay short and context-shaped, without service banners.
-        return self._build_plain_reply(text, skill_context=skill_context)
+        # Plain text: real LLM-grounded chat reply (context + recent case),
+        # canned reply only as degrade-on-failure inside _chat_reply.
+        return self._chat_reply(user_id, text, skill_context=skill_context)
 
     def get_phase1_skill_status(self) -> dict:
         """Get status of Phase 1 deployed skills.
