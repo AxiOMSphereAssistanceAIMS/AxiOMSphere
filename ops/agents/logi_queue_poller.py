@@ -145,8 +145,14 @@ def collect_problems(max_items: int = 3) -> list[FailureEnvelope]:
                 processed = set(json.loads(_PROCESSED_INCIDENTS.read_text(encoding="utf-8")))
             except Exception:
                 processed = set()
+        max_age_days = float(os.environ.get("LOGI_POLLER_INCIDENT_MAX_AGE_DAYS", "3"))
+        stale_cutoff = time.time() - max_age_days * 86400
+        newly_stale = []
         for p in sorted(_INCIDENT_DIR.glob("incident_*.json"), key=lambda f: f.stat().st_mtime):
             if p.name in processed:
+                continue
+            if p.stat().st_mtime < stale_cutoff:
+                newly_stale.append(p.name)   # backlog triage belongs to the team task
                 continue
             try:
                 inc = json.loads(p.read_text(encoding="utf-8"))
@@ -158,6 +164,10 @@ def collect_problems(max_items: int = 3) -> list[FailureEnvelope]:
                 description=json.dumps(inc, ensure_ascii=False)[:4000],
                 incident_id=p.stem, created_at=_now(),
             ))
+        if newly_stale:
+            processed.update(newly_stale)
+            _PROCESSED_INCIDENTS.parent.mkdir(parents=True, exist_ok=True)
+            _PROCESSED_INCIDENTS.write_text(json.dumps(sorted(processed)), encoding="utf-8")
     if _REPAIRMAN_DISPATCHED.exists():
         for p in sorted(_REPAIRMAN_DISPATCHED.glob("*.json"), key=lambda f: f.stat().st_mtime):
             try:

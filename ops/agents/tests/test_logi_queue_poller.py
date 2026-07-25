@@ -16,6 +16,8 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(qp, "_PENDING_DIR", pending)
     monkeypatch.setattr(qp, "_PROBLEM_INBOX", tmp_path / "inbox")
     monkeypatch.setattr(qp, "_REPAIRMAN_DISPATCHED", tmp_path / "dispatched")
+    monkeypatch.setattr(qp, "_INCIDENT_DIR", tmp_path / "incidents_default")
+    monkeypatch.setattr(qp, "_PROCESSED_INCIDENTS", tmp_path / "processed_default.json")
     monkeypatch.setattr(qp, "_ARTIFACTS_ROOT", tmp_path / "artifacts")
     monkeypatch.setattr(qp, "_RAW_MATERIAL", tmp_path / "raw.jsonl")
     monkeypatch.setattr(qp, "_HEARTBEAT", tmp_path / "hb.json")
