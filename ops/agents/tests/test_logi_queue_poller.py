@@ -22,6 +22,8 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(qp, "_RAW_MATERIAL", tmp_path / "raw.jsonl")
     monkeypatch.setattr(qp, "_HEARTBEAT", tmp_path / "hb.json")
     monkeypatch.setattr(qp, "_REPORT_DIR", tmp_path / "reports")
+    monkeypatch.setattr(qp, "_NOTIFY_CACHE", tmp_path / "notify_cache.json")
+    monkeypatch.setattr(qp, "_REPAIRMAN_REVIEWED", tmp_path / "reviewed_default")
     monkeypatch.setattr(qp, "_DONE_DIRS", {
         "completed": tmp_path / "completed",
         "failed": tmp_path / "failed",
@@ -251,3 +253,38 @@ def test_report_embeds_evidence(sandbox):
     assert "Доказательства" in text
     assert "$ ls -la ops/agents" in text
     assert "exit=0" in text
+
+
+def test_repairman_dispatched_never_repeats(sandbox, monkeypatch):
+    disp = sandbox / "dispatched"
+    disp.mkdir()
+    reviewed = sandbox / "reviewed"
+    monkeypatch.setattr(qp, "_REPAIRMAN_DISPATCHED", disp)
+    monkeypatch.setattr(qp, "_REPAIRMAN_REVIEWED", reviewed)
+    (disp / "logi_old_780f6998.json").write_text(
+        json.dumps({"request": {"request_id": "logi_old_780f6998", "task_name": "old smoke"}}),
+        encoding="utf-8")
+    envs = qp.collect_problems()
+    assert len(envs) == 1 and envs[0].source == "repairman_dispatched"
+    qp.process_case(envs[0], llm=lambda e: _analysis(),
+                    notify=lambda t: True, judge=lambda *a: {"solved": True})
+    # gone from dispatched/, so a second sweep must not re-ingest it
+    assert not any(disp.glob("*.json"))
+    assert any(reviewed.glob("*.json"))
+    assert qp.collect_problems() == []
+
+
+def test_notify_dedupe_skips_identical_repeat(sandbox):
+    _seed_task(sandbox)
+    calls = []
+    env1 = qp.collect_problems()[0]
+    qp.process_case(env1, llm=lambda e: _analysis(), notify=lambda t: calls.append(t) or True,
+                    judge=lambda *a: {"solved": True})
+    # simulate the same underlying problem reappearing (e.g. a source that
+    # forgot to finalize) with the same title/outcome shortly after
+    env2 = qp.FailureEnvelope(
+        support_case_id=qp._case_id(), source=env1.source, source_ref=env1.source_ref,
+        title=env1.title, description=env1.description)
+    qp.process_case(env2, llm=lambda e: _analysis(), notify=lambda t: calls.append(t) or True,
+                    judge=lambda *a: {"solved": True})
+    assert len(calls) == 1

@@ -43,6 +43,9 @@ _PROBLEM_INBOX = _ROOT / "aims_workspace" / "logi_problem_inbox"
 _INCIDENT_DIR = _ROOT / "aims_workspace" / "runtime_incidents" / "container_crashes"
 _PROCESSED_INCIDENTS = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller" / "processed_incidents.json"
 _REPAIRMAN_DISPATCHED = _ROOT / "aims_workspace" / "repairman_requests" / "dispatched"
+_REPAIRMAN_REVIEWED = _ROOT / "aims_workspace" / "repairman_requests" / "reviewed_by_poller"
+_NOTIFY_CACHE = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller" / "notify_cache.json"
+_NOTIFY_DEDUPE_SEC = 1800
 _ARTIFACTS_ROOT = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller"
 _RAW_MATERIAL = _ROOT / "aims_workspace" / "logi_session_memory" / "queue_poller_raw.jsonl"
 _HEARTBEAT = _ROOT / "aims_workspace" / "logi_controlled_autonomy_status" / "queue_poller_heartbeat.json"
@@ -427,6 +430,32 @@ def write_human_report(env: FailureEnvelope, analysis: dict, verify_pass: bool,
     return path
 
 
+def _dedupe_key(env: FailureEnvelope) -> str:
+    return f"{env.source}:{env.incident_id or env.repair_id or env.title}:{env.outcome}"
+
+
+def _notify_deduped(notify_fn, env: FailureEnvelope, text: str) -> bool:
+    """Skip sending the exact same (source, title/incident, outcome) again
+    within the dedupe window — defense in depth against a re-ingested source."""
+    cache: dict[str, float] = {}
+    if _NOTIFY_CACHE.exists():
+        try:
+            cache = json.loads(_NOTIFY_CACHE.read_text(encoding="utf-8"))
+        except Exception:
+            cache = {}
+    key = _dedupe_key(env)
+    now = time.time()
+    last = cache.get(key, 0)
+    if now - last < _NOTIFY_DEDUPE_SEC:
+        return False
+    sent = notify_fn(text)
+    cache[key] = now
+    cache = {k: v for k, v in cache.items() if now - v < _NOTIFY_DEDUPE_SEC * 4}
+    _NOTIFY_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    _NOTIFY_CACHE.write_text(json.dumps(cache), encoding="utf-8")
+    return sent
+
+
 def send_telegram(text: str) -> bool:
     token = os.environ.get("LOGI_BOT_TOKEN", "").strip()
     if not token:
@@ -504,7 +533,8 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         shutil.rmtree(tmpdir, ignore_errors=True)          # CLEANUP intermediates
         status_ru = {"completed": "✅ решена успешно", "needs_approval": "🟡 разобрана, нужен approve на ремонт",
                      "failed": "❌ не решена", "deferred": "⏸ отложена (LLM недоступен)"}.get(env.outcome, env.outcome)
-        telegram_ok = notify(f"Logi: была проблема «{env.title[:80]}» — {status_ru}.\nДетали: {report}")
+        telegram_ok = _notify_deduped(
+            notify, env, f"Logi: была проблема «{env.title[:80]}» — {status_ru}.\nДетали: {report}")
         case = asdict(env)
         case["telegram_notified"] = bool(telegram_ok)
         (workdir / "case.json").write_text(
@@ -525,6 +555,22 @@ def _finalize_source(env: FailureEnvelope) -> None:
         processed.add(Path(env.source_ref).name)
         _PROCESSED_INCIDENTS.parent.mkdir(parents=True, exist_ok=True)
         _PROCESSED_INCIDENTS.write_text(json.dumps(sorted(processed)), encoding="utf-8")
+        return
+    if env.source == "repairman_dispatched":
+        # Move out of dispatched/ regardless of outcome — otherwise the same
+        # file is re-ingested and re-reported on every poll cycle forever.
+        src = Path(env.source_ref)
+        if src.exists():
+            try:
+                _REPAIRMAN_REVIEWED.mkdir(parents=True, exist_ok=True)
+                data = json.loads(src.read_text(encoding="utf-8"))
+                data["poller_outcome"] = env.outcome
+                data["poller_support_case_id"] = env.support_case_id
+                (_REPAIRMAN_REVIEWED / src.name).write_text(
+                    json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+                src.unlink()
+            except Exception:
+                pass
         return
     if env.source != "logi_task_queue":
         return
