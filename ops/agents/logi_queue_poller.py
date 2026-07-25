@@ -376,11 +376,13 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         report = write_human_report(env, analysis, verify_pass)
         env.artifacts.append(str(report))
         shutil.rmtree(tmpdir, ignore_errors=True)          # CLEANUP intermediates
-        (workdir / "case.json").write_text(
-            json.dumps(asdict(env), indent=2, ensure_ascii=False), encoding="utf-8")
         status_ru = {"completed": "✅ решена успешно", "needs_approval": "🟡 разобрана, нужен approve на ремонт",
                      "failed": "❌ не решена", "deferred": "⏸ отложена (LLM недоступен)"}.get(env.outcome, env.outcome)
-        notify(f"Logi: была проблема «{env.title[:80]}» — {status_ru}.\nДетали: {report}")
+        telegram_ok = notify(f"Logi: была проблема «{env.title[:80]}» — {status_ru}.\nДетали: {report}")
+        case = asdict(env)
+        case["telegram_notified"] = bool(telegram_ok)
+        (workdir / "case.json").write_text(
+            json.dumps(case, indent=2, ensure_ascii=False), encoding="utf-8")
         _finalize_source(env)
     return env
 
