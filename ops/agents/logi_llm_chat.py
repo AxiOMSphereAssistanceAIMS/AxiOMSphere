@@ -16,8 +16,19 @@ import os
 import urllib.error
 import urllib.request
 
-SLOT32_URL = os.environ.get("AIMS_SLOT32_OPENAI_URL", "http://127.0.0.1:18081/v1")
 SLOT32_MODEL = os.environ.get("AIMS_SLOT32_MODEL", "aims_slot32_qwen3_coder_next_fp8_v0")
+SLOT32_PROXY_TOKEN = os.environ.get("SLOT32_PROXY_API_KEY", "aims-local-repair-token")
+
+# Callers may run on the host (network_mode: host, 127.0.0.1 reaches SGLang
+# directly) or inside a bridge-networked container (127.0.0.1 is the
+# container itself; only the proxy's host-published port is reachable, via
+# the bridge gateway). Try candidates in order; first that answers wins.
+_DIRECT_CANDIDATES = [
+    (os.environ.get("AIMS_SLOT32_OPENAI_URL", ""), None),
+    ("http://127.0.0.1:18081/v1", None),
+    ("http://172.18.0.1:8084/v1", SLOT32_PROXY_TOKEN),
+    ("http://host.docker.internal:8084/v1", SLOT32_PROXY_TOKEN),
+]
 
 CANNED_FALLBACKS = {
     "Принял. Работаю.",
@@ -31,28 +42,43 @@ class Slot32Unavailable(RuntimeError):
     pass
 
 
-def slot32_chat(prompt: str, max_tokens: int = 700, temperature: float = 0.3,
-                timeout: int = 300) -> str:
-    """Send a single-turn prompt to SLOT32 and return the model's text reply.
-
-    Raises Slot32Unavailable on any network/parse failure so callers can
-    degrade to a canned reply instead of crashing the bot.
-    """
+def _post_chat(url: str, token: str | None, prompt: str, max_tokens: int,
+               temperature: float, timeout: int) -> str:
     body = json.dumps({
         "model": SLOT32_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens,
         "temperature": temperature,
     }).encode()
+    headers = {"Content-Type": "application/json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     req = urllib.request.Request(
-        SLOT32_URL.rstrip("/") + "/chat/completions", data=body,
-        headers={"Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read())
-        return data["choices"][0]["message"]["content"].strip()
-    except (urllib.error.URLError, KeyError, IndexError, ValueError, TimeoutError) as e:
-        raise Slot32Unavailable(str(e)[:300]) from e
+        url.rstrip("/") + "/chat/completions", data=body, headers=headers)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = json.loads(resp.read())
+    return data["choices"][0]["message"]["content"].strip()
+
+
+def slot32_chat(prompt: str, max_tokens: int = 700, temperature: float = 0.3,
+                timeout: int = 300) -> str:
+    """Send a single-turn prompt to SLOT32 and return the model's text reply.
+
+    Tries each reachable-endpoint candidate in order (direct host path first,
+    proxy bridge path as fallback for containerized callers). Raises
+    Slot32Unavailable only once every candidate has failed, so callers can
+    degrade to a canned reply instead of crashing the bot.
+    """
+    errors = []
+    for url, token in _DIRECT_CANDIDATES:
+        if not url:
+            continue
+        try:
+            return _post_chat(url, token, prompt, max_tokens, temperature, timeout)
+        except (urllib.error.URLError, KeyError, IndexError, ValueError, TimeoutError) as e:
+            errors.append(f"{url}: {e}")
+            continue
+    raise Slot32Unavailable("; ".join(errors)[:400] or "no candidates configured")
 
 
 def build_chat_context_prompt(text: str, history: list[str], skill_context: str = "",
