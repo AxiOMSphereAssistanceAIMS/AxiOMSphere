@@ -13,7 +13,7 @@ Coverage:
   6. Failure path (exit 1) → TASK_FAILED or TASK_RETRY_SCHEDULED event published
   7. Argus never executes tasks directly (_exec_schedule_task is enqueue-only)
 
-Test Redis: redis://172.18.0.26:6379/1 (DB=1 — isolated from production DB=0)
+Test Redis: DB=1 — isolated from production DB=0 (URL resolved at runtime via redis_test_config)
 Each test flushes DB=1 before and after execution.
 
 Hard stops verified:
@@ -38,6 +38,8 @@ import redis.asyncio as aioredis
 # Ensure project root on PYTHONPATH
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+from ops.scheduler.redis_test_config import get_test_redis_client, resolve_test_redis_url
+
 # ── Stub argus_code_agent before importing orchestrator ──────────────────────
 # argus_code_agent is a runtime container dependency not present in test envs.
 sys.modules.setdefault("argus_code_agent", MagicMock())
@@ -46,7 +48,8 @@ sys.modules.setdefault("argus_code_agent", MagicMock())
 # Constants
 # ─────────────────────────────────────────────────────────────────────────────
 
-TEST_REDIS_URL = "redis://172.18.0.26:6379/1"   # DB=1 — test isolation
+# DB=1 — test isolation (resolved at runtime via central resolver, never hardcoded)
+TEST_REDIS_URL = resolve_test_redis_url()
 SMOKE_CMD = ["python", "ops/scheduler/smoke_noop.py"]
 FAIL_CMD  = ["python", "-c", "import sys; sys.exit(1)"]
 
@@ -73,8 +76,8 @@ def _now_plus_60s() -> str:
 
 @pytest_asyncio.fixture
 async def redis_client():
-    """Clean Redis DB=1 connection; flush before and after each test."""
-    client = await aioredis.from_url(TEST_REDIS_URL, decode_responses=True)
+    """Clean Redis connection on the resolved test DB; skips if unavailable."""
+    client = await get_test_redis_client()
     await client.flushdb()
     yield client
     await client.flushdb()
@@ -120,11 +123,13 @@ async def scheduler_daemon(redis_client):
 @pytest.mark.asyncio
 async def test_argus_schedule_task_to_scheduler_queue(redis_client):
     """Argus _exec_schedule_task must persist metadata and enqueue to pending set."""
+    import ops.scheduler.agent_scheduler_adapter as asa_mod
     from ops.argus.argus_orchestrator import ArgusOrchestrator
 
     task_id = "e2e-smoke-enqueue-001"
 
-    with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}):
+    with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}), \
+         patch.object(asa_mod, "_DEFAULT_REDIS_URL", TEST_REDIS_URL):
         orch = ArgusOrchestrator.__new__(ArgusOrchestrator)
         ok, detail = await orch._exec_schedule_task({
             "task_id": task_id,
@@ -169,6 +174,9 @@ async def test_scheduler_daemon_executes_safe_smoke_task(scheduler_daemon, redis
         scheduled_for=scheduled_for,
         created_at=datetime.utcnow().isoformat(),
         created_by="argus",
+        executor_runtime="redis-scheduler",
+        workdir_strategy="runtime_resolver",
+        resource_key="task:argus_smoke",
         status=TaskStatus.PENDING.value,
     )
     await scheduler_daemon.queue.set_task_metadata(task_id, metadata)
@@ -208,6 +216,9 @@ async def test_event_ledger_sequence_for_successful_task(scheduler_daemon, redis
         scheduled_for=scheduled_for,
         created_at=datetime.utcnow().isoformat(),
         created_by="argus",
+        executor_runtime="redis-scheduler",
+        workdir_strategy="runtime_resolver",
+        resource_key="task:argus_smoke",
         status=TaskStatus.PENDING.value,
     )
     await scheduler_daemon.queue.set_task_metadata(task_id, metadata)
@@ -234,6 +245,7 @@ async def test_event_ledger_sequence_for_successful_task(scheduler_daemon, redis
 async def test_no_duplicate_task_scheduled_event(redis_client):
     """One _exec_schedule_task call must publish exactly one TASK_SCHEDULED event."""
     import ops.scheduler.task_scheduler as ts_mod
+    import ops.scheduler.agent_scheduler_adapter as asa_mod
     from ops.argus.argus_orchestrator import ArgusOrchestrator
 
     task_id = "e2e-smoke-dedup-004"
@@ -245,7 +257,8 @@ async def test_no_duplicate_task_scheduled_event(redis_client):
     ts_mod._event_bus = None
 
     try:
-        with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}):
+        with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}), \
+             patch.object(asa_mod, "_DEFAULT_REDIS_URL", TEST_REDIS_URL):
             orch = ArgusOrchestrator.__new__(ArgusOrchestrator)
             ok, _ = await orch._exec_schedule_task({
                 "task_id": task_id,
@@ -283,11 +296,13 @@ async def test_no_duplicate_task_scheduled_event(redis_client):
 @pytest.mark.asyncio
 async def test_rejected_forbidden_command_leaves_no_redis_state(redis_client):
     """Commands containing 'rm -rf' must be rejected and leave no Redis key."""
+    import ops.scheduler.agent_scheduler_adapter as asa_mod
     from ops.argus.argus_orchestrator import ArgusOrchestrator
 
     task_id = "e2e-reject-forbidden-005"
 
-    with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}):
+    with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}), \
+         patch.object(asa_mod, "_DEFAULT_REDIS_URL", TEST_REDIS_URL):
         orch = ArgusOrchestrator.__new__(ArgusOrchestrator)
         ok, detail = await orch._exec_schedule_task({
             "task_id": task_id,
@@ -326,6 +341,9 @@ async def test_failure_path_records_failed_or_retry_event(scheduler_daemon, redi
         scheduled_for=scheduled_for,
         created_at=datetime.utcnow().isoformat(),
         created_by="argus",
+        executor_runtime="redis-scheduler",
+        workdir_strategy="runtime_resolver",
+        resource_key="task:argus_smoke",
         status=TaskStatus.PENDING.value,
         is_retryable=False,   # Force straight to FAILED (no retry loop in tests)
         max_retries=0,
@@ -388,7 +406,9 @@ async def test_argus_never_executes_directly(redis_client):
         subprocess_calls.append(args)
         return await original_create(*args, **kwargs)
 
+    import ops.scheduler.agent_scheduler_adapter as asa_mod
     with patch.dict(os.environ, {"TASK_SCHEDULER_REDIS_URL": TEST_REDIS_URL}), \
+         patch.object(asa_mod, "_DEFAULT_REDIS_URL", TEST_REDIS_URL), \
          patch("asyncio.create_subprocess_exec", side_effect=spy_subprocess):
         orch = ArgusOrchestrator.__new__(ArgusOrchestrator)
         ok, detail = await orch._exec_schedule_task({
