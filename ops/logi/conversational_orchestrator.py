@@ -311,6 +311,151 @@ def _execute_read_only_skill(skill_id: str, text: str, skill_context: str = "") 
     return None
 
 
+_GROUNDED_INTERNAL_PREFIX = "[LOGI_GROUNDED_SKILL_INTERNAL]"
+
+
+def _template_skill_summary(skill_id: str, text: str, skill_context: str = "") -> str:
+    fallback = _execute_read_only_skill(skill_id, text, skill_context)
+    if fallback:
+        return fallback
+    return f"STATUS: PASSED\nSKILL_ID: {skill_id}\nOUTPUT:\n{text[:500]}"
+
+
+def _build_grounding_prompt(skill_id: str, text: str, user_id: int, skill_context: str = "") -> str:
+    from ops.agents.logi_agent_orchestration import discover_existing_agent_routes
+    from ops.agents.logi_project_context import build_project_context, format_project_context_for_prompt
+    from ops.agents.logi_session_memory import format_session_memory_for_prompt
+    from ops.agents.logi_skill_registry import format_skill_registry_for_prompt
+
+    context = build_project_context(max_files=50, max_chars=9000)
+    routes = discover_existing_agent_routes(context)
+    recall_context = ""
+    experience_context = ""
+    if skill_id in {"autoplan", "investigate", "patch_prompt", "capability_gap", "eng_review", "qa", "review"}:
+        try:
+            from ops.agents.logi_session_learning_skill import build_compact_recall_context
+            recall_context = build_compact_recall_context(text)
+        except Exception:
+            recall_context = "SIMILAR_SESSIONS_FOUND: 0"
+        try:
+            from ops.agents.logi_experience_recall import build_compact_experience_context
+            experience_context = build_compact_experience_context(text, skill_id.upper())
+        except Exception:
+            experience_context = "PROJECT EXPERIENCE CONTEXT:\n- Similar experience found: 0"
+    route_lines = "\n".join(
+        f"- {r.agent_id}: {r.capability}; mode={r.invocation_mode}; endpoint={r.endpoint or 'UNKNOWN / NOT_FOUND'}"
+        for r in routes[:12]
+    )
+    experience_context_text = experience_context or "PROJECT EXPERIENCE CONTEXT:\n- Similar experience found: 0"
+    return (
+        f"{_GROUNDED_INTERNAL_PREFIX}\n"
+        f"SKILL_ID: {skill_id}\n"
+        "EXPECTED_OUTPUT: concise grounded chief-engineer analysis using only provided project context.\n"
+        "SAFETY_BOUNDARY: no shell execution; no destructive commands; planning/review/memory reads allowed; writes require CONFIRM.\n\n"
+        f"USER_MESSAGE:\n{text[:2000]}\n\n"
+        f"PROJECT_CONTEXT:\n{format_project_context_for_prompt(context, max_chars=4500)}\n\n"
+        f"SESSION_MEMORY:\n{format_session_memory_for_prompt(str(user_id), max_chars=1800)}\n\n"
+        f"SIMILAR_SESSION_CONTEXT:\n{recall_context or 'SIMILAR_SESSIONS_FOUND: 0'}\n\n"
+        f"{experience_context_text}\n\n"
+        f"SKILL_REGISTRY:\n{format_skill_registry_for_prompt(max_chars=2500)}\n\n"
+        f"AVAILABLE_AGENT_ROUTES:\n{route_lines or 'UNKNOWN / NOT_FOUND'}\n\n"
+        f"ADDITIONAL_SKILL_CONTEXT:\n{skill_context[:1500]}"
+    )
+
+
+def _execute_grounded_read_only_skill(skill_id: str, text: str, user_id: int, skill_context: str = "") -> str:
+    from ops.agents.logi_skill_system import SKILL_REGISTRY
+
+    skill = SKILL_REGISTRY.get(skill_id)
+    next_skills = skill.next_recommended_skills if skill else []
+    mode_map = {
+        "patch_prompt": "PATCH_PROMPT_PREPARATION",
+        "capability_gap": "CAPABILITY_GAP_ANALYSIS",
+        "eng_review": "ENG_REVIEW",
+        "qa": "QA",
+        "autoplan": "AUTOPLAN",
+        "investigate": "INVESTIGATE",
+        "review": "REVIEW",
+        "release_ship": "RELEASE_SHIP",
+        "retro": "RETRO",
+        "learn": "LEARN",
+    }
+    try:
+        prompt = _build_grounding_prompt(skill_id, text, user_id, skill_context)
+        output = LogiAgent().run(user_id, prompt, skill_context=skill_context)
+        if not output:
+            raise RuntimeError("empty LogiAgent.run output")
+        if output.strip() in {"Принял. Работаю.", "Принял. Работаю по контексту.", "Да. Разберу вопрос и отвечу кратко."}:
+            output = _template_skill_summary(skill_id, text, skill_context)
+        exp_prefix = _format_experience_use_header(text, skill_id.upper())
+        summary = output.splitlines()[0][:180] if output.splitlines() else f"Grounded {skill_id} output generated."
+        return (
+            "STATUS: PASSED\n"
+            f"MODE: {mode_map.get(skill_id, 'SKILL_DISPATCH')}\n"
+            f"SKILL_ID: {skill_id}\n"
+            "LLM_GROUNDED: true\n"
+            f"SUMMARY: {summary}\n"
+            f"{exp_prefix}"
+            "OUTPUT:\n"
+            f"{output}\n"
+            "NEXT_RECOMMENDED_SKILLS:\n"
+            + "\n".join(f"- {s}" for s in (next_skills or ["none"]))
+            + "\nARTIFACTS:\n- none"
+        )
+    except Exception as exc:
+        fallback = _template_skill_summary(skill_id, text, skill_context)
+        return (
+            "STATUS: PASSED\n"
+            f"SKILL_ID: {skill_id}\n"
+            "LLM_GROUNDED: false\n"
+            f"FALLBACK_REASON: {type(exc).__name__}\n"
+            f"SUMMARY: Template fallback for {skill_id}\n"
+            "OUTPUT:\n"
+            f"{fallback}\n"
+            "NEXT_RECOMMENDED_SKILLS:\n"
+            + "\n".join(f"- {s}" for s in (next_skills or ["none"]))
+        )
+
+
+def _remember_logi_interaction(user_id: int, text: str, mode: str, skill_id: str | None, summary: str, artifacts: list[str] | None = None, next_step: str | None = None) -> None:
+    try:
+        from ops.agents.logi_session_memory import append_session_event, new_event
+        append_session_event(new_event(
+            session_id=str(user_id) if user_id is not None else "default",
+            chat_id=str(user_id) if user_id is not None else None,
+            user_id=str(user_id) if user_id is not None else None,
+            mode=mode,
+            skill_id=skill_id,
+            user_text=text or "",
+            summary=summary,
+            artifacts=artifacts or [],
+            next_step=next_step,
+        ))
+    except Exception:
+        pass
+
+
+def _format_experience_use_header(text: str, mode: str) -> str:
+    try:
+        from ops.agents.logi_experience_recall import recall_anti_patterns, recall_experience, recall_playbooks
+        exp = recall_experience(text, limit=3)
+        anti = recall_anti_patterns(text, limit=3)
+        pbs = recall_playbooks(text, limit=2)
+        lines = [
+            f"EXPERIENCE_USED: {'true' if exp.matches else 'false'}",
+            f"SIMILAR_EXPERIENCE_FOUND: {len(exp.matches)}",
+            "EXPERIENCE_SUMMARY:",
+        ]
+        lines.extend(f"- {m.summary}" for m in exp.matches[:3]) if exp.matches else lines.append("- none")
+        lines.append("ANTI_PATTERNS_CHECKED:")
+        lines.extend(f"- {m.summary}" for m in anti.matches[:3]) if anti.matches else lines.append("- none")
+        lines.append("PLAYBOOKS:")
+        lines.extend(f"- {m.summary}" for m in pbs.matches[:2]) if pbs.matches else lines.append("- none")
+        return "\n".join(lines) + "\n"
+    except Exception:
+        return "EXPERIENCE_USED: false\nSIMILAR_EXPERIENCE_FOUND: 0\n"
+
+
 LOGI_SUPERVISED_FULL_STACK_MODE_ENABLED = os.environ.get(
     "AIMS_ENABLE_LOGI_SUPERVISED_FULL_STACK_MODE", "true"
 ).lower() in ("true", "1", "yes")
@@ -355,6 +500,13 @@ class LogiAgent:
                 self.handle_full_stack = handle_full_stack_request
             except ImportError:
                 self.handle_full_stack = None
+            try:
+                from logi.engineering_team_runtime_adapter import handle_engineering_team_request
+                self.handle_engineering_team = handle_engineering_team_request
+            except ImportError:
+                self.handle_engineering_team = None
+        else:
+            self.handle_engineering_team = None
 
         # Load Claude Code gate if continuous work mode enabled
         if LOGI_CONTINUOUS_WORK_MODE_ENABLED:
@@ -545,6 +697,10 @@ class LogiAgent:
         if not text:
             return "(empty request)"
 
+        if text.startswith(_GROUNDED_INTERNAL_PREFIX):
+            body = text[len(_GROUNDED_INTERNAL_PREFIX):].strip()
+            return self._build_plain_reply(body, skill_context=skill_context)
+
         # Store in history
         if user_id not in self.user_history:
             self.user_history[user_id] = []
@@ -558,6 +714,18 @@ class LogiAgent:
             "skill_context_available": bool(skill_context)
         }
         _ = self._compress_context(context_for_compression)
+
+        # Engineering Team planning must precede the generic capability router,
+        # which would otherwise reduce it to a general PLAN_TASK response.
+        if self.handle_engineering_team is not None:
+            try:
+                is_engineering, response, _state = self.handle_engineering_team(
+                    user_id, text, skill_context
+                )
+            except Exception as exc:
+                return "Engineering Team routing failed explicitly: " f"{type(exc).__name__}: {exc}"
+            if is_engineering:
+                return response
 
         # ── Approved local executor route ────────────────────────────────────
         # Narrow allowlisted path: only python3 aims_local_executor.py <task_json>
@@ -604,6 +772,92 @@ class LogiAgent:
         except Exception as exc:
             pass  # Never break main bot on confirmation errors
         # ─────────────────────────────────────────────────────────────────────
+
+        # Session/experience read-only modes must beat protected diagnose/log
+        # parsers when the user explicitly asks for memory/experience recall.
+        try:
+            from ops.agents.logi_capability_mode_router import classify_logi_mode
+            early_classification = classify_logi_mode(text or "")
+            if early_classification.mode in {
+                "SESSION_DISCOVERY", "SESSION_SUMMARY", "SESSION_RECALL", "SESSION_PLAYBOOK",
+                "SESSION_EXPERIENCE_EXTRACTION", "EXPERIENCE_RECALL", "EXPERIENCE_PLAYBOOK",
+                "ANTI_PATTERN_RECALL", "EXPERIENCE_PROMOTION", "POST_TASK_LEARNING",
+                "EXPERIENCE_STATUS", "SESSION_LEARNING_STATUS", "SESSION_LEARNING_DISCOVER",
+                "SESSION_LEARNING_BUILD_BACKLOG", "SESSION_LEARNING_RUN_BATCH",
+                "SESSION_LEARNING_RUN_CONTINUOUS", "SESSION_LEARNING_PAUSE",
+                "SESSION_LEARNING_RESUME", "SESSION_LEARNING_STOP_AFTER_CURRENT",
+                "SESSION_LEARNING_RETRY_FAILED", "SESSION_LEARNING_QUARANTINE_STATUS",
+                "SESSION_CLEANUP_STATUS", "SESSION_CLEANUP_DRY_RUN", "SESSION_CLEANUP_RUN",
+                "SESSION_CLEANUP_ARCHIVE", "SESSION_CLEANUP_DELETE", "SESSION_CLEANUP_REPORT",
+            }:
+                from ops.agents.logi_session_learning_skill import (
+                    handle_session_discovery,
+                    handle_session_playbook,
+                    handle_session_recall,
+                    handle_session_summary,
+                )
+                from ops.agents.logi_experience_learning import (
+                    handle_anti_pattern_recall,
+                    handle_experience_extraction,
+                    handle_experience_playbook,
+                    handle_experience_promotion,
+                    handle_experience_recall,
+                    handle_experience_status,
+                    handle_post_task_learning,
+                )
+                from ops.agents.logi_continuous_session_learning import handle_continuous_learning_mode
+                if early_classification.mode == "SESSION_DISCOVERY":
+                    response = handle_session_discovery(text or "")
+                    skill_id = "session_discovery"
+                    summary = "Discovered local session sources."
+                elif early_classification.mode == "SESSION_SUMMARY":
+                    response = handle_session_summary(text or "")
+                    skill_id = "session_summary"
+                    summary = "Created session cards from local sources."
+                elif early_classification.mode == "SESSION_PLAYBOOK":
+                    response = handle_session_playbook(text or "")
+                    skill_id = "session_playbook"
+                    summary = "Built playbook from similar session cards."
+                elif early_classification.mode == "SESSION_EXPERIENCE_EXTRACTION":
+                    response = handle_experience_extraction(text or "")
+                    skill_id = "session_experience_extract"
+                    summary = "Extracted operational experience records from session cards."
+                elif early_classification.mode == "EXPERIENCE_RECALL":
+                    response = handle_experience_recall(text or "")
+                    skill_id = "experience_recall"
+                    summary = "Recalled relevant operational experience."
+                elif early_classification.mode == "EXPERIENCE_PLAYBOOK":
+                    response = handle_experience_playbook(text or "")
+                    skill_id = "experience_playbook"
+                    summary = "Built playbook from operational experience."
+                elif early_classification.mode == "ANTI_PATTERN_RECALL":
+                    response = handle_anti_pattern_recall(text or "")
+                    skill_id = "anti_pattern_recall"
+                    summary = "Recalled anti-patterns."
+                elif early_classification.mode == "EXPERIENCE_PROMOTION":
+                    response = handle_experience_promotion(text or "")
+                    skill_id = "experience_promote"
+                    summary = "Prepared review-pending experience promotion candidates."
+                elif early_classification.mode == "POST_TASK_LEARNING":
+                    response = handle_post_task_learning(text or "")
+                    skill_id = "post_task_learning"
+                    summary = "Created post-task validation events where matching experience existed."
+                elif early_classification.mode == "EXPERIENCE_STATUS":
+                    response = handle_experience_status(text or "")
+                    skill_id = "experience_status"
+                    summary = "Returned operational experience status."
+                elif early_classification.mode.startswith("SESSION_LEARNING_") or early_classification.mode.startswith("SESSION_CLEANUP_"):
+                    response = handle_continuous_learning_mode(early_classification.mode, text or "")
+                    skill_id = early_classification.mode.lower()
+                    summary = f"Handled {early_classification.mode}."
+                else:
+                    response = handle_session_recall(text or "")
+                    skill_id = "session_recall"
+                    summary = "Searched similar past sessions."
+                _remember_logi_interaction(user_id, text or "", early_classification.mode, skill_id, summary, next_step="Use the cited sessions in planning or patch prompt.")
+                return response
+        except Exception:
+            pass
 
         # ── Confirmation flow: healthcheck intent ─────────────────────────────
         try:
@@ -690,6 +944,139 @@ class LogiAgent:
                 request_write_action, format_confirmation_response,
             )
             classification = classify_logi_mode(text or "")
+            if classification.mode == "BLOCKED":
+                return (
+                    "STATUS: BLOCKED\n"
+                    f"ERROR_CLASS: {classification.blocked_reason or 'COMMAND_BLOCKED'}\n"
+                    "REASON: dangerous direct execution request detected"
+                )
+
+            if classification.mode == "PROJECT_CONTEXT":
+                from ops.agents.logi_project_context import build_project_context, format_project_context_for_telegram
+                response = format_project_context_for_telegram(build_project_context())
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, "Returned project context summary.", next_step="Use PLAN_TASK or ORCHESTRATE_BOTS for execution planning.")
+                return response
+
+            if classification.mode == "SESSION_MEMORY":
+                from ops.agents.logi_session_memory import format_session_memory_for_telegram
+                response = format_session_memory_for_telegram(str(user_id))
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, "Returned session memory summary.", next_step="Continue from the last recorded next step.")
+                return response
+
+            if classification.mode in ("SKILL_LOOKUP", "PLUGIN_LOOKUP"):
+                from ops.agents.logi_skill_registry import format_skill_lookup_for_telegram
+                response = format_skill_lookup_for_telegram(
+                    text or "",
+                    plugin_only=classification.mode == "PLUGIN_LOOKUP",
+                )
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, "Returned skill/plugin registry lookup.", next_step="Select a skill or request an orchestration plan.")
+                return response
+
+            if classification.mode in ("PLAN_TASK", "DECOMPOSE_TASK"):
+                from ops.agents.logi_project_context import build_project_context
+                from ops.agents.logi_task_planner import build_task_plan, format_task_plan_for_telegram
+                recall_prefix = ""
+                try:
+                    from ops.agents.logi_session_learning_skill import build_compact_recall_context
+                    recall_prefix = build_compact_recall_context(text or "")
+                except Exception:
+                    recall_prefix = "SIMILAR_SESSIONS_FOUND: 0"
+                exp_prefix = _format_experience_use_header(text or "", classification.mode)
+                response = format_task_plan_for_telegram(
+                    build_task_plan(text or "", build_project_context(max_files=40)),
+                    mode=classification.mode,
+                )
+                response = f"{exp_prefix}{recall_prefix}\n{response}\nPOST_TASK_LEARNING:\n- Run POST_TASK_LEARNING after tests/live acceptance are known."
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, "Returned small-task implementation plan.", next_step="Execute the first subtask or create a confirmed queue task.")
+                return response
+
+            if classification.mode == "ORCHESTRATE_BOTS":
+                from ops.agents.logi_agent_orchestration import recommend_agent_routes, format_orchestration_plan
+                from ops.agents.logi_project_context import build_project_context
+                context = build_project_context(max_files=60)
+                response = format_orchestration_plan(text or "", recommend_agent_routes(text or "", context))
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, "Returned existing-agent orchestration plan.", next_step="Create an auditor request or queue a task if execution is needed.")
+                return response
+
+            if classification.mode == "SESSION_DISCOVERY":
+                from ops.agents.logi_session_learning_skill import handle_session_discovery
+                response = handle_session_discovery(text or "")
+                _remember_logi_interaction(user_id, text or "", classification.mode, "session_discovery", "Discovered local session sources.", next_step="Run SESSION_SUMMARY to create session cards.")
+                return response
+
+            if classification.mode == "SESSION_SUMMARY":
+                from ops.agents.logi_session_learning_skill import handle_session_summary
+                response = handle_session_summary(text or "")
+                _remember_logi_interaction(user_id, text or "", classification.mode, "session_summary", "Created session cards from local sources.", next_step="Run SESSION_RECALL for the current task.")
+                return response
+
+            if classification.mode == "SESSION_RECALL":
+                from ops.agents.logi_session_learning_skill import handle_session_recall
+                response = handle_session_recall(text or "")
+                _remember_logi_interaction(user_id, text or "", classification.mode, "session_recall", "Searched similar past sessions.", next_step="Build a playbook or continue with task planning.")
+                return response
+
+            if classification.mode == "SESSION_PLAYBOOK":
+                from ops.agents.logi_session_learning_skill import handle_session_playbook
+                response = handle_session_playbook(text or "")
+                _remember_logi_interaction(user_id, text or "", classification.mode, "session_playbook", "Built playbook from similar session cards.", next_step="Use playbook files/tests in the next patch plan.")
+                return response
+
+            if classification.mode == "SESSION_LEARNING_REGISTRATION":
+                params = {
+                    "source_session_id": str(user_id),
+                    "lesson": (text or "")[:500],
+                    "task_type": "session_learning",
+                    "reusable_pattern": "Operator requested durable detailed session registration.",
+                    "failure_pattern": "",
+                }
+                resp = request_write_action(
+                    action_type="register_session_learning_event",
+                    params=params,
+                    requested_by=str(user_id),
+                    original_message=text or "",
+                )
+                response = format_confirmation_response(resp)
+                _remember_logi_interaction(user_id, text or "", classification.mode, "session_learning_registration", "Created confirmation request for session learning event.", next_step=resp.get("reply_with"))
+                return response
+
+            if classification.mode in {
+                "SESSION_EXPERIENCE_EXTRACTION", "EXPERIENCE_RECALL", "EXPERIENCE_PLAYBOOK",
+                "ANTI_PATTERN_RECALL", "EXPERIENCE_PROMOTION", "POST_TASK_LEARNING",
+                "EXPERIENCE_STATUS", "SESSION_LEARNING_STATUS", "SESSION_LEARNING_DISCOVER",
+                "SESSION_LEARNING_BUILD_BACKLOG", "SESSION_LEARNING_RUN_BATCH",
+                "SESSION_LEARNING_RUN_CONTINUOUS", "SESSION_LEARNING_PAUSE",
+                "SESSION_LEARNING_RESUME", "SESSION_LEARNING_STOP_AFTER_CURRENT",
+                "SESSION_LEARNING_RETRY_FAILED", "SESSION_LEARNING_QUARANTINE_STATUS",
+                "SESSION_CLEANUP_STATUS", "SESSION_CLEANUP_DRY_RUN", "SESSION_CLEANUP_RUN",
+                "SESSION_CLEANUP_ARCHIVE", "SESSION_CLEANUP_DELETE", "SESSION_CLEANUP_REPORT",
+            }:
+                from ops.agents.logi_experience_learning import (
+                    handle_anti_pattern_recall,
+                    handle_experience_extraction,
+                    handle_experience_playbook,
+                    handle_experience_promotion,
+                    handle_experience_recall,
+                    handle_experience_status,
+                    handle_post_task_learning,
+                )
+                from ops.agents.logi_continuous_session_learning import handle_continuous_learning_mode
+                handler_map = {
+                    "SESSION_EXPERIENCE_EXTRACTION": handle_experience_extraction,
+                    "EXPERIENCE_RECALL": handle_experience_recall,
+                    "EXPERIENCE_PLAYBOOK": handle_experience_playbook,
+                    "ANTI_PATTERN_RECALL": handle_anti_pattern_recall,
+                    "EXPERIENCE_PROMOTION": handle_experience_promotion,
+                    "POST_TASK_LEARNING": handle_post_task_learning,
+                    "EXPERIENCE_STATUS": handle_experience_status,
+                }
+                if classification.mode.startswith("SESSION_LEARNING_") or classification.mode.startswith("SESSION_CLEANUP_"):
+                    response = handle_continuous_learning_mode(classification.mode, text or "")
+                else:
+                    response = handler_map[classification.mode](text or "")
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, f"Handled {classification.mode}.", next_step="Use experience recall before the next plan or patch.")
+                return response
+
             skill = find_skill(text or "") if classification.skill_id is None else \
                 SKILL_REGISTRY.get(classification.skill_id)
 
@@ -710,6 +1097,14 @@ class LogiAgent:
                         params = {"user_intent": text[:200], "expected_behavior": "",
                                   "actual_behavior": "Not completed", "failure_class": "CAPABILITY_GAP",
                                   "lesson": text[:200]}
+                    elif skill.skill_id == "session_learning_registration":
+                        params = {
+                            "source_session_id": str(user_id),
+                            "lesson": text[:500],
+                            "task_type": "session_learning",
+                            "reusable_pattern": "Session-derived operational lesson",
+                            "failure_pattern": "",
+                        }
                     elif skill.skill_id in ("queue_task", "schedule_task"):
                         params = {"title": text[:100], "description": text[:300],
                                   "schedule_hint": "asap"}
@@ -724,6 +1119,7 @@ class LogiAgent:
                         "auditor_request": "create_auditor_request",
                         "skill_request": "create_skill_request",
                         "learning_registration": "register_learning_event",
+                        "session_learning_registration": "register_session_learning_event",
                     }
                     action_type = action_type_map.get(skill.skill_id, skill.skill_id)
                     resp = request_write_action(
@@ -733,10 +1129,32 @@ class LogiAgent:
                     resp["skill_id"] = skill.skill_id
                     return format_confirmation_response(resp)
                 else:
-                    # Read-only skill: generate structured text output
-                    response = _execute_read_only_skill(skill.skill_id, text or "", skill_context)
+                    # Read-only skill: use existing LogiAgent.run path with grounded context.
+                    response = _execute_grounded_read_only_skill(skill.skill_id, text or "", user_id, skill_context)
                     if response:
+                        _remember_logi_interaction(user_id, text or "", classification.mode, skill.skill_id, f"Ran grounded read-only skill {skill.skill_id}.", next_step=", ".join(skill.next_recommended_skills or ["none"]))
                         return response
+
+            if classification.mode in ("QUEUE_TASK", "SCHEDULE_TASK"):
+                params = {
+                    "title": (text or "")[:100],
+                    "description": (text or "")[:500],
+                    "schedule_hint": "asap",
+                }
+                action_type = (
+                    "schedule_task_allowlisted"
+                    if classification.mode == "SCHEDULE_TASK"
+                    else "queue_task_allowlisted"
+                )
+                resp = request_write_action(
+                    action_type=action_type,
+                    params=params,
+                    requested_by=str(user_id),
+                    original_message=text or "",
+                )
+                response = format_confirmation_response(resp)
+                _remember_logi_interaction(user_id, text or "", classification.mode, classification.skill_id, f"Created confirmation request for {action_type}.", next_step=resp.get("reply_with"))
+                return response
         except Exception:
             pass  # Never break main bot on skill errors
         # ─────────────────────────────────────────────────────────────────────
