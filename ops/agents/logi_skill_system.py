@@ -559,6 +559,29 @@ SKILL_REGISTRY: dict[str, SkillSpec] = {
                             "training_eligible=false until verifier present",
                             "Does not start training automatically"],
     ),
+    "evidence_check": SkillSpec(
+        skill_id="evidence_check",
+        display_name="Evidence Check",
+        phase="REVIEW",
+        aliases_ru=["проверь файл", "проверь существование", "с доказательствами",
+                    "докажи", "покажи вывод команды", "проверь что файл"],
+        aliases_en=["evidence check", "verify with evidence", "file existence",
+                    "files exist", "show the ls output", "ls -la",
+                    "coaching lesson"],
+        purpose="Answer verification tasks with command evidence: every claim "
+                "must be preceded by pasted command output; unknowns stay UNKNOWN.",
+        requires_confirmation=False,
+        produces_artifact=True,
+        artifact_type="analysis",
+        output_fields=["COMMANDS_USED", "EVIDENCE_FOUND", "PROVEN_FACTS",
+                       "UNPROVEN_OR_UNKNOWN", "SAFE_NEXT_COMMAND"],
+        next_recommended_skills=["investigate", "status_context"],
+        safety_constraints=["Read-only commands only (ls, stat, curl GET, systemctl show)",
+                            "No claim without pasted command output directly above it",
+                            "Misspelled or absent targets reported as FILE_NOT_FOUND, never silently corrected",
+                            "Numeric claims must quote the actual number from output",
+                            "Anything unproven is reported as UNKNOWN"],
+    ),
 }
 
 

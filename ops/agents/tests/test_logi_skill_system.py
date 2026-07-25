@@ -99,3 +99,26 @@ def test_unknown_text_returns_none():
     skill = find_skill("hello how are you today")
     # Very short/generic text should not match confidently
     assert skill is None or skill.skill_id  # None or valid — not crash
+
+
+def test_evidence_check_matched():
+    skill = find_skill("Проверь файл с доказательствами: покажи вывод команды ls -la")
+    assert skill.skill_id == "evidence_check"
+    assert skill.requires_confirmation is False
+    assert "UNPROVEN_OR_UNKNOWN" in skill.output_fields
+
+
+def test_evidence_check_matches_coaching_lesson():
+    lesson = (
+        "COACHING LESSON 1.1: FILE EXISTENCE CHECKS. "
+        "Check if 3 files exist. Run: ls -la /home/axi_omi_sphere/aims-workspace/[filepath]. "
+        "Do NOT claim anything without showing the ls output."
+    )
+    skill = find_skill(lesson)
+    assert skill is not None
+    assert skill.skill_id == "evidence_check"
+
+
+def test_evidence_check_in_registry():
+    ids = {s["skill_id"] for s in list_skills()}
+    assert "evidence_check" in ids
