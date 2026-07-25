@@ -40,6 +40,8 @@ _DONE_DIRS = {
     "needs_approval": _ROOT / "aims_workspace" / "logi_tasks" / "needs_approval",
 }
 _PROBLEM_INBOX = _ROOT / "aims_workspace" / "logi_problem_inbox"
+_INCIDENT_DIR = _ROOT / "aims_workspace" / "runtime_incidents" / "container_crashes"
+_PROCESSED_INCIDENTS = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller" / "processed_incidents.json"
 _REPAIRMAN_DISPATCHED = _ROOT / "aims_workspace" / "repairman_requests" / "dispatched"
 _ARTIFACTS_ROOT = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller"
 _RAW_MATERIAL = _ROOT / "aims_workspace" / "logi_session_memory" / "queue_poller_raw.jsonl"
@@ -136,6 +138,26 @@ def collect_problems(max_items: int = 3) -> list[FailureEnvelope]:
                 description=p.read_text(encoding="utf-8", errors="replace")[:4000],
                 created_at=_now(),
             ))
+    if _INCIDENT_DIR.exists():
+        processed = set()
+        if _PROCESSED_INCIDENTS.exists():
+            try:
+                processed = set(json.loads(_PROCESSED_INCIDENTS.read_text(encoding="utf-8")))
+            except Exception:
+                processed = set()
+        for p in sorted(_INCIDENT_DIR.glob("incident_*.json"), key=lambda f: f.stat().st_mtime):
+            if p.name in processed:
+                continue
+            try:
+                inc = json.loads(p.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            envelopes.append(FailureEnvelope(
+                support_case_id=_case_id(), source="argus_incident",
+                source_ref=str(p), title=f"Argus incident: {p.stem}",
+                description=json.dumps(inc, ensure_ascii=False)[:4000],
+                incident_id=p.stem, created_at=_now(),
+            ))
     if _REPAIRMAN_DISPATCHED.exists():
         for p in sorted(_REPAIRMAN_DISPATCHED.glob("*.json"), key=lambda f: f.stat().st_mtime):
             try:
@@ -213,21 +235,43 @@ def llm_analyze(env: FailureEnvelope, timeout: int = 420) -> dict:
 
 # ── Diagnostics / verification (allowlisted, read-only) ──────────────────────
 
+_SHELL_META = re.compile(r"[;|&`$()<>\\\n\"']")
+
+
+def _command_argv(cmd: str) -> list[str] | None:
+    """Return argv when the command is allowlisted, else None.
+
+    LLM-proposed strings are never given to a shell: metacharacters are
+    rejected outright, the string is tokenized with shlex, and the argv must
+    match an allowlist prefix.
+    """
+    if _SHELL_META.search(cmd) or _FORBIDDEN_TOKENS.search(cmd):
+        return None
+    try:
+        import shlex
+        tokens = shlex.split(cmd)
+    except ValueError:
+        return None
+    if not tokens:
+        return None
+    if any(tokens[:len(p)] == list(p) for p in DIAG_ALLOWLIST):
+        return tokens
+    return None
+
+
 def _command_allowed(cmd: str) -> bool:
-    if _FORBIDDEN_TOKENS.search(cmd):
-        return False
-    tokens = cmd.split()
-    return any(tokens[:len(p)] == list(p) for p in DIAG_ALLOWLIST)
+    return _command_argv(cmd) is not None
 
 
 def run_allowlisted(commands: list[str], workdir: Path, label: str) -> list[dict]:
     results = []
     for cmd in commands[:8]:
-        entry = {"command": cmd, "allowed": _command_allowed(cmd)}
-        if entry["allowed"]:
+        argv = _command_argv(cmd)
+        entry = {"command": cmd, "allowed": argv is not None}
+        if argv is not None:
             try:
                 proc = subprocess.run(
-                    cmd, shell=True, cwd=str(_ROOT), timeout=180,
+                    argv, shell=False, cwd=str(_ROOT), timeout=180,
                     capture_output=True, text=True)
                 entry["exit_code"] = proc.returncode
                 entry["stdout"] = proc.stdout[-4000:]
@@ -259,6 +303,44 @@ def repairman_inspect(env: FailureEnvelope, analysis: dict, diagnostics: list[di
             return json.loads(resp.read())
     except Exception as e:
         return {"status": "error", "error": str(e)[:300]}
+
+
+# ── Independent LLM judge (SLOT14 — different model from the analyst) ───────
+
+def _slot14_url_and_model() -> tuple[str, str]:
+    try:
+        from ops.ollama_resolve import resolve_pc_andrey_ollama_base_url, small_qwen_model_name
+        url = resolve_pc_andrey_ollama_base_url() or "http://127.0.0.1:11434"
+        return url, small_qwen_model_name()
+    except Exception:
+        return "http://127.0.0.1:11434", "qwen25-chat-14-v19:latest"
+
+
+def llm_judge(env: FailureEnvelope, analysis: dict, verification: list[dict],
+              timeout: int = 180) -> dict:
+    """Advisory second opinion from SLOT14: does the evidence support 'solved'?"""
+    url, model = _slot14_url_and_model()
+    evidence = json.dumps(verification, ensure_ascii=False)[:2500]
+    prompt = (
+        "Ты — независимый судья. По фактическим выводам команд реши, решена ли проблема. "
+        'Ответь ТОЛЬКО JSON: {"solved": true|false, "confidence": 0.0-1.0, "reason": "..."}\n\n'
+        f"ПРОБЛЕМА: {analysis.get('problem_summary_ru', env.title)}\n"
+        f"ЗАЯВЛЕННЫЙ ИТОГ: {env.outcome}\n"
+        f"ВЫВОДЫ ПРОВЕРОК: {evidence}"
+    )
+    body = json.dumps({"model": model, "prompt": prompt, "stream": False,
+                       "options": {"temperature": 0.1, "num_predict": 200}}).encode()
+    req = urllib.request.Request(url.rstrip("/") + "/api/generate", data=body,
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            content = json.loads(resp.read()).get("response", "")
+        m = re.search(r"\{.*\}", content, re.DOTALL)
+        verdict = json.loads(m.group(0)) if m else {}
+        verdict["judge_model"] = model
+        return verdict
+    except Exception as e:
+        return {"solved": None, "reason": f"judge unavailable: {e}"[:200], "judge_model": model}
 
 
 # ── Feedback / learning (candidate-only) ─────────────────────────────────────
@@ -328,7 +410,7 @@ def send_telegram(text: str) -> bool:
 # ── Case driver ──────────────────────────────────────────────────────────────
 
 def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_inspect,
-                 notify=send_telegram) -> FailureEnvelope:
+                 notify=send_telegram, judge=llm_judge) -> FailureEnvelope:
     workdir = _ARTIFACTS_ROOT / env.support_case_id
     workdir.mkdir(parents=True, exist_ok=True)
     tmpdir = workdir / "tmp"
@@ -366,6 +448,14 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         verify_pass = bool(ran) and all(r.get("exit_code") == 0 for r in ran)
         if env.outcome == "completed" and ran and not verify_pass:
             env.outcome = "failed"
+
+        # Independent judge (advisory): a disagreeing judge demotes 'completed'
+        # to needs_approval — a human look, never a silent pass.
+        verdict = judge(env, analysis, vres)
+        (workdir / "judge_verdict.json").write_text(
+            json.dumps(verdict, indent=2, ensure_ascii=False), encoding="utf-8")
+        if env.outcome == "completed" and verdict.get("solved") is False:
+            env.outcome = "needs_approval"
     finally:
         env.stage = "FEEDBACK"
         record_feedback(env, analysis, verify_pass)
@@ -388,7 +478,18 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
 
 
 def _finalize_source(env: FailureEnvelope) -> None:
-    """Move the source task file according to the outcome (never silently drop)."""
+    """Move/mark the source record according to the outcome (never silently drop)."""
+    if env.source == "argus_incident" and env.outcome != "deferred":
+        processed = set()
+        if _PROCESSED_INCIDENTS.exists():
+            try:
+                processed = set(json.loads(_PROCESSED_INCIDENTS.read_text(encoding="utf-8")))
+            except Exception:
+                processed = set()
+        processed.add(Path(env.source_ref).name)
+        _PROCESSED_INCIDENTS.parent.mkdir(parents=True, exist_ok=True)
+        _PROCESSED_INCIDENTS.write_text(json.dumps(sorted(processed)), encoding="utf-8")
+        return
     if env.source != "logi_task_queue":
         return
     src = Path(env.source_ref)
