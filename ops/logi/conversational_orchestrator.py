@@ -631,11 +631,11 @@ class LogiAgent:
         """Real, context-grounded chat reply via SLOT32. Falls back to the
         canned reply only when the model is unreachable — never crashes."""
         try:
-            from ops.agents.logi_llm_chat import slot32_chat, build_chat_context_prompt
+            from ops.agents.logi_llm_chat import safe_chat_reply, build_chat_context_prompt
             history = self.user_history.get(user_id, [])[:-1]  # exclude current msg
             recent_case = self._latest_poller_case_context()
             prompt = build_chat_context_prompt(text, history, skill_context, recent_case)
-            return slot32_chat(prompt, max_tokens=500)
+            return safe_chat_reply(prompt, max_tokens=500)
         except Exception:
             return self._build_plain_reply(text, skill_context=skill_context)
 

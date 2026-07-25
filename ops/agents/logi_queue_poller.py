@@ -45,6 +45,7 @@ _PROCESSED_INCIDENTS = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poll
 _REPAIRMAN_DISPATCHED = _ROOT / "aims_workspace" / "repairman_requests" / "dispatched"
 _REPAIRMAN_REVIEWED = _ROOT / "aims_workspace" / "repairman_requests" / "reviewed_by_poller"
 _NOTIFY_CACHE = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller" / "notify_cache.json"
+_BACKLOG_DIGEST = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller" / "backlog_digest.json"
 _NOTIFY_DEDUPE_SEC = 1800
 _ARTIFACTS_ROOT = _ROOT / "aims_workspace" / "logi_artifacts" / "queue_poller"
 _RAW_MATERIAL = _ROOT / "aims_workspace" / "logi_session_memory" / "queue_poller_raw.jsonl"
@@ -303,6 +304,64 @@ def run_allowlisted(commands: list[str], workdir: Path, label: str) -> list[dict
     return results
 
 
+_DOCKER_NAME_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$")
+
+
+def check_backlog_staleness(env: FailureEnvelope) -> dict | None:
+    """For repairman_dispatched incidents naming a Docker service: check
+    whether the container is currently healthy. If it's been running clean
+    since before the dispatch was even created, the old incident is stale —
+    it should never be re-reported as a fresh needs_approval item. Returns
+    evidence dict if stale-resolved, else None (still needs handling)."""
+    if env.source != "repairman_dispatched":
+        return None
+    try:
+        request = json.loads(env.description).get("request", {})
+    except Exception:
+        return None
+    component = str(request.get("affected_component", "")).strip()
+    if not component or not _DOCKER_NAME_RE.match(component):
+        return None
+    container = component if component.startswith(("axiomsphere-", "aims-")) else f"axiomsphere-{component}"
+    try:
+        proc = subprocess.run(
+            ["docker", "inspect", "--format", "{{.State.Status}} {{.RestartCount}} {{.State.StartedAt}}",
+             container],
+            capture_output=True, text=True, timeout=15)
+    except Exception:
+        return None
+    if proc.returncode != 0:
+        return None  # container gone/renamed — not evidence of resolution, let it through
+    parts = proc.stdout.strip().split(" ", 2)
+    if len(parts) < 3:
+        return None
+    status, restarts, started_at = parts[0], parts[1], parts[2]
+    created_at = str(request.get("created_at", ""))
+    if status == "running" and created_at and started_at:
+        try:
+            from datetime import datetime as _dt
+            up_since = _dt.fromisoformat(started_at.replace("Z", "+00:00").split(".")[0] + "+00:00"
+                                         if "." in started_at else started_at.replace("Z", "+00:00"))
+            dispatched_at = _dt.fromisoformat(created_at.replace("Z", "+00:00"))
+            still_running_from_before_dispatch = up_since <= dispatched_at
+        except Exception:
+            still_running_from_before_dispatch = False
+    else:
+        still_running_from_before_dispatch = False
+    if status == "running":
+        return {
+            "stale": True,
+            "container": container,
+            "current_state": status,
+            "restart_count": restarts,
+            "started_at": started_at,
+            "note": ("контейнер стабильно работает" +
+                    (" уже на момент дозвона (событие устарело)" if still_running_from_before_dispatch
+                     else ", текущее состояние здоровое — повторной проблемы не наблюдается")),
+        }
+    return None
+
+
 # ── Resolution (Repairman bridge) ────────────────────────────────────────────
 
 def repairman_inspect(env: FailureEnvelope, analysis: dict, diagnostics: list[dict]) -> dict:
@@ -430,6 +489,22 @@ def write_human_report(env: FailureEnvelope, analysis: dict, verify_pass: bool,
     return path
 
 
+def _is_low_priority_backlog_item(env: FailureEnvelope) -> bool:
+    """True for old, low-impact repairman backlog entries that should be
+    drained silently (report + feedback still written) rather than paging
+    Telegram once per item. Real incidents (impact HIGH/MEDIUM, or no impact
+    field at all — never assume low) still notify individually."""
+    if env.source != "repairman_dispatched":
+        return False
+    try:
+        data = json.loads(env.description)
+    except Exception:
+        return False
+    request = data.get("request", data)
+    impact = str(request.get("impact", "")).strip().lower()
+    return impact == "low"
+
+
 def _dedupe_key(env: FailureEnvelope) -> str:
     return f"{env.source}:{env.incident_id or env.repair_id or env.title}:{env.outcome}"
 
@@ -454,6 +529,44 @@ def _notify_deduped(notify_fn, env: FailureEnvelope, text: str) -> bool:
     _NOTIFY_CACHE.parent.mkdir(parents=True, exist_ok=True)
     _NOTIFY_CACHE.write_text(json.dumps(cache), encoding="utf-8")
     return sent
+
+
+def _record_backlog_digest_item(env: FailureEnvelope, report: Path) -> bool:
+    items = []
+    if _BACKLOG_DIGEST.exists():
+        try:
+            items = json.loads(_BACKLOG_DIGEST.read_text(encoding="utf-8"))
+        except Exception:
+            items = []
+    items.append({"title": env.title[:80], "outcome": env.outcome, "report": str(report)})
+    _BACKLOG_DIGEST.parent.mkdir(parents=True, exist_ok=True)
+    _BACKLOG_DIGEST.write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+    return True   # "handled" (recorded for digest), not a live Telegram send
+
+
+def _maybe_send_backlog_digest(notify_fn) -> None:
+    """Once the low-impact backlog is fully drained (no more items match
+    _is_low_priority_backlog_item on the next sweep), send ONE summary
+    instead of one message per item."""
+    if not _BACKLOG_DIGEST.exists():
+        return
+    remaining = [e for e in collect_problems(max_items=10_000) if _is_low_priority_backlog_item(e)]
+    if remaining:
+        return
+    try:
+        items = json.loads(_BACKLOG_DIGEST.read_text(encoding="utf-8"))
+    except Exception:
+        items = []
+    if not items:
+        _BACKLOG_DIGEST.unlink(missing_ok=True)
+        return
+    needs_approval = sum(1 for i in items if i["outcome"] == "needs_approval")
+    notify_fn(
+        f"Logi: разобрал старый backlog Repairman — {len(items)} низкоприоритетных заявок "
+        f"(low impact). Из них {needs_approval} помечены needs_approval (не критично, можно "
+        f"посмотреть без спешки). Отчёты: aims_workspace/logi_artifacts/queue_poller/."
+    )
+    _BACKLOG_DIGEST.unlink(missing_ok=True)
 
 
 def send_telegram(text: str) -> bool:
@@ -498,7 +611,22 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         run_allowlisted(analysis.get("diagnostic_commands", []), workdir, "diagnostics")
 
         env.stage = "RESOLVE"
-        if analysis.get("classification") == "repair_needed":
+        staleness = check_backlog_staleness(env)
+        if staleness:
+            (workdir / "staleness_check.json").write_text(
+                json.dumps(staleness, indent=2, ensure_ascii=False), encoding="utf-8")
+        if staleness and analysis.get("classification") == "repair_needed":
+            # Old dispatched incident, but the affected service is currently
+            # healthy — never send a human an approval request for something
+            # already resolved. No repairman call, no approval, just evidence.
+            analysis["human_report_ru"] = (
+                f"{analysis.get('human_report_ru', '')}\n\nПроверка актуальности: "
+                f"{staleness['container']} сейчас {staleness['current_state']} "
+                f"(RestartCount={staleness['restart_count']}) — {staleness['note']}. "
+                f"Инцидент устарел, ремонт не требуется."
+            ).strip()
+            env.outcome = "completed"
+        elif analysis.get("classification") == "repair_needed":
             inspect = repairman(env, analysis, [])
             (workdir / "repairman_inspect.json").write_text(
                 json.dumps(inspect, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -510,7 +638,12 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         vres = run_allowlisted(analysis.get("verification_commands", []), workdir, "verification")
         ran = [r for r in vres if r.get("allowed")]
         verify_pass = bool(ran) and all(r.get("exit_code") == 0 for r in ran)
-        if env.outcome == "completed" and not verify_pass:
+        if staleness:
+            # The docker inspect evidence gathered in RESOLVE *is* the proof —
+            # don't demote a correctly-detected stale/self-resolved incident
+            # just because the LLM's own verification_commands list was empty.
+            verify_pass = True
+        elif env.outcome == "completed" and not verify_pass:
             # completed requires real passed evidence; zero evidence is never a pass
             env.outcome = "failed" if ran else "needs_approval"
 
@@ -533,13 +666,23 @@ def process_case(env: FailureEnvelope, llm=llm_analyze, repairman=repairman_insp
         shutil.rmtree(tmpdir, ignore_errors=True)          # CLEANUP intermediates
         status_ru = {"completed": "✅ решена успешно", "needs_approval": "🟡 разобрана, нужен approve на ремонт",
                      "failed": "❌ не решена", "deferred": "⏸ отложена (LLM недоступен)"}.get(env.outcome, env.outcome)
-        telegram_ok = _notify_deduped(
-            notify, env, f"Logi: была проблема «{env.title[:80]}» — {status_ru}.\nДетали: {report}")
+        # Finalize (move/mark the source) BEFORE checking "is the backlog
+        # empty yet" — otherwise this item's own still-present source file
+        # would make the backlog look non-empty on its own last iteration.
+        _finalize_source(env)
+        if _is_low_priority_backlog_item(env):
+            # Old low-impact backlog: report + feedback still written, but no
+            # individual Telegram ping — drained silently, summarized once
+            # the backlog empties (see _maybe_send_backlog_digest).
+            telegram_ok = _record_backlog_digest_item(env, report)
+            _maybe_send_backlog_digest(notify)
+        else:
+            telegram_ok = _notify_deduped(
+                notify, env, f"Logi: была проблема «{env.title[:80]}» — {status_ru}.\nДетали: {report}")
         case = asdict(env)
         case["telegram_notified"] = bool(telegram_ok)
         (workdir / "case.json").write_text(
             json.dumps(case, indent=2, ensure_ascii=False), encoding="utf-8")
-        _finalize_source(env)
     return env
 
 

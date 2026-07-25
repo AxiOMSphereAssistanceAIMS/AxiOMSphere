@@ -23,6 +23,7 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(qp, "_HEARTBEAT", tmp_path / "hb.json")
     monkeypatch.setattr(qp, "_REPORT_DIR", tmp_path / "reports")
     monkeypatch.setattr(qp, "_NOTIFY_CACHE", tmp_path / "notify_cache.json")
+    monkeypatch.setattr(qp, "_BACKLOG_DIGEST", tmp_path / "backlog_digest.json")
     monkeypatch.setattr(qp, "_REPAIRMAN_REVIEWED", tmp_path / "reviewed_default")
     monkeypatch.setattr(qp, "_DONE_DIRS", {
         "completed": tmp_path / "completed",
@@ -288,3 +289,135 @@ def test_notify_dedupe_skips_identical_repeat(sandbox):
     qp.process_case(env2, llm=lambda e: _analysis(), notify=lambda t: calls.append(t) or True,
                     judge=lambda *a: {"solved": True})
     assert len(calls) == 1
+
+
+def _seed_dispatched(disp_dir, name, impact="low", task_name="old smoke"):
+    disp_dir.mkdir(exist_ok=True)
+    (disp_dir / f"{name}.json").write_text(json.dumps(
+        {"request": {"request_id": name, "task_name": task_name, "impact": impact}}),
+        encoding="utf-8")
+
+
+def test_low_impact_backlog_suppresses_individual_telegram(sandbox, monkeypatch):
+    disp = sandbox / "dispatched"
+    monkeypatch.setattr(qp, "_REPAIRMAN_DISPATCHED", disp)
+    monkeypatch.setattr(qp, "_REPAIRMAN_REVIEWED", sandbox / "reviewed")
+    _seed_dispatched(disp, "low_1", impact="low")
+    _seed_dispatched(disp, "low_2", impact="low")
+    calls = []
+    for _ in range(2):
+        env = qp.collect_problems(max_items=1)[0]
+        qp.process_case(env, llm=lambda e: _analysis(),
+                        notify=lambda t: calls.append(t) or True,
+                        judge=lambda *a: {"solved": True})
+    # both items processed (moved out of dispatched/) but no per-item ping,
+    # only the final digest once the backlog is empty
+    assert not any(disp.glob("*.json"))
+    assert len(calls) == 1
+    assert "backlog" in calls[0].lower() or "низкоприоритетных" in calls[0]
+
+
+def test_high_impact_backlog_still_pings_individually(sandbox, monkeypatch):
+    disp = sandbox / "dispatched"
+    monkeypatch.setattr(qp, "_REPAIRMAN_DISPATCHED", disp)
+    monkeypatch.setattr(qp, "_REPAIRMAN_REVIEWED", sandbox / "reviewed")
+    _seed_dispatched(disp, "argus_high_1", impact="HIGH", task_name="Diagnose crash exit 137")
+    env = qp.collect_problems()[0]
+    calls = []
+    qp.process_case(env, llm=lambda e: _analysis(), notify=lambda t: calls.append(t) or True,
+                    judge=lambda *a: {"solved": True})
+    assert len(calls) == 1
+    assert "argus_high_1" in calls[0] or "Diagnose crash" in calls[0]
+
+
+def test_is_low_priority_backlog_item_detection(sandbox):
+    low = qp.FailureEnvelope(support_case_id="c1", source="repairman_dispatched",
+                             source_ref="x", title="t",
+                             description=json.dumps({"request": {"impact": "low"}}))
+    high = qp.FailureEnvelope(support_case_id="c2", source="repairman_dispatched",
+                              source_ref="x", title="t",
+                              description=json.dumps({"request": {"impact": "HIGH"}}))
+    no_field = qp.FailureEnvelope(support_case_id="c3", source="repairman_dispatched",
+                                  source_ref="x", title="t", description="{}")
+    non_repairman = qp.FailureEnvelope(support_case_id="c4", source="logi_task_queue",
+                                       source_ref="x", title="t",
+                                       description=json.dumps({"request": {"impact": "low"}}))
+    assert qp._is_low_priority_backlog_item(low) is True
+    assert qp._is_low_priority_backlog_item(high) is False
+    assert qp._is_low_priority_backlog_item(no_field) is False  # never assume low
+    assert qp._is_low_priority_backlog_item(non_repairman) is False
+
+
+def test_staleness_check_detects_healthy_container(monkeypatch):
+    env = qp.FailureEnvelope(
+        support_case_id="c1", source="repairman_dispatched", source_ref="x", title="t",
+        description=json.dumps({"request": {
+            "affected_component": "omi-quality-gate",
+            "created_at": "2026-06-22T08:40:25+00:00",
+        }}))
+
+    def fake_run(argv, **kw):
+        assert argv[:2] == ["docker", "inspect"]
+        r = qp.subprocess.CompletedProcess(argv, 0, stdout="running 0 2026-07-24T10:00:00.000Z\n", stderr="")
+        return r
+
+    monkeypatch.setattr(qp.subprocess, "run", fake_run)
+    result = qp.check_backlog_staleness(env)
+    assert result is not None
+    assert result["stale"] is True
+    assert result["container"] == "axiomsphere-omi-quality-gate"
+    assert result["current_state"] == "running"
+
+
+def test_staleness_check_returns_none_for_crashlooping_container(monkeypatch):
+    env = qp.FailureEnvelope(
+        support_case_id="c1", source="repairman_dispatched", source_ref="x", title="t",
+        description=json.dumps({"request": {"affected_component": "omi-quality-gate",
+                                             "created_at": "2026-06-22T08:40:25+00:00"}}))
+
+    def fake_run(argv, **kw):
+        return qp.subprocess.CompletedProcess(argv, 0, stdout="restarting 47 2026-07-25T20:00:00.000Z\n", stderr="")
+
+    monkeypatch.setattr(qp.subprocess, "run", fake_run)
+    assert qp.check_backlog_staleness(env) is None
+
+
+def test_staleness_check_returns_none_for_non_dispatched_source():
+    env = qp.FailureEnvelope(support_case_id="c1", source="logi_task_queue", source_ref="x",
+                             title="t", description="{}")
+    assert qp.check_backlog_staleness(env) is None
+
+
+def test_staleness_check_rejects_malicious_component_name(monkeypatch):
+    called = []
+    monkeypatch.setattr(qp.subprocess, "run", lambda *a, **k: called.append(a) or (_ for _ in ()).throw(AssertionError("should not run")))
+    env = qp.FailureEnvelope(
+        support_case_id="c1", source="repairman_dispatched", source_ref="x", title="t",
+        description=json.dumps({"request": {"affected_component": "x; rm -rf /"}}))
+    assert qp.check_backlog_staleness(env) is None
+    assert not called
+
+
+def test_stale_repair_needed_becomes_completed_not_needs_approval(sandbox, monkeypatch):
+    def fake_run(argv, **kw):
+        if argv[:2] == ["docker", "inspect"]:
+            return qp.subprocess.CompletedProcess(argv, 0, stdout="running 0 2026-07-24T10:00:00.000Z\n", stderr="")
+        return qp.subprocess.CompletedProcess(argv, 0, stdout="", stderr="")
+    monkeypatch.setattr(qp.subprocess, "run", fake_run)
+
+    env = qp.FailureEnvelope(
+        support_case_id="c1", source="repairman_dispatched", source_ref="x",
+        title="old incident", description=json.dumps({"request": {
+            "affected_component": "omi-quality-gate", "impact": "HIGH",
+            "created_at": "2026-06-22T08:40:25+00:00"}}))
+
+    def llm(e):
+        a = _analysis("repair_needed")
+        a["verification_commands"] = []  # LLM didn't even think to check
+        return a
+
+    result = qp.process_case(env, llm=llm, notify=lambda t: True, judge=lambda *a: {"solved": True})
+    assert result.outcome == "completed"
+    report = [a for a in result.artifacts if a.endswith(".md")][0]
+    text = Path(report).read_text(encoding="utf-8")
+    assert "устарел" in text

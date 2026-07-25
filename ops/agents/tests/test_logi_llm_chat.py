@@ -92,3 +92,21 @@ def test_build_chat_context_prompt_without_case_or_history():
     prompt = chat.build_chat_context_prompt("привет", history=[], skill_context="")
     assert "привет" in prompt
     assert "ПОСЛЕДНИЙ РАЗОБРАННЫЙ КЕЙС" not in prompt
+
+
+def test_safe_chat_reply_blocks_fabricated_approval():
+    with patch("urllib.request.urlopen",
+              return_value=_fake_response("Кейс `x` одобрен.\nСтатус: needs_approval → выполнен.")):
+        result = chat.safe_chat_reply("тест")
+    assert result == chat.NO_ACTION_TAKEN_REPLY
+
+
+def test_safe_chat_reply_passes_through_honest_answer():
+    honest = "Кейс требует одобрения, потому что репарация задета политикой approval_gate."
+    with patch("urllib.request.urlopen", return_value=_fake_response(honest)):
+        assert chat.safe_chat_reply("тест") == honest
+
+
+def test_fabricated_action_pattern_catches_real_incident_text():
+    real_fabrication = "Кейс `argus_20260622T084025Z_50504e00` одобрен.\nСтатус: `needs_approval` → **выполнен**."
+    assert chat._FABRICATED_ACTION_PATTERN.search(real_fabrication)

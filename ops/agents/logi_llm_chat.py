@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 
@@ -29,6 +30,27 @@ _DIRECT_CANDIDATES = [
     ("http://172.18.0.1:8084/v1", SLOT32_PROXY_TOKEN),
     ("http://host.docker.internal:8084/v1", SLOT32_PROXY_TOKEN),
 ]
+
+# The chat path is READ-ONLY: it has no code path that can actually approve,
+# execute, or change the status of anything. If the model's free-text reply
+# implies such an action happened ("одобрен", "статус: X → выполнен"), that is
+# a fabrication — this pattern comes from a live incident where the chat
+# claimed "Кейс одобрен. Статус: needs_approval → выполнен." with zero backing
+# action. Any match is replaced with an honest, disciplined reply.
+_FABRICATED_ACTION_PATTERN = re.compile(
+    r"(кейс\s+.{0,40}(одобрен[оа]?\b|подтвержд[её]н[оа]?\b|выполнен[оа]?\b)|"
+    r"статус\s*:?.{0,60}(→|->).{0,40}(выполнен[оа]?\b|одобрен[оа]?\b|approved\b|completed\b)|"
+    r"(одобряю|подтверждаю|запускаю)\s+ремонт|"
+    r"ремонт\s+(запущен[оа]?|выполнен[оа]?)\b)",
+    re.IGNORECASE,
+)
+
+NO_ACTION_TAKEN_REPLY = (
+    "Этот чат — только для объяснения контекста, он не может одобрять или "
+    "выполнять ремонт. Чтобы реально одобрить действие, используйте штатный "
+    "confirmation flow (команда CONFIRM <id> в Telegram) — это единственный "
+    "путь, который меняет статус кейса."
+)
 
 CANNED_FALLBACKS = {
     "Принял. Работаю.",
@@ -81,6 +103,18 @@ def slot32_chat(prompt: str, max_tokens: int = 700, temperature: float = 0.3,
     raise Slot32Unavailable("; ".join(errors)[:400] or "no candidates configured")
 
 
+def safe_chat_reply(prompt: str, max_tokens: int = 700, temperature: float = 0.3,
+                    timeout: int = 300) -> str:
+    """Like slot32_chat, but for the open-ended conversational path: if the
+    model's reply claims a state change it has no way to actually perform
+    (approve/execute/complete a case), replace it with an honest correction
+    instead of letting the fabrication reach the user."""
+    reply = slot32_chat(prompt, max_tokens=max_tokens, temperature=temperature, timeout=timeout)
+    if _FABRICATED_ACTION_PATTERN.search(reply):
+        return NO_ACTION_TAKEN_REPLY
+    return reply
+
+
 def build_chat_context_prompt(text: str, history: list[str], skill_context: str = "",
                               recent_case: dict | None = None) -> str:
     """Compose a grounded chat prompt: recent conversation + latest closed-loop
@@ -90,7 +124,12 @@ def build_chat_context_prompt(text: str, history: list[str], skill_context: str 
         "Ты — Logi, оркестратор инженерной команды AIMS. Отвечай по-русски, "
         "кратко и по существу, используя фактический контекст ниже. "
         "Если в вопросе просят объяснить/описать что-то из недавнего кейса — "
-        "отвечай по данным кейса, а не общими словами.",
+        "отвечай по данным кейса, а не общими словами.\n"
+        "ВАЖНОЕ ОГРАНИЧЕНИЕ: этот чат НЕ может одобрять, выполнять или менять "
+        "статус кейсов/ремонтов — у тебя нет для этого механизма. Если "
+        "пользователь просит одобрить или выполнить что-то, объясни, что для "
+        "этого нужен CONFIRM в Telegram, и НИКОГДА не пиши, что действие уже "
+        "выполнено или одобрено.",
     ]
     if history:
         parts.append("ПОСЛЕДНИЕ СООБЩЕНИЯ ДИАЛОГА:\n" + "\n".join(f"- {h}" for h in history[-5:]))
