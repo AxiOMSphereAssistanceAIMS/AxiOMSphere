@@ -80,8 +80,19 @@ def test_list_skills_returns_all():
     assert len(skills) >= 15
     ids = {s["skill_id"] for s in skills}
     for expected in ["office_hours", "ceo_review", "eng_review", "capability_gap",
-                     "patch_prompt", "auditor_request", "skill_request", "learning_registration"]:
+                     "patch_prompt", "auditor_request", "skill_request", "learning_registration",
+                     "session_discovery", "session_summary", "session_recall",
+                     "session_playbook", "session_learning_registration"]:
         assert expected in ids
+
+
+def test_session_learning_skills_matched():
+    assert find_skill("Логи, изучи прошлые сессии").skill_id == "session_discovery"
+    assert find_skill("Логи, найди похожие прошлые задачи").skill_id == "session_recall"
+    assert find_skill("Логи, собери playbook из прошлых ошибок").skill_id == "session_playbook"
+    skill = find_skill("Логи, зарегистрируй урок из этой сессии")
+    assert skill.skill_id == "session_learning_registration"
+    assert skill.requires_confirmation is True
 
 
 def test_unknown_text_returns_none():
