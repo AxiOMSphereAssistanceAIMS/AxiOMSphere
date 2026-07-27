@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import asyncio
+import os
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta
 from enum import Enum
@@ -437,9 +438,17 @@ class ProjectStateManager:
 _manager_instance: Optional[ProjectStateManager] = None
 
 
-async def get_manager(redis_url: str = "redis://localhost:6379") -> ProjectStateManager:
-    """Get or create the global ProjectStateManager instance."""
+async def get_manager(redis_url: Optional[str] = None) -> ProjectStateManager:
+    """Get or create the global ProjectStateManager instance.
+
+    ``REDIS_URL`` overrides the default target when the caller doesn't pass
+    an explicit ``redis_url`` — see ``ops.logi.event_bus.get_bus`` for why
+    (shared production DB 0 vs an isolated test DB).
+    """
     global _manager_instance
+
+    if redis_url is None:
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
 
     if not _manager_instance:
         _manager_instance = ProjectStateManager(redis_url)

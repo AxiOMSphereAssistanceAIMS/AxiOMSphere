@@ -8,6 +8,7 @@ Port: 8005. No authentication — internal service only.
 from __future__ import annotations
 
 import logging
+import re
 import sys
 from collections import deque
 from datetime import datetime, timezone
@@ -38,6 +39,10 @@ app = FastAPI(title="MainyRepairAgent", version="2.0.0")
 # Stores True (success) / False (failure) for the last 10 outcomes.
 _CIRCUIT_WINDOW = 10
 _CIRCUIT_THRESHOLD = 0.50  # 50 % errors → open
+
+_UUID_RE = re.compile(
+    r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+)
 _outcomes: deque[bool] = deque(maxlen=_CIRCUIT_WINDOW)
 
 
@@ -83,12 +88,16 @@ def execute(req: ExecuteRequest, _auth: None = Depends(verify_service_token)) ->
     Requires audit_id — PoliAgent must have already approved the action.
     Returns 403 if audit_id is missing, 503 if circuit breaker is open.
     """
-    # Guard: audit_id must be present
-    if not req.audit_id or not req.audit_id.strip():
-        log.warning("execute rejected — missing audit_id")
+    # Guard: audit_id must be present and shaped like a real review token.
+    # This does not yet verify the token was actually issued by PoliAgent/
+    # SecurityAgent for THIS action (that requires a shared issuance ledger
+    # across services, a separate architectural item) -- it only closes the
+    # trivial bypass of supplying any non-empty string.
+    if not req.audit_id or not _UUID_RE.match(req.audit_id.strip()):
+        log.warning("execute rejected — missing or malformed audit_id")
         raise HTTPException(
             status_code=403,
-            detail="audit_id is required; PoliAgent must approve before execution",
+            detail="audit_id is required and must be a review-token UUID issued by PoliAgent/SecurityAgent before execution",
         )
 
     # Guard: circuit breaker

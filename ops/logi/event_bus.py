@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import asyncio
 import logging
+import os
 import time
 from dataclasses import dataclass, asdict
 from datetime import datetime
@@ -136,11 +137,20 @@ class EventBus:
             self.redis_client = None
 
     async def disconnect(self):
-        """Close Redis connection and cleanup."""
+        """Close Redis connection and cleanup.
+
+        Clears the client/pubsub references after closing so a later
+        get_bus() call on this same singleton detects "not connected" and
+        reconnects, instead of retrying every publish/read against an
+        already-closed connection until it silently falls back to an
+        empty in-memory ledger.
+        """
         if self.pubsub:
             await self.pubsub.close()
+            self.pubsub = None
         if self.redis_client:
             await self.redis_client.close()
+            self.redis_client = None
 
     # ============ Publishing ============
 
@@ -207,11 +217,15 @@ class EventBus:
 
         self._handlers[event_type.value].append(handler)
 
-        # If Redis is available, start listening
+        # If Redis is available, start listening. The pubsub subscription
+        # itself is established synchronously here (not inside the spawned
+        # task) so that publishes issued right after subscribe() returns are
+        # not silently dropped by a not-yet-attached Redis pub/sub listener.
         if self.redis_client:
-            # Start a background task to listen on this channel
             channel = f"event:{event_type.value}"
-            asyncio.create_task(self._redis_listen(channel, handler))
+            pubsub = self.redis_client.pubsub()
+            await pubsub.subscribe(channel)
+            asyncio.create_task(self._redis_listen_loop(pubsub, handler))
 
     async def subscribe_pattern(
         self,
@@ -237,13 +251,20 @@ class EventBus:
                 print(f"⚠ Handler error for {event.event_type}: {e}")
 
     async def _redis_listen(self, channel: str, handler: Callable[[Event], Any]):
-        """Listen to a Redis channel and call handler."""
+        """Listen to a Redis channel and call handler.
+
+        Retained for any external caller relying on the old fire-and-forget
+        signature; subscribe() itself no longer calls this.
+        """
         if not self.redis_client:
             return
 
         pubsub = self.redis_client.pubsub()
         await pubsub.subscribe(channel)
+        await self._redis_listen_loop(pubsub, handler)
 
+    async def _redis_listen_loop(self, pubsub, handler: Callable[[Event], Any]):
+        """Consume messages from an already-subscribed pubsub object."""
         try:
             async for message in pubsub.listen():
                 if message['type'] == 'message':
@@ -340,15 +361,35 @@ class EventBus:
 _bus_instance: Optional[EventBus] = None
 
 
-async def get_bus(redis_url: str = "redis://localhost:6379") -> EventBus:
-    """Get or create the global EventBus instance."""
+async def get_bus(redis_url: Optional[str] = None) -> EventBus:
+    """Get or create the global EventBus instance.
+
+    ``REDIS_URL`` overrides the default target when the caller doesn't pass
+    an explicit ``redis_url`` — every production container already sets this
+    explicitly (e.g. ``redis://aims-redis:6379``), so this only changes
+    behavior for local/test runs that leave it unset. Tests point it at an
+    isolated Redis DB instead of the shared production DB 0 (``aims-redis``
+    publishes to ``127.0.0.1:6379``, so an unqualified ``localhost:6379``
+    from a host-side test process is the same instance live containers
+    publish/subscribe on). Uses the same env var name as
+    ``argus_eventbus_bridge.get_event_bus()`` so both resolve to the same
+    target even when the two modules are dual-imported under different
+    dotted paths (``ops.logi.event_bus`` vs ``logi.event_bus``), which would
+    otherwise give each its own singleton pointed at a different DB.
+    """
     global _bus_instance
+
+    if redis_url is None:
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
 
     if not _bus_instance:
         _bus_instance = EventBus(redis_url)
         await _bus_instance.connect()
-    else:
-        pass
+    elif _bus_instance.redis_client is None:
+        # A prior caller disconnected this singleton (e.g. end-of-test
+        # cleanup); reconnect instead of silently degrading every
+        # subsequent publish/read to the empty in-memory fallback.
+        await _bus_instance.connect()
 
     return _bus_instance
 

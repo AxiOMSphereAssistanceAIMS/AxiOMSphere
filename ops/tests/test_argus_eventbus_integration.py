@@ -95,13 +95,15 @@ class TestArgusEventBusBridge:
 
         assert result is True
 
-        # Verify event
-        events = await bus.get_events(EventType.ARGUS_CRITICAL_INCIDENT, limit=10)
-        assert len(events) > 0
-
-        latest = events[0]
-        assert latest.data["service"] == "pipeline-coordinator"
-        assert "137" in latest.data["error"]
+        # Verify event. The bus is shared with live production traffic during
+        # concurrent runs, so find this test's own event by content rather
+        # than assuming it is the most recent (events[0]).
+        events = await bus.get_events(EventType.ARGUS_CRITICAL_INCIDENT, limit=20)
+        matching = [
+            e for e in events
+            if e.data.get("service") == "pipeline-coordinator" and "137" in e.data.get("error", "")
+        ]
+        assert len(matching) > 0
 
         await bus.disconnect()
 
@@ -160,13 +162,12 @@ class TestArgusToTaskIntegration:
 
         await asyncio.sleep(0.5)
 
-        # Check repair task was created
+        # Check repair task was created. The task list is shared with live
+        # production traffic during concurrent runs, so find this test's own
+        # task by content rather than assuming it is the first entry.
         repair_tasks = await manager.list_tasks(task_type=TaskType.REPAIR)
-        assert len(repair_tasks) > 0
-
-        repair = repair_tasks[0]
-        assert "docagent" in repair.title.lower()
-        assert repair.priority >= 90
+        matching = [t for t in repair_tasks if "docagent" in t.title.lower() and t.priority >= 90]
+        assert len(matching) > 0
 
         await bus.disconnect()
         await manager.disconnect()

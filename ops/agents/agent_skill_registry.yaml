@@ -1,0 +1,746 @@
+version: 1
+source:
+  adaptation_doc: docs/agents/AIMS_FULLSTACK_SKILL_ADAPTATION.md
+  fullstack_extracted_json: aims_workspace/research/fullstack_skills/fullstack_skill_bodies_extracted.json
+global_skill_packs:
+  - aims_workspace/skills/agent-capability-escalation/SKILL.md
+capability_support_contract:
+  implementation: ops/agents/self_learning/capability_support.py
+  storage: aims_workspace/agent_self_learning/capability_support
+  enforcement_status: ACTIVE_CANONICAL_SCHEDULER_AND_WATCHDOG_DIRECT_ENTRYPOINT_BRIDGES_PENDING
+  enforced_entrypoints:
+    - ops/scheduler/agent_scheduler_adapter.py
+    - ops/scheduler/task_scheduler.py
+    - ops/agents/self_learning/capability_support_worker.py
+  known_boundary: direct_agent_entrypoints_that_bypass_the_canonical_scheduler_receive_the_global_skill_but_are_not_yet_machine_enforced
+  capability_ack_required_before_execution: true
+  allowed_ack_statuses:
+    - KNOWS_HOW
+    - NEEDS_NEW_SKILL
+    - NEEDS_SKILL_UPDATE
+    - BLOCKED_EXTERNAL
+  non_ready_action: write_raw_material_and_open_codex_auditor_case
+  silent_ack_action: open_support_case
+  close_requires:
+    - auditor_validation_evidence
+    - replay_of_original_task
+    - pass_verdict_from_original_agent
+engineering_team_operational_skills:
+  source_bindings: ops/agents/contracts/engineering_operational_skill_bindings.json
+  internal_contracts: ops/agents/contracts/engineering_internal_contracts.json
+  activation_rule: every_active_role_requires_bound_skill_entrypoint_contract_and_gate
+  inspect_mode_rule: no_source_write_no_queue_submit_no_production_mutation
+  repair_mode_rule: approved_contract_and_codex_gate_required_before_write
+  agents:
+    logi: aims_workspace/skills/engineering-team/logi/SKILL.md
+    architect: aims_workspace/skills/engineering-team/architect/SKILL.md
+    omi: aims_workspace/skills/engineering-team/omi/SKILL.md
+    repairman: aims_workspace/skills/engineering-team/repairman/SKILL.md
+    qa-agent: aims_workspace/skills/engineering-team/qa-agent/SKILL.md
+    poli: aims_workspace/skills/engineering-team/poli/SKILL.md
+    security: aims_workspace/skills/engineering-team/security/SKILL.md
+    release-agent: aims_workspace/skills/engineering-team/release-agent/SKILL.md
+    argus: aims_workspace/skills/engineering-team/argus/SKILL.md
+    traini: aims_workspace/skills/engineering-team/traini/SKILL.md
+    docs-agent: aims_workspace/skills/engineering-team/docs-agent/SKILL.md
+    codex-auditor: aims_workspace/skills/engineering-team/codex-auditor/SKILL.md
+chat_layers:
+  user_group: short_status_only
+  engineering_private: diagnostics_and_artifacts
+  internal_trace: jsonl_events
+  ceo_logi_private: strategy_and_prioritization
+shared_model_resource_contracts:
+  concurrency:
+    compatible_pairs:
+      - [slot14, slot32]
+      - [slot14, slot120]
+    mutually_exclusive_pairs:
+      - [slot32, slot120]
+    enforcement:
+      - ops/scheduler/resource_policy.py
+      - ops/scheduler/dgx_model_load_gate.py
+  slot14:
+    model: qwen25-chat-14-v19:latest
+    primary_host: PC_ANDREY
+    primary_endpoints:
+      - http://10.77.77.2:11434
+      - http://192.168.72.134:11434
+    fallback_host: DGX_SPARK
+    fallback_endpoint: http://127.0.0.1:11434
+    fallback_identity_policy: exact_model_name_required
+    missing_exact_fallback_policy: fail_closed
+  slot32:
+    cardinality: 1
+    admission_policy: REDIS_FIFO_SINGLE_LEASE
+    host_endpoint: http://127.0.0.1:8084
+    container_endpoint: http://slot32-proxy:8084
+    redis_queue_key: model:slot32:requests:waiting
+    redis_lease_key: model:slot32:lease
+    direct_runtime_endpoint: http://127.0.0.1:18081/v1
+    direct_runtime_access: runtime_owner_and_health_checks_only
+    inference_bypass_forbidden: true
+    busy_policy: wait_in_fifo_queue
+    busy_fallback_to_another_model: forbidden
+    lease_release_required_on:
+      - success
+      - upstream_error
+      - request_cancellation
+      - queue_timeout
+agents:
+  logi:
+    skill_packs:
+    - docs/agents/skills/logi_strategy.md
+    - aims_workspace/skills/document_work/document_work_skill_pack.md
+    - aims_workspace/skills/project-backup-stack/SKILL.md
+    - .claude/skills/model-backend-switch/SKILL.md
+    doc_skills:
+      runner: ops/docagent/doc_skills.py
+      skills:
+      - doc-search
+      - doc-analyze
+      - doc-generate
+      - doc-presentation
+    source_fullstack_skills:
+    - office-hours
+    - plan-ceo-review
+    - autoplan
+    - design-consultation
+    - plan-design-review
+    - plan-devex-review
+  axi:
+    skill_packs:
+    - docs/agents/skills/axi_engineering.md
+    - aims_workspace/skills/standard-driven-document-authoring/SKILL.md
+    - docs/agents/skills/generated/docsreg-registry-consistency-audit-axi.md
+    source_fullstack_skills:
+    - pair-agent
+    - codex
+    - review
+    registered_skills:
+      - skill_id: contextual_standard_discovery_and_document_review
+        agent: axi
+        version: "1.0"
+        module: ops/agents/skills/contextual_standard_discovery_and_document_review.py
+        status: ACTIVE_RUNTIME
+        risk_level: medium
+        primary_model_slot: 32
+        future_training_targets:
+          - 14
+        excluded_model_slots:
+          - 120
+        domains:
+          - document_review
+          - standards_discovery
+          - benchmark_creation
+          - gap_assessment
+        external_lookup_policy: anonymized_context_only
+        forbidden:
+          - sending_full_documents_to_external_providers
+          - secret_exfiltration
+          - copyrighted_standard_reproduction
+          - unsupported_mandatory_compliance_claims
+          - slot120_teacher_or_judge_usage
+  docsreg:
+    skill_packs:
+    - docs/agents/skills/contextual_standard_discovery_and_document_review.md
+    registered_skills:
+      - skill_id: contextual_standard_discovery_and_document_review
+        agent: docsreg
+        version: "1.0"
+        module: ops/agents/skills/contextual_standard_discovery_and_document_review.py
+        process_adapter: ops/docsreg/product_document_memory_adapter.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        domains:
+          - standards_discovery
+          - reference_governance
+          - certification_precheck
+          - benchmark_creation
+        owner_agents:
+          - axi
+          - doci
+        external_lookup_policy: anonymized_context_only
+        default_provider_policy: fixture_or_internal_rag_only
+        external_lookup_requires_explicit_opt_in: true
+        forbidden:
+          - sending_full_documents_to_external_providers
+          - secret_exfiltration
+          - copyrighted_standard_reproduction
+          - unsupported_mandatory_compliance_claims
+          - slot120_teacher_or_judge_usage
+  docgen:
+    skill_packs:
+    - docs/agents/skills/contextual_standard_discovery_and_document_review.md
+    - aims_workspace/skills/standard-driven-document-authoring/SKILL.md
+    registered_skills:
+      - skill_id: contextual_standard_discovery_and_document_review
+        agent: docgen
+        version: "1.0"
+        module: ops/agents/skills/contextual_standard_discovery_and_document_review.py
+        process_adapter: ops/docgen/product_document_memory_adapter.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        domains:
+          - standards_discovery
+          - document_generation_context
+          - self_review
+          - benchmark_creation
+        owner_agents:
+          - axi
+          - doci
+        external_lookup_policy: anonymized_context_only
+        default_provider_policy: fixture_or_internal_rag_only
+        external_lookup_requires_explicit_opt_in: true
+        forbidden:
+          - sending_full_documents_to_external_providers
+          - secret_exfiltration
+          - copyrighted_standard_reproduction
+          - unsupported_mandatory_compliance_claims
+          - slot120_teacher_or_judge_usage
+  architect:
+    skill_packs:
+    - docs/agents/skills/architect_planning.md
+    source_fullstack_skills:
+    - plan-eng-review
+    - design-review
+    - plan-design-review
+  security:
+    skill_packs:
+    - docs/agents/skills/security_poli.md
+    source_fullstack_skills:
+    - cso
+    - careful
+    - guard
+    - freeze
+    - unfreeze
+  poli:
+    skill_packs:
+    - docs/agents/skills/security_poli.md
+    source_fullstack_skills:
+    - cso
+    - guard
+  qa-agent:
+    skill_packs:
+    - docs/agents/skills/qa_agent.md
+    source_fullstack_skills:
+    - qa
+    - qa-only
+    - browse
+    - open-fullstack-browser
+    - scrape
+  release-agent:
+    skill_packs:
+    - docs/agents/skills/release_agent.md
+    source_fullstack_skills:
+    - ship
+    - land-and-deploy
+    - document-release
+    - landing-report
+    - setup-deploy
+  argus:
+    skill_packs:
+    - docs/agents/skills/argus_runtime.md
+    source_fullstack_skills:
+    - canary
+    - health
+    - investigate
+    - guard
+    - freeze
+    - unfreeze
+  watchdog-agent:
+    skill_packs:
+    - docs/agents/skills/argus_runtime.md
+    source_fullstack_skills:
+    - canary
+    - health
+    - investigate
+  repairman:
+    skill_packs:
+    - aims_workspace/skills/engineering-team/repairman/SKILL.md
+    registered_skills:
+      - skill_id: source_grounded_engineering_inspection
+        agent: repairman
+        version: "1.0"
+        module: ops/agents/engineering_repairman_inspection.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: low
+        activation_stage: engineering_team_eng_h08
+        output_contract: ENG-H09
+        invariants:
+          - inspect_only: true
+          - source_write: false
+          - queue_submit: false
+          - fact_ids_required: true
+          - local_model_slot: 32
+      - skill_id: failure_to_repair_orchestration
+        agent: repairman
+        version: "1.0"
+        module: ops/agents/failure_to_repair/repair_orchestrator.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: high
+        forbidden:
+          - training_execution
+          - model_registry_mutation
+          - completion_without_validation_evidence
+  codex-auditor:
+    skill_packs:
+    - aims_workspace/skills/engineering-team/codex-auditor/SKILL.md
+    registered_skills:
+      - skill_id: independent_engineering_review
+        agent: codex-auditor
+        version: "1.0"
+        module: ops/agents/codex_auditor_adapter.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        forbidden:
+          - production_implementation
+          - fabricated_review_result
+          - approval_without_evidence_reference
+  traini:
+    skill_packs:
+    - docs/agents/skills/traini_learning.md
+    - aims_workspace/skills/traini-failed-scope-pair-recovery/SKILL.md
+    - aims_workspace/skills/traini-raw-material-to-pairs/SKILL.md
+    - aims_workspace/skills/document_work/document_work_skill_pack.md
+    - aims_workspace/skills/standard-driven-document-authoring/SKILL.md
+    doc_skills:
+      runner: ops/docagent/doc_skills.py
+      skills:
+      - doc-analyze
+      - doc-search
+      - doc-ingest
+    source_fullstack_skills:
+    - benchmark
+    - benchmark-models
+    - plan-tune
+    - retro
+    - learn
+    - openclaw/skills/fullstack-openclaw-retro
+    registered_skills:
+      - skill_id: traini_slot32_tuning_lifecycle
+        agent: traini
+        version: "1.0"
+        module: ops/ft/traini/traini_slot32_tuning_skill.py
+        status: ACTIVE_RUNTIME
+        risk_level: high
+        nightly_only: true
+        requires_approval_for:
+          - training_launch
+          - registry_promotion
+          - model_deletion
+          - automatic_external_teacher_call
+        policy_refs:
+          - docs/traini/SLOT32_TUNING_LIFECYCLE_PLAYBOOK.md
+          - docs/traini/SLOT32_DATASET_GENERATION_POLICY.md
+          - docs/traini/TRAINI_TEACHER_DATA_GENERATION_POLICY.md
+          - docs/AIMS_TEACHER_PROVIDER_POLICY.md
+        approved_teacher_routes:
+          - manual_external_teacher
+          - external_advisory_teacher
+          - omniroute_sonnet_class
+          - hermes_review
+        invariants:
+          - slot120_not_teacher: true
+          - slot120_not_judge: true
+          - no_auto_promote: true
+          - no_registry_change_without_benchmark_victory: true
+          - no_previous_champion_deletion: true
+          - teacher_provider: manual_external_teacher
+          - external_advisory_teacher_allowed: true
+          - training_schedule: nightly_only
+        smoke_test: ops/evals/traini_slot32_tuning_skill_smoke.py
+      - skill_id: traini_failed_scope_pair_recovery
+        agent: traini
+        version: "1.0"
+        module: ops/ft/traini/autopilot/failed_scope_pair_recovery.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        activation_stage: post_eval_failure_analysis
+        applies_to_slots:
+          - 14
+          - 32
+          - 120
+        requires_approval_for:
+          - applying_pairs_to_active_dataset
+          - training_launch
+          - registry_promotion
+          - model_deletion
+        policy_refs:
+          - aims_workspace/skills/traini-failed-scope-pair-recovery/SKILL.md
+        invariants:
+          - no_training_started_by_skill: true
+          - no_merge_started_by_skill: true
+          - no_gguf_started_by_skill: true
+          - no_auto_promote: true
+          - no_dataset_deletion: true
+          - slot120_remains_blocked_until_750_verified_pairs: true
+        smoke_test: ops/ft/traini/autopilot/tests/test_failed_scope_pair_recovery.py
+      - skill_id: traini_raw_material_to_pairs
+        agent: traini
+        version: "2.1"
+        module: ops/ft/traini/autopilot/raw_material_pair_preparation.py
+        gate_module: ops/ft/traini/autopilot/raw_material_pair_preparation_gate.py
+        entrypoint: ops/scripts/traini_raw_material_review_5h.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        activation_stage: traini_raw_material_review_5h
+        applies_to_slots:
+          - 14
+          - 32
+          - 120
+        output_modes:
+          - traini_model_tuning
+          - agent_skill_learning
+        requires_approval_for:
+          - applying_pairs_to_active_dataset
+          - training_launch
+          - registry_promotion
+          - model_deletion
+        policy_refs:
+          - aims_workspace/skills/traini-raw-material-to-pairs/SKILL.md
+        invariants:
+          - no_training_started_by_skill: true
+          - no_merge_started_by_skill: true
+          - no_gguf_started_by_skill: true
+          - no_auto_promote: true
+          - no_dataset_deletion: true
+          - agent_skill_pairs_do_not_enter_traini_dataset: true
+          - slot120_remains_blocked_until_750_verified_pairs: true
+          - duplicate_slot32_v4_redis_task_forbidden: true
+          - raw_codex_defaults_to_agent_skill_learning: true
+          - raw_codex_transcript_as_assistant_answer_forbidden: true
+          - independent_pair_transformation_required: true
+          - source_copy_ratio_maximum: 0.30
+          - slot32_dataset_quality_gate_required: true
+          - independent_review_cannot_be_self_asserted: true
+          - slot32_unique_answer_ratio_minimum: 0.80
+          - slot32_answer_reuse_maximum: 3
+          - slot32_response_contract_coverage_required: true
+          - slot32_format_aware_validation_required: true
+          - negative_transfer_probe_required: true
+          - production_response_contract_smoke_required: true
+          - contaminated_slot32_versions_can_collapse_to_rebuilt_v1: true
+          - active_dataset_pointer_required_after_scope_collapse: true
+          - old_source_datasets_retained_as_evidence_not_active_training_input: true
+        smoke_test: ops/tests/test_traini_raw_material_pair_preparation.py
+      - skill_id: traini_slot14_champion_verification
+        agent: traini
+        version: "1.0"
+        module: ops/traini/slot14_rebenchmark_skill.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        nightly_only: true
+        requires_approval_for:
+          - registry_promotion
+          - model_registry_mutation
+          - training_execution
+        policy_refs:
+          - docs/agents/skills/traini_learning.md
+          - docs/agents/skills/traini_slot14_champion_verification.md
+          - docs/AIMS_MODEL_BENCHMARK_POLICY.md
+        invariants:
+          - compare_first: true
+          - no_training_execution: true
+          - no_registry_change_without_clear_win: true
+          - keep_v16_until_clear_win: true
+          - benchmark_only_at_night: true
+          - no_secrets: true
+        smoke_test: ops/evals/traini_slot14_rebenchmark_skill_smoke.py
+      - skill_id: traini_qwen36_orchestrator_lifecycle
+        agent: traini
+        version: "1.0"
+        module: ops/ft/orchestrator_qwen36/build_lifecycle_artifacts.py
+        status: ACTIVE_RUNTIME
+        risk_level: high
+        requires_approval_for:
+          - maintenance_stop_start
+          - bf16_gpu_load
+          - tiny_bf16_lora_training
+          - full_bf16_lora_training
+          - benchmark_execution
+          - registry_promotion
+        policy_refs:
+          - docs/agents/skills/traini_learning.md
+          - docs/AIMS_MODEL_CANDIDATE_LIFECYCLE.md
+          - docs/AIMS_MODEL_BENCHMARK_POLICY.md
+        invariants:
+          - role_first_candidate_selection: true
+          - text_only_initial_lifecycle: true
+          - vision_training_allowed: false
+          - bf16_primary_path: true
+          - no_auto_promote: true
+          - benchmark_only_after_training: true
+          - hermes_review_via_omniroute_20129: true
+          - no_local_fallback_for_reviewer: true
+          - external_advisory_route_compare_first: true
+          - no_container_deletion_for_vram: true
+        smoke_test: ops/evals/traini_qwen36_orchestrator_lifecycle_smoke.py
+  doci:
+    skill_packs:
+    - docs/agents/skills/doci_document.md
+    - aims_workspace/skills/document_work/document_work_skill_pack.md
+    - aims_workspace/skills/context_grounded_document_generation/SKILL.md
+    - aims_workspace/skills/standard-driven-document-authoring/SKILL.md
+    doc_skills:
+      runner: ops/docagent/doc_skills.py
+      skills:
+      - doc-generate
+      - doc-ingest
+      - doc-search
+      - doc-edit
+      - doc-analyze
+      - doc-tables
+      - doc-presentation
+    source_fullstack_skills:
+    - make-pdf
+    - document-release
+    - design-html
+    registered_skills:
+      - skill_id: context_grounded_document_generation
+        agent: doci
+        version: "0.2"
+        module: ops/agents/skills/context_grounded_document_generation.py
+        status: ACTIVE_RUNTIME_GATED
+        risk_level: medium
+        primary_model_slot: 120
+        teacher_provider: claude_code_cli_aws
+        requires_benchmark_victory_for:
+          - training_export
+          - runtime_promotion
+          - model_training
+        invariants:
+          - context_transport_chars_minimum: 126000
+          - model_native_context_window_tokens: 262144
+          - runtime_context_tokens: 32768
+          - split_work_above_stage_capacity: true
+          - no_silent_context_truncation: true
+          - full_source_provenance: true
+          - slot120_not_teacher_or_judge: true
+          - no_local_score_auto_gold: true
+          - no_auto_promote: true
+          - v11_section_batched_is_baseline: true
+          - catalog_candidate_isolated_until_benchmark_win: true
+      - skill_id: document_failure_diagnostics
+        agent: doci
+        version: "1.0"
+        module: ops/agents/skills/document_failure_diagnostics.py
+        status: ACTIVE_RUNTIME
+        risk_level: low
+        deterministic: true
+        domains:
+          - document_generation
+          - root_cause_analysis
+          - section_failure_classification
+          - repair_routing
+        invariants:
+          - document_type_agnostic: true
+          - no_section_number_assumptions: true
+          - evidence_before_repair: true
+          - no_model_training_side_effects: true
+      - skill_id: contextual_standard_discovery_and_document_review
+        agent: doci
+        version: "1.0"
+        module: ops/agents/skills/contextual_standard_discovery_and_document_review.py
+        status: ACTIVE_RUNTIME
+        risk_level: medium
+        primary_model_slot: 32
+        future_training_targets:
+          - 14
+        excluded_model_slots:
+          - 120
+        domains:
+          - document_review
+          - document_generation
+          - procedure_improvement
+          - standards_discovery
+          - benchmark_creation
+          - gap_assessment
+          - preservation
+          - shutdown
+          - commissioning
+          - audit
+          - rca
+        evidence_required: true
+        benchmark_matrix_required: true
+        source_classification_required: true
+        external_lookup_allowed: true
+        external_lookup_policy: anonymized_context_only
+        external_providers_optional:
+          - perplexity_mcp
+          - manual_teacher_branch
+          - internal_rag
+        forbidden:
+          - sending_full_documents_to_external_providers
+          - secret_exfiltration
+          - copyrighted_standard_reproduction
+          - unsupported_mandatory_compliance_claims
+          - slot120_teacher_or_judge_usage
+  docs-agent:
+    skill_packs:
+    - docs/agents/skills/doci_document.md
+    source_fullstack_skills:
+    - make-pdf
+    - document-release
+    doc_skills:
+      runner: ops/docagent/doc_skills.py
+      skills:
+      - doc-analyze
+  omi:
+    skill_packs:
+    - docs/agents/skills/doci_document.md
+    - aims_workspace/skills/document_work/document_work_skill_pack.md
+    - docs/agents/skills/generated/document-dialogue-gap-check.md
+    - docs/agents/skills/generated/docsreg-registry-consistency-audit-omi.md
+    - aims_workspace/skills/standard-driven-document-authoring/SKILL.md
+    registered_skills:
+      - skill_id: document-dialogue-gap-check
+        agent: omi
+        version: "1.0"
+        module: docs/agents/skills/generated/document-dialogue-gap-check.md
+        status: ACTIVE_RUNTIME_GATED
+        runtime_activation: true
+        approval_required: true
+        risk_level: medium
+        smoke_test: ops/evals/omi_runtime_skill_smoke.py
+        required_fixtures:
+          - ops/evals/fixtures/skill_request_approval/sample_pending_skill_requests.json
+        forbidden:
+          - direct_production_db_write
+          - runtime_unsafe_mutation
+          - secret_exposure
+      - skill_id: doc-knowledge-ops
+        agent: omi
+        version: "1.0"
+        module: ops/docagent/doc_skills.py
+        source: third_party/ecc/skills/knowledge-ops/SKILL.md
+        status: ACTIVE_RUNTIME_GATED
+        runtime_activation: true
+        approval_required: false
+        risk_level: low
+        capabilities:
+          - local_hybrid_search
+          - read_only_ssot_audit
+          - content_hash_duplicate_detection
+          - search_before_store
+        forbidden:
+          - direct_production_db_write
+          - production_record_delete
+          - external_document_upload
+          - secret_exposure
+    doc_skills:
+      runner: ops/docagent/doc_skills.py
+      skills:
+      - doc-ingest
+      - doc-search
+      - doc-analyze
+      - doc-knowledge-ops
+    source_fullstack_skills:
+    - document-release
+  knomi:
+    skill_packs:
+    - docs/agents/skills/knomi_knowledge.md
+    doc_skills:
+      runner: ops/docagent/doc_skills.py
+      skills:
+      - doc-search
+      - doc-analyze
+      - doc-ingest
+    source_fullstack_skills:
+    - codex
+    - code-search
+    - knowledge-search
+claude_plugin_skill_adaptation:
+  version: 1
+  source_root: /home/axi_omi_sphere/.claude/plugins
+  activation_policy:
+    default_status: ACTIVE_RUNTIME
+    require_smoke_before_active: true
+    no_runtime_behavior_change_without_gate: true
+  domains:
+    chat_and_syntax:
+      intent: Structured chat planning/summarization syntax discipline for AIMS user-facing
+        and internal messaging.
+      target_slot: '14'
+      status: ACTIVE_RUNTIME
+      skills:
+      - name: make-plan
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/thedotmack/plugin/skills/make-plan/SKILL.md
+        target_agents:
+        - logi
+        - omi
+        - traini
+        usage_mode: mentor_template
+      - name: timeline-report
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/thedotmack/plugin/skills/timeline-report/SKILL.md
+        target_agents:
+        - argus
+        - logi
+        - traini
+        usage_mode: report_template
+      - name: session-report
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/claude-plugins-official/plugins/session-report/skills/session-report/SKILL.md
+        target_agents:
+        - argus
+        - qa-agent
+        - traini
+        usage_mode: report_template
+    documents_templates_corrections:
+      intent: Document generation from templates, constrained formatting, and correction
+        loops.
+      target_slot: '14'
+      reviewer_slot: '120'
+      status: ACTIVE_RUNTIME
+      skills:
+      - name: document-release
+        source_path: external_refs/fullstack/document-release/SKILL.md
+        target_agents:
+        - doci
+        - omi
+        - release-agent
+        usage_mode: process_pattern
+      - name: make-pdf
+        source_path: external_refs/fullstack/make-pdf/SKILL.md
+        target_agents:
+        - doci
+        - docs-agent
+        usage_mode: generation_pattern
+      - name: design-html
+        source_path: external_refs/fullstack/design-html/SKILL.md
+        target_agents:
+        - doci
+        - qa-agent
+        usage_mode: template_pattern
+    coding_backend_troubleshooting:
+      intent: Backend engineering, codebase navigation, troubleshooting, and repair
+        planning.
+      target_slot: '32'
+      status: ACTIVE_RUNTIME
+      skills:
+      - name: learn-codebase
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/thedotmack/plugin/skills/learn-codebase/SKILL.md
+        target_agents:
+        - axi
+        - knomi
+        - repairman
+        usage_mode: mentoring_prompt
+      - name: knowledge-agent
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/thedotmack/plugin/skills/knowledge-agent/SKILL.md
+        target_agents:
+        - knomi
+        - traini
+        - logi
+        usage_mode: retrieval_pattern
+      - name: build-mcp-server
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/claude-plugins-official/plugins/mcp-server-dev/skills/build-mcp-server/SKILL.md
+        target_agents:
+        - axi
+        - repairman
+        - traini
+        usage_mode: engineering_pattern
+      - name: hook-development
+        source_path: /home/axi_omi_sphere/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/hook-development/SKILL.md
+        target_agents:
+        - security
+        - poli
+        - repairman
+        usage_mode: guardrail_pattern
