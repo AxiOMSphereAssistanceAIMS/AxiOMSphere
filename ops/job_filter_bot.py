@@ -1194,9 +1194,29 @@ async def run_sequence(inbox_now: bool, scan_now: bool, send_telegram: bool) -> 
 
 
 def _daemon_loop() -> int:
-    """Default container behavior: keep process alive for exec-triggered commands."""
+    """Default container behavior: keep process alive for exec-triggered commands.
+
+    Also runs the JobLocator Telegram command listener (chat-driven filter
+    tuning) when JOB_FILTER_BOT_TOKEN is set and python-telegram-bot is
+    importable. If either is missing, or the listener fails to start for any
+    reason, this falls back to the plain heartbeat loop — the docker-exec
+    -triggered scan mechanism the scheduler relies on doesn't depend on the
+    listener at all, so a listener failure must never take the container down.
+    """
     interval = max(10, int(os.environ.get("JOB_FILTER_DAEMON_HEARTBEAT_SEC", "60") or "60"))
-    log.info("job-filter daemon mode active (heartbeat=%ss)", interval)
+
+    if os.environ.get("JOB_FILTER_BOT_TOKEN", "").strip():
+        try:
+            import job_filter_telegram_listener as _listener
+
+            log.info("job-filter daemon mode active (heartbeat=%ss, telegram listener enabled)", interval)
+            _listener.run_polling_forever()
+            log.info("job-filter daemon stopping cleanly")
+            return 0
+        except Exception:
+            log.exception("JobLocator telegram listener failed to start; falling back to heartbeat-only daemon")
+
+    log.info("job-filter daemon mode active (heartbeat=%ss, telegram listener disabled)", interval)
     stopping = False
     def _stop(_signum, _frame):
         nonlocal stopping
