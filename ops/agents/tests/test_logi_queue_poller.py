@@ -2,11 +2,19 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 
 from ops.agents import logi_queue_poller as qp
+
+
+def test_default_logi_llm_route_is_pc_andrei_slot14_pair():
+    assert qp.LOGI_LLM_URL == "http://10.77.77.2:11434/v1"
+    assert qp.LOGI_LLM_NATIVE_URL == "http://10.77.77.2:11434"
+    assert qp.LOGI_LLM_MODEL == "qwen25-chat-14-v19:latest"
+    assert "127.0.0.1" not in qp.LOGI_LLM_URL
 
 
 @pytest.fixture()
@@ -19,6 +27,7 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(qp, "_INCIDENT_DIR", tmp_path / "incidents_default")
     monkeypatch.setattr(qp, "_PROCESSED_INCIDENTS", tmp_path / "processed_default.json")
     monkeypatch.setattr(qp, "_ARTIFACTS_ROOT", tmp_path / "artifacts")
+    monkeypatch.setattr(qp, "_BLOCKED_REWORK_DIR", tmp_path / "blocked_rework")
     monkeypatch.setattr(qp, "_RAW_MATERIAL", tmp_path / "raw.jsonl")
     monkeypatch.setattr(qp, "_HEARTBEAT", tmp_path / "hb.json")
     monkeypatch.setattr(qp, "_REPORT_DIR", tmp_path / "reports")
@@ -63,6 +72,97 @@ def test_intake_normalizes_pending_task(sandbox):
     assert envs[0].support_case_id.startswith("case_")
 
 
+def test_intake_preserves_requested_model_route(sandbox):
+    p = _seed_task(sandbox)
+    data = json.loads(p.read_text(encoding="utf-8"))
+    data["params"] = {"model_slot": "slot32", "model_route": "slot32-proxy:8084"}
+    p.write_text(json.dumps(data), encoding="utf-8")
+    env = qp.collect_problems()[0]
+    assert env.params["model_slot"] == "slot32"
+    assert env.params["model_route"] == "slot32-proxy:8084"
+
+
+def test_slot32_analysis_uses_queued_proxy(monkeypatch):
+    env = qp.FailureEnvelope(
+        support_case_id="c-slot32", source="logi_task_queue", source_ref="task.json",
+        title="shared eligibility", description="audit", params={"model_slot": "slot32"},
+    )
+    seen = {}
+
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self):
+            return json.dumps({"content": [{"type": "text", "text": json.dumps(_analysis())}]}).encode()
+
+    def fake_urlopen(request, timeout):
+        seen["url"] = request.full_url
+        seen["requester"] = request.get_header("X-aims-requester")
+        return Response()
+
+    monkeypatch.setattr(qp, "LOGI_SLOT32_PROXY_URL", "http://slot32.test/v1/messages")
+    monkeypatch.setattr(qp, "_recall_context", lambda _text: "none")
+    monkeypatch.setattr(qp.urllib.request, "urlopen", fake_urlopen)
+    result = qp.llm_analyze(env, timeout=3)
+    assert result["classification"] == "diagnose_only"
+    assert seen == {"url": "http://slot32.test/v1/messages", "requester": "logi-fullstack-task"}
+
+
+def test_shared_document_gate_hydrates_declared_repair_contract():
+    env = qp.FailureEnvelope(
+        support_case_id="c-doc-gate", source="logi_task_queue", source_ref="task.json",
+        title="DOCSREG/MSDG shared document eligibility gate: fullstack extension and closure",
+        description="Extend the existing MSDG mechanism.",
+        params={"repair_type": "shared_document_eligibility_gate"},
+    )
+    result = qp._hydrate_declared_repair_contract(env, {"classification": "diagnose_only"})
+    assert result["classification"] == "repair_needed"
+    assert result["repair_type"] == "shared_document_eligibility_gate"
+    assert result["strategy_change"] is False
+    assert "production_active=false" in result["repair_request"]
+
+
+def test_llm_analysis_parser_accepts_preamble_and_repeated_json(monkeypatch):
+    env = qp.FailureEnvelope(
+        support_case_id="c-json", source="logi_task_queue", source_ref="task.json",
+        title="task", description="description", params={"model_slot": "slot32"},
+    )
+    payload = json.dumps(_analysis("repair_needed"), ensure_ascii=False)
+    response = "Пояснение до JSON.\n" + payload + "\n" + payload
+
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self): return json.dumps({"content": [{"type": "text", "text": response}]}).encode()
+
+    monkeypatch.setattr(qp, "LOGI_SLOT32_PROXY_URL", "http://slot32.test/v1/messages")
+    monkeypatch.setattr(qp, "_recall_context", lambda _text: "none")
+    monkeypatch.setattr(qp.urllib.request, "urlopen", lambda request, timeout: Response())
+    result = qp.llm_analyze(env, timeout=3)
+    assert result["classification"] == "repair_needed"
+
+
+def test_decision_audit_reads_repair_type_from_task_params():
+    from ops.agents.logi_decision_auditor import audit_repair_decision
+    env = qp.FailureEnvelope(
+        support_case_id="c-audit", source="logi_task_queue", source_ref="task.json",
+        title="shared document eligibility", description="not json",
+        params={"repair_type": "shared_document_eligibility_gate"},
+    )
+    result = audit_repair_decision(
+        env,
+        {
+            "classification": "repair_needed",
+            "restorative": True,
+            "strategy_change": False,
+            "verification_commands": ["pytest"],
+            "rollback_command": ["git", "diff"],
+        },
+    )
+    assert result.repair_type == "shared_document_eligibility_gate"
+    assert result.decision != "BLOCKED"
+
+
 def test_intake_skips_non_pending(sandbox):
     _seed_task(sandbox, status="completed")
     assert qp.collect_problems() == []
@@ -99,7 +199,7 @@ def test_diagnose_only_case_completes_with_report_and_telegram(sandbox):
     assert any(qp._DONE_DIRS["completed"].glob("*.json"))
 
 
-def test_repair_needed_goes_to_needs_approval_never_autofix(sandbox):
+def test_repair_needed_without_codex_goes_to_failed_never_telegram_approval(sandbox, monkeypatch):
     _seed_task(sandbox)
     calls = []
     env = qp.collect_problems()[0]
@@ -108,12 +208,18 @@ def test_repair_needed_goes_to_needs_approval_never_autofix(sandbox):
         calls.append(analysis["repair_request"])
         return {"status": "ok", "mode": "inspect"}
 
+    monkeypatch.setattr(qp, "_codex_audit_case", lambda *args: {
+        "status": "SKIPPED", "auditor_available": False, "auditor_name": "none", "findings": []
+    })
+
     result = qp.process_case(
         env, llm=lambda e: _analysis("repair_needed"), repairman=repairman,
         notify=lambda t: True, judge=lambda *a: {"solved": True})
-    assert result.outcome == "needs_approval"
+    assert result.outcome == "deferred"
     assert calls == ["починить X"]
-    assert any(qp._DONE_DIRS["needs_approval"].glob("*.json"))
+    # External-auditor outage is retryable and remains in pending; it never
+    # becomes a Telegram approval request.
+    assert any(qp._PENDING_DIR.glob("*.json"))
 
 
 def test_llm_down_defers_case_with_blocked_ack(sandbox):
@@ -208,14 +314,14 @@ def test_incident_intake_and_processed_marker(sandbox, monkeypatch):
     assert qp.collect_problems() == []
 
 
-def test_judge_disagreement_demotes_completed(sandbox):
+def test_judge_disagreement_fails_without_telegram_approval(sandbox):
     _seed_task(sandbox)
     env = qp.collect_problems()[0]
     result = qp.process_case(
         env, llm=lambda e: _analysis(),
         notify=lambda t: True,
         judge=lambda *a: {"solved": False, "confidence": 0.8, "reason": "evidence weak"})
-    assert result.outcome == "needs_approval"
+    assert result.outcome == "failed"
 
 
 def test_zero_evidence_never_completes(sandbox):
@@ -230,7 +336,7 @@ def test_zero_evidence_never_completes(sandbox):
     result = qp.process_case(
         env, llm=llm_no_verify,
         notify=lambda t: True, judge=lambda *a: {"solved": True})
-    assert result.outcome == "needs_approval"
+    assert result.outcome == "failed"
 
 
 def test_env_loader_strips_quotes(tmp_path, monkeypatch):
@@ -421,3 +527,87 @@ def test_stale_repair_needed_becomes_completed_not_needs_approval(sandbox, monke
     report = [a for a in result.artifacts if a.endswith(".md")][0]
     text = Path(report).read_text(encoding="utf-8")
     assert "устарел" in text
+
+def _seed_gate_blocked_case(sandbox: Path, title: str, *, poli_denied: bool = False) -> None:
+    """Simulate a prior case artifact directory that failed at the Codex/Poli
+    gate for the given title — matching what process_case() actually writes."""
+    case_dir = qp._ARTIFACTS_ROOT / f"case_{os.urandom(4).hex()}"
+    case_dir.mkdir(parents=True)
+    (case_dir / "case.json").write_text(json.dumps({"title": title, "outcome": "failed"}), encoding="utf-8")
+    codex_status = "PASSED" if poli_denied else "BLOCKED"
+    findings = [] if poli_denied else [{"severity": "BLOCKING", "category": "scope",
+                                         "finding": "diff touches files outside the declared bounded scope"}]
+    (case_dir / "codex_audit.json").write_text(
+        json.dumps({"status": codex_status, "auditor_available": True, "findings": findings}), encoding="utf-8")
+    if poli_denied:
+        (case_dir / "poli_audit.json").write_text(
+            json.dumps({"allowed": False, "reasons": ["rollback plan is missing"]}), encoding="utf-8")
+
+
+def test_three_identical_codex_blockages_stop_auto_retry_with_support_case(sandbox):
+    title = "repeat offender task"
+    for _ in range(3):
+        _seed_gate_blocked_case(sandbox, title)
+    _seed_task(sandbox, title=title)
+
+    envelopes = qp.collect_problems()
+
+    assert envelopes == []
+    assert not any(qp._PENDING_DIR.glob("*.json"))
+    moved = list(qp._BLOCKED_REWORK_DIR.glob("logi_task_test_1.json"))
+    assert len(moved) == 1
+    blocked = json.loads(moved[0].read_text(encoding="utf-8"))
+    assert blocked["status"] == "blocked_rework"
+    assert blocked["prior_failed_cases"] == 3
+
+    support_cases = list(qp._BLOCKED_REWORK_DIR.glob("support_case_*.json"))
+    assert len(support_cases) == 1
+    support_case = json.loads(support_cases[0].read_text(encoding="utf-8"))
+    assert support_case["task_title"] == title
+    assert len(support_case["prior_failure_reasons"]) == 3
+    assert all("bounded scope" in reason for reason in support_case["prior_failure_reasons"])
+    assert support_case["remediation_plan"]
+
+
+def test_two_codex_blockages_do_not_yet_trigger_rework(sandbox):
+    title = "task with two prior blocks"
+    _seed_gate_blocked_case(sandbox, title)
+    _seed_gate_blocked_case(sandbox, title)
+    _seed_task(sandbox, title=title)
+
+    envelopes = qp.collect_problems()
+
+    assert len(envelopes) == 1
+    assert not list(qp._BLOCKED_REWORK_DIR.glob("*.json"))
+
+
+def test_non_gate_failures_never_count_toward_the_retry_limit(sandbox):
+    """A case that failed before ever reaching Codex (no codex_audit.json —
+    e.g. an insufficient-verification-evidence failure) is not a repeated
+    gate blockage and must not push the task into blocked_rework."""
+    title = "task that fails for unrelated reasons"
+    for _ in range(3):
+        case_dir = qp._ARTIFACTS_ROOT / f"case_{os.urandom(4).hex()}"
+        case_dir.mkdir(parents=True)
+        (case_dir / "case.json").write_text(json.dumps({"title": title, "outcome": "failed"}), encoding="utf-8")
+    _seed_task(sandbox, title=title)
+
+    envelopes = qp.collect_problems()
+
+    assert len(envelopes) == 1
+    assert not list(qp._BLOCKED_REWORK_DIR.glob("*.json"))
+
+
+def test_poli_denial_after_codex_pass_still_counts_as_a_gate_blockage(sandbox):
+    title = "poli denied task"
+    for _ in range(3):
+        _seed_gate_blocked_case(sandbox, title, poli_denied=True)
+    _seed_task(sandbox, title=title)
+
+    envelopes = qp.collect_problems()
+
+    assert envelopes == []
+    support_cases = list(qp._BLOCKED_REWORK_DIR.glob("support_case_*.json"))
+    assert len(support_cases) == 1
+    support_case = json.loads(support_cases[0].read_text(encoding="utf-8"))
+    assert all("rollback plan is missing" in reason for reason in support_case["prior_failure_reasons"])

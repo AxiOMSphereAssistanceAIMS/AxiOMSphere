@@ -1,0 +1,29 @@
+{
+  "schema": "aims.poli.project_decisions.v1",
+  "version": "2026-07-28",
+  "owner": "Poli",
+  "source_of_truth": "ops/agents/agent_skill_registry.yaml + certified runtime policies",
+  "decisions": {
+    "normal_chain_approval": "Codex CLI technical audit plus Poli policy checklist; no Telegram approval",
+    "telegram_role": "result_only_human_summary",
+    "fullstack_change": "allow when restorative, concept-preserving, strategy-preserving, provenance-complete and certified-pipeline-compatible",
+    "production_mutation": "blocked in bounded repair; Release/production gate required",
+    "source_documents": "read_only",
+    "canonical_masters_and_registries": "no mutation during audit or bounded repair",
+    "slot14_slot32": "compatible; slot14 may run with slot32",
+    "slot14_slot120": "compatible; slot14 may run with slot120",
+    "slot32_slot120": "mutually_exclusive_on_DGX",
+    "slot32_admission": "REDIS_FIFO_SINGLE_LEASE through slot32-proxy:8084",
+    "provenance": "source hash, evidence locator, handoff lineage and rollback pointer required",
+    "training": "raw material may be recorded, approved_for_training=false until separate quality gate",
+    "certification": "existing certified pipeline behavior must have regression evidence before allow"
+  },
+  "protected_boundaries": [
+    "production registry",
+    "canonical master database",
+    "source document trees",
+    "model registry and model promotion",
+    "training execution",
+    "slot32/slot120 concurrent DGX load"
+  ]
+}
