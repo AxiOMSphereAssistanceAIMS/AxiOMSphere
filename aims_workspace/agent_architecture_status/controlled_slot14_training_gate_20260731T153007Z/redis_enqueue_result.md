@@ -1,0 +1,11 @@
+# redis_enqueue_result
+
+```json
+{
+  "status": "NOT_ENQUEUED",
+  "new_task_key": null,
+  "original_task_modified": false,
+  "reason": "Insufficient verified slot14 dataset and failed provenance gate."
+}
+
+```

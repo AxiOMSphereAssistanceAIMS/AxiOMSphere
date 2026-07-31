@@ -1,0 +1,10 @@
+{
+  "verdict": "PASS_SLOT14_TRAINING_HELD_INSUFFICIENT_DATASET",
+  "original_task_held": true,
+  "new_task_enqueued": false,
+  "training_started": false,
+  "promotion_enabled": false,
+  "model_registry_mutated": false,
+  "slot14_binding_changed": false,
+  "direct_cron_used": false
+}

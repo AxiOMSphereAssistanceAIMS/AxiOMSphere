@@ -1,0 +1,14 @@
+# slot14_dataset_loader_dryrun
+
+```json
+{
+  "status": "PASS_STRUCTURE_ONLY",
+  "rows_read": 4,
+  "complete_input_output": true,
+  "provenance_valid": false,
+  "target_slot_valid": false,
+  "training_started": false,
+  "frozen_hash": "89e210278e66abd5b37193ad49a10cc4095d63ee0150d444b153351ec93a9c20"
+}
+
+```

@@ -1,0 +1,11 @@
+# slot14_resource_observation
+
+```json
+{
+  "status": "NOT_RUN",
+  "gpu_model_loaded": false,
+  "training_process_started": false,
+  "reason": "Dataset gate failed before resource allocation."
+}
+
+```

@@ -1,0 +1,11 @@
+# slot14_training_smoke
+
+```json
+{
+  "status": "BLOCKED_SLOT14_TRAINING_PREFLIGHT",
+  "one_batch_tokenization": false,
+  "forward_backward": false,
+  "reason": "Preflight stopped before model execution because dataset admission failed; no OOM or model load claimed."
+}
+
+```

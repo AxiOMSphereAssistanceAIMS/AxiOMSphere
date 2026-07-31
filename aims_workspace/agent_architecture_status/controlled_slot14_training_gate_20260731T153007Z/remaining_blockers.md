@@ -1,0 +1,14 @@
+# remaining_blockers
+
+```json
+{
+  "blockers": [
+    "Only 4 historical slot14 chat examples are declared approved/verified; minimum controlled dataset is 750.",
+    "Candidate rows lack provenance-bound source evidence and explicit target_slot metadata.",
+    "The available slot14 profile points at a larger historical dataset, but its evidence-backed admission manifest is not present for this replacement task."
+  ],
+  "original_task": "remains held and dispatch-blocked",
+  "new_task_created": false
+}
+
+```

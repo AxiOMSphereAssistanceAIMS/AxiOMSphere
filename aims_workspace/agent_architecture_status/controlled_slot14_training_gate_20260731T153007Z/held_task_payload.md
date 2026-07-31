@@ -1,0 +1,32 @@
+# held_task_payload
+
+```json
+{
+  "task_key": "scheduler:task:traini_slot14_night_tuning_73646c7229c3",
+  "redis_status": "HELD_FOR_USER_DECISION",
+  "dispatch_blocked": "true",
+  "original_payload": [
+    "docker",
+    "exec",
+    "axiomsphere-traini-worker",
+    "bash",
+    "-lc",
+    "set -euo pipefail; cd /workspace; export AIMS_WORKSPACE=/workspace WORKSPACE=/workspace AIMS_WORKSPACE_DIR=/workspace; export PYTHONPATH=/workspace:/workspace/ops:${PYTHONPATH:-}; NIGHT_QWEN32_AUTORUN=${NIGHT_QWEN32_AUTORUN:-1} bash ops/scripts/traini_worker_night_tuning_entrypoint.sh --slot 14 --run-mode FULL_AUTONOMOUS_GENERAL_TUNING --active-profile slot14_broad --broad-min-pairs-required 750 --no-auto-promotion --telegram"
+  ],
+  "requested_source": "Traini-owned conditional night tuning. The task must pass pair gates, night-window gates, resource guards, eval and promotion gates inside Traini.",
+  "requested_base_model": "not specified in payload; must be explicit before replacement",
+  "requested_tuning_method": "not specified; FULL_AUTONOMOUS_GENERAL_TUNING wrapper",
+  "estimated_samples": 750,
+  "max_steps_epochs": "not specified",
+  "expected_gpu_memory": "not specified",
+  "promotion_registry_flags": {
+    "no_auto_promotion": true,
+    "registry_change_allowed": "unspecified"
+  },
+  "retry_policy": {
+    "max_retries": "0",
+    "is_retryable": "false"
+  }
+}
+
+```

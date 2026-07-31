@@ -1,0 +1,11 @@
+# scheduler_ownership_check
+
+```json
+{
+  "execution_owner": "redis-scheduler",
+  "direct_cron_used": false,
+  "original_task_pending": false,
+  "original_task_held": true
+}
+
+```

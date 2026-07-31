@@ -1,0 +1,12 @@
+# slot14_deduplication_result
+
+```json
+{
+  "input_count": 4,
+  "duplicate_count": 0,
+  "dedup_key": "source_provenance+prompt_hash+chosen_hash",
+  "dedup_pass": false,
+  "reason": "Cannot establish provenance-bound idempotency keys."
+}
+
+```

@@ -1,0 +1,18 @@
+# slot14_dataset_manifest
+
+```json
+{
+  "status": "NOT_AUTHORIZED_FOR_TRAINING",
+  "profile": "slot14_local_chat",
+  "path": "ops/ft/data/slot14_chat_materialized/train_slot14_chat_materialized.jsonl",
+  "sha256": "89e210278e66abd5b37193ad49a10cc4095d63ee0150d444b153351ec93a9c20",
+  "manifest_path": "ops/ft/data/slot14_chat_materialized/manifest_slot14_chat_materialized.json",
+  "manifest_sha256": "28347ae3cb1346755ed23e1327a07e8a9059e048e59ebfe13f1c8a5e06a46f24",
+  "declared_approved_pairs": 4,
+  "verified_pairs": 4,
+  "minimum_required": 750,
+  "frozen_dataset": false,
+  "training_allowed": false
+}
+
+```

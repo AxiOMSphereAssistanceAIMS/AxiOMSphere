@@ -1,0 +1,12 @@
+# slot14_rollback_contract
+
+```json
+{
+  "rollback_model": "omi-ft-14b-v18:latest",
+  "rollback_tag_preserved": true,
+  "registry_mutation_allowed": false,
+  "slot_update_allowed": false,
+  "automatic_promotion": false
+}
+
+```

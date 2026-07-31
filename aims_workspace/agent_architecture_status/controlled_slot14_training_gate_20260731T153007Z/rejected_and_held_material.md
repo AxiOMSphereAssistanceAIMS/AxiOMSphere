@@ -1,0 +1,27 @@
+# rejected_and_held_material
+
+```json
+{
+  "held_count": 4,
+  "rejected_count": 0,
+  "dispositions": [
+    {
+      "index": 0,
+      "reason": "HELD_PROVENANCE_MISSING_AND_BELOW_MINIMUM"
+    },
+    {
+      "index": 1,
+      "reason": "HELD_PROVENANCE_MISSING_AND_BELOW_MINIMUM"
+    },
+    {
+      "index": 2,
+      "reason": "HELD_PROVENANCE_MISSING_AND_BELOW_MINIMUM"
+    },
+    {
+      "index": 3,
+      "reason": "HELD_PROVENANCE_MISSING_AND_BELOW_MINIMUM"
+    }
+  ]
+}
+
+```
