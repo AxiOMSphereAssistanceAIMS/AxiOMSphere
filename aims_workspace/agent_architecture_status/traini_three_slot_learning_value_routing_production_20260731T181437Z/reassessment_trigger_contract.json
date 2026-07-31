@@ -1,0 +1,4 @@
+{
+  "trigger": "source hash/version changes",
+  "unchanged_idempotent": true
+}

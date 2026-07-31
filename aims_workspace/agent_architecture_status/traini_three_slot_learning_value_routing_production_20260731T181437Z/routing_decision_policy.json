@@ -1,0 +1,4 @@
+{
+  "multi_model_requires_separate_derivations": true,
+  "same_input_output_copy_across_slots_forbidden": true
+}

@@ -1,0 +1,29 @@
+{
+  "discrepancies": [
+    "Slot14 live base is qwen3-chat-14b while expected incumbent is omi-ft-14b-v18:latest",
+    "Slot120 live base is qwen36-docgen-35b while expected protected model label is qwen3.6:35b_BF16"
+  ],
+  "profile_authority": "live Traini YAML",
+  "profiles": {
+    "120": {
+      "base": "qwen36-docgen-35b",
+      "expected": "qwen3.6:35b_BF16",
+      "path": "ops/ft/traini/autopilot/profiles/slot120_profile.yaml",
+      "threshold": 750
+    },
+    "14": {
+      "base": "qwen3-chat-14b",
+      "expected": "omi-ft-14b-v18:latest",
+      "path": "ops/ft/traini/autopilot/profiles/slot14_profile.yaml",
+      "threshold": 750
+    },
+    "32": {
+      "base": "qwen3-32b",
+      "expected": "Qwen/Qwen3-Coder-Next-FP8",
+      "path": "ops/ft/traini/autopilot/profiles/slot32_profile.yaml",
+      "threshold": 750
+    }
+  },
+  "routing_allowed_from_roles": true,
+  "training_allowed": false
+}

@@ -1,0 +1,13 @@
+{
+  "agent_skill": 0,
+  "evaluation_only": 0,
+  "evidence_unavailable": 57,
+  "held": 57,
+  "multi_slot_sources": 0,
+  "no_learning_value": 86,
+  "operational_memory": 0,
+  "slot120_candidates": 0,
+  "slot14_candidates": 0,
+  "slot32_candidates": 0,
+  "sources_assessed": 143
+}

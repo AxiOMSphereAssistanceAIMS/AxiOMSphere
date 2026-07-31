@@ -1,0 +1,12 @@
+{
+  "all_units_assessed_against": [
+    "MODEL_TRAINING_SLOT14",
+    "MODEL_TRAINING_SLOT32",
+    "MODEL_TRAINING_SLOT120",
+    "AGENT_SKILL_LEARNING",
+    "EVALUATION",
+    "MEMORY",
+    "REJECT",
+    "HOLD"
+  ]
+}

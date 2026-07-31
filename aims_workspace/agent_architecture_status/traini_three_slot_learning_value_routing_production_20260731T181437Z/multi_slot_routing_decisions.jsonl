@@ -1,0 +1,10 @@
+{"decision": "SINGLE_MODEL_ROUTE", "slots": ["SLOT14"], "source_id": "fixture_source_f14"}
+{"decision": "SINGLE_MODEL_ROUTE", "slots": ["SLOT32"], "source_id": "fixture_source_f32"}
+{"decision": "SINGLE_MODEL_ROUTE", "slots": ["SLOT120"], "source_id": "fixture_source_f120"}
+{"decision": "MULTI_MODEL_DERIVATION", "slots": ["SLOT14", "SLOT32"], "source_id": "fixture_source_fm14_32"}
+{"decision": "MULTI_MODEL_DERIVATION", "slots": ["SLOT32", "SLOT120"], "source_id": "fixture_source_fm32_120"}
+{"decision": "NON_MODEL_ROUTE", "route": "AGENT_SKILL_LEARNING", "source_id": "fixture_source_fskill"}
+{"decision": "NON_MODEL_ROUTE", "route": "EVALUATION_CASE_SLOT32", "source_id": "fixture_source_feval"}
+{"decision": "NON_MODEL_ROUTE", "route": "OPERATIONAL_MEMORY_ONLY", "source_id": "fixture_source_fmem"}
+{"decision": "NO_LEARNING_VALUE", "source_id": "fixture_source_fnone"}
+{"decision": "HOLD_FOR_REVIEW", "source_id": "fixture_source_fhold"}

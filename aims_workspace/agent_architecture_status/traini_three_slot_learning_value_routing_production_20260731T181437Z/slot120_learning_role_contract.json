@@ -1,0 +1,11 @@
+{
+  "live_profile": {
+    "base": "qwen36-docgen-35b",
+    "expected": "qwen3.6:35b_BF16",
+    "path": "ops/ft/traini/autopilot/profiles/slot120_profile.yaml",
+    "threshold": 750
+  },
+  "role": "heavy reasoning, architecture, orchestration, planning, causal analysis",
+  "slot": "120",
+  "training_allowed": false
+}

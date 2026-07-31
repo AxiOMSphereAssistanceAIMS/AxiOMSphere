@@ -1,0 +1,11 @@
+{
+  "live_profile": {
+    "base": "qwen3-32b",
+    "expected": "Qwen/Qwen3-Coder-Next-FP8",
+    "path": "ops/ft/traini/autopilot/profiles/slot32_profile.yaml",
+    "threshold": 750
+  },
+  "role": "code generation, repair, debugging, tests, runtime/configuration, dependency and scheduler repair",
+  "slot": "32",
+  "training_allowed": false
+}

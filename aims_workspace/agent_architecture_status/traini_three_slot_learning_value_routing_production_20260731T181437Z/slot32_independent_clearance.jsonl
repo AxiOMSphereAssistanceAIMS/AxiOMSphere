@@ -1,0 +1,3 @@
+{"approved_for_training": false, "fixture_excluded": true, "pair_id": "fixture_source_f32:SLOT32:v1:pair", "result": "ADMITTED_SLOT32"}
+{"approved_for_training": false, "fixture_excluded": true, "pair_id": "fixture_source_fm14_32:SLOT32:v1:pair", "result": "ADMITTED_SLOT32"}
+{"approved_for_training": false, "fixture_excluded": true, "pair_id": "fixture_source_fm32_120:SLOT32:v1:pair", "result": "ADMITTED_SLOT32"}

@@ -1,0 +1,10 @@
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "eebc15c7b543843aee36dfbb346abb0d978a5290da26ca89fbeadfd5230cc2e6", "source_id": "fixture_source_f14"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "41912cf2e0581b41eae70959f1d0ad6b74b7d08cc5777995eba45204ccd28324", "source_id": "fixture_source_f32"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "d643d9ebd0a731951ab0afdc8ad2d7d13bfbc6382a94d6a5d4e116907cbeb712", "source_id": "fixture_source_f120"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "3cd11078dff346df63e6b53916ab39d405e0f4f782e9f34c741a000f2758d746", "source_id": "fixture_source_fm14_32"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "0cb2e6de58db7425deed755cf6a5c0f3e18d4c176e0914578738b14ae1b6eac5", "source_id": "fixture_source_fm32_120"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "1bdeda279598cb6a98178b4a0885b4fec6aa62d88ad466b64b0a836c3787900c", "source_id": "fixture_source_fskill"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "b6a68be2297ceaf8a5f1071acc2f5c6ceae6b50a9ef86f804a783b610b7bfd80", "source_id": "fixture_source_feval"}
+{"decision": "LEARNING_UNIT_CREATED", "operational_closeout_preserved": true, "source_hash": "00e044e0122bdd276e9b83db43facc1c019cc5af6fef19a8df235f7dff367e01", "source_id": "fixture_source_fmem"}
+{"decision": "NO_DURABLE_LEARNING_UNIT", "operational_closeout_preserved": true, "source_hash": "2acaa3ec37bb684ee6c732a12828d973f6fe67cf48e44bd2f49f1d0a4305be21", "source_id": "fixture_source_fnone"}
+{"decision": "HOLD_SOURCE_EVIDENCE_INCOMPLETE", "operational_closeout_preserved": true, "source_hash": "8998d9e102576ccbe3f9a1f4836fb23413c4491825573e543931a738789269d8", "source_id": "fixture_source_fhold"}

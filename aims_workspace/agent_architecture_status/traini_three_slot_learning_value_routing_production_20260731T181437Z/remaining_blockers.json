@@ -1,0 +1,7 @@
+{
+  "blockers": [
+    "No real admitted model-training pairs; all routing proof rows are excluded certification fixtures",
+    "live Slot14/Slot120 base-model labels require contract reconciliation before training"
+  ],
+  "training_task_created": false
+}

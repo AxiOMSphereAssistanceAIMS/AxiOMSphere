@@ -1,0 +1,5 @@
+{
+  "no_ready_slot_outcome": "SCHEDULE_NONE",
+  "only_ready_slots_selectable": true,
+  "scheduler": "Redis Scheduler"
+}

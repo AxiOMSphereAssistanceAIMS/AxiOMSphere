@@ -1,0 +1,6 @@
+{
+  "preserved": true,
+  "slot120": "qwen3.6:35b_BF16",
+  "slot14": "omi-ft-14b-v18:latest",
+  "slot32": "Qwen/Qwen3-Coder-Next-FP8"
+}

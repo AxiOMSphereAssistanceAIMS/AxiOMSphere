@@ -1,0 +1,3 @@
+{"decision": "NON_MODEL_ROUTE", "route": "AGENT_SKILL_LEARNING", "source_id": "fixture_source_fskill"}
+{"decision": "NON_MODEL_ROUTE", "route": "EVALUATION_CASE_SLOT32", "source_id": "fixture_source_feval"}
+{"decision": "NON_MODEL_ROUTE", "route": "OPERATIONAL_MEMORY_ONLY", "source_id": "fixture_source_fmem"}

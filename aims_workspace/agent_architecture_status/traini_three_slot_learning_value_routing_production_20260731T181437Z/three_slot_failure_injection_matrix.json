@@ -1,0 +1,9 @@
+{
+  "ambiguous_affinity": "hold",
+  "clearance_failure": "reject",
+  "concurrency": "denied",
+  "profile_missing": "fail_closed",
+  "stale_readiness": "task_denied",
+  "transformer_failure": "route_isolated",
+  "writer_failure": "durable_state"
+}

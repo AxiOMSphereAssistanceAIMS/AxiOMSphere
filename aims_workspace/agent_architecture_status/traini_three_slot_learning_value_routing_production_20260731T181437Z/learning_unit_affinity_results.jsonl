@@ -1,0 +1,7 @@
+{"learning_unit_id": "fixture_source_f14:SLOT14:v1", "selected": "SLOT14", "slot120_affinity": 0.0, "slot14_affinity": 1.0, "slot32_affinity": 0.0}
+{"learning_unit_id": "fixture_source_f32:SLOT32:v1", "selected": "SLOT32", "slot120_affinity": 0.0, "slot14_affinity": 0.0, "slot32_affinity": 1.0}
+{"learning_unit_id": "fixture_source_f120:SLOT120:v1", "selected": "SLOT120", "slot120_affinity": 1.0, "slot14_affinity": 0.0, "slot32_affinity": 0.0}
+{"learning_unit_id": "fixture_source_fm14_32:SLOT14:v1", "selected": "SLOT14", "slot120_affinity": 0.0, "slot14_affinity": 1.0, "slot32_affinity": 0.0}
+{"learning_unit_id": "fixture_source_fm14_32:SLOT32:v1", "selected": "SLOT32", "slot120_affinity": 0.0, "slot14_affinity": 0.0, "slot32_affinity": 1.0}
+{"learning_unit_id": "fixture_source_fm32_120:SLOT32:v1", "selected": "SLOT32", "slot120_affinity": 0.0, "slot14_affinity": 0.0, "slot32_affinity": 1.0}
+{"learning_unit_id": "fixture_source_fm32_120:SLOT120:v1", "selected": "SLOT120", "slot120_affinity": 1.0, "slot14_affinity": 0.0, "slot32_affinity": 0.0}

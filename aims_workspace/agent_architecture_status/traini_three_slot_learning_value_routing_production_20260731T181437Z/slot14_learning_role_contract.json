@@ -1,0 +1,11 @@
+{
+  "live_profile": {
+    "base": "qwen3-chat-14b",
+    "expected": "omi-ft-14b-v18:latest",
+    "path": "ops/ft/traini/autopilot/profiles/slot14_profile.yaml",
+    "threshold": 750
+  },
+  "role": "document dialogue, comparison, rewriting, requirements extraction, policy interpretation, evidence-grounded assistance",
+  "slot": "14",
+  "training_allowed": false
+}
