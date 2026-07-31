@@ -1,0 +1,3 @@
+{"disposition": "CLEARED_NO_TRAINING_VALUE", "source_id": "fixture_terminal_no_value_v1"}
+{"disposition": "HOLD_RECHECK_ON_SOURCE_CHANGE", "source_id": "fixture_conditional_hold_v1"}
+{"disposition": "QUARANTINED_MALFORMED", "source_id": "fixture_malformed_v1"}

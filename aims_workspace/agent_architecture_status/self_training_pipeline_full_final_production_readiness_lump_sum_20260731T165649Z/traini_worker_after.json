@@ -1,0 +1,6 @@
+{
+  "container": "axiomsphere-traini-worker",
+  "image": "axiomsphere-traini-worker:local",
+  "state": "running",
+  "training_started": false
+}

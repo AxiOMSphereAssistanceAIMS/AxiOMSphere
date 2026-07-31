@@ -1,0 +1,12 @@
+{
+  "conditional_holds": 57,
+  "dispositioned": 143,
+  "holds_with_recheck": 57,
+  "raw_items": 143,
+  "repeated_unchanged": 0,
+  "status": "PASS_PRIOR_CERTIFICATION_BASELINE_CONFIRMED",
+  "terminal_closeouts": 86,
+  "training_task_created": false,
+  "unresolved": 0,
+  "unsafe_mutation": false
+}

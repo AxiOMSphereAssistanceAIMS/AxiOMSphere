@@ -1,0 +1,15 @@
+{
+  "admitted_pairs": 0,
+  "changed": 1,
+  "conditional_holds": 0,
+  "cycles": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ],
+  "discovered": 3,
+  "health": "HEALTHY_NO_ELIGIBLE_PAIRS",
+  "pair_candidates": 0,
+  "terminal_closeouts": 3
+}

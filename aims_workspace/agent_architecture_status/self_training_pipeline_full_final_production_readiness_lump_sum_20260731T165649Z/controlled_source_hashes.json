@@ -1,0 +1,7 @@
+{
+  "hashes": {
+    "fixture_conditional_hold_v1": "93ef96f3b07371f993c92145c8f8397d691c3dfc7214ba568dd9841419c3892b",
+    "fixture_malformed_v1": "bf8c7ed1dfce8fa148aad9bab137d9693d6ff8e7e2bb4b215ed38c2d15fc3c39",
+    "fixture_terminal_no_value_v1": "7850b07f7d903d283868020d52a9c51f6683934dc5afc69edd61be963cdbd5f6"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "disposition": "HOLD_RECHECK_ON_SOURCE_CHANGE",
+  "sha256": "93ef96f3b07371f993c92145c8f8397d691c3dfc7214ba568dd9841419c3892b",
+  "source_id": "fixture_conditional_hold_v1",
+  "version": 1
+}

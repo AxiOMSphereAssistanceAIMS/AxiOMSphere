@@ -1,0 +1,27 @@
+{
+  "certification_fixture": true,
+  "production_training_eligible": false,
+  "sources": [
+    {
+      "expected": "CLEARED_NO_TRAINING_VALUE",
+      "sha256": "7850b07f7d903d283868020d52a9c51f6683934dc5afc69edd61be963cdbd5f6",
+      "source_id": "fixture_terminal_no_value_v1",
+      "type": "TERMINAL_NO_TRAINING_VALUE",
+      "version": 1
+    },
+    {
+      "expected": "HOLD_RECHECK_ON_SOURCE_CHANGE",
+      "sha256": "93ef96f3b07371f993c92145c8f8397d691c3dfc7214ba568dd9841419c3892b",
+      "source_id": "fixture_conditional_hold_v1",
+      "type": "CONDITIONAL_HOLD_SOURCE",
+      "version": 1
+    },
+    {
+      "expected": "QUARANTINED_MALFORMED",
+      "sha256": "bf8c7ed1dfce8fa148aad9bab137d9693d6ff8e7e2bb4b215ed38c2d15fc3c39",
+      "source_id": "fixture_malformed_v1",
+      "type": "MALFORMED_OR_UNRESOLVED_POINTER",
+      "version": 1
+    }
+  ]
+}

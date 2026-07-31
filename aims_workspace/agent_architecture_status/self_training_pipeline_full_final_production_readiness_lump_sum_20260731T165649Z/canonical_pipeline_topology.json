@@ -1,0 +1,17 @@
+{
+  "path": [
+    "raw discovery",
+    "identity",
+    "classification",
+    "disposition",
+    "pair preparation",
+    "independent clearance",
+    "dataset lineage",
+    "readiness",
+    "scheduler",
+    "worker",
+    "closeout",
+    "next cycle"
+  ],
+  "status": "PASS"
+}

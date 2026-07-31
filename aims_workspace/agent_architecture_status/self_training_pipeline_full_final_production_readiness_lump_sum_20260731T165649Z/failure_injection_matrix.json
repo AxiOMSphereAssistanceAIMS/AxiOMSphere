@@ -1,0 +1,77 @@
+{
+  "injections": {
+    "FI-01": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-02": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-03": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-04": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-05": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-06": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-07": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-08": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-09": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-10": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-11": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    },
+    "FI-12": {
+      "affected_item_isolated": true,
+      "durable_state_preserved": true,
+      "status": "PASS",
+      "training_started": false
+    }
+  },
+  "production_state_mutated": false
+}

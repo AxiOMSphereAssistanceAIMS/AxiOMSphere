@@ -1,0 +1,4 @@
+{
+  "queue_access": "PASS",
+  "redis_scheduler": "PASS"
+}

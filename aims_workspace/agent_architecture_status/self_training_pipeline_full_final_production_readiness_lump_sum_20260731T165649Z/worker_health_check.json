@@ -1,0 +1,6 @@
+{
+  "heartbeat": "PASS",
+  "redis": "PASS",
+  "running": true,
+  "workdir": "/workspace"
+}

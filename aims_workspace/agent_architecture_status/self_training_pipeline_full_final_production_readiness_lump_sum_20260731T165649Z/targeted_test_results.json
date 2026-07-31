@@ -1,0 +1,9 @@
+{
+  "commands": [
+    "python3 -m py_compile ops/scripts/run_self_training_pipeline_lump_sum_harness.py",
+    "docker compose --profile self-learning up -d traini-worker"
+  ],
+  "failed": 0,
+  "passed": 2,
+  "status": "PASS"
+}

@@ -1,0 +1,8 @@
+{
+  "direct_cron_used": false,
+  "redis_scheduler": "healthy",
+  "runtime_alias": "aims-qwen3-coder-next-fp8-v0",
+  "slot32_incumbent": "Qwen/Qwen3-Coder-Next-FP8",
+  "training_executed": false,
+  "worker_running": true
+}

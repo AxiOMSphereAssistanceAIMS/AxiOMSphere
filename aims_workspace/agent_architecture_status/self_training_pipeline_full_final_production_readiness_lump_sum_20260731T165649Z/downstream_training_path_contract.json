@@ -1,0 +1,5 @@
+{
+  "not_ready_state_no_handoff": true,
+  "promotion_disabled_during_training": true,
+  "ready_state_single_handoff": true
+}

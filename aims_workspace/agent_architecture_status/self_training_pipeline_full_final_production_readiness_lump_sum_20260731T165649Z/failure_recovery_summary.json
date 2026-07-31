@@ -1,0 +1,5 @@
+{
+  "source_state_lost": false,
+  "status": "PASS_FULL_BOUNDED_FAILURE_RECOVERY",
+  "unbounded_retry": false
+}

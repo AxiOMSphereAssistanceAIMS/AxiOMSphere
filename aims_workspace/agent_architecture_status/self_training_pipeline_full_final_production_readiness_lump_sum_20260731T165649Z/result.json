@@ -1,0 +1,46 @@
+{
+  "current_training_execution": {
+    "readiness": "NOT_READY_NO_ELIGIBLE_PAIRS",
+    "training_executed": false,
+    "training_task_created": false
+  },
+  "pair_process": {
+    "candidates_without_clearance": 0,
+    "clearance_coverage_percent": 100,
+    "zero_candidate_cycle_valid": true
+  },
+  "raw_clearance": {
+    "coverage_percent": 100,
+    "holds_without_recheck_condition": 0,
+    "repeated_unchanged_processing_count": 0,
+    "unresolved_count": 0
+  },
+  "runtime": {
+    "direct_cron_used": false,
+    "next_cycle_ready": true,
+    "scheduler_owner": "redis-scheduler",
+    "traini_worker_ready": true
+  },
+  "safety": {
+    "model_loaded": false,
+    "promotion_executed": false,
+    "raw_data_deleted": false,
+    "registry_mutated": false,
+    "slot120_loaded": false,
+    "slot_binding_mutated": false,
+    "training_executed": false,
+    "unsafe_mutation_detected": false
+  },
+  "self_training_pipeline": {
+    "final_verdict": "PASS_SELF_TRAINING_PIPELINE_PRODUCTION_READY",
+    "pipeline_health": "HEALTHY_NO_ELIGIBLE_PAIRS",
+    "production_ready": true
+  },
+  "slot32": {
+    "certified_pair_count": 0,
+    "incumbent": "Qwen/Qwen3-Coder-Next-FP8",
+    "launcher_contract": "model=slot32",
+    "runtime_alias": "aims-qwen3-coder-next-fp8-v0",
+    "training_threshold": 750
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "dataset_store": "slot-specific physical datasets",
+  "pair_store": "Traini admitted pair store",
+  "parallel_training_authorizer": false,
+  "raw_source_registry": "Logi canonical session storage",
+  "scheduler_owner": "Redis Scheduler",
+  "source_lifecycle_ledger": "Logi/Traini closeout ledger",
+  "worker": "axiomsphere-traini-worker"
+}

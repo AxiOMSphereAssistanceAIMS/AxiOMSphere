@@ -1,0 +1,5 @@
+{
+  "container": "axiomsphere-traini-worker",
+  "repair": "canonical compose startup",
+  "state": "exited"
+}

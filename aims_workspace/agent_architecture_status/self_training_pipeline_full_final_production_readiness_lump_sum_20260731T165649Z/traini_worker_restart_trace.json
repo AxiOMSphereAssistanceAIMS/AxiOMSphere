@@ -1,0 +1,5 @@
+{
+  "redis_reconnect": "PASS",
+  "restart": "approved_compose_restart",
+  "stale_lease_recovered": true
+}

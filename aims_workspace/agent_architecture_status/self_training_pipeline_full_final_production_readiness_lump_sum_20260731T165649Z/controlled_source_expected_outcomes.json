@@ -1,0 +1,7 @@
+{
+  "outcomes": {
+    "fixture_conditional_hold_v1": "HOLD_RECHECK_ON_SOURCE_CHANGE",
+    "fixture_malformed_v1": "QUARANTINED_MALFORMED",
+    "fixture_terminal_no_value_v1": "CLEARED_NO_TRAINING_VALUE"
+  }
+}
