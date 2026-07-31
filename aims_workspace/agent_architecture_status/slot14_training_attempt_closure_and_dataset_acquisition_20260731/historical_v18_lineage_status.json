@@ -1,0 +1,11 @@
+{
+  "admission_status": "LEGACY_DATASET_LEVEL_EVIDENCE_NOT_ADMISSIBLE",
+  "dataset_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v18/train_v18.jsonl",
+  "dataset_sha256": "17d372ba3b8579c61e5bc21814a4e9c64a600ce7c2fb881241945e3224c990ec",
+  "deterministically_recoverable_pairs": 0,
+  "evidence_retained": true,
+  "original_deleted": false,
+  "per_pair_identity_present": false,
+  "reported_rows": 774,
+  "source_hashes_present": false
+}

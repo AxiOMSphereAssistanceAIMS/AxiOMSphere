@@ -1,0 +1,7 @@
+{
+  "incumbent_model": "omi-ft-14b-v18:latest",
+  "model_registry_mutated": false,
+  "preserved": true,
+  "promotion_performed": false,
+  "slot14_binding_changed": false
+}

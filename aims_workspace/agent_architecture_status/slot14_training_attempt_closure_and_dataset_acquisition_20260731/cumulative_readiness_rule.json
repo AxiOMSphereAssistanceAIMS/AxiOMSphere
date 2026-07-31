@@ -1,0 +1,9 @@
+{
+  "automatic_retired_task_release": false,
+  "below_threshold_decision": "FAIL_CLOSED",
+  "minimum_verified_pairs": 750,
+  "recalculate_on_each_admission_cycle": true,
+  "redis_training_task_before_readiness_pass": false,
+  "training_proposal_below_threshold": false,
+  "verified_count_basis": "admitted pairs only"
+}

@@ -1,0 +1,24 @@
+{
+  "cycle_size_max": 100,
+  "cycle_size_min": 50,
+  "required_outputs": [
+    "cycle source manifest",
+    "quality result",
+    "admission result",
+    "cumulative verified count",
+    "remaining gap"
+  ],
+  "steps": [
+    "classify",
+    "transform",
+    "validate",
+    "deduplicate",
+    "admit"
+  ],
+  "stop_conditions": [
+    "quality plateau",
+    "provenance plateau",
+    "no eligible sources",
+    "verified count >= 750"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "audit_history_score": 1785510907.7797697,
+  "deleted": false,
+  "dispatch_blocked": "true",
+  "held_for_user_decision": "false",
+  "payload_preserved": true,
+  "pending_score": null,
+  "retained_in_audit_history": true,
+  "retry_membership": null,
+  "status": "RETIRED_UNAUTHORIZED_INSUFFICIENT_DATASET",
+  "task_key": "scheduler:task:traini_slot14_night_tuning_73646c7229c3"
+}

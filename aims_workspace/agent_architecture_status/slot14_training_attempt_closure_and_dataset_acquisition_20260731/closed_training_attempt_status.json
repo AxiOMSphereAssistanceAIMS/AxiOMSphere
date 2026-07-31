@@ -1,0 +1,11 @@
+{
+  "closed_attempt_not_reopened": true,
+  "deterministically_recoverable_historical_pairs": 0,
+  "historical_v18_admission": "LEGACY_DATASET_LEVEL_EVIDENCE_NOT_ADMISSIBLE",
+  "historical_v18_rows": 774,
+  "remaining_gap": 746,
+  "status": "CLOSED_NOT_DATASET_READY",
+  "threshold": 750,
+  "training_started": false,
+  "verified_count": 4
+}

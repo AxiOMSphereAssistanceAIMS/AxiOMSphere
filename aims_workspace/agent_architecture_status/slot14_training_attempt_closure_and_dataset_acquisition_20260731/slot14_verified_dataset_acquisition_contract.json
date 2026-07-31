@@ -1,0 +1,35 @@
+{
+  "cycle_size": [
+    50,
+    100
+  ],
+  "minimum_verified_pairs": 750,
+  "pair_required_fields": [
+    "immutable pair_id",
+    "source_id at creation time",
+    "source path/reference",
+    "source SHA-256",
+    "transformation method",
+    "target_slot=slot14",
+    "input",
+    "output",
+    "task family",
+    "provenance chain",
+    "quality result",
+    "admission decision",
+    "deduplication identity"
+  ],
+  "program_id": "slot14_verified_dataset_acquisition_v1",
+  "readiness_recalculated_from": "admitted pairs only",
+  "redis_training_task_before_readiness": false,
+  "retired_task_auto_release": false,
+  "status": "REGISTERED",
+  "stop_conditions": [
+    "quality plateau",
+    "provenance plateau",
+    "no eligible source",
+    "threshold reached"
+  ],
+  "target_slot": 14,
+  "training_allowed_before_readiness": false
+}

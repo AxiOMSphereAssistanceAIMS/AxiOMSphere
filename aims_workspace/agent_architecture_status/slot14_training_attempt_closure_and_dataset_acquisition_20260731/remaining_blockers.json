@@ -1,0 +1,9 @@
+{
+  "blockers": [
+    "746 additional provenance-complete admitted Slot14 pairs required",
+    "historical v18 per-pair identity and provenance unavailable",
+    "no frozen dataset hash or controlled training contract exists"
+  ],
+  "original_task_retired": true,
+  "training_task_created": false
+}

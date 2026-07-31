@@ -1,0 +1,13 @@
+{
+  "allowed": [
+    "real document-dialogue tasks",
+    "document comparison",
+    "anonymization",
+    "structured rewriting",
+    "procedure/policy interpretation",
+    "requirement extraction",
+    "evidence-grounded document assistance",
+    "approved source-derived augmentation with complete lineage"
+  ],
+  "target_slot": 14
+}

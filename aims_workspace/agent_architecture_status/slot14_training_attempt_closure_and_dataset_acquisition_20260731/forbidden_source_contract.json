@@ -1,0 +1,12 @@
+{
+  "forbidden": [
+    "complete transcripts",
+    "agent_skill_learning artifacts used directly",
+    "Slot32 material",
+    "Slot120 material",
+    "infrastructure repair logs",
+    "pairs without source hashes",
+    "reconstructed or fabricated provenance",
+    "legacy v18 rows without per-pair identity"
+  ]
+}
