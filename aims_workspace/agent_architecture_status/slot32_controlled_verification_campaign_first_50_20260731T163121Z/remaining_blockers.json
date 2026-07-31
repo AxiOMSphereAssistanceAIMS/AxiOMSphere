@@ -1,0 +1,10 @@
+{
+  "blockers": [
+    "controlled fixture candidates are not real reproducible repairs",
+    "no frozen before-state and patch replay evidence for archived candidates",
+    "0/750 certified pairs"
+  ],
+  "registry_mutated": false,
+  "training_started": false,
+  "training_task_created": false
+}

@@ -1,0 +1,15 @@
+{
+  "families": [
+    "Python code repair",
+    "schema/contract validation",
+    "scheduler/runtime repair",
+    "configuration parsing",
+    "path/mount handling",
+    "routing logic",
+    "test regression repair",
+    "dependency compatibility",
+    "error handling",
+    "idempotency/deduplication"
+  ],
+  "status": "NOT_REACHED"
+}

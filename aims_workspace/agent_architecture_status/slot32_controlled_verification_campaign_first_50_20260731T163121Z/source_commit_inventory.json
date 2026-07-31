@@ -1,0 +1,5 @@
+{
+  "commits_inspected": 0,
+  "eligible_replay_commits": 0,
+  "reason": "No commit was selected without an evidence-bound before state and deterministic repair verification."
+}

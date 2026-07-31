@@ -1,0 +1,9 @@
+{
+  "candidate_selection_range": [
+    50,
+    75
+  ],
+  "selected_tasks": 0,
+  "target_certified_pairs": 50,
+  "training_started": false
+}

@@ -1,0 +1,6 @@
+{
+  "allowed": false,
+  "certified_pairs": 0,
+  "reason": "No replayable real repair cases; threshold unmet",
+  "required": 750
+}
