@@ -1,0 +1,5 @@
+{
+  "promotion_allowed": false,
+  "registry_mutation_allowed": false,
+  "rollback_model": "omi-ft-14b-v18:latest"
+}

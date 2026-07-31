@@ -1,0 +1,72 @@
+{
+  "generated_at_utc": "20260731T153646Z",
+  "sources": [
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "HOLD_PROVENANCE_GAP",
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/manifest_slot14_chat_materialized.json",
+      "manifest_sha256": "28347ae3cb1346755ed23e1327a07e8a9059e048e59ebfe13f1c8a5e06a46f24",
+      "provenance_available": false,
+      "record_count": 4,
+      "source_id": "slot14_chat_materialized_current",
+      "source_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/train_slot14_chat_materialized.jsonl",
+      "source_sha256": "89e210278e66abd5b37193ad49a10cc4095d63ee0150d444b153351ec93a9c20",
+      "target_slot_explicit": false
+    },
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "HOLD_HISTORICAL_MANIFEST_REQUIRED",
+      "provenance_available": "unverified",
+      "record_count": 774,
+      "source_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v18/train_v18.jsonl",
+      "source_sha256": "17d372ba3b8579c61e5bc21814a4e9c64a600ce7c2fb881241945e3224c990ec",
+      "source_type": "historical_slot14_named_dataset",
+      "target_slot_affinity": "inferred_from_path_only"
+    },
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "HOLD_HISTORICAL_MANIFEST_REQUIRED",
+      "provenance_available": "unverified",
+      "record_count": 812,
+      "source_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v19_slot14_omi/train_v19.jsonl",
+      "source_sha256": "199e03bd18aa4d3e056b326c76f65353530032e201611e525feff6dc4711589a",
+      "source_type": "historical_slot14_named_dataset",
+      "target_slot_affinity": "inferred_from_path_only"
+    },
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "HOLD_HISTORICAL_MANIFEST_REQUIRED",
+      "provenance_available": "unverified",
+      "record_count": 862,
+      "source_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v20_slot14_omi/train_v20.jsonl",
+      "source_sha256": "c2757bbe9b9de313895fe5c58d2209760ff47ea6510f134f9fd1a77c574fe169",
+      "source_type": "historical_slot14_named_dataset",
+      "target_slot_affinity": "inferred_from_path_only"
+    },
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "HOLD_HISTORICAL_MANIFEST_REQUIRED",
+      "provenance_available": "unverified",
+      "record_count": 1798,
+      "source_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v20_slot14_omi_thinking/train_v20_2000.jsonl",
+      "source_sha256": "dbb6eb33df632864ab059bbf7f818211422d3d69a6fc2a8e926690deebeab47c",
+      "source_type": "historical_slot14_named_dataset",
+      "target_slot_affinity": "inferred_from_path_only"
+    },
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "HOLD_HISTORICAL_UNFROZEN",
+      "file_count": 37,
+      "provenance_available": "unverified",
+      "record_count": 689,
+      "source_type": "historical_traini_slot14_pair_pools"
+    },
+    {
+      "admission_eligible": false,
+      "eligibility_decision": "FORBIDDEN_AGENT_SKILL_SOURCE",
+      "provenance_available": "not admitted",
+      "record_count": null,
+      "source_type": "agent_skill_learning_candidates"
+    }
+  ]
+}

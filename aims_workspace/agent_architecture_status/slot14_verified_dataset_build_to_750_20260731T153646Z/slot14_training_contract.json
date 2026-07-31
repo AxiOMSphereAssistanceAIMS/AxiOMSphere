@@ -1,0 +1,10 @@
+{
+  "base_model": "omi-ft-14b-v18:latest",
+  "dataset_hash": null,
+  "max_steps": null,
+  "method": "bounded LoRA/QLoRA (unscheduled)",
+  "promotion_allowed": false,
+  "registry_change_allowed": false,
+  "slot_update_allowed": false,
+  "status": "PROPOSAL_ONLY_NOT_SCHEDULABLE"
+}

@@ -1,0 +1,13 @@
+{
+  "families": [
+    "coding",
+    "slot120_deep_reasoning",
+    "infrastructure_devops_repairs",
+    "raw_operational_logs",
+    "agent_skill_execution",
+    "complete_transcripts",
+    "running_or_unclosed_sessions",
+    "slot32_material"
+  ],
+  "target_slot": 14
+}

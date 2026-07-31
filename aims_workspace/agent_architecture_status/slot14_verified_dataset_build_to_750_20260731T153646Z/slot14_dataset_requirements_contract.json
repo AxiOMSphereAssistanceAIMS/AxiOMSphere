@@ -1,0 +1,31 @@
+{
+  "allowed_task_families": [
+    "document_dialogue",
+    "document_comparison",
+    "anonymization",
+    "structured_rewriting",
+    "procedure_policy_interpretation",
+    "requirements_extraction",
+    "evidence_grounded_document_assistance",
+    "concise_user_facing_explanation",
+    "document_gap_identification"
+  ],
+  "contract_version": "slot14_verified_dataset_v1",
+  "excluded_task_families": [
+    "coding",
+    "slot120_deep_reasoning",
+    "infrastructure_devops_repairs",
+    "raw_operational_logs",
+    "agent_skill_execution",
+    "complete_transcripts",
+    "running_or_unclosed_sessions",
+    "slot32_material"
+  ],
+  "incumbent_base_model": "omi-ft-14b-v18:latest",
+  "minimum_verified_pairs": 750,
+  "promotion_allowed": false,
+  "registry_change_allowed": false,
+  "slot_update_allowed": false,
+  "target_slot": 14,
+  "training_started": false
+}

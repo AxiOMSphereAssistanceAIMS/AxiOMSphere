@@ -1,0 +1,12 @@
+{
+  "after": {
+    "new_pairs_admitted": 0,
+    "original_task": "HELD_FOR_USER_DECISION",
+    "training_task": "NOT_CREATED",
+    "verified_slot14_examples": 4
+  },
+  "before": {
+    "original_task": "HELD_FOR_USER_DECISION",
+    "verified_slot14_examples": 4
+  }
+}

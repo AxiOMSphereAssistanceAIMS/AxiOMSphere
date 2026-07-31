@@ -1,0 +1,6 @@
+{
+  "admitted_pairs": 0,
+  "exact_duplicates_observed": 0,
+  "near_duplicate_detection": "NOT_ADMISSIBLE_WITHOUT_SOURCE_ID",
+  "status": "HOLD_NO_ADMITTED_DATASET"
+}

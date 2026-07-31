@@ -1,0 +1,11 @@
+{
+  "stage_1_requirements": "PASS",
+  "stage_2_source_inventory": "PASS_WITH_HELD_SOURCES",
+  "stage_3_affinity_contamination": "HOLD_PROVENANCE_GAP",
+  "stage_4_transformation": "HOLD_NO_ADMISSIBLE_INPUT",
+  "stage_5_quality": "HOLD_BELOW_750",
+  "stage_6_balance": "HOLD_NO_ADMITTED_DATASET",
+  "stage_7_bounded_cycles": "PASS_PARTIAL_CYCLE",
+  "stage_8_readiness": "HOLD_SLOT14_BELOW_750_VERIFIED_PAIRS",
+  "stage_9_training_task": "HOLD_NO_AUTHORIZED_SLOT14_TRAINING_TASK"
+}

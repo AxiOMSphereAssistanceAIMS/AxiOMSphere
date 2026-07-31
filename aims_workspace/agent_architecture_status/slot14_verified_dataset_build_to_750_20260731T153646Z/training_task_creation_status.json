@@ -1,0 +1,6 @@
+{
+  "decision": "HOLD_NO_AUTHORIZED_SLOT14_TRAINING_TASK",
+  "original_task_released": false,
+  "reason": "Readiness gate below 750 verified pairs",
+  "task_created": false
+}

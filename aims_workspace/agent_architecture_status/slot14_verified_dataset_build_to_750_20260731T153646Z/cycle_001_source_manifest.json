@@ -1,0 +1,9 @@
+{
+  "admitted_records": 0,
+  "cycle": 1,
+  "inspected_records": 4,
+  "sources": [
+    "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/train_slot14_chat_materialized.jsonl",
+    "historical datasets and pools inspected as held evidence"
+  ]
+}

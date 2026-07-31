@@ -1,0 +1,12 @@
+{
+  "current_candidate_source": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/train_slot14_chat_materialized.jsonl",
+  "current_verified_examples": 4,
+  "historical_traini_slot14_pair_pools": {
+    "admission_eligible": false,
+    "eligibility_decision": "HOLD_HISTORICAL_UNFROZEN",
+    "file_count": 37,
+    "provenance_available": "unverified",
+    "record_count": 689,
+    "source_type": "historical_traini_slot14_pair_pools"
+  }
+}

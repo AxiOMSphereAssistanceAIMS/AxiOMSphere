@@ -1,0 +1,10 @@
+{
+  "blockers": [
+    "746 additional provenance-complete, quality-gated Slot14 pairs required",
+    "current four rows cannot be admitted without source identity and hashes",
+    "historical datasets/pools require certified manifests and provenance review",
+    "slot14_profile.yaml references qwen3-chat-14b/v20 config while contract requires omi-ft-14b-v18:latest and config file is missing"
+  ],
+  "raw_deleted": false,
+  "training_started": false
+}

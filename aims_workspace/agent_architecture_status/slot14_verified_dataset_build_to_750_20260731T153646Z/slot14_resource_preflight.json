@@ -1,0 +1,4 @@
+{
+  "decision": "NOT_RUN",
+  "reason": "Dataset readiness below 750; model loading/training prohibited."
+}

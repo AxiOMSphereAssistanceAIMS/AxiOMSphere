@@ -1,0 +1,4 @@
+{"candidate_id": "current_unprovenanced_row_0001", "failure": "PROVENANCE_REQUIRED_FOR_TRANSFORMATION", "reason": "Missing source_id, source_sha256, target_slot, and provenance_chain; cannot fabricate these fields.", "source_sha256": null}
+{"candidate_id": "current_unprovenanced_row_0002", "failure": "PROVENANCE_REQUIRED_FOR_TRANSFORMATION", "reason": "Missing source_id, source_sha256, target_slot, and provenance_chain; cannot fabricate these fields.", "source_sha256": null}
+{"candidate_id": "current_unprovenanced_row_0003", "failure": "PROVENANCE_REQUIRED_FOR_TRANSFORMATION", "reason": "Missing source_id, source_sha256, target_slot, and provenance_chain; cannot fabricate these fields.", "source_sha256": null}
+{"candidate_id": "current_unprovenanced_row_0004", "failure": "PROVENANCE_REQUIRED_FOR_TRANSFORMATION", "reason": "Missing source_id, source_sha256, target_slot, and provenance_chain; cannot fabricate these fields.", "source_sha256": null}

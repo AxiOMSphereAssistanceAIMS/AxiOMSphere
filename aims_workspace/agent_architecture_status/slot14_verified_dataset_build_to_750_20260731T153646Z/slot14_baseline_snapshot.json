@@ -1,0 +1,9 @@
+{
+  "base_model": "omi-ft-14b-v18:latest",
+  "golden_v3_eval_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/logs/eval_14_v18_golden_v3.json",
+  "golden_v3_eval_sha256": "dbac33840c4ce9e2b5f93652c2d15e295a555be4183f6356942342b5a957c4ae",
+  "pass_rate": 0.93,
+  "passed": 53,
+  "rollback_model": "omi-ft-14b-v18:latest",
+  "total": 57
+}

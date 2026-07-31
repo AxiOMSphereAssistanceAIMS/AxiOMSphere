@@ -1,0 +1,17 @@
+{
+  "agent_skill_leakage": 0,
+  "blockers": [
+    "746 verified pairs missing",
+    "current examples lack provenance-bound schema",
+    "historical datasets lack current admission proof",
+    "training profile references missing v20 config and conflicts with required incumbent"
+  ],
+  "decision": "HOLD_BELOW_750_VERIFIED_PAIRS",
+  "minimum_required": 750,
+  "model_load_or_training_started": false,
+  "provenance_coverage": 0.0,
+  "training_task_creation_allowed": false,
+  "transcript_leakage": 0,
+  "verified_pairs": 4,
+  "wrong_slot_leakage": 0
+}

@@ -1,0 +1,19 @@
+{
+  "decisions": [
+    {
+      "decision": "HOLD_PROVENANCE_GAP",
+      "reason": "Rows lack source_id/source_sha256/target_slot/provenance chain.",
+      "source_id": "slot14_chat_materialized_current"
+    },
+    {
+      "decision": "HOLD_HISTORICAL_MANIFEST_REQUIRED",
+      "reason": "Historical files are not current admission manifests.",
+      "source_id": "historical_slot14_datasets"
+    },
+    {
+      "decision": "HOLD_HISTORICAL_UNFROZEN",
+      "reason": "Historical pool artifacts are not frozen, independently verified Slot14 source records.",
+      "source_id": "historical_traini_slot14_pair_pools"
+    }
+  ]
+}

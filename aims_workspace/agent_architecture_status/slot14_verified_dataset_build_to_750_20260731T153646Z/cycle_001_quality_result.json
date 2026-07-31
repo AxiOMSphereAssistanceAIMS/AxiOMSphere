@@ -1,0 +1,10 @@
+{
+  "admitted": 0,
+  "cycle": 1,
+  "dominant_blockers": [
+    "provenance_missing",
+    "target_slot_not_explicit"
+  ],
+  "held": 4,
+  "rejected": 0
+}

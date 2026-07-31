@@ -1,0 +1,14 @@
+{
+  "families": [
+    "document_dialogue",
+    "document_comparison",
+    "anonymization",
+    "structured_rewriting",
+    "procedure_policy_interpretation",
+    "requirements_extraction",
+    "evidence_grounded_document_assistance",
+    "concise_user_facing_explanation",
+    "document_gap_identification"
+  ],
+  "target_slot": 14
+}

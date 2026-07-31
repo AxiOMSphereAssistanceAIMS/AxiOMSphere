@@ -1,0 +1,22 @@
+{
+  "forbidden_content": [
+    "complete_transcript",
+    "private_scratchpad",
+    "hidden_chain_of_thought",
+    "agent_skill_implementation"
+  ],
+  "required_fields": [
+    "pair_id",
+    "source_id",
+    "source_path_or_evidence_reference",
+    "source_sha256",
+    "transformation_method",
+    "input",
+    "expected_output",
+    "task_family",
+    "target_slot",
+    "provenance_chain",
+    "quality_checks",
+    "admission_status"
+  ]
+}
