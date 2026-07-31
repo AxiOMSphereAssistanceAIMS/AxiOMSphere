@@ -1,0 +1,7 @@
+{
+  "bounded": true,
+  "direct_cron_used": false,
+  "executor_runtime": "redis-scheduler",
+  "training_started": false,
+  "worker": "axiomsphere-traini-worker"
+}

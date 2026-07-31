@@ -1,0 +1,4 @@
+{
+  "candidate_loss_retains_incumbent": true,
+  "candidate_win_required_for_update": true
+}

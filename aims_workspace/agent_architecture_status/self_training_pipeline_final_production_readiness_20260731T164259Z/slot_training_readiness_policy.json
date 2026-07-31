@@ -1,0 +1,5 @@
+{
+  "readiness_from_admitted_physical_rows_only": true,
+  "slot32_threshold": 750,
+  "source": "ops/ft/traini/autopilot/profiles/slot32_profile.yaml and admission policy"
+}

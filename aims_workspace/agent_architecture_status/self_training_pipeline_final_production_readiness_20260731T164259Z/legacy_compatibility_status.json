@@ -1,0 +1,6 @@
+{
+  "can_authorize_training": false,
+  "migration_complete": false,
+  "read_only_or_fail_closed": true,
+  "status": "ACTIVE_LEGACY_COMPATIBILITY"
+}

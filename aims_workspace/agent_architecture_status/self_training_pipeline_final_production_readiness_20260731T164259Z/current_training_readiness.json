@@ -1,0 +1,6 @@
+{
+  "certified_pair_count": 0,
+  "reason": "no independently admitted Slot32 pairs",
+  "slot32": "NOT_READY_NO_ELIGIBLE_PAIRS",
+  "threshold": 750
+}

@@ -1,0 +1,27 @@
+{
+  "current_certified_pair_count_by_slot": {
+    "slot120": 0,
+    "slot14": 4,
+    "slot32": 0
+  },
+  "current_training_execution": {
+    "readiness": "NOT_READY_NO_ELIGIBLE_PAIRS",
+    "reason": "0 admitted Slot32 pairs; threshold 750"
+  },
+  "direct_cron_used": false,
+  "incumbent_preservation_status": "PRESERVED",
+  "next_cycle_ready": false,
+  "pair_clearance": {
+    "coverage_percent": 100.0
+  },
+  "raw_clearance": {
+    "coverage_percent": 100.0,
+    "unresolved_count": 0
+  },
+  "scheduler_owner": "Redis Scheduler",
+  "self_training_pipeline": {
+    "final_verdict": "PARTIAL_RAW_CLEARANCE_LOOP_NOT_PROVEN",
+    "production_ready": false
+  },
+  "unsafe_mutation_detected": false
+}

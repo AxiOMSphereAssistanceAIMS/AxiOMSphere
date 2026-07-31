@@ -1,0 +1,5 @@
+{
+  "claim_proof": "historical bounded runtime evidence",
+  "current_worker_running": false,
+  "scheduler_owner": "Redis Scheduler"
+}

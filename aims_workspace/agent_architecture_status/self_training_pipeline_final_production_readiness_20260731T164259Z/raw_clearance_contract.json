@@ -1,0 +1,23 @@
+{
+  "holds_require": [
+    "hold_reason",
+    "recheck_condition",
+    "next_eligible_check",
+    "retry_policy",
+    "last_evidence_hash"
+  ],
+  "terminal_dispositions": [
+    "CLEARED_PAIR_ADMITTED",
+    "CLEARED_NO_TRAINING_VALUE",
+    "REJECTED_WRONG_SLOT",
+    "REJECTED_QUALITY",
+    "REJECTED_MISSING_PROVENANCE",
+    "REJECTED_UNVERIFIED_OUTCOME",
+    "REJECTED_TRANSCRIPT_OR_SKILL_LEAKAGE",
+    "REJECTED_DUPLICATE",
+    "REJECTED_POLICY",
+    "QUARANTINED_MALFORMED",
+    "QUARANTINED_SECURITY_OR_INTEGRITY",
+    "SOURCE_REMOVED_WITH_AUDIT_PRESERVED"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "canonical_consumers": [
+    "ops/logi",
+    "ops/ft/traini/autopilot",
+    "Redis Scheduler"
+  ],
+  "legacy_authorization": false,
+  "legacy_readers": [
+    "codex/summaries compatibility readers"
+  ]
+}

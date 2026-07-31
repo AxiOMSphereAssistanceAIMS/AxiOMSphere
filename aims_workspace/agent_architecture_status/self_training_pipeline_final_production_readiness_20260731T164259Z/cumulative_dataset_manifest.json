@@ -1,0 +1,14 @@
+{
+  "slot120": {
+    "status": "NOT_READY"
+  },
+  "slot14": {
+    "status": "NOT_READY"
+  },
+  "slot32": {
+    "admitted_count": 0,
+    "dataset_sha256": null,
+    "physical_row_count": 0,
+    "status": "NOT_READY_NO_ELIGIBLE_PAIRS"
+  }
+}

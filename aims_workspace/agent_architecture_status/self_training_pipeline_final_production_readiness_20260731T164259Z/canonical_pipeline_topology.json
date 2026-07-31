@@ -1,0 +1,18 @@
+{
+  "path": [
+    "raw operational source",
+    "canonical Logi extractor",
+    "terminal admission",
+    "structured extraction",
+    "slot affinity",
+    "pair preparation",
+    "independent clearance",
+    "cumulative dataset",
+    "readiness gate",
+    "Redis Scheduler",
+    "Traini worker",
+    "evaluation/update/retention",
+    "cycle closeout"
+  ],
+  "status": "PARTIAL_DOWNSTREAM_CYCLE_PROOF"
+}

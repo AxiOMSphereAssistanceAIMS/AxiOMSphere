@@ -1,0 +1,6 @@
+{
+  "current_training_started": false,
+  "mode": "MODE_B_FAIL_CLOSED_PRODUCTION_PATH_CERTIFICATION",
+  "not_ready_state_creates_task": false,
+  "ready_state_handoff": "contract-defined"
+}

@@ -1,0 +1,13 @@
+{
+  "canonical_ownership": "PASS",
+  "cycle_C_changed_source": "NOT_PROVEN",
+  "cycle_D_restart_recovery": "NOT_PROVEN",
+  "dataset_consistency": "PASS_EMPTY",
+  "holds_recheck": "PASS",
+  "next_cycle_ready": "FAIL",
+  "pair_clearance": "PASS_EMPTY",
+  "production_ready": false,
+  "raw_disposition_coverage": "PASS",
+  "scheduler_owner": "PASS",
+  "stable_identity": "PASS"
+}

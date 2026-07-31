@@ -1,0 +1,4 @@
+{
+  "rollback_required_on_smoke_failure": true,
+  "rollback_target": "Qwen/Qwen3-Coder-Next-FP8"
+}

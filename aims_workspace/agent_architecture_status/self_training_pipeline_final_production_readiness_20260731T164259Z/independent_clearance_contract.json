@@ -1,0 +1,4 @@
+{
+  "independent_gate_required": true,
+  "only_gate_allowed_to_set_approved_for_training": true
+}

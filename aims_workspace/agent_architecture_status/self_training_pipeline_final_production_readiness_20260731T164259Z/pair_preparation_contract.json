@@ -1,0 +1,4 @@
+{
+  "eligible_source_must_close_as_pair_or_no_valid_pair": true,
+  "idempotent": true
+}

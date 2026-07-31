@@ -1,0 +1,9 @@
+{
+  "admitted_pairs": 0,
+  "cycle_id": "certification_observation",
+  "discovered": 143,
+  "held": 57,
+  "pair_candidates": 0,
+  "readiness": "NOT_READY_NO_ELIGIBLE_PAIRS",
+  "terminally_closed": 86
+}

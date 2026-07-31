@@ -1,0 +1,8 @@
+{
+  "malformed_pointer": "quarantine",
+  "manifest_mismatch": "fail_closed",
+  "redis_interruption": "retry_bounded",
+  "source_parse_failure": "hold/quarantine",
+  "training_failure": "no_promotion",
+  "worker_crash": "durable_state_required"
+}

@@ -1,0 +1,9 @@
+{
+  "blockers": [
+    "current Traini worker is not running",
+    "cycle C changed-source and cycle D restart-recovery proofs not independently rerun",
+    "57 held raw items await provenance/closeout evidence",
+    "full failure-injection recovery not rerun in this certification"
+  ],
+  "unsafe_mutation_detected": false
+}

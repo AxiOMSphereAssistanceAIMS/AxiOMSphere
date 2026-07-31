@@ -1,0 +1,5 @@
+{
+  "healthy_no_eligible_pairs_valid": true,
+  "reason": "57 provenance holds and worker/cycle restart proof incomplete",
+  "status": "DEGRADED_BACKLOG"
+}

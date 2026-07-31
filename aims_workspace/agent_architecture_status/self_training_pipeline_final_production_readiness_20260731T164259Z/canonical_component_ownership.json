@@ -1,0 +1,9 @@
+{
+  "dataset_store": "slot-specific admitted datasets",
+  "direct_cron_used": false,
+  "extractor": "ops/logi existing canonical extractor",
+  "pair_store": "Traini structured pair candidates",
+  "raw_registry": "ops/logi canonical session/storage",
+  "scheduler": "Redis Scheduler",
+  "worker": "axiomsphere-traini-worker"
+}
