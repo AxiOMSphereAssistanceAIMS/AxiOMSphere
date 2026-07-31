@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "20260731T154343Z",
+  "sources": [
+    {
+      "class": "CERTIFIED_POLICY_REQUIREMENT",
+      "field": "minimum_approved_pairs",
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/traini/autopilot/profiles/slot14_profile.yaml",
+      "value": 750
+    },
+    {
+      "class": "CERTIFIED_POLICY_REQUIREMENT",
+      "field": "minimum_approved_pairs_default",
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/traini/autopilot/policies/dataset_admission_policy.yaml",
+      "value": 750
+    },
+    {
+      "class": "CERTIFIED_POLICY_REQUIREMENT",
+      "field": "minimum_approved_pairs_default",
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/traini/autopilot/policies/dataset_policy.yaml",
+      "value": 750
+    },
+    {
+      "class": "ENFORCED_TEST_CONTRACT",
+      "field": "c14.min_pairs_required",
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/tests/test_training_profile_contract.py",
+      "value": 750
+    },
+    {
+      "class": "LEGACY_TASK_PARAMETER",
+      "field": "--broad-min-pairs-required",
+      "path": "Redis:scheduler:task:traini_slot14_night_tuning_73646c7229c3",
+      "value": 750
+    }
+  ],
+  "threshold": 750
+}

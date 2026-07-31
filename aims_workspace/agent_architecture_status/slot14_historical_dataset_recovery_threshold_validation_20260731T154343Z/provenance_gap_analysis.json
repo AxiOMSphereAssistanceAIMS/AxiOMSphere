@@ -1,0 +1,11 @@
+{
+  "dataset_level_only_pairs": 4303,
+  "fabrication_performed": false,
+  "missing": [
+    "source IDs",
+    "per-pair hashes",
+    "transformation provenance",
+    "admission evidence",
+    "train/eval split"
+  ]
+}

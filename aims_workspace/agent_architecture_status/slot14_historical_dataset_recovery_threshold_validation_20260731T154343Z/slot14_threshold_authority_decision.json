@@ -1,0 +1,8 @@
+{
+  "authority": "Traini Slot14 profile plus admission/dataset policies and profile-contract test",
+  "changing_it_would_violate_certified_contract": true,
+  "decision": "PASS_SLOT14_750_THRESHOLD_CERTIFIED",
+  "git_provenance_note": "No commit provenance was fabricated for working-tree policy files.",
+  "legacy_task_parameter_not_authoritative": true,
+  "threshold": 750
+}

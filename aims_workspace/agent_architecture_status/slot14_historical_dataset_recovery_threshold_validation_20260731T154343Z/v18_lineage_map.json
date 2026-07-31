@@ -1,0 +1,11 @@
+{
+  "dataset": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v18/train_v18.jsonl",
+  "model": "omi-ft-14b-v18",
+  "pair_count": 774,
+  "reason": "Dataset-level hash only; no per-pair source identity",
+  "recoverable_pairs": 0,
+  "row_schema": [
+    "messages"
+  ],
+  "sha256": "17d372ba3b8579c61e5bc21814a4e9c64a600ce7c2fb881241945e3224c990ec"
+}

@@ -1,0 +1,11 @@
+{
+  "changes": {
+    "dispatch_blocked": "true",
+    "held_for_user_decision": "false",
+    "retirement_reason": "FULL_AUTONOMOUS_GENERAL_TUNING lacks admitted Slot14 dataset; 4/750 verified pairs",
+    "status": "RETIRED_UNAUTHORIZED_INSUFFICIENT_DATASET"
+  },
+  "decision": "PASS_SLOT14_UNSAFE_AUTONOMOUS_TASK_RETIRED",
+  "deleted": false,
+  "payload_preserved": true
+}

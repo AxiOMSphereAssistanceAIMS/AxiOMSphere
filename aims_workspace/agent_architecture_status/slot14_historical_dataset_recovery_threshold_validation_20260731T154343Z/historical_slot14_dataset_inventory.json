@@ -1,0 +1,113 @@
+{
+  "datasets": [
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "v18",
+      "manifest_present": false,
+      "pair_count": 774,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v18/train_v18.jsonl",
+      "per_pair_ids": false,
+      "sha256": "17d372ba3b8579c61e5bc21814a4e9c64a600ce7c2fb881241945e3224c990ec",
+      "source_references": false,
+      "target_slot": "unknown"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "v18_targeted",
+      "manifest_present": false,
+      "pair_count": 19,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v18/v18_targeted_pairs.jsonl",
+      "per_pair_ids": false,
+      "sha256": "2b3cd4a138997354274f821ad4791216ca6701c5c856a1e50c94d1ab0b77f294",
+      "source_references": false,
+      "target_slot": "unknown"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "v19_slot14",
+      "manifest_present": false,
+      "pair_count": 812,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v19_slot14_omi/train_v19.jsonl",
+      "per_pair_ids": false,
+      "sha256": "199e03bd18aa4d3e056b326c76f65353530032e201611e525feff6dc4711589a",
+      "source_references": false,
+      "target_slot": "slot14"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "v19_targeted",
+      "manifest_present": false,
+      "pair_count": 38,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v19_slot14_omi/v19_targeted_pairs.jsonl",
+      "per_pair_ids": false,
+      "sha256": "00a6c0fb6bab24fe3854152c7314676e8d5bc5c87030d59145afc22ebb0d869d",
+      "source_references": false,
+      "target_slot": "unknown"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "v20_slot14",
+      "manifest_present": false,
+      "pair_count": 862,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v20_slot14_omi/train_v20.jsonl",
+      "per_pair_ids": false,
+      "sha256": "c2757bbe9b9de313895fe5c58d2209760ff47ea6510f134f9fd1a77c574fe169",
+      "source_references": false,
+      "target_slot": "slot14"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "v20_slot14_thinking",
+      "manifest_present": false,
+      "pair_count": 1798,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/v20_slot14_omi_thinking/train_v20_2000.jsonl",
+      "per_pair_ids": false,
+      "sha256": "dbb6eb33df632864ab059bbf7f818211422d3d69a6fc2a8e926690deebeab47c",
+      "source_references": false,
+      "target_slot": "slot14"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "current",
+      "manifest_present": false,
+      "pair_count": 4,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/train_slot14_chat_materialized.jsonl",
+      "per_pair_ids": false,
+      "sha256": "89e210278e66abd5b37193ad49a10cc4095d63ee0150d444b153351ec93a9c20",
+      "source_references": false,
+      "target_slot": "slot14"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "manifest",
+      "manifest_present": true,
+      "pair_count": null,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/manifest_slot14_chat_materialized.json",
+      "per_pair_ids": false,
+      "sha256": "28347ae3cb1346755ed23e1327a07e8a9059e048e59ebfe13f1c8a5e06a46f24",
+      "source_references": false,
+      "target_slot": "unknown"
+    },
+    {
+      "accessible": true,
+      "admission_evidence": false,
+      "label": "eval",
+      "manifest_present": false,
+      "pair_count": null,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/eval/golden_v3_action_routing.json",
+      "per_pair_ids": false,
+      "sha256": "5d5e21bed7adc9d67c8b800abdf3d7cd06701a1f236f49a73e463f97562a5a17",
+      "source_references": false,
+      "target_slot": "unknown"
+    }
+  ],
+  "reported_v18_count": 774
+}

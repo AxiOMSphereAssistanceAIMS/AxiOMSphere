@@ -1,0 +1,6 @@
+{
+  "decision": "RETIRE_SLOT14_TUNING_INITIATIVE_NO_RECOVERABLE_DATASET",
+  "threshold": 750,
+  "training_allowed": false,
+  "verified_pairs": 4
+}

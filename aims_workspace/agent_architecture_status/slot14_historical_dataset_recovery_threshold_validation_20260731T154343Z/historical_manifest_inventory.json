@@ -1,0 +1,15 @@
+{
+  "certified_historical_manifests_found": 0,
+  "manifests": [
+    {
+      "declared_verified_count": 4,
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/slot14_chat_materialized/manifest_slot14_chat_materialized.json",
+      "sha256": "28347ae3cb1346755ed23e1327a07e8a9059e048e59ebfe13f1c8a5e06a46f24"
+    },
+    {
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/configs/train_config_v18.json",
+      "sha256": "915425620f2a68f67ab5b1f4234bc4f3bb4a0f8dc9c93dd917f7d443077c1ef1",
+      "type": "training_config"
+    }
+  ]
+}

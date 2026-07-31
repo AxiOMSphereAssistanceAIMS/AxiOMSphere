@@ -1,0 +1,7 @@
+{
+  "evaluation": "/home/axi_omi_sphere/aims-workspace/ops/ft/logs/eval_baseline_omi_ft_14b_v16_golden_v3.json",
+  "model": "omi-ft-14b-v16",
+  "reason": "No provenance-complete v16 dataset found",
+  "recoverable_pairs": 0,
+  "training_config": "/home/axi_omi_sphere/aims-workspace/ops/ft/configs/train_config_v16.json"
+}

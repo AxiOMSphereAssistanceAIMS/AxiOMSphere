@@ -1,0 +1,10 @@
+{
+  "locations": [
+    "ops/ft/traini/autopilot/policy_loader.py",
+    "ops/ft/traini/autopilot/dataset_gate.py",
+    "ops/ft/traini/autopilot/readiness_resolver.py",
+    "ops/ft/traini/autopilot/traini_autopilot.py",
+    "ops/tests/test_training_profile_contract.py"
+  ],
+  "threshold": 750
+}

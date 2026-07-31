@@ -1,0 +1,12 @@
+{
+  "original_files_changed": false,
+  "original_task_dispatchable": false,
+  "remaining_gap": 746,
+  "threshold_authority": "CERTIFIED_POLICY_REQUIREMENT",
+  "training_task_created": false,
+  "verdicts": [
+    "PASS_SLOT14_UNSAFE_AUTONOMOUS_TASK_RETIRED",
+    "PASS_SLOT14_HISTORICAL_DATASET_RECOVERED_BELOW_THRESHOLD"
+  ],
+  "verified_pairs": 4
+}
