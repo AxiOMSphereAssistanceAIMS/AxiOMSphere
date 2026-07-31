@@ -1,0 +1,97 @@
+{
+  "eligible_terminal_sessions": 0,
+  "reason": "All newest sources are RUNNING RAW_POINTER_ONLY or lack explicit independently verified repair chains",
+  "selected_count": 10,
+  "sessions": [
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T135143Z_31160_603973c1/session_manifest.json",
+      "manifest_sha256": "c31f4edf012a50c67e0003fadbd522fdaf18df7c37cee1dd2ed4ccb2fcfefe77",
+      "started_at": "2026-07-31T13:51:43.521806+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134554Z_15881_18013caa/session_manifest.json",
+      "manifest_sha256": "62fb07ffe03b608de3d7617130e7e6951a8558a29b230626a449c92f27834154",
+      "started_at": "2026-07-31T13:45:54.837366+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134514Z_13187_c59efabd/session_manifest.json",
+      "manifest_sha256": "e888d87eb4f6e8b34a3f99a29553bd13dbe1d8fc57738058e15cf3f739663be9",
+      "started_at": "2026-07-31T13:45:14.683042+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134428Z_8709_acd6178d/session_manifest.json",
+      "manifest_sha256": "8e2eb9b446d82d3112d5dfc0122c3be7c1c8c664c5ba9589216ede00de7ef1de",
+      "started_at": "2026-07-31T13:44:28.018818+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T132726Z_4161635_61c39bb2/session_manifest.json",
+      "manifest_sha256": "c578e2f4be57483bc3063f08f03bd24309d9229bdfe59d3216f0682ab454b409",
+      "started_at": "2026-07-31T13:27:26.220438+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T105025Z_3784499_c67380bb/session_manifest.json",
+      "manifest_sha256": "59c2b08a7dc687e025389cd15e04af76df6d98e02a1b84f3971c9aa43501b9cb",
+      "started_at": "2026-07-31T10:50:25.042653+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082304Z_304322_44aa24a3/session_manifest.json",
+      "manifest_sha256": "32b434c5f110dab7bf3329be99e8cd0097c0b9b58f745f1cdbe49c93667637f6",
+      "started_at": "2026-07-30T08:23:04.355722+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082153Z_299650_edada016/session_manifest.json",
+      "manifest_sha256": "2ccdb98c75102e2f1af7aa07ef235daca2d29602143d137b1fe47d1cc75545a1",
+      "started_at": "2026-07-30T08:21:53.132359+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_RUNNING_SESSION",
+      "ended_at": null,
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T164939Z_2340548_cf9dc9d7/session_manifest.json",
+      "manifest_sha256": "c37ebee7e475416ce3ccf4cc14085d0a8dd33d34f65c769ed2e8bf38f7334572",
+      "started_at": "2026-07-29T16:49:39.627274+00:00",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "admission": "HOLD_NO_EXPLICIT_REPAIR_CHAIN",
+      "ended_at": "2026-07-29T16:48:41.889036+00:00",
+      "manifest_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T154839Z_2200541_368a55c1/session_manifest.json",
+      "manifest_sha256": "e6db70333b41cd07d23469dc6afcb788a63b18da881493547ddb49bc13456695",
+      "started_at": "2026-07-29T15:48:39.810223+00:00",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    }
+  ]
+}

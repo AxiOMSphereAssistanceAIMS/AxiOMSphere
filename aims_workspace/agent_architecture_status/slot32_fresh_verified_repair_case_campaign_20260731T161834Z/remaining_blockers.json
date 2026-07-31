@@ -1,0 +1,10 @@
+{
+  "blockers": [
+    "No new terminal sessions with terminal admission and explicit verified repair chain",
+    "Newest sessions are RUNNING and RAW_POINTER_ONLY",
+    "750 certified pairs required; current count 0"
+  ],
+  "registry_mutated": false,
+  "slot120_loaded": false,
+  "training_started": false
+}

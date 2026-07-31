@@ -1,0 +1,6 @@
+{
+  "incumbent_preserved": true,
+  "reason": "Dataset below threshold; no training task exists",
+  "resumed": false,
+  "training_task_created": false
+}

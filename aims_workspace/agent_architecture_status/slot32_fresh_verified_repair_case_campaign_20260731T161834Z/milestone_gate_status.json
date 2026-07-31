@@ -1,0 +1,23 @@
+{
+  "150": {
+    "status": "NOT_REACHED"
+  },
+  "300": {
+    "status": "NOT_REACHED"
+  },
+  "50": {
+    "status": "NOT_REACHED"
+  },
+  "500": {
+    "status": "NOT_REACHED"
+  },
+  "750": {
+    "status": "NOT_REACHED"
+  },
+  "first_cycle": {
+    "admitted": 0,
+    "candidates": 0,
+    "held": 10,
+    "rejected": 0
+  }
+}
