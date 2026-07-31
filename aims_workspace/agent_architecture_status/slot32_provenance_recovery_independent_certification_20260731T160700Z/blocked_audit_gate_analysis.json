@@ -1,0 +1,29 @@
+{
+  "decision": "BLOCKED_POST_REBUILD_INDEPENDENT_AUDIT",
+  "deterministic_repairs_allowed": [
+    "none without rewriting historical evidence"
+  ],
+  "failed_gates": [
+    {
+      "cause": "evidence absence",
+      "evidence": "adjudication status FAIL_QUALITY_GATE",
+      "gate": "quality"
+    },
+    {
+      "cause": "evidence absence",
+      "evidence": "UNPROVEN_SELF_ASSERTED_TRANSFORMATION_FLAG",
+      "gate": "negative transfer"
+    },
+    {
+      "cause": "evidence absence",
+      "evidence": "approved_for_training false on rows",
+      "gate": "admission"
+    },
+    {
+      "cause": "stale_or_inconsistent_manifest",
+      "evidence": "1095 declared vs 3 physical rows",
+      "gate": "count/manifest consistency"
+    }
+  ],
+  "waiver_applied": false
+}

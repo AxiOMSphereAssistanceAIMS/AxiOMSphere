@@ -1,0 +1,32 @@
+{
+  "audit_blockers": [
+    "self-referential source dataset list",
+    "declared approved count 1095 conflicts with physical row count 3",
+    "approved_for_training=false on every inspected row",
+    "source adjudication FAIL_QUALITY_GATE",
+    "negative_transfer_gate UNPROVEN_SELF_ASSERTED_TRANSFORMATION_FLAG",
+    "no per-row verification result linking repair execution to PASS"
+  ],
+  "dataset_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/train_repairman_slot32_v1.jsonl",
+  "dataset_sha256": "d309fa18b7e5de95b90a011359de106123267e35cc89b88b6f6fb9cc9db92358",
+  "generation_summary_declared_approved_pairs": 1095,
+  "generation_summary_declared_total_source_rows": 5316,
+  "generation_summary_negative_transfer_gate": "UNPROVEN_SELF_ASSERTED_TRANSFORMATION_FLAG",
+  "generation_summary_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/generation_summary.json",
+  "generation_summary_quality_gate": "BLOCKED_POST_REBUILD_INDEPENDENT_AUDIT",
+  "generation_summary_sha256": "a341dab4a989d08b68a32adbcd718d05d909601a7c05875936e712c55478c171",
+  "quality_outputs": "generation summary plus embedded codex_cli_audit; no independent admission output",
+  "row_count": 3,
+  "source_records": [
+    {
+      "case_count": 3,
+      "cases_failed": 1,
+      "cases_inconclusive": 1,
+      "cases_passed": 1,
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/agent_architecture_status/qwen3_coder_30b_a3b_candidate_eval_20260715T195500Z/adjudication.json",
+      "sha256": "483b5477a4be7865408d41632666bf07fb0faf3b38ba0a7e0c1e0f2486c61c19",
+      "status": "FAIL_QUALITY_GATE"
+    }
+  ],
+  "transformation_records": "embedded metadata only; no independent transformation ledger"
+}

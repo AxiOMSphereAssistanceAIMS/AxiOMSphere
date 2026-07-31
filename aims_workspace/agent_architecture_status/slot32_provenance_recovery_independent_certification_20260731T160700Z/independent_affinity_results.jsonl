@@ -1,0 +1,3 @@
+{"decision": "HOLD_MISSING_VERIFICATION", "row_index": 0, "slot32_affinity": true, "target_slot": "slot32"}
+{"decision": "HOLD_MISSING_VERIFICATION", "row_index": 1, "slot32_affinity": true, "target_slot": "slot32"}
+{"decision": "HOLD_MISSING_VERIFICATION", "row_index": 2, "slot32_affinity": true, "target_slot": "slot32"}

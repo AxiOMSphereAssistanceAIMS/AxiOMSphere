@@ -1,0 +1,9 @@
+{
+  "certified_pairs": 0,
+  "dataset_mutated": false,
+  "incumbent_preserved": true,
+  "minimum_required": 750,
+  "remaining_gap": 750,
+  "training_task_created": false,
+  "verdict": "HOLD_SLOT32_PROVENANCE_GAP"
+}

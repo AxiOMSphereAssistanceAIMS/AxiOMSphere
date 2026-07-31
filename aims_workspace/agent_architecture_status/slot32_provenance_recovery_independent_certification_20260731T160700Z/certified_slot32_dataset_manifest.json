@@ -1,0 +1,9 @@
+{
+  "certified_pair_count": 0,
+  "dataset_sha256": null,
+  "frozen": false,
+  "minimum_approved_pairs": 750,
+  "reason": "All physical rows held for missing independent verification.",
+  "status": "NO_CERTIFIED_DATASET",
+  "target_slot": "slot32"
+}

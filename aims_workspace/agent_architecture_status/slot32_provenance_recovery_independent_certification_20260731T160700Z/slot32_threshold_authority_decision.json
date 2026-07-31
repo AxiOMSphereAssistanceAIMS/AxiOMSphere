@@ -1,0 +1,10 @@
+{
+  "decision": "PASS_SLOT32_THRESHOLD_DISCOVERED",
+  "minimum_approved_pairs": 750,
+  "slot14_threshold_not_reused": true,
+  "sources": [
+    "ops/ft/traini/autopilot/profiles/slot32_profile.yaml",
+    "ops/ft/traini/autopilot/policies/dataset_admission_policy.yaml",
+    "ops/ft/traini/autopilot/policies/dataset_policy.yaml"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "certified_pairs": 0,
+  "decision": "HOLD_SLOT32_PROVENANCE_GAP",
+  "fresh_acquisition_required": true,
+  "minimum_required": 750,
+  "training_allowed": false
+}

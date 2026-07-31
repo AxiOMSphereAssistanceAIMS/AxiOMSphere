@@ -1,0 +1,8 @@
+{
+  "audit_gate_analysis": "PASS_BLOCKERS_CONFIRMED",
+  "dataset_inventory": "PASS",
+  "independent_certification": "HOLD_PROVENANCE_GAP",
+  "per_pair_classification": "PASS_ROWS_HELD",
+  "threshold": "PASS_750_POLICY",
+  "training": "NOT_RUN"
+}

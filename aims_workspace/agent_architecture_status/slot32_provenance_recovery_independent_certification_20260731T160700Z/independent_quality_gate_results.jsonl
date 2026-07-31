@@ -1,0 +1,3 @@
+{"decision": "HOLD_MISSING_VERIFICATION", "quality_gate": "FAIL_QUALITY_GATE_OR_UNPROVEN_TRANSFORMATION", "quality_score": null, "row_index": 0}
+{"decision": "HOLD_MISSING_VERIFICATION", "quality_gate": "FAIL_QUALITY_GATE_OR_UNPROVEN_TRANSFORMATION", "quality_score": null, "row_index": 1}
+{"decision": "HOLD_MISSING_VERIFICATION", "quality_gate": "FAIL_QUALITY_GATE_OR_UNPROVEN_TRANSFORMATION", "quality_score": null, "row_index": 2}

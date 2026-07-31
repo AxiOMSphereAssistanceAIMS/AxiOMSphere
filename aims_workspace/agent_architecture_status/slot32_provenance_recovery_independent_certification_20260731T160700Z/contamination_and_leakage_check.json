@@ -1,0 +1,8 @@
+{
+  "agent_skill_leakage": 0,
+  "cross_slot_leakage": 0,
+  "deprecated_model_contamination": 0,
+  "note": "No rows admitted; absence of leakage among admitted rows does not certify held rows.",
+  "status": "NO_ADMITTED_ROWS",
+  "transcript_leakage": 0
+}

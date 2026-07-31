@@ -1,0 +1,11 @@
+{
+  "blockers": [
+    "physical dataset count conflicts with generation summary declared count",
+    "all inspected rows lack independently verified repair outcome",
+    "source adjudication FAIL_QUALITY_GATE",
+    "negative transfer transformation evidence unproven",
+    "certified count 0/750"
+  ],
+  "raw_deleted": false,
+  "training_task_created": false
+}
