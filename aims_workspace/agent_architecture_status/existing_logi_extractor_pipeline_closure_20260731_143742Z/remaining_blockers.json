@@ -1,0 +1,9 @@
+{
+  "blockers": [
+    "Traini worker/container/Redis runtime was not proven in this read-only closure; no root/network repair attempted.",
+    "57 raw events remain held because cursor membership is not closeout evidence.",
+    "Legacy summary readers remain active; deprecation is not safe yet."
+  ],
+  "training_started": false,
+  "raw_deleted": false
+}

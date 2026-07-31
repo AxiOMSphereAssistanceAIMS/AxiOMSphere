@@ -1,0 +1,9 @@
+# redis_connection_status
+
+```json
+{
+  "status": "BLOCKED_NOT_RUN",
+  "reason": "No worker runtime endpoint was started or modified."
+}
+
+```

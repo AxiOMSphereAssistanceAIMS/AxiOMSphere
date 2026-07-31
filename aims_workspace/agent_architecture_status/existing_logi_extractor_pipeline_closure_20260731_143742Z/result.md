@@ -1,0 +1,14 @@
+# result
+
+```json
+{
+  "verdict": "PASS_SESSION_INGESTION_READY_TRAINI_WORKER_BLOCKED",
+  "extractor_ready": true,
+  "scheduled_handoff_ready": true,
+  "worker_runtime_ready": false,
+  "training_started": false,
+  "model_registry_mutated": false,
+  "raw_deleted": false
+}
+
+```

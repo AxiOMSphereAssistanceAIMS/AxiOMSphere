@@ -1,0 +1,13 @@
+# ledger_closeout_validation
+
+```json
+{
+  "ledger_replay": {
+    "status": "PASS"
+  },
+  "closeout_exists": true,
+  "closeout_sha256": "805bde20fd925b25a2405128dec6446e5c2d16be40a6841092b051d3a9041149",
+  "final_status": "CLOSED"
+}
+
+```

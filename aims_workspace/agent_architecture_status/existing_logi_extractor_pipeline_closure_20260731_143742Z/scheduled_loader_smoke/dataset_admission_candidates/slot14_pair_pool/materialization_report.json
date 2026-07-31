@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "pair_pool_path": "aims_workspace/agent_architecture_status/existing_logi_extractor_pipeline_closure_20260731_143742Z/scheduled_loader_smoke/slot14_pair_pool.jsonl",
+  "candidate_root": "aims_workspace/agent_architecture_status/existing_logi_extractor_pipeline_closure_20260731_143742Z/scheduled_loader_smoke/dataset_admission_candidates/slot14_pair_pool",
+  "candidates_seen": 0,
+  "materialized_count": 0,
+  "approved_count": 0,
+  "materialized": []
+}

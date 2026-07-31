@@ -1,0 +1,23 @@
+{
+  "required_fields": [
+    "source_session_id",
+    "manifest_path",
+    "manifest_sha256",
+    "transcript_path",
+    "transcript_sha256",
+    "final_status_path",
+    "final_status_sha256",
+    "terminal_status",
+    "terminal_time_source",
+    "extractor_revision",
+    "emitted_artifacts",
+    "routing_decision",
+    "destination_pool",
+    "ledger_row_reference",
+    "idempotency_key",
+    "retained_raw_evidence",
+    "cleanup_eligibility",
+    "cleanup_reason",
+    "retention_deadline"
+  ]
+}

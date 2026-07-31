@@ -1,0 +1,13 @@
+# terminal_session_extraction_proof
+
+```json
+{
+  "session_id": "logi_codex_20260729T100733Z_1457552_3715ebb3",
+  "status": "RAW_VALIDATED",
+  "lifecycle": "VALIDATED_RAW",
+  "e2e_status": "PASSED",
+  "ledger_replay": "PASS",
+  "closeout_path": "aims_workspace/logi/closeout/codex_sessions/logi_codex_20260729T100733Z_1457552_3715ebb3/source_closeout.json"
+}
+
+```

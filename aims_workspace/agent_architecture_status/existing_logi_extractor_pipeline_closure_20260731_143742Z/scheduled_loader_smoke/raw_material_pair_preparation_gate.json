@@ -1,0 +1,35 @@
+{
+  "gate": "raw_material_pair_preparation",
+  "status": "PASS",
+  "accepted_count": 0,
+  "rejected_count": 5,
+  "blocked_reasons": [],
+  "audit_feedback": [],
+  "feedback_summary": {
+    "items": 0,
+    "correction_stages": [],
+    "dataset_admission_allowed": true
+  },
+  "slot_counts": {
+    "slot14": 0,
+    "slot32": 0,
+    "slot120": 0,
+    "agent_skill": 0
+  },
+  "pool_counts": {
+    "slot14_pair_pool": 0,
+    "slot32_pair_pool": 0,
+    "slot120_pair_pool": 0,
+    "agent_skill_learning_pool": 0,
+    "quarantine_pool": 0
+  },
+  "combined_pool_blocked_for_dataset_admission": true,
+  "slot120_verified_pairs": 72,
+  "slot120_required_pairs": 750,
+  "duplicate_redis_task_guard": {
+    "status": "SKIPPED",
+    "duplicate_task_created": false
+  },
+  "training_started": false,
+  "slot120_unblocked": false
+}

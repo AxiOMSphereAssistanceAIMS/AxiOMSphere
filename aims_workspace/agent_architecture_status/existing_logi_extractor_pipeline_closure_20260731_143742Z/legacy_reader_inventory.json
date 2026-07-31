@@ -1,0 +1,9 @@
+{
+  "readers": [
+    "ops/ft/traini/autopilot/raw_material_pair_preparation.py",
+    "ops/ft/traini/autopilot/traini_support_loops.py",
+    "ops/scripts/traini_raw_material_review_5h.py"
+  ],
+  "active_reader_count": 3,
+  "summary_root": "aims_workspace/logi_session_memory/sources/codex/summaries"
+}

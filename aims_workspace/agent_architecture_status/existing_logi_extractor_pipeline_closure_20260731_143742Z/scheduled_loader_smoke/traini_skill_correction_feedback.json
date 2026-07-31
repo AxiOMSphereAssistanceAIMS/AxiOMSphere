@@ -1,0 +1,529 @@
+{
+  "generated_at_utc": "2026-07-31T14:37:54.919679+00:00",
+  "status": "FEEDBACK_READY",
+  "feedback_items": [
+    {
+      "pair_id": "rawpair_e66e498bfde9d7da",
+      "target_slot": "slot32",
+      "target_pool": "slot32_pair_pool",
+      "rejection_reason": "SCHEMA:pair_transformation_gate:holdout_separation,pair_transformation_gate:independent_reviewer,pair_transformation_gate:negative_transfer_probe,pair_transformation_gate:prepared_answer_hash,pair_transformation_gate:raw_source_hash,pair_transformation_gate:response_contract,pair_transformation_gate:review_status,pair_transformation_gate:source_copy_ratio,codex_cli_audit_check:holdout_separated,codex_cli_audit_check:negative_transfer_passed,codex_cli_audit_check:not_transcript_copy,codex_cli_audit_check:response_contract_valid,codex_cli_audit_not_pass",
+      "codex_cli_audit_status": "FAIL",
+      "audit_reasons": [
+        "PAIR_TRANSFORMATION_GATE:holdout_separation",
+        "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+        "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+        "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+        "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+        "PAIR_TRANSFORMATION_GATE:response_contract",
+        "PAIR_TRANSFORMATION_GATE:review_status",
+        "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+        "holdout_separated",
+        "negative_transfer_passed",
+        "not_transcript_copy",
+        "response_contract_valid"
+      ],
+      "feedback": [
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:holdout_separation",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+          "traini_skill": "evidence_extractor",
+          "recommended_action": "preserve_raw_source_hash_and_source_lineage_in_pair_metadata",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:response_contract",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:review_status",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "holdout_separated",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "negative_transfer_passed",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "not_transcript_copy",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "response_contract_valid",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        }
+      ],
+      "loop": {
+        "next_step": "repair_traini_skill_then_reprepare_pair_and_rerun_codex_cli_audit",
+        "dataset_admission_allowed": false,
+        "recheck_required": true
+      }
+    },
+    {
+      "pair_id": "rawpair_3fc3a668d42e423b",
+      "target_slot": "slot32",
+      "target_pool": "quarantine_pool",
+      "rejection_reason": "SCHEMA:target_pool_must_match_target_slot,traini_candidate_output_mode_required,routing_decision_accept_required,slot_specific_gate_pass_required,pair_transformation_gate:holdout_separation,pair_transformation_gate:independent_reviewer,pair_transformation_gate:negative_transfer_probe,pair_transformation_gate:prepared_answer_hash,pair_transformation_gate:raw_source_hash,pair_transformation_gate:response_contract,pair_transformation_gate:review_status,pair_transformation_gate:source_copy_ratio,codex_cli_audit_check:holdout_separated,codex_cli_audit_check:negative_transfer_passed,codex_cli_audit_check:not_transcript_copy,codex_cli_audit_check:response_contract_valid,codex_cli_audit_not_pass",
+      "codex_cli_audit_status": "FAIL",
+      "audit_reasons": [
+        "PAIR_TRANSFORMATION_GATE:holdout_separation",
+        "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+        "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+        "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+        "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+        "PAIR_TRANSFORMATION_GATE:response_contract",
+        "PAIR_TRANSFORMATION_GATE:review_status",
+        "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+        "ROUTING_NOT_ACCEPTED:QUARANTINE",
+        "holdout_separated",
+        "negative_transfer_passed",
+        "not_transcript_copy",
+        "response_contract_valid"
+      ],
+      "feedback": [
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:holdout_separation",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+          "traini_skill": "evidence_extractor",
+          "recommended_action": "preserve_raw_source_hash_and_source_lineage_in_pair_metadata",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:response_contract",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:review_status",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "ROUTING_NOT_ACCEPTED:QUARANTINE",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "holdout_separated",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "negative_transfer_passed",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "not_transcript_copy",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "response_contract_valid",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        }
+      ],
+      "loop": {
+        "next_step": "repair_traini_skill_then_reprepare_pair_and_rerun_codex_cli_audit",
+        "dataset_admission_allowed": false,
+        "recheck_required": true
+      }
+    },
+    {
+      "pair_id": "rawpair_05847d7ed64a745e",
+      "target_slot": "slot32",
+      "target_pool": "slot32_pair_pool",
+      "rejection_reason": "SCHEMA:pair_transformation_gate:holdout_separation,pair_transformation_gate:independent_reviewer,pair_transformation_gate:negative_transfer_probe,pair_transformation_gate:prepared_answer_hash,pair_transformation_gate:raw_source_hash,pair_transformation_gate:response_contract,pair_transformation_gate:review_status,pair_transformation_gate:source_copy_ratio,codex_cli_audit_check:holdout_separated,codex_cli_audit_check:negative_transfer_passed,codex_cli_audit_check:not_transcript_copy,codex_cli_audit_check:response_contract_valid,codex_cli_audit_not_pass",
+      "codex_cli_audit_status": "FAIL",
+      "audit_reasons": [
+        "PAIR_TRANSFORMATION_GATE:holdout_separation",
+        "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+        "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+        "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+        "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+        "PAIR_TRANSFORMATION_GATE:response_contract",
+        "PAIR_TRANSFORMATION_GATE:review_status",
+        "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+        "holdout_separated",
+        "negative_transfer_passed",
+        "not_transcript_copy",
+        "response_contract_valid"
+      ],
+      "feedback": [
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:holdout_separation",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+          "traini_skill": "evidence_extractor",
+          "recommended_action": "preserve_raw_source_hash_and_source_lineage_in_pair_metadata",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:response_contract",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:review_status",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "holdout_separated",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "negative_transfer_passed",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "not_transcript_copy",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "response_contract_valid",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        }
+      ],
+      "loop": {
+        "next_step": "repair_traini_skill_then_reprepare_pair_and_rerun_codex_cli_audit",
+        "dataset_admission_allowed": false,
+        "recheck_required": true
+      }
+    },
+    {
+      "pair_id": "rawpair_f1391bfcd4c5baa7",
+      "target_slot": "slot32",
+      "target_pool": "slot32_pair_pool",
+      "rejection_reason": "SCHEMA:pair_transformation_gate:holdout_separation,pair_transformation_gate:independent_reviewer,pair_transformation_gate:negative_transfer_probe,pair_transformation_gate:prepared_answer_hash,pair_transformation_gate:raw_source_hash,pair_transformation_gate:response_contract,pair_transformation_gate:review_status,pair_transformation_gate:source_copy_ratio,codex_cli_audit_check:holdout_separated,codex_cli_audit_check:negative_transfer_passed,codex_cli_audit_check:not_transcript_copy,codex_cli_audit_check:response_contract_valid,codex_cli_audit_not_pass",
+      "codex_cli_audit_status": "FAIL",
+      "audit_reasons": [
+        "PAIR_TRANSFORMATION_GATE:holdout_separation",
+        "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+        "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+        "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+        "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+        "PAIR_TRANSFORMATION_GATE:response_contract",
+        "PAIR_TRANSFORMATION_GATE:review_status",
+        "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+        "holdout_separated",
+        "negative_transfer_passed",
+        "not_transcript_copy",
+        "response_contract_valid"
+      ],
+      "feedback": [
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:holdout_separation",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+          "traini_skill": "evidence_extractor",
+          "recommended_action": "preserve_raw_source_hash_and_source_lineage_in_pair_metadata",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:response_contract",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:review_status",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "holdout_separated",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "negative_transfer_passed",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "not_transcript_copy",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "response_contract_valid",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        }
+      ],
+      "loop": {
+        "next_step": "repair_traini_skill_then_reprepare_pair_and_rerun_codex_cli_audit",
+        "dataset_admission_allowed": false,
+        "recheck_required": true
+      }
+    },
+    {
+      "pair_id": "rawpair_5f9461b99011ee80",
+      "target_slot": "slot32",
+      "target_pool": "quarantine_pool",
+      "rejection_reason": "SCHEMA:target_pool_must_match_target_slot,traini_candidate_output_mode_required,routing_decision_accept_required,slot_specific_gate_pass_required,pair_transformation_gate:holdout_separation,pair_transformation_gate:independent_reviewer,pair_transformation_gate:negative_transfer_probe,pair_transformation_gate:prepared_answer_hash,pair_transformation_gate:raw_source_hash,pair_transformation_gate:response_contract,pair_transformation_gate:review_status,pair_transformation_gate:source_copy_ratio,codex_cli_audit_check:holdout_separated,codex_cli_audit_check:negative_transfer_passed,codex_cli_audit_check:not_transcript_copy,codex_cli_audit_check:response_contract_valid,codex_cli_audit_not_pass",
+      "codex_cli_audit_status": "FAIL",
+      "audit_reasons": [
+        "PAIR_TRANSFORMATION_GATE:holdout_separation",
+        "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+        "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+        "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+        "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+        "PAIR_TRANSFORMATION_GATE:response_contract",
+        "PAIR_TRANSFORMATION_GATE:review_status",
+        "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+        "ROUTING_NOT_ACCEPTED:QUARANTINE",
+        "holdout_separated",
+        "negative_transfer_passed",
+        "not_transcript_copy",
+        "response_contract_valid"
+      ],
+      "feedback": [
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:holdout_separation",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:independent_reviewer",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:negative_transfer_probe",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:prepared_answer_hash",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:raw_source_hash",
+          "traini_skill": "evidence_extractor",
+          "recommended_action": "preserve_raw_source_hash_and_source_lineage_in_pair_metadata",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:response_contract",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:review_status",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "PAIR_TRANSFORMATION_GATE:source_copy_ratio",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "ROUTING_NOT_ACCEPTED:QUARANTINE",
+          "traini_skill": "pair_quality_judge",
+          "recommended_action": "quarantine_pair_and_create_skill_correction_case",
+          "recheck_required": true
+        },
+        {
+          "reason": "holdout_separated",
+          "traini_skill": "source_overlap_auditor",
+          "recommended_action": "add_holdout_separation_evidence_before_pair_admission",
+          "recheck_required": true
+        },
+        {
+          "reason": "negative_transfer_passed",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "not_transcript_copy",
+          "traini_skill": "negative_transfer_detector",
+          "recommended_action": "regenerate_answer_from_evidence_and_strengthen_negative_transfer_probe",
+          "recheck_required": true
+        },
+        {
+          "reason": "response_contract_valid",
+          "traini_skill": "final_answer_synthesiser",
+          "recommended_action": "update_pair_synthesizer_to_emit_slot_specific_response_contract",
+          "recheck_required": true
+        }
+      ],
+      "loop": {
+        "next_step": "repair_traini_skill_then_reprepare_pair_and_rerun_codex_cli_audit",
+        "dataset_admission_allowed": false,
+        "recheck_required": true
+      }
+    }
+  ],
+  "repair_loop": [
+    "collect_codex_cli_audit_reasons",
+    "map_reason_to_traini_skill",
+    "repair_skill_or_transformer_rule",
+    "reprepare_candidate",
+    "rerun_codex_cli_audit",
+    "allow_dataset_admission_only_after_pass"
+  ],
+  "training_started": false
+}

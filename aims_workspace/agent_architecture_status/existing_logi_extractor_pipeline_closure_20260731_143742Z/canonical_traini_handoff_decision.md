@@ -1,0 +1,11 @@
+# canonical_traini_handoff_decision
+
+```json
+{
+  "decision": "A",
+  "source": "aims_workspace/traini/raw_material/inbox/codex_sessions",
+  "exactly_one_raw_handoff": true,
+  "pair_candidates_downstream_only": true
+}
+
+```

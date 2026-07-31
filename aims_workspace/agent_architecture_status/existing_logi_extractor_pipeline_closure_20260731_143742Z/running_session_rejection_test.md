@@ -1,0 +1,12 @@
+# running_session_rejection_test
+
+```json
+{
+  "decision": "HOLD_RUNNING_PACKAGE",
+  "validated_raw_marker_created": false,
+  "downstream_outputs_created": false,
+  "closeout_created": false,
+  "evidence": "focused fixture test RUNNING_REJECTION_PASS"
+}
+
+```

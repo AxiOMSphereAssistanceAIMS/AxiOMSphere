@@ -1,0 +1,14 @@
+# raw_143_status_summary
+
+```json
+{
+  "expected": 143,
+  "actual": 143,
+  "status_counts": {
+    "EXTRACTED_CLOSEOUT_MISSING": 86,
+    "HELD_PROVENANCE_MISSING": 57
+  },
+  "cursor_not_treated_as_closeout": true
+}
+
+```

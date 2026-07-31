@@ -1,0 +1,11 @@
+# scheduled_loader_binding_diff
+
+```json
+{
+  "changed": "ops/scripts/traini_raw_material_review_5h.py",
+  "added": "discover_codex_session_handoffs",
+  "removed": [],
+  "both_raw_handoffs_bound": false
+}
+
+```

@@ -1,0 +1,10 @@
+# bounded_transcript_usage_check
+
+```json
+{
+  "transcript_read_for_hash_and_bounded_extraction": true,
+  "complete_transcript_copied_to_traini": false,
+  "complete_transcript_admitted_to_model": false
+}
+
+```

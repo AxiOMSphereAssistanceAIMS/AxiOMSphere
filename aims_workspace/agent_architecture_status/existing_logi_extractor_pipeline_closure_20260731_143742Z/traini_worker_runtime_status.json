@@ -1,0 +1,5 @@
+{
+  "status": "BLOCKED_RUNTIME_NOT_STARTED",
+  "docker_cli": "/usr/bin/docker",
+  "training_started": false
+}

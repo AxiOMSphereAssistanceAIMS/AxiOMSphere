@@ -1,0 +1,16 @@
+{
+  "pass_decision": "ADMIT_TERMINAL_PACKAGE",
+  "allowed_manifest_status": [
+    "COMPLETED",
+    "FAILED"
+  ],
+  "required": [
+    "final_status.json",
+    "transcript.md",
+    "stable_sha256",
+    "session_id_match",
+    "recoverable_terminal_reason"
+  ],
+  "running_decision": "HOLD_RUNNING_PACKAGE",
+  "legacy_time_source": "final_status_json"
+}

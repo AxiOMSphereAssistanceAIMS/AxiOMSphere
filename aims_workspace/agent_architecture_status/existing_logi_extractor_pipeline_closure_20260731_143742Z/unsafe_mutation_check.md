@@ -1,0 +1,12 @@
+# unsafe_mutation_check
+
+```json
+{
+  "training_started": false,
+  "model_registry_mutated": false,
+  "production_db_mutated": false,
+  "raw_deleted": false,
+  "complete_transcript_admitted": false
+}
+
+```

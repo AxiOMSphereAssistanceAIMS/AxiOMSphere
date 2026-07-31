@@ -1,0 +1,11 @@
+# transcript_hash_stability_test
+
+```json
+{
+  "session_id": "logi_codex_20260729T100733Z_1457552_3715ebb3",
+  "sha256": "e16fed522a648ea994a22813f7f2043b0edf9850be8d3bec67aab568622082fd",
+  "size_bytes": 30101814,
+  "stable_size_mtime_double_read": true
+}
+
+```

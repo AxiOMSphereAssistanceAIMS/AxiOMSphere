@@ -1,0 +1,10 @@
+# scheduled_loader_before
+
+```json
+{
+  "scheduled_script": "ops/scripts/traini_raw_material_review_5h.py",
+  "codex_session_handoff_bound": false,
+  "legacy_inputs_retained": true
+}
+
+```

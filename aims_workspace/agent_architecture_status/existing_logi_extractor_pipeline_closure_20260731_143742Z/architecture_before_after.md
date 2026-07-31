@@ -1,0 +1,19 @@
+# architecture_before_after
+
+```json
+{
+  "before": {
+    "decision": "BLOCKED_AMBIGUOUS_SESSION_INGESTION_ARCHITECTURE",
+    "extractor": "partial/untracked main copies",
+    "scheduled_handoff": "none"
+  },
+  "after": {
+    "decision": "EXISTING_PARTIAL_EXTRACTOR_COMPLETED",
+    "extractor": "tracked canonical main revision",
+    "scheduled_handoff": "structured codex session pointers",
+    "legacy_summaries": "active compatibility",
+    "worker_runtime": "blocked"
+  }
+}
+
+```
