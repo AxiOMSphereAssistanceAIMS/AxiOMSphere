@@ -1,0 +1,19 @@
+{
+  "required_fields": [
+    "pair_id",
+    "source_session_id",
+    "source_event_id",
+    "source_sha256",
+    "evidence_sha256",
+    "problem_input",
+    "root_cause",
+    "repair_expected_output",
+    "verification_command_result",
+    "target_slot",
+    "transformation_version",
+    "independent_quality_result",
+    "admission_result",
+    "deduplication_key"
+  ],
+  "target_slot": "slot32"
+}

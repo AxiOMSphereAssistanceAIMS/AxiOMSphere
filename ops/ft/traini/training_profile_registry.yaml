@@ -1,0 +1,122 @@
+contract_version: "1"
+
+shared_template:
+  auditors:
+    - claude_code_cli
+    - aws_bedrock
+    - codex_cli
+  latest_version_policy: latest_only
+  min_pairs_required: 750
+  material_policy:
+    versioning: latest_version_only
+    retain_previous_version: true
+    keep_loser_on_disk: true
+    preserve_source_artifacts: true
+  learning_flow:
+    stages:
+      - collect
+      - normalize
+      - classify
+      - version
+      - threshold
+      - schedule
+      - train
+      - eval
+      - champion
+      - report
+  retention:
+    retain_previous_candidate: true
+    retain_rollback_loser: true
+    retain_last_successful_registry_state: true
+  reporting:
+    telegram_summary_required: true
+    result_json_required: true
+
+profiles:
+  "14":
+    profile_name: slot14_operational_learning
+    purpose: Omi/Logi operational routing and document/database routine behavior
+    train_target: true
+    branch: slot14
+    dataset_path: ops/ft/data/v20_slot14_omi_thinking/train_v20_2000.jsonl
+    version_root: ops/ft/data/v20_slot14_omi_thinking
+    candidate_model: qwen3-chat-14-v20-hybrid
+    source_roots:
+      - aims_workspace/learning_events
+      - aims_workspace/axi_ft_log/gold_pairs.jsonl
+      - aims_workspace/axi_ft_log/dpo_pairs.jsonl
+      - ops/ft/data/v20_slot14_omi_thinking/train_v20_2000.jsonl
+    schedule_utc: "04:30"
+    runner:
+      ft_script: ops/ft/scripts/run_v20_slot14_qwen3.sh
+      ft_job_type: v20
+    eval:
+      primary_suite: ops/ft/eval/golden_v4_aims_chat.json
+      primary_pass_field: candidate_pass_rate
+      secondary_suite: ops/ft/eval/golden_v2.json
+      secondary_pass_field: pass_rate
+    promotion:
+      mode: compare_first
+      primary_must_beat_baseline: true
+      secondary_must_not_regress: true
+      auto_promote: false
+      baseline_source: ops/models/model_registry.yaml
+
+  "32":
+    profile_name: slot32_engineering_learning
+    purpose: Engineering reasoning, debugging, repair, monitoring, and system improvement
+    train_target: true
+    branch: slot32
+    dataset_path: ""
+    dataset_eligibility: INVALID_FOR_TRAINING_LINEAGE_INCONSISTENT
+    version_root: ops/ft/data/repairman_slot32_v1
+    candidate_model: repairman-slot32-v1-rebuilt
+    source_roots:
+      []
+    schedule_utc: "00:00-08:00 Asia/Dubai"
+    runner:
+      ft_script: ops/ft/scripts/run_repairman_slot32_v2.sh
+      ft_job_type: repairman_v17
+    eval:
+      primary_suite: ops/ft/eval/repairman_eval_v1.json
+      primary_pass_field: overall_score
+      critical_cases:
+        - ft_001
+        - agent_001
+        - db_002
+        - vram_001
+    promotion:
+      mode: floor_margin_critical
+      primary_floor: 0.85
+      baseline_margin: 0.10
+      critical_case_floor: 0.85
+      auto_promote: true
+      baseline_source: ops/models/model_registry.yaml
+
+  "120":
+    profile_name: slot120_quality_supervision_learning
+    purpose: Heavy reasoning, document quality supervision, rubric generation, and final audit support
+    train_target: true
+    branch: slot120
+    dataset_path: ops/ft/data/slot120_docgen_v1/train_slot120_docgen_v1.jsonl
+    version_root: aims_workspace/learning_events/slot120
+    candidate_model: qwen36-docgen-35b-v1
+    source_roots:
+      - aims_workspace/model_tuning_lifecycle
+      - ops/ft/data/slot120_docgen_v1/train_slot120_docgen_v1.jsonl
+      - ops/ft/data/slot120_docgen_v1/manifest.json
+      - ops/ft/configs/train_config_slot120_docgen_v1.json
+      - docs/AIMS_CLAUDE_CODE_PIPELINE_INTEGRATION.md
+    schedule_utc: "05:30"
+    runner:
+      ft_script: ops/ft/scripts/run_slot120_docgen_v1.sh
+      ft_job_type: slot120_docgen_v1
+    eval:
+      primary_suite: ops/ft/eval/golden_v6_reason.json
+      primary_pass_field: pass_rate
+    promotion:
+      mode: compare_first
+      primary_must_beat_baseline: true
+      secondary_must_not_regress: false
+      auto_promote: false
+      baseline_source: ops/models/model_registry.yaml

@@ -1,0 +1,15 @@
+{
+  "audit_evidence_retained": true,
+  "deleted": false,
+  "files": [
+    {
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/train_repairman_slot32_v1.jsonl",
+      "sha256": "d309fa18b7e5de95b90a011359de106123267e35cc89b88b6f6fb9cc9db92358"
+    },
+    {
+      "path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/generation_summary.json",
+      "sha256": "a341dab4a989d08b68a32adbcd718d05d909601a7c05875936e712c55478c171"
+    }
+  ],
+  "overwritten": false
+}

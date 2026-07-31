@@ -1,0 +1,11 @@
+{
+  "claimed_approved_pairs": 1095,
+  "claimed_source_rows": 5316,
+  "dataset_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/train_repairman_slot32_v1.jsonl",
+  "dataset_sha256": "d309fa18b7e5de95b90a011359de106123267e35cc89b88b6f6fb9cc9db92358",
+  "generation_summary_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/generation_summary.json",
+  "generation_summary_sha256": "a341dab4a989d08b68a32adbcd718d05d909601a7c05875936e712c55478c171",
+  "identity": "repairman_slot32_v1_rebuilt_from_v1_v4",
+  "physical_row_count": 3,
+  "status": "INVALID_FOR_TRAINING_LINEAGE_INCONSISTENT"
+}

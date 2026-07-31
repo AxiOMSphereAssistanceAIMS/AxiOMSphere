@@ -1,0 +1,13 @@
+{
+  "reasons": [
+    "physical row count 3 conflicts with claimed approved count 1095",
+    "no certified per-pair provenance",
+    "source adjudication FAIL_QUALITY_GATE",
+    "transformation UNPROVEN_SELF_ASSERTED_TRANSFORMATION_FLAG",
+    "approved_for_training=false",
+    "independently certified count 0"
+  ],
+  "source_hash_preserved": true,
+  "status": "INVALID_FOR_TRAINING_LINEAGE_INCONSISTENT",
+  "summary_preserved": true
+}

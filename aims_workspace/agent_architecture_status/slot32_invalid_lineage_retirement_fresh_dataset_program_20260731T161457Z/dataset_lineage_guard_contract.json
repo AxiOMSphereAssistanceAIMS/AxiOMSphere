@@ -1,0 +1,15 @@
+{
+  "fail_closed_conditions": [
+    "physical file exists",
+    "physical row count equals manifest",
+    "physical SHA-256 equals manifest",
+    "admitted count equals rows",
+    "immutable pair_id per row",
+    "approved_for_training=true per row",
+    "source identity/provenance per row",
+    "transformation evidence per row",
+    "quality/admission evidence per row"
+  ],
+  "invalid_lineage_denied": true,
+  "validator": "ops/ft/traini/validate_training_dataset_lineage.py"
+}

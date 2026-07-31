@@ -1,0 +1,6 @@
+{
+  "admissible_terminal_sources": 0,
+  "fresh_terminal_sources_discovered": 0,
+  "reason": "No new bounded terminal repair chain was available in this read-only cycle",
+  "required_path": "terminal session -> admission -> extraction -> Slot32 affinity -> verification"
+}

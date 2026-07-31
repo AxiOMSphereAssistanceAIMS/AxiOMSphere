@@ -1,0 +1,10 @@
+{
+  "eligible_task_references": 0,
+  "invalid_path_references_in_profile_before_retirement": 2,
+  "pending_task_references": 0,
+  "profile_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/traini/autopilot/profiles/slot32_profile.yaml",
+  "registry_path": "/home/axi_omi_sphere/aims-workspace/ops/ft/traini/training_profile_registry.yaml",
+  "retirement_guard_applied": true,
+  "retry_task_references": 0,
+  "training_task_created": false
+}

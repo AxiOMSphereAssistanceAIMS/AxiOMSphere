@@ -1,0 +1,9 @@
+{
+  "blockers": [
+    "750 certified pairs required; current fresh count 0",
+    "no fresh terminal repair sources discovered",
+    "historical dataset lineage retired from eligibility"
+  ],
+  "invalid_dataset_deleted": false,
+  "training_task_created": false
+}

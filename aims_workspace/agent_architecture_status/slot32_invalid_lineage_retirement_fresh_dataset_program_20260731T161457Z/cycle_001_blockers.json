@@ -1,0 +1,6 @@
+{
+  "blockers": [
+    "no fresh terminal sources in bounded cycle",
+    "invalid historical lineage retired"
+  ]
+}

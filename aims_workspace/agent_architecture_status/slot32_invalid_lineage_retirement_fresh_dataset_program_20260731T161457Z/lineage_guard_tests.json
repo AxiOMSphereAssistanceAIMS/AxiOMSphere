@@ -1,0 +1,13 @@
+{
+  "synthetic_valid_acceptance_expected": true,
+  "tests": [
+    "physical_count_mismatch_denied",
+    "physical_hash_mismatch_denied",
+    "admitted_count_mismatch_denied",
+    "missing_pair_id_denied",
+    "unapproved_row_denied",
+    "missing_provenance_denied",
+    "missing_transformation_denied",
+    "missing_quality_evidence_denied"
+  ]
+}

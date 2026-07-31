@@ -1,0 +1,35 @@
+{
+  "allowed_task_families": [
+    "coding failures with verified fixes",
+    "repository repair",
+    "runtime/configuration repair",
+    "tests failing before and passing after",
+    "structured debugging",
+    "code generation with executable validation",
+    "tool-routing corrections",
+    "dependency/runtime compatibility repair"
+  ],
+  "cycle_size": [
+    50,
+    100
+  ],
+  "minimum_certified_pairs": 750,
+  "readiness_from_admitted_pairs_only": true,
+  "required_pair_fields": [
+    "pair_id",
+    "source_session_id",
+    "source_event_id",
+    "source_sha256",
+    "evidence_sha256",
+    "problem_input",
+    "root_cause",
+    "repair_expected_output",
+    "verification_command_result",
+    "target_slot",
+    "transformation_version",
+    "independent_quality_result",
+    "admission_result",
+    "deduplication_key"
+  ],
+  "target_slot": "slot32"
+}

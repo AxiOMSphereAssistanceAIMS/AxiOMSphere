@@ -1,0 +1,12 @@
+{
+  "families": [
+    "coding failures with verified fixes",
+    "repository repair",
+    "runtime/configuration repair",
+    "tests failing before and passing after",
+    "structured debugging",
+    "code generation with executable validation",
+    "tool-routing corrections",
+    "dependency/runtime compatibility repair"
+  ]
+}

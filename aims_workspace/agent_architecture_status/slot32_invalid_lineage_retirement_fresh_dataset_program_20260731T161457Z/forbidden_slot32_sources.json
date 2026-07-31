@@ -1,0 +1,14 @@
+{
+  "sources": [
+    "full transcripts",
+    "unresolved failures",
+    "assistant scratchpad",
+    "agent_skill_learning artifacts used directly",
+    "Slot14 document/chat material",
+    "Slot120 heavy reasoning material",
+    "pairs without verification",
+    "synthetic unsupported outputs",
+    "deprecated qwen3:32b-q8_0-related behavior",
+    "source-less historical rows"
+  ]
+}

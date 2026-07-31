@@ -1,0 +1,8 @@
+{
+  "fresh_certified_pairs": 0,
+  "historical_invalid_lineage_retired": true,
+  "incumbent_preserved": true,
+  "remaining_gap": 750,
+  "training_task_created": false,
+  "verdict": "PASS_INVALID_SLOT32_DATASET_RETIRED_FRESH_PROGRAM_REGISTERED"
+}

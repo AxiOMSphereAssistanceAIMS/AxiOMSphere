@@ -1,0 +1,6 @@
+{
+  "dataset": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/train_repairman_slot32_v1.jsonl",
+  "reason": "lineage inconsistency and unapproved rows",
+  "training_eligible": false,
+  "validator_result": "DENIED"
+}

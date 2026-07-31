@@ -1,0 +1,6 @@
+{
+  "certified_pairs": 0,
+  "decision": "HOLD_SLOT32_BELOW_750_VERIFIED_PAIRS",
+  "fresh_acquisition_required": true,
+  "training_allowed": false
+}

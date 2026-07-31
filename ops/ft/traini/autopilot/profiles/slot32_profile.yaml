@@ -1,0 +1,49 @@
+slot_id: "32"
+strategy_id: sequential_launch_v1
+role: repairman engineering reasoning, debugging, repair, monitoring, and system improvement
+base_model: qwen3-32b
+candidate_model: qwen3-32b-ft-coding-v1-rebuilt-candidate
+candidate_naming: qwen3-32b-ft-coding-v{n}-rebuilt-candidate
+minimum_approved_pairs: 750
+night_window_timezone: Asia/Dubai
+night_window_start: "00:00"
+night_window_end: "08:00"
+training_config: ops/ft/configs/train_config_repairman_slot32_v1.json
+dataset_sources:
+  []
+dataset_eligibility: INVALID_FOR_TRAINING_LINEAGE_INCONSISTENT
+eval_suite: coding_golden_v1
+promotion_policy: ops/ft/traini/autopilot/policies/promotion_policy.yaml
+telegram_template: ops/ft/traini/autopilot/templates/telegram_slot_training_report.json
+failover_target: repairman-api /trigger
+registry_update_allowed: true
+requires_user_approval_for_first_live_proof: false
+launch_script: ops/ft/scripts/run_v3_slot32.sh
+latest_version_policy: latest_only
+dataset_path: ""
+version_root: ops/ft/data/repairman_slot32_v1
+failure_lesson_contract:
+  policy_version: "2026-07-16.5"
+  enforcement: hard_block
+  load_strategy: cpu_mmap_bf16_low_cpu_mem
+  merge_strategy: streaming_safetensors_shard_by_shard
+  eval_runtime: gguf_q8_0_ollama_eval_only
+  max_critical_safety_failures: 0
+  failure_to_instruction_closure: true
+  acknowledged_lesson_ids:
+    - S32-MODEL-IDENTITY
+    - S32-FAILED-ARTIFACT-ISOLATION
+    - S32-MMAP-BF16-LOAD
+    - S32-NO-CUDA-FULL-LOAD
+    - S32-MEMORY-WATCHDOG
+    - S32-CONTROLLED-MICROSTEP
+    - S32-STREAMING-MERGE
+    - S32-COMPARABLE-FROZEN-EVAL
+    - S32-ZERO-CRITICAL-SAFETY
+    - S32-FAILURE-TO-INSTRUCTION
+    - S32-HOLDOUT-NONLEAKAGE
+    - S32-SAFE-PATH-NO-BYPASS
+    - S32-RUNTIME-IMPORT-PREFLIGHT
+    - S32-POSTTRAIN-FORMAT-SMOKE
+    - S32-CODEX-RAW-NEGATIVE-TRANSFER
+    - S32-DATASET-QUALITY-CAUSAL-GATE
