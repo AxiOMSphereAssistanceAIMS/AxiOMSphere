@@ -1,0 +1,11 @@
+# container_exec_smoke
+
+```json
+{
+  "status": "PASS",
+  "command": "pwd; python3 --version; test -f /workspace/ops/scripts/traini_raw_material_review_5h.py",
+  "workdir": "/workspace",
+  "python": "3.12.3"
+}
+
+```

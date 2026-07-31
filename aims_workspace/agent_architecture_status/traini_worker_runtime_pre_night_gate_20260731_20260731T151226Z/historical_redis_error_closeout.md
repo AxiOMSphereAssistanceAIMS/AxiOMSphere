@@ -1,0 +1,12 @@
+# historical_redis_error_closeout
+
+```json
+{
+  "historical_errors_preserved": true,
+  "errors_deleted": false,
+  "new_runtime_task_status": "SUCCEEDED",
+  "old_errors_marked_superseded": true,
+  "supersession_reason": "worker image/runtime path repaired and bounded proof succeeded"
+}
+
+```

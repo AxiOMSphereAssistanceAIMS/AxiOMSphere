@@ -1,0 +1,14 @@
+# bounded_runtime_proof_result
+
+```json
+{
+  "verdict": "PASS_TRAINI_WORKER_BOUNDED_PRODUCTION_PATH",
+  "scheduler_task_status": "SUCCEEDED",
+  "structured_handoff_records": 4,
+  "training_started": false,
+  "promotion": false,
+  "registry_mutated": false,
+  "raw_deleted": false
+}
+
+```

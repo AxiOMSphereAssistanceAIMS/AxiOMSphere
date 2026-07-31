@@ -1,0 +1,6 @@
+{
+  "image": "axiomsphere-traini-worker:local",
+  "present": true,
+  "inspect_after_build": true,
+  "image_id": "sha256:c77773fbde240141fc507aee3123e514e6ffdf269a33137f17d07ec758180350"
+}

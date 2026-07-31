@@ -1,0 +1,13 @@
+# image_build_root_cause
+
+```json
+{
+  "classification": "PASS_IMAGE_BUILD_COMPLETED",
+  "initial_attempt": "timeout during base-layer transfer",
+  "bounded_retry": "completed RC=0",
+  "build_definition": "valid",
+  "registry_auth": "not blocking (base metadata/layers pulled)",
+  "unsafe_static_ip_pinning": false
+}
+
+```

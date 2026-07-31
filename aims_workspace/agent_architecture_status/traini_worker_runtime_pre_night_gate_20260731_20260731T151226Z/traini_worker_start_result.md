@@ -1,0 +1,12 @@
+# traini_worker_start_result
+
+```json
+{
+  "status": "PASS_TRAINI_WORKER_CONTAINER_READY",
+  "container": "axiomsphere-traini-worker",
+  "state": "running",
+  "image": "axiomsphere-traini-worker:local",
+  "start_command": "docker compose --profile self-learning up -d traini-worker"
+}
+
+```

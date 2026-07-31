@@ -1,0 +1,28 @@
+{
+  "gate": "raw_material_pair_preparation",
+  "requires_gate_before_traini_dataset_admission": true,
+  "accepted_candidates_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/accepted_candidates.jsonl",
+  "rejected_candidates_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/rejected_candidates.jsonl",
+  "agent_skill_learning_candidates_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/agent_skill_learning_candidates.jsonl",
+  "slot14_pair_pool_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/slot14_pair_pool.jsonl",
+  "slot32_pair_pool_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/slot32_pair_pool.jsonl",
+  "slot120_pair_pool_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/slot120_pair_pool.jsonl",
+  "quarantine_pool_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/quarantine_pool.jsonl",
+  "canonical_quarantine_path": "/workspace/aims_workspace/training_intake/traini_candidates/quarantine/quarantine_pool_raw_material_pair_preparation_20260731T151405Z.jsonl",
+  "canonical_quarantine_manifest": "/workspace/aims_workspace/training_intake/traini_candidates/quarantine/quarantine_pool_raw_material_pair_preparation_20260731T151405Z.manifest.json",
+  "dataset_admission_candidate_roots": {
+    "slot14_pair_pool": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot14_pair_pool",
+    "slot32_pair_pool": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot32_pair_pool",
+    "slot120_pair_pool": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot120_pair_pool"
+  },
+  "dataset_admission_reports": {
+    "slot14_pair_pool": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot14_pair_pool/dataset_admission_report.json",
+    "slot32_pair_pool": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot32_pair_pool/dataset_admission_report.json",
+    "slot120_pair_pool": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot120_pair_pool/dataset_admission_report.json"
+  },
+  "traini_skill_correction_feedback": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/traini_skill_correction_feedback.json",
+  "combined_pool_blocked_for_dataset_admission": true,
+  "slot_specific_candidate_dirs_created": true,
+  "training_started": false,
+  "redis_tuning_task_created": false
+}

@@ -1,0 +1,12 @@
+# post_decision_task_state
+
+```json
+{
+  "task_id": "traini_slot14_night_tuning_73646c7229c3",
+  "status": "HELD_FOR_USER_DECISION",
+  "queue": "scheduler:tasks:missed_startup_review",
+  "dispatch_blocked": "true",
+  "held_for_user_decision": "true"
+}
+
+```

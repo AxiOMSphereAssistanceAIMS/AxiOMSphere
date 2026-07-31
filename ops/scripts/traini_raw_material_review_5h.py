@@ -44,7 +44,10 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     codex_session_handoff = discover_codex_session_handoffs(
         output_path=out_dir / "codex_session_handoff_records.jsonl",
-        max_items=args.max_records,
+        # Handoff discovery is metadata-only and must scan the pointer set
+        # independently of the bounded raw-event batch size; otherwise a
+        # sorted prefix of held legacy pointers can hide valid terminal ones.
+        max_items=500,
     )
     batches = []
     cursor_mode = args.since_last_cursor

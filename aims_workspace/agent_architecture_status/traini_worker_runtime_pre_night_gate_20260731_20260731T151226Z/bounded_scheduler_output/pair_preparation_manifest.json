@@ -1,0 +1,23 @@
+{
+  "run_id": "raw_material_pair_preparation_20260731T151405Z",
+  "created_at": "2026-07-31T15:14:05.457515+00:00",
+  "source_cursor_before": "NONE",
+  "source_cursor_after": "2026-07-31T15:14:05.457492+00:00",
+  "records_seen": 5,
+  "records_processed": 5,
+  "accepted_candidates": 0,
+  "rejected_candidates": 5,
+  "agent_skill_candidates": 0,
+  "slot_counts": {
+    "slot14": 0,
+    "slot32": 5,
+    "slot120": 0,
+    "agent_skill": 0
+  },
+  "safety": {
+    "training_started": false,
+    "redis_tuning_task_created": false,
+    "slot120_unblocked": false
+  },
+  "output_dir": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output"
+}

@@ -1,0 +1,10 @@
+{
+  "verdict": "PASS_TRAINI_RUNTIME_READY_NIGHT_TASK_HELD_NOT_AUTHORIZED",
+  "worker_runtime_ready": true,
+  "bounded_e2e_ready": true,
+  "night_task_allowed": false,
+  "night_task_status": "HELD_FOR_USER_DECISION",
+  "training_started": false,
+  "model_registry_mutated": false,
+  "direct_cron_used": false
+}

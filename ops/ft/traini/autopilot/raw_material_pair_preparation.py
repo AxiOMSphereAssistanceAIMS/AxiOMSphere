@@ -85,6 +85,26 @@ TRANSFORMATION_REQUIRED_KEYS = (
 TRANSFORMER_ID_KEYS = ("extractor_id", "transformer_id", "prepared_by")
 
 
+def _resolve_handoff_path(value: str | Path, workspace: Path = WORKSPACE) -> Path:
+    """Resolve host-written pointer paths from either host or worker mount.
+
+    Wrapper pointers are written on the host and may contain the host
+    checkout prefix.  The Traini worker mounts that checkout at /workspace;
+    map only that known prefix, never arbitrary paths.
+    """
+    path = Path(str(value))
+    if path.is_file() or path.is_dir():
+        return path
+    host_marker = "/aims_workspace/"
+    text = str(path)
+    if host_marker in text:
+        suffix = text.split(host_marker, 1)[1]
+        candidate = workspace / suffix
+        if candidate.exists():
+            return candidate
+    return path
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -116,7 +136,7 @@ def discover_codex_session_handoffs(
             held.append({"pointer_path": str(pointer), "decision": "HOLD_FINAL_STATUS_INCONSISTENT", "reason": str(exc)})
             continue
         session_id = str(handoff.get("material_id") or pointer.stem).removeprefix("codex_session_")
-        manifest_path = Path(str(handoff.get("manifest_path") or ""))
+        manifest_path = _resolve_handoff_path(str(handoff.get("manifest_path") or ""))
         if not manifest_path.is_file():
             held.append({"session_id": session_id, "pointer_path": str(pointer), "decision": "HOLD_FINAL_STATUS_MISSING", "reason": "manifest pointer missing"})
             continue
@@ -137,7 +157,7 @@ def discover_codex_session_handoffs(
         if status not in {"COMPLETED", "FAILED"} or str(final.get("status") or "").upper() != status:
             held.append({"session_id": session_id, "pointer_path": str(pointer), "decision": "HOLD_FINAL_STATUS_INCONSISTENT", "reason": "terminal status mismatch"})
             continue
-        transcript_path = Path(str(handoff.get("transcript_path") or manifest_path.parent / "transcript.md"))
+        transcript_path = _resolve_handoff_path(str(handoff.get("transcript_path") or manifest_path.parent / "transcript.md"))
         if not transcript_path.is_file() or transcript_path.stat().st_size == 0:
             held.append({"session_id": session_id, "pointer_path": str(pointer), "decision": "HOLD_TRANSCRIPT_HASH_UNSTABLE", "reason": "transcript missing"})
             continue

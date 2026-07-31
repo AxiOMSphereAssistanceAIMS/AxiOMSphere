@@ -1,0 +1,13 @@
+# bounded_runtime_task_payload
+
+```json
+{
+  "task_id": "traini_raw_material_review_5h_c3023fe02707",
+  "payload": "[\"bash\", \"-lc\", \"set -euo pipefail; cd /workspace; export AIMS_WORKSPACE=/workspace WORKSPACE=/workspace AIMS_WORKSPACE_DIR=/workspace; export PYTHONPATH=/workspace:/workspace/ops:${PYTHONPATH:-}; python3 ops/scripts/traini_raw_material_review_5h.py --dry-run --max-records 5 --out-dir aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output\"]",
+  "max_records": 5,
+  "dry_run": true,
+  "training_entrypoint": false,
+  "executor_runtime": "redis-scheduler"
+}
+
+```

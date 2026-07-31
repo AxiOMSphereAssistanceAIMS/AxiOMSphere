@@ -1,0 +1,11 @@
+# image_build_result
+
+```json
+{
+  "status": "PASS_IMAGE_BUILD_COMPLETED",
+  "image": "axiomsphere-traini-worker:local",
+  "image_id": "sha256:c77773fbde240141fc507aee3123e514e6ffdf269a33137f17d07ec758180350",
+  "build_log": "bounded_build_attempt.log"
+}
+
+```

@@ -1,0 +1,14 @@
+# container_mount_contract
+
+```json
+{
+  "status": "PASS",
+  "workdir": "/workspace",
+  "script_present": true,
+  "workspace_mount": true,
+  "aims_workspace_mount": true,
+  "ft_data_read_only": true,
+  "docker_exec": true
+}
+
+```

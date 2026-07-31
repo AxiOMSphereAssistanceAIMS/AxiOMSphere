@@ -1,0 +1,9 @@
+{
+  "task_id": "traini_slot14_night_tuning_73646c7229c3",
+  "payload_is_heavy_training": true,
+  "contains": "FULL_AUTONOMOUS_GENERAL_TUNING",
+  "auto_promotion_disabled": true,
+  "explicit_authorization_present": false,
+  "safe_to_allow": false,
+  "reason": "Runtime readiness does not authorize heavy training."
+}

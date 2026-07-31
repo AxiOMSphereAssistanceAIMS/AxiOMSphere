@@ -1,0 +1,14 @@
+# remaining_blockers
+
+```json
+{
+  "blockers": [
+    "Night slot14 payload remains held because it requests heavy FULL_AUTONOMOUS_GENERAL_TUNING without explicit authorization.",
+    "No blocker remains for worker image/container/Redis bounded runtime."
+  ],
+  "task_id": "traini_slot14_night_tuning_73646c7229c3",
+  "training_started": false,
+  "model_registry_mutated": false
+}
+
+```

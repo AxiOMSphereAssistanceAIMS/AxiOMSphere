@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "pair_pool_path": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/slot32_pair_pool.jsonl",
+  "candidate_root": "aims_workspace/agent_architecture_status/traini_worker_runtime_pre_night_gate_20260731_20260731T151226Z/bounded_scheduler_output/dataset_admission_candidates/slot32_pair_pool",
+  "candidates_seen": 0,
+  "materialized_count": 0,
+  "approved_count": 0,
+  "materialized": []
+}

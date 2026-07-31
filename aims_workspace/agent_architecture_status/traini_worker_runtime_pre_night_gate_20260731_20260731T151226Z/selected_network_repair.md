@@ -1,0 +1,9 @@
+# selected_network_repair
+
+```json
+{
+  "action": "NONE_REQUIRED",
+  "reason": "Build completed through existing Docker/BuildKit path; no daemon, DNS, IPv6, proxy, or /etc/hosts change applied."
+}
+
+```

@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "strict_binary_decisions": true,
+  "human_approval_required": false,
+  "policy": {
+    "schema_version": "1.0",
+    "allowed_slots": [
+      "slot14",
+      "slot32",
+      "slot120"
+    ],
+    "blocked_pools_for_dataset_admission": [
+      "agent_skill_learning_pool"
+    ],
+    "slot120_min_verified_reasoning_pairs": 750,
+    "strict_binary_decisions": true,
+    "human_approval_required": false
+  },
+  "precedence": {
+    "schema_version": "1.0",
+    "precedence": [
+      "slot32",
+      "slot14",
+      "slot120"
+    ],
+    "slot14_coding_only_blocked": true,
+    "slot120_min_verified_reasoning_pairs": 750,
+    "agent_skill_learning_pool": "agent_skill_learning_pool"
+  },
+  "total_candidates": 0,
+  "dataset_eligible_count": 0,
+  "skill_learning_consumed_count": 0,
+  "agent_skill_rejected_count": 0,
+  "rejected_count": 0,
+  "blocked_count": 0,
+  "decisions": []
+}
