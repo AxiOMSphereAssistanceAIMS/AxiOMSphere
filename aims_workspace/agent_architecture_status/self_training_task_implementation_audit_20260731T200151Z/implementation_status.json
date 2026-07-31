@@ -1,0 +1,52 @@
+{
+  "task_source": "/home/axi_omi_sphere/Downloads/AIMS_Full_Self_Training_Pipelines_Production_Readiness_Claude_Code_Task.md",
+  "assessed_at_utc": "2026-07-31T20:01:51Z",
+  "overall_status": "PARTIAL_REAL_DATA_PATH_BLOCKED",
+  "evidence": {
+    "primary_audit": "aims_workspace/agent_architecture_status/self_learning_session_files_ingestion_audit_20260731_223000Z",
+    "three_slot_fixture_proof": "aims_workspace/agent_architecture_status/traini_three_slot_learning_value_routing_production_20260731T181437Z",
+    "implementation_commit": "4005822"
+  },
+  "implemented": [
+    {"area": "dual_pipeline", "status": "PROVEN", "evidence": ["ops/logi/closed_loop.py", "ops/ft/traini/autopilot/raw_material_pair_preparation.py"]},
+    {"area": "terminal_admission_and_transcript_safety", "status": "PROVEN", "evidence": ["ops/ft/traini/autopilot/raw_material_pair_preparation.py", "raw_codex_transcript_as_assistant_answer_forbidden=true"]},
+    {"area": "scheduler_worker_runtime", "status": "PROVEN", "evidence": ["Redis Scheduler -> axiomsphere-traini-worker", "previous full production readiness evidence"]},
+    {"area": "raw_lifecycle_clearance", "status": "PROVEN", "evidence": ["143/143 dispositioned; zero unresolved; holds have recheck conditions"]},
+    {"area": "slot_affinity_and_isolated_pools", "status": "FIXTURE_PROVEN", "evidence": ["three-slot routing harness; distinct fixture pair IDs; isolation checks"]},
+    {"area": "fail_closed_admission", "status": "PROVEN", "evidence": ["ops/ft/traini/autopilot/raw_material_pair_preparation_gate.py", "dataset_admission_policy.py"]},
+    {"area": "skill_registry_and_inter_agent_contracts", "status": "PRESENT", "evidence": ["ops/agents/agent_skill_registry.yaml", "ENG-H contracts in audit"]},
+    {"area": "failure_feedback_generation", "status": "DIAGNOSTIC_ONLY", "evidence": ["traini_skill_correction_feedback.json", "raw_material_pair_preparation.py"]}
+  ],
+  "partially_implemented_or_unproven": [
+    {"area": "real_pair_synthesis", "status": "BLOCKED", "reason": "live candidates lack mandatory holdout_separation, independent_reviewer, raw_source_hash, prepared_answer_hash and slot-specific response_contract"},
+    {"area": "real_learning_unit_extraction", "status": "UNPROVEN", "reason": "three-slot decomposition was exercised only with certification fixtures; no admitted real units"},
+    {"area": "real_three_slot_routing", "status": "UNPROVEN", "reason": "fixture route proof is not production-data proof"},
+    {"area": "independent_slot_clearance_on_real_pairs", "status": "UNPROVEN", "reason": "no real pair reached independent clearance/admission"},
+    {"area": "cumulative_admitted_datasets", "status": "NOT_READY", "reason": "real admitted counts remain zero for the checked path; Slot14 verified count remains 4/750 in prior evidence"},
+    {"area": "automatic_skill_repair_loop", "status": "MISSING", "reason": "failure_closure_registry.py consumes one hardcoded historical feedback file and emits a report; it does not queue/apply/validate/rerun repairs"},
+    {"area": "real_data_end_to_end_proof", "status": "MISSING", "reason": "only synthetic fixture cycles M1-M4 are proven"},
+    {"area": "legacy_summaries_migration", "status": "ACTIVE_LEGACY_COMPATIBILITY", "reason": "still read by multiple modules; stale but not safe to remove without reader migration proof"}
+  ],
+  "not_bugs": [
+    "codex_sessions are not direct Traini raw input; raw transcript training is explicitly forbidden",
+    "zero admitted pairs under current evidence is correct fail-closed behavior",
+    "worker being up does not prove real pair synthesis or training readiness"
+  ],
+  "required_additions_in_order": [
+    {"priority": 1, "component": "pair_synthesis_contract_vNext", "deliverables": ["mandatory field matrix", "versioned schema", "real metadata producers", "source/evidence hashes", "holdout split/contamination report", "separate reviewer invocation"], "gate": "PASS_REAL_PAIR_SYNTHESIS_CONTRACT_COMPLETED"},
+    {"priority": 2, "component": "real_learning_unit_extractor", "deliverables": ["bounded units from preserved evidence", "idempotent IDs", "excluded-content audit", "no full transcripts"], "gate": "PASS_REAL_LEARNING_UNIT_EXTRACTION_READY"},
+    {"priority": 3, "component": "all_route_semantic_router", "deliverables": ["Slot14/32/120 plus skill/eval/memory routes", "multi-unit derivation", "low-confidence holds", "no indiscriminate duplication"], "gate": "PASS_ALL_ROUTE_LEARNING_VALUE_ASSESSMENT_READY"},
+    {"priority": 4, "component": "independent_slot_clearance", "deliverables": ["separate gate implementation", "slot-specific checks", "only gate may set approved_for_training=true"], "gate": "PASS_THREE_SLOT_INDEPENDENT_CLEARANCE_READY"},
+    {"priority": 5, "component": "automatic_skill_repair_loop", "deliverables": ["feedback watcher", "affected-skill selector", "bounded repair queue", "sandbox/regression/activation gate", "rollback", "failed-stage rerun", "reusable lesson"], "gate": "PASS_AUTOMATIC_SKILL_REPAIR_LOOP_PRODUCTION_READY"},
+    {"priority": 6, "component": "real_data_scheduler_proof", "deliverables": ["real terminal sources", "Redis-owned cycle", "source closeout", "real admitted/rejected output", "changed-source and restart proof"], "gate": "PASS_REAL_DATA_THREE_SLOT_PIPELINE_PROVEN"},
+    {"priority": 7, "component": "downstream_training_contract", "deliverables": ["ready/no-ready handoff tests", "mandatory evaluation", "winner gate", "incumbent retention", "rollback", "concurrency denial"], "gate": "PASS_DOWNSTREAM_TRAINING_PATH_CERTIFIED"},
+    {"priority": 8, "component": "legacy_reader_migration", "deliverables": ["reader inventory", "compatibility observation", "dedup proof", "only then deprecate summaries if reader count is zero"], "gate": "CONTROLLED_LEGACY_MIGRATION"}
+  ],
+  "final_assessment": {
+    "raw_clearance_pipeline": "PRODUCTION_READY",
+    "real_learning_and_pair_pipeline": "NOT_PRODUCTION_READY",
+    "automatic_self_repair": "NOT_IMPLEMENTED",
+    "training_execution": "FAIL_CLOSED_NOT_READY",
+    "safe_next_action": "repair pair synthesis metadata contract, then rerun real five-hour cycle; do not connect raw transcripts directly"
+  }
+}
