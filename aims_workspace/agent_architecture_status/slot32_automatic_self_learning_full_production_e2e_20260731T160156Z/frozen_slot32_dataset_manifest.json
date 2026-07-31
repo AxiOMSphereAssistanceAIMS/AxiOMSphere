@@ -1,0 +1,9 @@
+{
+  "dataset_sha256": null,
+  "frozen": false,
+  "minimum_approved_pairs": 750,
+  "reason": "Fresh source admission and provenance gate did not pass.",
+  "status": "NOT_FROZEN_DATASET_GATE_BLOCKED",
+  "target_slot": "slot32",
+  "verified_pairs": 0
+}

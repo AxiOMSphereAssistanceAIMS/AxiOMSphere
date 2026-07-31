@@ -1,0 +1,10 @@
+{
+  "blockers": [
+    "No fresh terminal Slot32 source-to-pair chain with complete provenance",
+    "Existing repairman_slot32_v1 summary is BLOCKED_POST_REBUILD_INDEPENDENT_AUDIT",
+    "Verified Slot32 pair count cannot be established for automatic training",
+    "No training-base compatibility proof for tuning the FP8 inference incumbent"
+  ],
+  "full_production_e2e_achieved": false,
+  "training_task_created": false
+}

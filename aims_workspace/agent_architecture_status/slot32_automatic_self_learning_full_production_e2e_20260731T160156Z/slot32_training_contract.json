@@ -1,0 +1,7 @@
+{
+  "decision": "NOT_CREATED_DATASET_GATE_BLOCKED",
+  "promotion_allowed": false,
+  "registry_change_allowed": false,
+  "slot_update_allowed": false,
+  "training_task_allowed": false
+}

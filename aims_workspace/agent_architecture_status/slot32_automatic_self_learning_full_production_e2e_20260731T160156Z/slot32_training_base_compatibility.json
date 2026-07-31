@@ -1,0 +1,6 @@
+{
+  "decision": "BLOCKED_NO_TRAINABLE_SLOT32_BASE",
+  "inference_incumbent": "Qwen/Qwen3-Coder-Next-FP8",
+  "reason": "Dataset gate stopped before training-base compatibility proof.",
+  "training_base_proven": false
+}

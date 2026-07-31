@@ -1,0 +1,7 @@
+{
+  "baseline_evidence": "live runtime hot marker",
+  "baseline_hash": "57c6ac6718cf3e47d449b14d308d558646b200aed2df7a7aaa76b5a797b81306",
+  "evaluation_baseline": "available historically; fresh E2E evaluation not run",
+  "incumbent": "Qwen/Qwen3-Coder-Next-FP8",
+  "served_alias": "aims-qwen3-coder-next-fp8-v0"
+}

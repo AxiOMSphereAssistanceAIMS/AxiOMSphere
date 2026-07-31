@@ -1,0 +1,7 @@
+{
+  "automatic_execution_owner": "Redis Scheduler and traini-worker",
+  "direct_cron_used": false,
+  "redis_scheduler_container": "axiomsphere-redis-scheduler",
+  "redis_scheduler_ready": true,
+  "traini_worker_ready": "runtime image previously proven; no training dispatched"
+}

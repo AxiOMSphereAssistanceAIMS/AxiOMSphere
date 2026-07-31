@@ -1,0 +1,11 @@
+{
+  "admission_ready": false,
+  "candidate_dataset": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/train_repairman_slot32_v1.jsonl",
+  "candidate_dataset_sha256": "d309fa18b7e5de95b90a011359de106123267e35cc89b88b6f6fb9cc9db92358",
+  "candidate_rows": 3,
+  "fresh_terminal_sources_found": 0,
+  "generation_summary": "/home/axi_omi_sphere/aims-workspace/ops/ft/data/repairman_slot32_v1/generation_summary.json",
+  "generation_summary_sha256": "a341dab4a989d08b68a32adbcd718d05d909601a7c05875936e712c55478c171",
+  "reason": "No fresh terminal source-to-pair chain with complete provenance was available; existing v1 is historical and blocked.",
+  "summary_quality_gate": "BLOCKED_POST_REBUILD_INDEPENDENT_AUDIT"
+}

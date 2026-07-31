@@ -1,0 +1,8 @@
+{
+  "candidate_wins": false,
+  "full_production_e2e_achieved": false,
+  "incumbent_preserved": true,
+  "registry_mutated": false,
+  "training_task_created": false,
+  "verdict": "HOLD_SLOT32_PROVENANCE_GAP"
+}

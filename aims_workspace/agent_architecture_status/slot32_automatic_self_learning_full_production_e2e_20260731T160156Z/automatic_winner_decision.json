@@ -1,0 +1,6 @@
+{
+  "candidate_wins": false,
+  "decision": "INCUMBENT_RETAINED_NO_TRAINING_CYCLE",
+  "policy_bound": true,
+  "reason": "No admitted dataset or candidate"
+}

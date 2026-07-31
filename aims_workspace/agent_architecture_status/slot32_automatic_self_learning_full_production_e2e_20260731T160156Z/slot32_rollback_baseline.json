@@ -1,0 +1,6 @@
+{
+  "incumbent_preserved": true,
+  "registry_mutated": false,
+  "rollback_pointer_present": true,
+  "rollback_target": "Qwen/Qwen3-Coder-Next-FP8"
+}

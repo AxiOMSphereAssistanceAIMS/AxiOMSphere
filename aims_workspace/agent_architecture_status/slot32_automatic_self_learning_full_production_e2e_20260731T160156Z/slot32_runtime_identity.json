@@ -1,0 +1,10 @@
+{
+  "actual_model_in_launcher": false,
+  "endpoint": "http://127.0.0.1:18081/v1",
+  "health": "PASS",
+  "runtime": "SGLang",
+  "served_model_alias": "aims-qwen3-coder-next-fp8-v0",
+  "slot": "slot32",
+  "status": "HOT",
+  "user_facing_launcher_contract": "model=slot32"
+}

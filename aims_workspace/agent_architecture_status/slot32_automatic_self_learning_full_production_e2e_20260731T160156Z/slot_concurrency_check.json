@@ -1,0 +1,7 @@
+{
+  "concurrent_heavy_slots": 0,
+  "decision": "PASS",
+  "qwen3_32b_q8_0_selected": false,
+  "slot120_loaded": false,
+  "slot32_loaded": true
+}
