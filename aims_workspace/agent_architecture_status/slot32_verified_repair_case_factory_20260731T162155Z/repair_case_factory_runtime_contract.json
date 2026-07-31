@@ -1,0 +1,21 @@
+{
+  "batch_size": [
+    10,
+    25
+  ],
+  "fail_closed": [
+    "RUNNING",
+    "unresolved",
+    "missing provenance",
+    "missing verification"
+  ],
+  "input": "real Repairman/Codex failure",
+  "stages": [
+    "controlled repair",
+    "verification",
+    "terminal closeout",
+    "Slot32 transformation",
+    "independent admission"
+  ],
+  "training_below_threshold": false
+}

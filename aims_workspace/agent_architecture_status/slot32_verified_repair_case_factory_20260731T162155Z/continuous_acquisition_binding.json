@@ -1,0 +1,9 @@
+{
+  "cursor_required": true,
+  "direct_cron_used": false,
+  "idempotent": true,
+  "owner": "Redis Scheduler or existing Repairman watcher",
+  "running_excluded": true,
+  "training_autostart_below_750": false,
+  "unresolved_excluded": true
+}

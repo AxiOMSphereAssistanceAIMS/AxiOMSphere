@@ -1,0 +1,406 @@
+{
+  "eligible_count": 0,
+  "source_classes": [
+    "repairman_learning_cases",
+    "terminal_codex_manifests",
+    "scheduler/runtime incidents",
+    "test evidence"
+  ],
+  "sources": [
+    {
+      "case_id": "repairman_case_009",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/repairman_logi_status_feedback.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "5da8582acd2f8411acb57d53f76f6206f07f05e63d38e9fd325c1c47ece64758",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_002",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/crash_doctor_closure_mapping.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "c489bf6c8ed0fb603725e31f6d3fde2c1072ea0a58ac36dcb840f32e96e7cafc",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_010",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/repairman_no_false_completion.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "6372013069d6aef6b3b5ba895b6f3b3bedb0fc833162d25814f98934693f590e",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_001",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/loop_breaker_limit.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "97281b269fb9e091e6c692f43091b0f2b7f92b5a278dca99ddbea3212afaeb91",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_006",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/repair_evidence_package_generation.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "ddd0e8fdeb40b979ce8c72e93a80ae44cbbcabca132c2363260a159e00f8575f",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_003",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/safe_patch_proposal.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "c3bc37a0c3d85c12c89ef5175947aec233e3fbfc3bd53b0d4f3141760d175210",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_008",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/repairman_argus_handoff.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "0ef08f059d92a69845190575315c45945b1473c5d05a549b1c411941d65d6286",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_005",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/rollback_artifact_generation.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "fabc48ea1bc259b84bb363bb30aee4016b82268028407ac3b6a9361a972a4492",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_007",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/failed_after_limit_escalation.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "e65c593a053f0e4a51e502d973a774cdd0627d918e800bf1d0e93fa9b61d7dc4",
+      "stable_pass_evidence": true
+    },
+    {
+      "case_id": "repairman_case_004",
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/repairman_learning_cases/test_rerun_loop.json",
+      "reason": "Historical case has no terminal source session, failure artifact hash, applied patch, and rerun verification chain.",
+      "result": "PASS",
+      "sha256": "66eccd22e08185c8dc300d7d4352fa2547050f85a2c6681a073af997e33db83f",
+      "stable_pass_evidence": true
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260722T090429Z_22553_a7798701/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "fac3e98f197df783f9eaa4b79ec627909e27ecbb77539f9b9cd49af75a7bbac9",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260722T142104Z_510289_26572a73/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "e9196a40352e63a3e5cc698918b298ed500c2f7fd46d213718c6e4f9bd6ba0ea",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260712T120531Z_78677_b74420ac/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "6952df9a1b9ff80eeed3c28312ec1ed8db1dd311420cf5ecae8fb25774143c32",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260722T134628Z_434175_449d0c5b/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "4e839174132806c4e1fbabbe7504145f9ec306aaeef4ce13f3887e781ca6b3fd",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260725T115216Z_1772273_a99a2467/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "4280c88c1899e675be75ec3593ae8838230fb9fe1adfbe8dfdb36b2d39e1478f",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260722T094057Z_20089_906c15e9/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "df0942a5265937239864b6e59cda5008bfa61f981477cb2c4d24ad74ad7e77aa",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T100733Z_1457552_3715ebb3/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "738f1e58754710b1e0e4f0858f15d15298f565ff312c7564abf0da0221aeac40",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082304Z_304322_44aa24a3/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "32b434c5f110dab7bf3329be99e8cd0097c0b9b58f745f1cdbe49c93667637f6",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260712T170659Z_321864_fd9a0504/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "b4b7b6bbf895a1f6d0f376f9e2c9cb3210771169a071b9906bb4b7c5a54d4b8e",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134514Z_13187_c59efabd/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "e888d87eb4f6e8b34a3f99a29553bd13dbe1d8fc57738058e15cf3f739663be9",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T132726Z_4161635_61c39bb2/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "c578e2f4be57483bc3063f08f03bd24309d9229bdfe59d3216f0682ab454b409",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260718T093748Z_2713576_bf8fee91/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "e059a494d364175fddacd5953a0d086faea7d6b4a0dd9e18190317223753596c",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260712T113756Z_13291_1e3d5a35/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "c7af56c7982459e0cac5aa19ce42f1de5796e839e16c22532c58b808725da12c",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260726T104336Z_848848_b584abbc/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "1d0b5123df3cad7d232a34044bbd8b94d0299165a4795b13844dde657eb4ab4b",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260724T173617Z_1455709_356f67f6/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "e48306c736378ee7dc12eec3a3a9a8d5ff86d223d948616b3c17faa797617bb8",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260712T134402Z_15059_fa2da534/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "91e05f0d70ccc3248769061f3d9502ca17ba9bc230790fb8c0c97f5441526cb0",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134428Z_8709_acd6178d/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "8e2eb9b446d82d3112d5dfc0122c3be7c1c8c664c5ba9589216ede00de7ef1de",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260713T131704Z_992488_3383a896/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "a3df98d6e770e5af5d4e14d66342ddbbc9de4d5f364d446e7813e499ebffcf75",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260712T114310Z_29888_0fcaee5c/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "ddb1c683ed906514cbb535e384ec2e327839c37c6b2b8e28ecd11cb777422a63",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260720T095921Z_5422_088d54e8/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "ce1f5ff3a4f9ee3777eb06cea659f623176a9e87e5a5073523c3cd265a18347b",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260717T110910Z_104348_7a6aacac/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "52a4967ee5da0af3db9200861c81f256543feaceb3f67b595bda2d617170045c",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260711T100422Z_2999085_942d9ee3/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "fbd233a1370f1c31fe7a9170d35b79b0e7b49e9cfdfd7f3ed5dbbb2083e53e64",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260714T123551Z_206026_10587b2b/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "7f0fa3c858c1b93b2f692d2fef8f50f0616ec497614ecd4f81b697c1074c09d0",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260719T175629Z_2399598_5c39fe41/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "44cd8b91e6145cf0cfbf09941c37bee9dbf08f6cc8b0148c0491cde1715259ad",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T135143Z_31160_603973c1/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "c31f4edf012a50c67e0003fadbd522fdaf18df7c37cee1dd2ed4ccb2fcfefe77",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260709T071924Z_1925466_30e8c1c5/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "674449d137b2ce2053de69ef50c705c9c7ff455335dd995b93cf6b3d31a6f650",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T112138Z_1621653_b25d0d8d/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "0fb5c4efab88e9bc1fcedfab1a7656e0bdbaabf428eede8e9004d97096383116",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260720T095935Z_7139_53b0d852/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "f4bd581bd5fcebbd751876227c2523c255bbb46206a29cbc286038c95ed86496",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T154839Z_2200541_368a55c1/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "e6db70333b41cd07d23469dc6afcb788a63b18da881493547ddb49bc13456695",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082153Z_299650_edada016/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "2ccdb98c75102e2f1af7aa07ef235daca2d29602143d137b1fe47d1cc75545a1",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134554Z_15881_18013caa/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "62fb07ffe03b608de3d7617130e7e6951a8558a29b230626a449c92f27834154",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T115325Z_1693571_af7481a0/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "d9063fc1df40f866d8d6ea707445960c66ab666b28d94644bad0f2c4b4b8bbde",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T125430Z_1837323_e6b14f95/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "8d72f1fd1d7b477ea93994effab6baf86fd54ff933e0dc6cfcf3254e60144749",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260725T070915Z_1185449_2649481a/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "f27ba2c087c25bd3b1b4e6a763f5bc2fa52beb3ef4ab3759dfa22d217af3f962",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260720T055702Z_3709147_589ac246/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "b5e26ebec287a4b4cca2d192cdff12252e182cdc96aa4973756c35c21bd6ce68",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T105025Z_3784499_c67380bb/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "59c2b08a7dc687e025389cd15e04af76df6d98e02a1b84f3971c9aa43501b9cb",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T164939Z_2340548_cf9dc9d7/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "c37ebee7e475416ce3ccf4cc14085d0a8dd33d34f65c769ed2e8bf38f7334572",
+      "status": "RUNNING",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    },
+    {
+      "classification": "HOLD_INSUFFICIENT_EVIDENCE",
+      "path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260713T060759Z_11810_6c7579ec/session_manifest.json",
+      "reason": "No bounded repair-case contract and verification closeout established for this campaign.",
+      "sha256": "9d1ff3eeb539e5b96d29a8d0015f6a0fef9becbc55c76e536147b4ef05c12b45",
+      "status": "FAILED",
+      "traini_raw_material_status": "RAW_POINTER_ONLY"
+    }
+  ],
+  "sources_inspected": 48
+}

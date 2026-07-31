@@ -1,0 +1,9 @@
+{
+  "blockers": [
+    "no reproducible fresh Slot32 repair failures with complete verification chain",
+    "0/750 certified pairs",
+    "historical case artifacts lack terminal source-to-patch provenance"
+  ],
+  "registry_mutated": false,
+  "training_started": false
+}

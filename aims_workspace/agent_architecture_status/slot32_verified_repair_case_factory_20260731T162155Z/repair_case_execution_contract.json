@@ -1,0 +1,10 @@
+{
+  "allowed_disposition": [
+    "REPAIRED_VERIFIED_PASS",
+    "REPAIR_FAILED_VERIFIED",
+    "HOLD_NOT_REPRODUCIBLE",
+    "HOLD_PROTECTED_ACTION",
+    "HOLD_REGRESSION_INTRODUCED"
+  ],
+  "training_started": false
+}
