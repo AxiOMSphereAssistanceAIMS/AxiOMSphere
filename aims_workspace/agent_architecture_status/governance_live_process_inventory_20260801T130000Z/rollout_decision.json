@@ -1,0 +1,6 @@
+{
+  "decision": "HOLD_MANDATORY_GLOBAL_ENABLEMENT_PENDING_PROCESS_MIGRATION",
+  "unsafe_autonomous_candidates": 33,
+  "reason": "inventory found processes without governance env; no process stopped or mutated",
+  "required_next_action": "migrate or safely terminate each candidate before global enablement"
+}
