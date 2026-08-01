@@ -19,3 +19,13 @@ def test_cycle_is_idempotent_for_unchanged_source(tmp_path: Path) -> None:
     assert second["records_discovered"] == 0
     assert second["records_skipped_unchanged"] == 1
     assert len((tmp_path / "learning_value_assessment_ledger.jsonl").read_text().splitlines()) == 1
+
+
+def test_changed_source_hash_reopens_only_changed_item(tmp_path: Path) -> None:
+    original = _record()
+    run_learning_cycle([original], tmp_path, cycle_id="a")
+    changed = SimpleNamespace(record_id="source-1", checksum="hash-2", content=original.content, metadata={})
+    result = run_learning_cycle([original, changed], tmp_path, cycle_id="c")
+    assert result["records_discovered"] == 1
+    assert result["records_skipped_unchanged"] == 1
+    assert len((tmp_path / "learning_value_assessment_ledger.jsonl").read_text().splitlines()) == 2

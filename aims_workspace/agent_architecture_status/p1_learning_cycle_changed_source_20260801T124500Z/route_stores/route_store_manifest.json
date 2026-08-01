@@ -1,0 +1,13 @@
+{
+  "schema_version": "learning-unit-route-v1",
+  "cycle_id": "D",
+  "stores": {
+    "evaluation_units.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_learning_cycle_changed_source_20260801T124500Z/route_stores/evaluation_units.jsonl",
+      "record_count": 4,
+      "sha256": "41db7c6c587c8d0423b8bf7b98018721426c2cd43e0e1075403b10b64053c246",
+      "unique_ids": 4,
+      "duplicate_count": 0
+    }
+  }
+}

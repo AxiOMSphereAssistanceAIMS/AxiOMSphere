@@ -60,9 +60,8 @@ def run_learning_cycle(records: Iterable[Any], evidence_root: Path, *, cycle_id:
             route = classify_unit(unit)
             route_rows.append(route)
     route_result = persist_route_decisions(evidence_root / "route_stores", route_rows, cycle_id=cycle_id)
-    (evidence_root / "no_durable_unit_closeouts.jsonl").open("a", encoding="utf-8").write(
-        "".join(json.dumps(row, sort_keys=True) + "\n" for row in closeouts)
-    )
+    with (evidence_root / "no_durable_unit_closeouts.jsonl").open("a", encoding="utf-8") as handle:
+        handle.write("".join(json.dumps(row, sort_keys=True) + "\n" for row in closeouts))
     metrics = {
         "cycle_id": cycle_id,
         "records_discovered": processed,

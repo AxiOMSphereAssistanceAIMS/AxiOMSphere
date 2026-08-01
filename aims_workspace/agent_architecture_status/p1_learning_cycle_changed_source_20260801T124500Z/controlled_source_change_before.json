@@ -1,0 +1,6 @@
+{
+  "source_id": "fixture-hold",
+  "version": "v1",
+  "sha256": "h-v1",
+  "disposition": "HOLD_RECHECK_ON_SOURCE_CHANGE"
+}

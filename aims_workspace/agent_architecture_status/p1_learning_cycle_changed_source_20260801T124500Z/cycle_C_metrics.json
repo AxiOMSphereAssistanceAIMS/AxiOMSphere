@@ -1,0 +1,13 @@
+{
+  "cycle_id": "C",
+  "records_discovered": 1,
+  "records_skipped_unchanged": 1,
+  "learning_units_observed": 1,
+  "no_durable_unit_closeouts": 0,
+  "route_counts": {
+    "EVALUATION_CASE": 1
+  },
+  "training_task_created": false,
+  "training_started": false,
+  "registry_mutated": false
+}

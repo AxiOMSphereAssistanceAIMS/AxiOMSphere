@@ -1,0 +1,43 @@
+{
+  "verdict": "PASS_CHANGED_SOURCE_AND_DURABLE_RECOVERY_BOUNDED",
+  "cycle_A": {
+    "cycle_id": "A",
+    "records_discovered": 2,
+    "records_skipped_unchanged": 0,
+    "learning_units_observed": 2,
+    "no_durable_unit_closeouts": 0,
+    "route_counts": {
+      "EVALUATION_CASE": 2
+    },
+    "training_task_created": false,
+    "training_started": false,
+    "registry_mutated": false
+  },
+  "cycle_C": {
+    "cycle_id": "C",
+    "records_discovered": 1,
+    "records_skipped_unchanged": 1,
+    "learning_units_observed": 1,
+    "no_durable_unit_closeouts": 0,
+    "route_counts": {
+      "EVALUATION_CASE": 1
+    },
+    "training_task_created": false,
+    "training_started": false,
+    "registry_mutated": false
+  },
+  "cycle_D": {
+    "cycle_id": "D",
+    "records_discovered": 1,
+    "records_skipped_unchanged": 2,
+    "learning_units_observed": 1,
+    "no_durable_unit_closeouts": 0,
+    "route_counts": {
+      "EVALUATION_CASE": 1
+    },
+    "training_task_created": false,
+    "training_started": false,
+    "registry_mutated": false
+  },
+  "production_training_mutation": false
+}

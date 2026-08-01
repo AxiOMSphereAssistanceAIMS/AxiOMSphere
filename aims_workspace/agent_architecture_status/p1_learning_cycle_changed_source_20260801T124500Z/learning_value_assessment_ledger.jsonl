@@ -1,0 +1,4 @@
+{"cycle_id": "A", "source_hash": "h-terminal", "source_id": "fixture-terminal", "units_found": 1}
+{"cycle_id": "A", "source_hash": "h-v1", "source_id": "fixture-hold", "units_found": 1}
+{"cycle_id": "C", "source_hash": "h-v2", "source_id": "fixture-hold", "units_found": 1}
+{"cycle_id": "D", "source_hash": "h-new", "source_id": "fixture-new-after-restart", "units_found": 1}
