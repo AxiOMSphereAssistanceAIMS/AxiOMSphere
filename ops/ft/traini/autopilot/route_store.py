@@ -23,7 +23,18 @@ ROUTE_FILES = {
 def persist_route_decisions(root: Path, decisions: list[dict[str, Any]], *, cycle_id: str) -> dict[str, Any]:
     root.mkdir(parents=True, exist_ok=True)
     counts: dict[str, int] = {}
+    existing_ids: set[str] = set()
+    for existing_path in root.glob("*.jsonl"):
+        for line in existing_path.read_text(encoding="utf-8").splitlines():
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if value.get("learning_unit_id"):
+                existing_ids.add(str(value["learning_unit_id"]))
     for decision in decisions:
+        if str(decision.get("learning_unit_id") or "") in existing_ids:
+            continue
         route = str(decision.get("route") or "HOLD")
         path = root / ROUTE_FILES.get(route, "route_holds.jsonl")
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -31,6 +42,7 @@ def persist_route_decisions(root: Path, decisions: list[dict[str, Any]], *, cycl
         with path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
         counts[route] = counts.get(route, 0) + 1
+        existing_ids.add(str(decision.get("learning_unit_id")))
     manifest = {"schema_version": "learning-unit-route-v1", "cycle_id": cycle_id, "stores": {}}
     for name in sorted(set(ROUTE_FILES.values())):
         path = root / name

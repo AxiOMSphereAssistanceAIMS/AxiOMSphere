@@ -1,0 +1,15 @@
+{
+  "cycle_id": "A",
+  "records_discovered": 142,
+  "records_skipped_unchanged": 0,
+  "learning_units_observed": 103,
+  "no_durable_unit_closeouts": 39,
+  "route_counts": {
+    "EVALUATION_CASE": 18,
+    "HOLD": 3,
+    "AGENT_SKILL_LEARNING": 82
+  },
+  "training_task_created": false,
+  "training_started": false,
+  "registry_mutated": false
+}

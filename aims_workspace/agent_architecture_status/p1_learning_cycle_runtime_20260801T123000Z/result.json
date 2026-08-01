@@ -1,0 +1,30 @@
+{
+  "verdict": "PASS_BOUNDED_LEARNING_CYCLE_IDEMPOTENCY",
+  "cycle_A": {
+    "cycle_id": "A",
+    "records_discovered": 142,
+    "records_skipped_unchanged": 0,
+    "learning_units_observed": 103,
+    "no_durable_unit_closeouts": 39,
+    "route_counts": {
+      "EVALUATION_CASE": 18,
+      "HOLD": 3,
+      "AGENT_SKILL_LEARNING": 82
+    },
+    "training_task_created": false,
+    "training_started": false,
+    "registry_mutated": false
+  },
+  "cycle_B": {
+    "cycle_id": "B",
+    "records_discovered": 0,
+    "records_skipped_unchanged": 142,
+    "learning_units_observed": 0,
+    "no_durable_unit_closeouts": 0,
+    "route_counts": {},
+    "training_task_created": false,
+    "training_started": false,
+    "registry_mutated": false
+  },
+  "training_task_created": false
+}
