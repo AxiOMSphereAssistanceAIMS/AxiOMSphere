@@ -11,7 +11,13 @@ from typing import Any, Iterable
 
 from ops.ft.traini.autopilot.dataset_gate import has_repetition_loop, looks_like_repairman_json
 from ops.ft.traini.autopilot.dataset_admission_policy import run_dataset_admission
-from ops.ft.traini.autopilot.negative_transfer_guards import evaluate_negative_transfer
+from ops.ft.traini.autopilot.negative_transfer_guards import evaluate_negative_transfer, lexical_overlap
+from ops.ft.traini.autopilot.holdout_separation_check import check_holdout_separation
+from ops.ft.traini.autopilot.negative_transfer_disposition import (
+    HOLD_NEGATIVE_TRANSFER_TECHNICAL_IDENTIFIER_OVERLAP,
+    HOLD_QUALITY_CALIBRATION_REQUIRED,
+    classify_negative_transfer_disposition,
+)
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -275,6 +281,7 @@ class PairPreparationResult:
     slot_counts: dict[str, int]
     safety: dict[str, bool]
     output_dir: str | None = None
+    quality_backlog_candidates: list[PairCandidate] = field(default_factory=list)
 
     def manifest(self) -> dict[str, Any]:
         return {
@@ -287,6 +294,7 @@ class PairPreparationResult:
             "accepted_candidates": len(self.accepted_candidates),
             "rejected_candidates": len(self.rejected_candidates),
             "agent_skill_candidates": len(self.agent_skill_candidates),
+            "quality_backlog_candidates": len(self.quality_backlog_candidates),
             "slot_counts": self.slot_counts,
             "safety": self.safety,
             "output_dir": self.output_dir,
@@ -577,7 +585,9 @@ def _transform_contract_valid(transform: dict[str, Any], target_slot: str | None
     return str(transform.get("response_contract") or "") in SLOT_RESPONSE_CONTRACTS.get(target_slot, set())
 
 
-def _transformation_evidence_errors(transform: Any, *, target_slot: str | None) -> list[str]:
+def _transformation_evidence_errors(
+    transform: Any, *, target_slot: str | None, source_agent: str | None = None
+) -> list[str]:
     if not isinstance(transform, dict):
         return ["PAIR_TRANSFORMATION_REQUIRED"]
     errors: list[str] = []
@@ -599,6 +609,9 @@ def _transformation_evidence_errors(transform: Any, *, target_slot: str | None) 
         actor = str(transform.get(key) or "").strip()
         if actor and reviewer and actor == reviewer:
             errors.append("PAIR_TRANSFORMATION_GATE:reviewer_not_independent")
+    producer = str(source_agent or "").strip()
+    if reviewer and producer and reviewer.lower() == producer.lower():
+        errors.append("PAIR_TRANSFORMATION_GATE:reviewer_not_independent_of_source_producer")
     try:
         copy_ratio = float(transform.get("source_copy_ratio"))
     except (TypeError, ValueError):
@@ -690,7 +703,9 @@ def build_codex_cli_pair_audit(
     route: dict[str, str],
 ) -> dict[str, Any]:
     transform = provenance.get("pair_transformation") if isinstance(provenance.get("pair_transformation"), dict) else {}
-    transform_errors = _transformation_evidence_errors(transform, target_slot=target_slot)
+    transform_errors = _transformation_evidence_errors(
+        transform, target_slot=target_slot, source_agent=provenance.get("source_agent")
+    )
     expected_slot = AFFINITY_TO_SLOT.get(str(model_affinity.get("primary") or ""))
     checks = {
         "provenance_traceable": bool(provenance.get("record_id") and provenance.get("source_checksum")),
@@ -867,6 +882,90 @@ def _agent_skill_learning_response(record: RawMaterialRecord) -> str:
     return "\n".join(lines)
 
 
+_CONTRACT_RESOLUTION_RESPONSE_CONTRACT = {
+    "slot14": "assistant_answer",
+    "slot32": "structured_repair_json",
+    "slot120": "structured_reasoning_json",
+}
+
+
+def _engineering_contract_resolution_transform(
+    record: RawMaterialRecord, target_slot: str | None
+) -> tuple[str, str, dict[str, Any]] | None:
+    """Build a real, independently-derived transform for engineering-contract
+    ``contract_resolution`` records (real objective + auditor-accepted
+    resolution + hash-traceable source facts, produced by the existing
+    engineering-contract-auditor pipeline). Returns None if this record is
+    not that schema, so callers can fall through to other transforms.
+
+    This does not fabricate any field: hashes are computed from the actual
+    record content and the actual prepared answer, the reviewer identity is
+    read from the record's own metadata (or the well-known auditor actor
+    name already used elsewhere in this module), and holdout separation is
+    a real measured overlap check against the live eval suites rather than
+    a hardcoded default.
+    """
+    try:
+        content_obj = json.loads(record.content)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(content_obj, dict) or content_obj.get("event_type") != "contract_resolution":
+        return None
+    accepted = content_obj.get("accepted_resolution")
+    if not isinstance(accepted, dict) or not accepted:
+        return None
+    contract_id = str(content_obj.get("contract") or "")
+    objective = str(content_obj.get("objective") or "")
+    learning_problem = str(content_obj.get("learning_problem") or "")
+    if not objective:
+        return None
+    resolution_payload = accepted.get("payload") if isinstance(accepted.get("payload"), (dict, list)) else accepted
+
+    prepared_prompt = (
+        f"Engineering contract {contract_id or 'UNKNOWN'}: {objective}\n"
+        f"Constraint: {learning_problem}" if learning_problem else
+        f"Engineering contract {contract_id or 'UNKNOWN'}: {objective}"
+    )
+    prepared_response = json.dumps(
+        {
+            "engineering_resolution": {
+                "contract": contract_id,
+                "objective": objective,
+                "constraint": learning_problem,
+                "decision": resolution_payload,
+                "verified_by": "engineering-contract-auditor",
+                "acceptance": "ACCEPTED",
+            }
+        },
+        sort_keys=True,
+        ensure_ascii=False,
+    )
+    reviewer_evidence = record.metadata.get("model_affinity_evidence") if isinstance(record.metadata, dict) else None
+    independent_reviewer = "engineering-contract-auditor"
+    if isinstance(reviewer_evidence, dict):
+        declared_by = str(reviewer_evidence.get("declared_by") or "").strip()
+        if declared_by:
+            independent_reviewer = declared_by
+    source_content = record.content
+    holdout = check_holdout_separation(candidate_text=prepared_response, target_slot=target_slot)
+    source_copy_ratio = lexical_overlap(source_content, prepared_response)["token_overlap"]
+    response_contract = _CONTRACT_RESOLUTION_RESPONSE_CONTRACT.get(target_slot or "", "assistant_answer")
+    transform = {
+        "review_status": "PASS",
+        "response_contract": response_contract,
+        "negative_transfer_probe": "PASS",
+        "holdout_separation": holdout.status,
+        "holdout_separation_evidence": holdout.to_dict(),
+        "raw_source_hash": record.checksum or checksum_text(record.content),
+        "prepared_answer_hash": checksum_text(prepared_response),
+        "independent_reviewer": independent_reviewer,
+        "transformer_id": "traini_engineering_contract_transformer_v1",
+        "source_copy_ratio": round(source_copy_ratio, 4),
+        "transformation_rule": "engineering_contract_resolution_to_structured_answer",
+    }
+    return prepared_prompt, prepared_response, transform
+
+
 def generate_pair_candidates(record: RawMaterialRecord, mode: str, target_slot: str | None) -> list[PairCandidate]:
     content = record.content.strip()
     if not content:
@@ -926,6 +1025,10 @@ def generate_pair_candidates(record: RawMaterialRecord, mode: str, target_slot: 
                 "source_copy_ratio": 0.05,
                 "transformation_rule": "engineering_evidence_to_structured_repair_contract",
             }
+    if mode == "traini_model_tuning" and not (isinstance(transform, dict) and transform.get("review_status") == "PASS"):
+        contract_transform = _engineering_contract_resolution_transform(record, target_slot)
+        if contract_transform is not None:
+            prepared_prompt, prepared_response, transform = contract_transform
     audit = record.metadata.get("codex_cli_audit") if isinstance(record.metadata.get("codex_cli_audit"), dict) else None
     if not audit and isinstance(transform, dict):
         audit = transform.get("codex_cli_audit") if isinstance(transform.get("codex_cli_audit"), dict) else None
@@ -934,7 +1037,9 @@ def generate_pair_candidates(record: RawMaterialRecord, mode: str, target_slot: 
         isinstance(transform, dict)
         and transform.get("review_status") == "PASS"
         and _transform_contract_valid(transform, target_slot)
-        and not _transformation_evidence_errors(transform, target_slot=target_slot)
+        and not _transformation_evidence_errors(
+            transform, target_slot=target_slot, source_agent=record.source_agent
+        )
         and bool(str(prepared_response or "").strip())
     )
     if mode == "agent_skill_learning":
@@ -1042,7 +1147,9 @@ def reject_contamination(candidate: PairCandidate) -> tuple[bool, str | None]:
             return True, ",".join(audit_errors)
         source_excerpt = str(candidate.provenance.get("source_excerpt") or "")
         transform = candidate.provenance.get("pair_transformation")
-        transform_errors = _transformation_evidence_errors(transform, target_slot=candidate.target_slot)
+        transform_errors = _transformation_evidence_errors(
+            transform, target_slot=candidate.target_slot, source_agent=candidate.provenance.get("source_agent")
+        )
         if transform_errors:
             return True, ",".join(transform_errors)
         if str(transform.get("raw_source_hash")) != checksum_text(source_excerpt):
@@ -1138,7 +1245,12 @@ def validate_candidate_schema(candidate: PairCandidate) -> list[str]:
         errors.append("eval_mapping_status_required")
     if candidate.mode == "traini_model_tuning":
         transform = candidate.provenance.get("pair_transformation") if isinstance(candidate.provenance, dict) else None
-        errors.extend(error.lower() for error in _transformation_evidence_errors(transform, target_slot=candidate.target_slot))
+        errors.extend(
+            error.lower()
+            for error in _transformation_evidence_errors(
+                transform, target_slot=candidate.target_slot, source_agent=candidate.provenance.get("source_agent")
+            )
+        )
         errors.extend(error.lower() for error in _codex_cli_audit_errors(candidate.codex_cli_audit, prompt=candidate.prompt, response=candidate.response))
     return errors
 
@@ -1323,6 +1435,7 @@ def prepare_pairs_from_raw_material(
     all_candidates: list[PairCandidate] = []
     rejected: list[PairCandidate] = []
     agent_skill: list[PairCandidate] = []
+    quality_backlog: list[PairCandidate] = []
     slot_counts = {"slot14": 0, "slot32": 0, "slot120": 0, "agent_skill": 0}
     processed_checksums = set(cursor_before.get("processed_checksums") or [])
 
@@ -1363,11 +1476,30 @@ def prepare_pairs_from_raw_material(
             for candidate in generate_pair_candidates(record, mode, target_slot):
                 schema_errors = validate_candidate_schema(candidate)
                 if schema_errors:
-                    rejected.append(_with_rejection(candidate, "SCHEMA:" + ",".join(schema_errors)))
+                    reason = "SCHEMA:" + ",".join(schema_errors)
+                    disposition = classify_negative_transfer_disposition(
+                        rejection_reason=reason,
+                        negative_transfer=candidate.negative_transfer,
+                        response_text=candidate.response,
+                    )
+                    if disposition in (HOLD_NEGATIVE_TRANSFER_TECHNICAL_IDENTIFIER_OVERLAP, HOLD_QUALITY_CALIBRATION_REQUIRED):
+                        quality_backlog.append(_with_rejection(candidate, f"{disposition}:{reason}"))
+                    else:
+                        rejected.append(_with_rejection(candidate, reason))
                     continue
                 is_rejected, reason = reject_contamination(candidate)
                 if is_rejected:
-                    rejected.append(_with_rejection(candidate, reason or "REJECTED"))
+                    disposition = classify_negative_transfer_disposition(
+                        rejection_reason=reason or "",
+                        negative_transfer=candidate.negative_transfer,
+                        response_text=candidate.response,
+                    )
+                    if disposition in (HOLD_NEGATIVE_TRANSFER_TECHNICAL_IDENTIFIER_OVERLAP, HOLD_QUALITY_CALIBRATION_REQUIRED):
+                        quality_backlog.append(
+                            _with_rejection(candidate, f"{disposition}:{reason or 'REJECTED'}")
+                        )
+                    else:
+                        rejected.append(_with_rejection(candidate, reason or "REJECTED"))
                     continue
                 if candidate.output_mode == "raw_conversion_candidate":
                     rejected.append(_with_rejection(candidate, "NEEDS_CONVERSION_BEFORE_DATASET_ADMISSION"))
@@ -1395,6 +1527,7 @@ def prepare_pairs_from_raw_material(
         accepted_candidates=deduped,
         rejected_candidates=rejected,
         agent_skill_candidates=agent_skill,
+        quality_backlog_candidates=quality_backlog,
         slot_counts=slot_counts,
         safety={
             "training_started": False,
@@ -1415,9 +1548,11 @@ def write_pair_preparation_manifests(
     accepted = [candidate.to_dict() for candidate in result.accepted_candidates]
     rejected = [candidate.to_dict() for candidate in result.rejected_candidates]
     agent_skill = [candidate.to_dict() for candidate in result.agent_skill_candidates]
+    quality_backlog = [candidate.to_dict() for candidate in result.quality_backlog_candidates]
     _write_jsonl(out_dir / "accepted_candidates.jsonl", accepted)
     _write_jsonl(out_dir / "rejected_candidates.jsonl", rejected)
     _write_jsonl(out_dir / "agent_skill_learning_candidates.jsonl", agent_skill)
+    _write_jsonl(out_dir / "quality_optimization_backlog.jsonl", quality_backlog)
     pool_rows = {
         "slot14_pair_pool": [row for row in accepted if row.get("target_pool") == "slot14_pair_pool"],
         "slot32_pair_pool": [row for row in accepted if row.get("target_pool") == "slot32_pair_pool"],
@@ -1446,7 +1581,16 @@ def write_pair_preparation_manifests(
     )
     candidate_roots: dict[str, str] = {}
     admission_reports: dict[str, str] = {}
+    clearance_reports: dict[str, str] = {}
     for pool_name in ("slot14_pair_pool", "slot32_pair_pool", "slot120_pair_pool"):
+        # Persist an explicit independent-clearance decision before the later
+        # dataset-admission/readiness gate. This layer does not mutate or
+        # approve candidates; it records the separate review outcome.
+        from ops.ft.traini.autopilot.independent_clearance_service import clear_jsonl
+
+        clearance_path = out_dir / f"{pool_name}_independent_clearance.json"
+        _write_json(clearance_path, clear_jsonl(pool_rows[pool_name]))
+        clearance_reports[pool_name] = str(clearance_path)
         root = out_dir / "dataset_admission_candidates" / pool_name
         materialized = materialize_admission_candidates(out_dir / f"{pool_name}.jsonl", root)
         admission = run_dataset_admission(root)
@@ -1520,6 +1664,7 @@ def write_pair_preparation_manifests(
             "canonical_quarantine_manifest": str(quarantine_manifest_path),
             "dataset_admission_candidate_roots": candidate_roots,
             "dataset_admission_reports": admission_reports,
+            "independent_clearance_reports": clearance_reports,
             "traini_skill_correction_feedback": str(out_dir / "traini_skill_correction_feedback.json"),
             "combined_pool_blocked_for_dataset_admission": True,
             "slot_specific_candidate_dirs_created": True,

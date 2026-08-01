@@ -1,0 +1,25 @@
+{
+  "source_root": "aims_workspace/training_intake/traini_candidates/raw_events",
+  "records_seen": 142,
+  "accepted": 0,
+  "rejected": 18,
+  "quality_backlog": 3,
+  "agent_skill": 121,
+  "quality_backlog_physical_file": "aims_workspace/agent_architecture_status/reviewer_independence_gate_hardening_20260801T113700Z/quality_optimization_backlog.jsonl",
+  "quality_backlog_rows": 3,
+  "approved_for_training_all_false": true,
+  "reviewer_independence_failures": 3,
+  "independent_clearance_layer": "ops/ft/traini/autopilot/independent_clearance_service.py",
+  "accepted_candidates_clearance": {
+    "clearance_version": "independent-clearance-v1",
+    "candidate_count": 0,
+    "clearance_coverage_percent": 100,
+    "admitted_count": 0,
+    "rejected_count": 0,
+    "candidate_without_clearance": 0,
+    "decisions": []
+  },
+  "training_started": false,
+  "registry_mutated": false,
+  "slot_binding_mutated": false
+}

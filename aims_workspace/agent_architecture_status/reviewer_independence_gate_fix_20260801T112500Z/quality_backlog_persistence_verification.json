@@ -1,0 +1,12 @@
+{
+  "source_root": "aims_workspace/training_intake/traini_candidates/raw_events",
+  "records_seen": 142,
+  "quality_backlog_count": 3,
+  "accepted_count": 0,
+  "rejected_count": 18,
+  "agent_skill_count": 121,
+  "approved_for_training_all_false": true,
+  "source_hashes_present": true,
+  "reviewer_independence_failures_present": 3,
+  "training_started": false
+}

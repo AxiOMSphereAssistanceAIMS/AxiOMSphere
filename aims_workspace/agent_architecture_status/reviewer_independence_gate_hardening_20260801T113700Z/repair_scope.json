@@ -1,0 +1,19 @@
+{
+  "completed": [
+    "reviewer-vs-source-producer check",
+    "physical quality backlog persistence",
+    "separate clearance decision service/report",
+    "targeted regression tests"
+  ],
+  "not_completed": [
+    "real learning-unit extractor",
+    "semantic all-route classifier",
+    "producer registry",
+    "full independent clearance admission integration",
+    "automatic repair loop",
+    "full Redis cycles",
+    "downstream training path"
+  ],
+  "production_ready": false,
+  "training_allowed": false
+}
