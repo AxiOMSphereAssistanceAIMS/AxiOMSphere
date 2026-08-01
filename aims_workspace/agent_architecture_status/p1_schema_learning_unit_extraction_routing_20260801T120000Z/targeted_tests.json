@@ -1,0 +1,5 @@
+{
+  "command": "pytest -q ops/tests/test_learning_unit_model_store.py ops/tests/test_engineering_contract_learning_units.py ops/tests/test_canonical_pair_schema.py ops/tests/test_p1_governance_and_source_versioning.py",
+  "result": "PASS",
+  "passed": 12
+}

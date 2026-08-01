@@ -1,0 +1,12 @@
+{
+  "global_governance_enforcement": "PARTIAL",
+  "pair_candidate_migration": "PARTIAL",
+  "learning_unit_model_store": "PASS_TESTED",
+  "real_extractor": "PASS_BOUNDED",
+  "semantic_router": "PASS_BOUNDED",
+  "route_store_persistence": "PENDING",
+  "independent_clearance_registry": "PENDING",
+  "redis_cycles_A_E": "PENDING",
+  "automatic_repair_loop": "PENDING",
+  "training": "PROHIBITED"
+}

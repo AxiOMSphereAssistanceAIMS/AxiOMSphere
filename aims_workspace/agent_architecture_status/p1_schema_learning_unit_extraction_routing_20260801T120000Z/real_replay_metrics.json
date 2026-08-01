@@ -1,0 +1,19 @@
+{
+  "records_seen": 142,
+  "source_versions": 142,
+  "learning_units_created": 103,
+  "learning_units_held": 3,
+  "no_durable_units": 0,
+  "slot14_units": 0,
+  "slot32_units": 0,
+  "slot120_units": 0,
+  "skill_units": 82,
+  "evaluation_units": 18,
+  "memory_units": 0,
+  "quality_units": 0,
+  "route_holds": 3,
+  "schema_failures": 0,
+  "unresolved": 0,
+  "training_task_created": false,
+  "production_admission_performed": false
+}

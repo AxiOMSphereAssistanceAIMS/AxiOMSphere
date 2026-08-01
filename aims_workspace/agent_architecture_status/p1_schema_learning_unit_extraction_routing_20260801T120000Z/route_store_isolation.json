@@ -1,0 +1,6 @@
+{
+  "separate_physical_files": true,
+  "shared_mutable_manifest": false,
+  "cross_slot_writes": false,
+  "training_admission": false
+}

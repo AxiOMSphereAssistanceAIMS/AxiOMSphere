@@ -1,0 +1,27 @@
+{
+  "schema_version": "learning-unit-route-v1",
+  "cycle_id": "p1-real-replay-20260801T120000Z",
+  "stores": {
+    "agent_skill_learning_units.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_schema_learning_unit_extraction_routing_20260801T120000Z/route_stores/agent_skill_learning_units.jsonl",
+      "record_count": 82,
+      "sha256": "db887dfbd3c453762536d2c9e3d7ef007d66d1703189c1c68c6b3d0a86b9056a",
+      "unique_ids": 82,
+      "duplicate_count": 0
+    },
+    "evaluation_units.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_schema_learning_unit_extraction_routing_20260801T120000Z/route_stores/evaluation_units.jsonl",
+      "record_count": 18,
+      "sha256": "3805930f3fb9188c05f859fdbf9410094e50f43d516b7f9ce553f006209a0e46",
+      "unique_ids": 18,
+      "duplicate_count": 0
+    },
+    "route_holds.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_schema_learning_unit_extraction_routing_20260801T120000Z/route_stores/route_holds.jsonl",
+      "record_count": 3,
+      "sha256": "5b34fe3196a6ef3b4850cea3340006932d551b35dd0934e5befdf858286be853",
+      "unique_ids": 3,
+      "duplicate_count": 0
+    }
+  }
+}

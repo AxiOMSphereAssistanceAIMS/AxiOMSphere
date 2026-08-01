@@ -1,0 +1,27 @@
+{
+  "schema_version": "learning-unit-v1",
+  "mandatory_fields": [
+    "learning_unit_id",
+    "source_id",
+    "source_version",
+    "raw_source_hash",
+    "evidence_hashes",
+    "unit_type",
+    "problem",
+    "observed_evidence",
+    "root_cause",
+    "accepted_decision",
+    "verification_status",
+    "verification_reference",
+    "bounded_input",
+    "bounded_target",
+    "task_family",
+    "extraction_version",
+    "route_candidates",
+    "excluded_content"
+  ],
+  "append_only": true,
+  "full_transcript_stored": false,
+  "training_started": false,
+  "model_load_allowed": false
+}
