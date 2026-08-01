@@ -1,0 +1,8 @@
+{
+  "writers": 21,
+  "process_state_captured": 21,
+  "context_complete": 0,
+  "raw_transcript_copied": false,
+  "loss_detected": false,
+  "reason": "context paths absent for interactive sessions"
+}

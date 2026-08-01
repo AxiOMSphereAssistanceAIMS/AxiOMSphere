@@ -1,0 +1,53 @@
+{
+  "wave1": {
+    "sessions": [],
+    "condition": "clean non-overlapping writer confirmed"
+  },
+  "wave2": {
+    "sessions": [],
+    "condition": "captured uncommitted diff and no overlap"
+  },
+  "wave3": {
+    "sessions": [],
+    "condition": "overlap resolution required"
+  },
+  "wave4": {
+    "sessions": [
+      5216,
+      31155,
+      31160,
+      32039,
+      32040,
+      41752,
+      155276,
+      300379,
+      300380,
+      1171723,
+      1171724,
+      1171750,
+      1174129,
+      1207359,
+      1207360,
+      1207599,
+      1622275,
+      1622276,
+      1911668,
+      1911714,
+      1918874,
+      1918894,
+      1918933,
+      1920156,
+      1920461,
+      1920655,
+      2493502,
+      2493548,
+      4075286,
+      4075291,
+      4075302,
+      4075303,
+      4075427
+    ],
+    "action": "operator-directed sequential restart"
+  },
+  "max_parallel_restarts": 1
+}

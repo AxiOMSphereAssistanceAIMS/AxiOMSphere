@@ -1,0 +1,65 @@
+{
+  "support_helpers_total": 12,
+  "helpers": [
+    {
+      "pid": 1171750,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1174129,
+      "command": "2026 /home/axi_omi_sphere/.bun/bin/bun /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0/scripts/worker-service.cjs --daemon",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1207599,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1918874,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/claude daemon run --origin transient --spawned-by {\"label\":\"claude\",\"cwd\":\"/home/axi_omi_sphere/aims-workspace\",\"pid\":1171724}",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1918894,
+      "command": "2026 claude bg-pty-host --bg-pty-host /tmp/cc-daemon-1000/a373c89e/spare/5adf2c11.pty.sock 200 50 -- /home/axi_omi_sphere/.local/share/claude/versions/2.1.220 --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/5adf2c11.claim.sock",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1918933,
+      "command": "2026 claude bg-spare --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/5adf2c11.claim.sock",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1920156,
+      "command": "2026 claude bg-pty-host --bg-pty-host /tmp/cc-daemon-1000/a373c89e/spare/79989597.pty.sock 200 50 -- /home/axi_omi_sphere/.local/share/claude/versions/2.1.220 --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/79989597.claim.sock",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1920461,
+      "command": "2026 claude bg-spare --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/79989597.claim.sock",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 1920655,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 2493502,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/uv tool uvx --python 3.13 --with onnxruntime>=1.20 --with protobuf<7 chroma-mcp==0.2.6 --client-type persistent --data-dir /home/axi_omi_sphere/.claude-mem/chroma",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 2493548,
+      "command": "2026 /home/axi_omi_sphere/.cache/uv/archive-v0/OGv0oP_cgbmdGTqNrCdUa/bin/python /home/axi_omi_sphere/.cache/uv/archive-v0/OGv0oP_cgbmdGTqNrCdUa/bin/chroma-mcp --client-type persistent --data-dir /home/axi_omi_sphere/.claude-mem/chroma",
+      "action": "NO_ACTION"
+    },
+    {
+      "pid": 4075427,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "action": "NO_ACTION"
+    }
+  ]
+}

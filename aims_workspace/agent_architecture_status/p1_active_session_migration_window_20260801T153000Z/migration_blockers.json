@@ -1,0 +1,7 @@
+{
+  "active_writers": 21,
+  "blocked_context_incomplete": 21,
+  "blocked_lease_unknown": 21,
+  "safe_to_restart": 0,
+  "reason": "no task context/lease mapping; operator-directed migration required"
+}

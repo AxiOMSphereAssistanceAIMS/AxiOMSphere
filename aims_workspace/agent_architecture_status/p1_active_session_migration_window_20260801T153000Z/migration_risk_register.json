@@ -1,0 +1,6 @@
+{
+  "active_main_contexts": 33,
+  "unknown_leases": 33,
+  "risk": "HIGH",
+  "requires_sequential_restart": true
+}

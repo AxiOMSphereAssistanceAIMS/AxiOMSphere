@@ -1,0 +1,153 @@
+{
+  "active_writers_total": 21,
+  "support_helpers_total": 12,
+  "writers": [
+    {
+      "pid": 5216,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 31155,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 31160,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 32039,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 32040,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 41752,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 155276,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 300379,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 300380,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1171723,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1171724,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1207359,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1207360,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1622275,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1622276,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1911668,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 1911714,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 4075286,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 4075291,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 4075302,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    },
+    {
+      "pid": 4075303,
+      "classification": "OPERATOR_HOLD",
+      "reason": "context/lease/worktree migration not yet proven",
+      "branch": "main",
+      "session_path": null
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "preserve_session_dir": true,
+  "restore_branch_from_base": false,
+  "restart_old_process_allowed_only_after_capture": true,
+  "raw_deletion": false
+}

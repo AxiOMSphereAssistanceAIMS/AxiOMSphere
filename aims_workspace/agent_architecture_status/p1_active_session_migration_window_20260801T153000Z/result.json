@@ -1,0 +1,41 @@
+{
+  "cycle": {
+    "production_ready": false,
+    "final_verdict": "BLOCKED_CONTEXT_INCOMPLETE_OPERATOR_WINDOW_REQUIRED"
+  },
+  "sessions": {
+    "active_candidates_total": 21,
+    "classified": 21,
+    "unclassified": 0,
+    "active_ungoverned_after": 21,
+    "lost_diffs": 0,
+    "lost_contexts": 0
+  },
+  "governance": {
+    "mandatory_global_mode": false,
+    "direct_main_write_allowed": false,
+    "shared_main_autonomous_writers": 21,
+    "review_required": true,
+    "controlled_merge_required": true
+  },
+  "runtime": {
+    "scheduler_owner": "redis-scheduler",
+    "cycles_A_D_pass": false,
+    "cycle_E_pass": false,
+    "next_cycle_ready": false
+  },
+  "learning_material": {
+    "slot32_verified_repair_units": 33,
+    "repair_holds": 6,
+    "approved_for_training_true": 0
+  },
+  "safety": {
+    "training_task_created": false,
+    "training_started": false,
+    "model_loaded": false,
+    "promotion_executed": false,
+    "registry_mutated": false,
+    "slot_binding_mutated": false,
+    "raw_data_deleted": false
+  }
+}
