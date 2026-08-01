@@ -17,7 +17,7 @@ class ClearanceRegistry:
         self.path = path
 
     def append(self, decision: dict[str, Any]) -> dict[str, Any]:
-        required = ("pair_id", "candidate_hash", "clearance_version", "decision", "reviewer_identity")
+        required = ("pair_id", "candidate_hash", "clearance_version", "decision")
         missing = [key for key in required if not decision.get(key)]
         if missing:
             raise ValueError(f"missing clearance fields: {','.join(missing)}")

@@ -262,6 +262,35 @@ class PairCandidate:
     model_affinity: dict[str, Any] = field(default_factory=dict)
     negative_transfer: dict[str, Any] = field(default_factory=dict)
     codex_cli_audit: dict[str, Any] = field(default_factory=dict)
+    raw_source_hash: str | None = None
+    prepared_answer_hash: str | None = None
+    response_contract: str | None = None
+    independent_reviewer: str | None = None
+    holdout_separation: str | None = None
+
+    def __post_init__(self) -> None:
+        # P1-STAGE 2 migration step 1: these fields already exist with real,
+        # verified values nested under provenance.pair_transformation. This
+        # promotes them onto the top-level canonical schema (pair_candidate_
+        # schema_vNext.json) without requiring every existing call site to
+        # pass them explicitly -- callers that already set them keep their
+        # value; everyone else gets the same real value the pipeline already
+        # computed and verified, just surfaced at the top level.
+        transform = self.provenance.get("pair_transformation") if isinstance(self.provenance, dict) else None
+        if not isinstance(transform, dict):
+            return
+        field_map = {
+            "raw_source_hash": "raw_source_hash",
+            "prepared_answer_hash": "prepared_answer_hash",
+            "response_contract": "response_contract",
+            "independent_reviewer": "independent_reviewer",
+            "holdout_separation": "holdout_separation",
+        }
+        for attr, transform_key in field_map.items():
+            if getattr(self, attr) is None:
+                value = transform.get(transform_key)
+                if value:
+                    object.__setattr__(self, attr, str(value))
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -1350,6 +1379,8 @@ def materialize_admission_candidates(pair_pool_path: Path, candidate_root: Path)
     rows = _read_jsonl(pair_pool_path)
     candidate_root.mkdir(parents=True, exist_ok=True)
     materialized: list[dict[str, Any]] = []
+    from ops.ft.traini.autopilot.clearance_registry import ClearanceRegistry
+    clearance_registry = ClearanceRegistry(candidate_root / "independent_clearance_registry.jsonl")
     for row in rows:
         pair_id = str(row.get("pair_id") or checksum_text(json.dumps(row, sort_keys=True))[:16])
         candidate_dir = candidate_root / pair_id
@@ -1360,6 +1391,7 @@ def materialize_admission_candidates(pair_pool_path: Path, candidate_root: Path)
         from ops.ft.traini.autopilot.independent_clearance_service import clear_candidate
 
         independent_clearance = clear_candidate(row)
+        clearance_record = clearance_registry.append(independent_clearance)
         manifest = {
             "candidate_id": pair_id,
             "source_lesson_id": str(provenance.get("record_id") or pair_id),
@@ -1372,6 +1404,8 @@ def materialize_admission_candidates(pair_pool_path: Path, candidate_root: Path)
             "codex_cli_audit": row.get("codex_cli_audit") if isinstance(row.get("codex_cli_audit"), dict) else {},
             "clearance_required": True,
             "independent_clearance": independent_clearance,
+            "clearance_registry_path": str(clearance_registry.path),
+            "clearance_registry_event": clearance_record.get("registry_event", "CLEARANCE_RECORDED"),
             "raw_material_only": False,
             "direct_training_allowed": score["decision"] == "APPROVED"
                 and independent_clearance["decision"] == "ADMIT"

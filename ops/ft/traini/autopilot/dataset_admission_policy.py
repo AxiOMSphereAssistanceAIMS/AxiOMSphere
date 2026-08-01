@@ -54,6 +54,30 @@ def report_status(path: Path) -> str:
     )
 
 
+def clearance_registry_matches(candidate_dir: Path, manifest: dict[str, Any], clearance: dict[str, Any]) -> bool:
+    """Require the immutable registry to contain this exact decision."""
+    if not clearance:
+        return False
+    registry_path = manifest.get("clearance_registry_path")
+    if not registry_path:
+        return False
+    path = Path(str(registry_path))
+    if not path.is_absolute():
+        path = candidate_dir / path
+    if not path.exists():
+        return False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if (row.get("pair_id"), row.get("candidate_hash"), row.get("decision")) == (
+            clearance.get("pair_id"), clearance.get("candidate_hash"), clearance.get("decision")
+        ):
+            return True
+    return False
+
+
 def decide_candidate(candidate_dir: Path, policy: dict[str, Any], precedence: dict[str, Any]) -> dict[str, Any]:
     manifest_path = candidate_dir / "candidate_manifest.json"
     if not manifest_path.exists():
@@ -96,6 +120,8 @@ def decide_candidate(candidate_dir: Path, policy: dict[str, Any], precedence: di
             decision, reason = "REJECTED_CODEX_CLI_AUDIT", "Codex CLI pair audit is not PASS"
         elif slot_router != "PASS":
             decision, reason = "REJECTED_SLOT_MISMATCH", "slot router status is not PASS"
+        elif clearance_required and not clearance_registry_matches(candidate_dir, manifest, independent_clearance):
+            decision, reason = "REJECTED_INDEPENDENT_CLEARANCE", "clearance decision is absent from immutable registry"
         elif clearance_required and independent_clearance.get("decision") != "ADMIT":
             decision, reason = "REJECTED_INDEPENDENT_CLEARANCE", "independent clearance did not return ADMIT"
         elif target_slot == "slot120" and verified_reasoning_pairs < int(policy.get("slot120_min_verified_reasoning_pairs", 750)):
