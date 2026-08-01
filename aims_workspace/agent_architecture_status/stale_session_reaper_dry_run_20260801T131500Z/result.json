@@ -1,0 +1,6 @@
+{
+  "verdict": "HOLD_STALE_SESSIONS_REQUIRE_TERMINAL_EVIDENCE",
+  "sessions_scanned": 8,
+  "mutation_performed": false,
+  "deletion_performed": false
+}
