@@ -130,6 +130,19 @@ def _terminate_group(proc: subprocess.Popen[object]) -> None:
 
 def run_wrapped(args: argparse.Namespace) -> int:
     workspace = Path(args.workspace).resolve()
+    if os.environ.get("AIMS_REQUIRE_GOVERNED_MUTATION") == "1" or args.governance_task_id:
+        from ops.self_learning.governed_mutation_preflight import mutation_preflight
+        preflight = mutation_preflight(
+            workspace,
+            task_id=args.governance_task_id or "missing-task-id",
+            target_branch=args.governance_branch or "main",
+            worktree_path=Path(args.governance_worktree or workspace),
+            lease_path=Path(args.governance_lease or workspace / "aims_workspace/agent_architecture_status/component_lease_registry.jsonl"),
+            owned_files=list(args.governance_owned_file or []),
+        )
+        if not preflight["allowed"]:
+            print(json.dumps({"governance_preflight": preflight}, ensure_ascii=False), file=sys.stderr)
+            return 78
     codex_bin = str(Path(args.codex_bin).expanduser())
     child_args = list(args.child_args or [])
     if child_args and child_args[0] == "--":
@@ -413,6 +426,11 @@ def main() -> int:
     parser.add_argument("--launcher-path", required=True)
     parser.add_argument("--workspace", default=str(ROOT_DEFAULT))
     parser.add_argument("--codex-bin", required=True)
+    parser.add_argument("--governance-task-id")
+    parser.add_argument("--governance-branch")
+    parser.add_argument("--governance-worktree")
+    parser.add_argument("--governance-lease")
+    parser.add_argument("--governance-owned-file", action="append")
     parser.add_argument("child_args", nargs=argparse.REMAINDER)
     return run_wrapped(parser.parse_args())
 
