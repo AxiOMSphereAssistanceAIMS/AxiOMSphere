@@ -1,0 +1,6 @@
+{
+  "codex": "opt_in_preflight",
+  "claude": "opt_in_preflight",
+  "repairman": "opt_in_preflight",
+  "legacy": "uncovered"
+}

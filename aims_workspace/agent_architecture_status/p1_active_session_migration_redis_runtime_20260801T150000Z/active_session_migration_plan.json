@@ -1,0 +1,7 @@
+{
+  "active_candidates": 21,
+  "migration_actions": {
+    "OPERATOR_HOLD": 21
+  },
+  "reason": "no blind stop/migration; preserve live state"
+}

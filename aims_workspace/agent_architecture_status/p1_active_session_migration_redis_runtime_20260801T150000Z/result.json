@@ -1,0 +1,42 @@
+{
+  "cycle": {
+    "production_ready": false,
+    "final_verdict": "BLOCKED_ACTIVE_SESSION_MIGRATION"
+  },
+  "governance": {
+    "mandatory_global_mode": false,
+    "active_ungoverned_writers": 21,
+    "direct_main_write_allowed": false,
+    "controlled_review_required": true,
+    "controlled_merge_required": true
+  },
+  "sessions": {
+    "stale_packages_total": 8,
+    "stale_packages_dispositioned": 8,
+    "active_candidates_total": 21,
+    "active_ungoverned_after": 21,
+    "lost_diffs": 0,
+    "lost_contexts": 0
+  },
+  "runtime": {
+    "scheduler_owner": "redis-scheduler",
+    "cycles_A_D_pass": false,
+    "cycle_E_pass": false,
+    "next_cycle_ready": false
+  },
+  "learning_material": {
+    "slot32_verified_repair_units": 33,
+    "repair_holds": 6,
+    "unresolved": 0
+  },
+  "safety": {
+    "training_task_created": false,
+    "training_started": false,
+    "model_loaded": false,
+    "promotion_executed": false,
+    "registry_mutated": false,
+    "slot_binding_mutated": false,
+    "raw_data_deleted": false,
+    "direct_cron_used": false
+  }
+}

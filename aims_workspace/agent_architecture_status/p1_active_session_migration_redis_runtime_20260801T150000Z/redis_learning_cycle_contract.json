@@ -1,0 +1,6 @@
+{
+  "owner": "redis-scheduler",
+  "worker": "axiomsphere-traini-worker",
+  "manual_local_proof_not_counted": true,
+  "runtime_status": "NOT_PROVEN"
+}

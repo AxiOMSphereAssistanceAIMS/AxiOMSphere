@@ -1,0 +1,5 @@
+{
+  "bounded_retry": true,
+  "redis_failure_injection": "NOT_PROVEN",
+  "repairman_handoff": "NOT_PROVEN"
+}
