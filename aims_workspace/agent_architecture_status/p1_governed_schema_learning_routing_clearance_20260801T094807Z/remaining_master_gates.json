@@ -1,0 +1,18 @@
+{
+  "open": [
+    "PairCandidate canonical top-level schema migration",
+    "Canonical LearningUnit model/store",
+    "Real engineering-contract learning-unit extractor",
+    "Semantic per-unit all-route classifier",
+    "Producer registry and complete metadata producers",
+    "Versioned clearance decision registry as sole approval authority",
+    "All route stores and manifests",
+    "Redis real-data cycles A-E",
+    "Automatic repair loop with sandbox/activation/rollback",
+    "P1 failure injection and broad regression",
+    "Downstream readiness/evaluation/update/rollback proof"
+  ],
+  "not_external_blockers": true,
+  "training_allowed": false,
+  "production_verdict": "PARTIAL_P1_GOVERNANCE_AND_SOURCE_VERSIONING_ONLY"
+}

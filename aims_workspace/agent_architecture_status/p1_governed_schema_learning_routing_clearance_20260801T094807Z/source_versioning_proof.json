@@ -1,0 +1,10 @@
+{
+  "implementation": "ops/ft/traini/autopilot/source_version_registry.py",
+  "real_records_replayed": 142,
+  "source_versions_created": 142,
+  "real_closeouts_persisted": 142,
+  "unchanged_same_hash_reuses_version": true,
+  "changed_hash_creates_next_version": true,
+  "cursor_is_separate_from_closeout": true,
+  "training_started": false
+}

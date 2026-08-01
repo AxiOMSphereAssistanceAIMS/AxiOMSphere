@@ -1,0 +1,7 @@
+{
+  "target_branch": "main",
+  "allowed": false,
+  "decision": "DENY",
+  "enforcement": "governance_module",
+  "current_branch": "main"
+}

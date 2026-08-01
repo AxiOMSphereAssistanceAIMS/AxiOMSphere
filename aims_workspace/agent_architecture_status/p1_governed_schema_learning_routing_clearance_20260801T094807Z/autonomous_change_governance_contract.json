@@ -1,0 +1,12 @@
+{
+  "contract_version": "p1-governed-change-v1",
+  "direct_main_commit_allowed": false,
+  "isolated_worktree_required": true,
+  "base_commit_pin_required": true,
+  "component_lease_required": true,
+  "review_gate_required": true,
+  "controlled_merge_required": true,
+  "rollback_required": true,
+  "forbidden_actions": ["direct_main_commit", "training", "registry_mutation", "slot_binding_mutation"],
+  "implementation": "ops/self_learning/autonomous_change_governance.py"
+}

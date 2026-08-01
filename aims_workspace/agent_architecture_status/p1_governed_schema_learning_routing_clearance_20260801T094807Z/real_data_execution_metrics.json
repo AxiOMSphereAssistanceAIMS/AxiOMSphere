@@ -1,0 +1,12 @@
+{
+  "records_seen": 142,
+  "source_versions_created": 142,
+  "learning_units_created": 0,
+  "accepted_candidates": 0,
+  "rejected_candidates": 18,
+  "quality_backlog": 3,
+  "agent_skill_candidates": 121,
+  "unresolved": 0,
+  "training_started": false,
+  "registry_mutated": false
+}

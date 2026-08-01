@@ -1,0 +1,1 @@
+{"status":"CONTRACT_READY","lease_policy":"deny overlapping active file/component leases","implementation":"ops/self_learning/autonomous_change_governance.py"}
