@@ -1,0 +1,273 @@
+{
+  "captured_at_utc": "2026-08-01T11:10:40.027003+00:00",
+  "rows": [
+    {
+      "pid": 5216,
+      "command": "2026 /usr/bin/python3 /home/axi_omi_sphere/aims-workspace/ops/telegram/repairman_bot.py",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 31155,
+      "command": "2026 bash -lc /home/axi_omi_sphere/.local/bin/codex-aims-account1; exec bash",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 31160,
+      "command": "2026 python3 /home/axi_omi_sphere/aims-workspace/ops/scripts/codex_logi_session_wrapper.py --launcher-path /home/axi_omi_sphere/.local/bin/codex-aims-account1 --workspace /home/axi_omi_sphere/aims-workspace --codex-bin /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/n",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 32039,
+      "command": "2026 script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T135143Z_31160_603973c1/transcript.md -c /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-u",
+      "session_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T135143Z_31160_603973c1",
+      "session_status": "RUNNING",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 32040,
+      "command": "2026 /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 41752,
+      "command": "2026 /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex-code-mode-host",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 155276,
+      "command": "2026 python /ops/telegram/repairman_api.py",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 300379,
+      "command": "2026 script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082153Z_299650_edada016/transcript.md -c /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-",
+      "session_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082153Z_299650_edada016",
+      "session_status": "RUNNING",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 300380,
+      "command": "2026 /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1171723,
+      "command": "2026 script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260725T070436Z_1171718_acb411b2/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "session_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260725T070436Z_1171718_acb411b2",
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1171724,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1171750,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1174129,
+      "command": "2026 /home/axi_omi_sphere/.bun/bin/bun /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0/scripts/worker-service.cjs --daemon",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1207359,
+      "command": "2026 script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260725T071610Z_1207345_013fc479/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "session_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260725T071610Z_1207345_013fc479",
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1207360,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1207599,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1622275,
+      "command": "2026 script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T112138Z_1621653_b25d0d8d/transcript.md -c /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64",
+      "session_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T112138Z_1621653_b25d0d8d",
+      "session_status": "RUNNING",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1622276,
+      "command": "2026 /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1911668,
+      "command": "2026 /bin/bash -c source /home/axi_omi_sphere/.claude/shell-snapshots/snapshot-bash-1784984763314-2rxqqa.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && { \\builtin unalias -- 'unsetenv'; \\builtin unset -f -- 'unsetenv'; } >/dev/null 2>&1 || true && eval 'bash /home/axi_omi_sphere/.",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1911714,
+      "command": "2026 bash /home/axi_omi_sphere/.claude/jobs/eb6c373c/tmp/wait_for_codex_sessions_free.sh",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 1918874,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/claude daemon run --origin transient --spawned-by {\"label\":\"claude\",\"cwd\":\"/home/axi_omi_sphere/aims-workspace\",\"pid\":1171724}",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1918894,
+      "command": "2026 claude bg-pty-host --bg-pty-host /tmp/cc-daemon-1000/a373c89e/spare/5adf2c11.pty.sock 200 50 -- /home/axi_omi_sphere/.local/share/claude/versions/2.1.220 --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/5adf2c11.claim.sock",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1918933,
+      "command": "2026 claude bg-spare --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/5adf2c11.claim.sock",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1920156,
+      "command": "2026 claude bg-pty-host --bg-pty-host /tmp/cc-daemon-1000/a373c89e/spare/79989597.pty.sock 200 50 -- /home/axi_omi_sphere/.local/share/claude/versions/2.1.220 --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/79989597.claim.sock",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1920461,
+      "command": "2026 claude bg-spare --bg-spare /tmp/cc-daemon-1000/a373c89e/spare/79989597.claim.sock",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 1920655,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 2493502,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/uv tool uvx --python 3.13 --with onnxruntime>=1.20 --with protobuf<7 chroma-mcp==0.2.6 --client-type persistent --data-dir /home/axi_omi_sphere/.claude-mem/chroma",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 2493548,
+      "command": "2026 /home/axi_omi_sphere/.cache/uv/archive-v0/OGv0oP_cgbmdGTqNrCdUa/bin/python /home/axi_omi_sphere/.cache/uv/archive-v0/OGv0oP_cgbmdGTqNrCdUa/bin/chroma-mcp --client-type persistent --data-dir /home/axi_omi_sphere/.claude-mem/chroma",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    },
+    {
+      "pid": 4075286,
+      "command": "2026 bash -lc /home/axi_omi_sphere/.local/bin/claude-aims-subscription; exec bash",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 4075291,
+      "command": "2026 python3 /home/axi_omi_sphere/aims-workspace/ops/scripts/claude_logi_session_wrapper.py --launcher-path /home/axi_omi_sphere/.local/bin/claude-aims-subscription --workspace /home/axi_omi_sphere/aims-workspace --claude-bin /home/axi_omi_sphere/.local/bin/claude --session-kind claude_code_subscrip",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 4075302,
+      "command": "2026 script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260731T125302Z_4075291_275c36ab/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "session_path": "/home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260731T125302Z_4075291_275c36ab",
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 4075303,
+      "command": "2026 /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "ACTIVE_PROCESS",
+      "migration_action": "PRESERVE_AND_MIGRATE"
+    },
+    {
+      "pid": 4075427,
+      "command": "2026 node /home/axi_omi_sphere/.claude/plugins/cache/thedotmack/claude-mem/13.2.0//scripts/mcp-server.cjs",
+      "session_path": null,
+      "session_status": "UNKNOWN",
+      "classification": "SUPPORT_HELPER",
+      "migration_action": "DO_NOT_MIGRATE_PROCESS"
+    }
+  ],
+  "counts": {
+    "ACTIVE_PROCESS": 21,
+    "SUPPORT_HELPER": 12
+  }
+}

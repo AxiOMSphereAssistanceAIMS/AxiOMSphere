@@ -1,0 +1,7 @@
+{
+  "active_process_policy": "do_not_stop; require future governed wrapper invocation",
+  "stale_session_count": 8,
+  "stale_action": "preserve raw package; run terminal-state reaper only with validated final_status evidence",
+  "global_enablement": "HOLD_UNTIL_ACTIVE_PROCESS_MIGRATION",
+  "unsafe_mutation_performed": false
+}

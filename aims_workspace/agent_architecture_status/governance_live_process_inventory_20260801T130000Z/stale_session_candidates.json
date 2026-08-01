@@ -1,0 +1,69 @@
+{
+  "stale_incomplete": 8,
+  "sessions": [
+    {
+      "session_id": "logi_codex_20260730T082304Z_304322_44aa24a3",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082304Z_304322_44aa24a3",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260731T134514Z_13187_c59efabd",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134514Z_13187_c59efabd",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260731T132726Z_4161635_61c39bb2",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T132726Z_4161635_61c39bb2",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260731T134428Z_8709_acd6178d",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134428Z_8709_acd6178d",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260731T134554Z_15881_18013caa",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T134554Z_15881_18013caa",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260731T164257Z_425303_7389567b",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T164257Z_425303_7389567b",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260731T105025Z_3784499_c67380bb",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260731T105025Z_3784499_c67380bb",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    },
+    {
+      "session_id": "logi_codex_20260729T164939Z_2340548_cf9dc9d7",
+      "path": "aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T164939Z_2340548_cf9dc9d7",
+      "manifest_status": "RUNNING",
+      "final_status_exists": false,
+      "classification": "STALE_INCOMPLETE_NO_LIVE_PID",
+      "action": "PRESERVE_AND_REAP_WITH_TERMINAL_EVIDENCE_POLICY"
+    }
+  ]
+}
