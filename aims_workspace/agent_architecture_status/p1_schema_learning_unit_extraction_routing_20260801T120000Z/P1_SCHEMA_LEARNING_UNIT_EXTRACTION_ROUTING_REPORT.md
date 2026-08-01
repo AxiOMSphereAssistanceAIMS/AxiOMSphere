@@ -5,7 +5,7 @@
 - PairCandidate approval is fail-closed and clearance-hash bound.
 - LearningUnit identity/store and duplicate suppression pass tests.
 - Engineering-contract extraction is bounded and preserves producer skill mode.
-- Real evidence-only replay: 142 records, 142 source versions, 103 units, 82 skill units, 18 evaluation units, 3 route holds; no model units were admitted.
+- Real evidence-only replay: 142 records, 142 source versions, 103 bounded units, 39 explicit `NO_DURABLE_UNIT` closeouts, 82 skill units, 18 evaluation units, 3 route holds; no model units were admitted.
 - Route outputs are persisted in isolated append-only stores with hashes.
 - Training, model loading, registry/slot mutation and production admission were not performed.
 
