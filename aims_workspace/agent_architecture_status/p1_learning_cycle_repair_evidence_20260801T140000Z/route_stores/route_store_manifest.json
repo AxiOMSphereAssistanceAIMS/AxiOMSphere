@@ -1,0 +1,34 @@
+{
+  "schema_version": "learning-unit-route-v1",
+  "cycle_id": "A",
+  "stores": {
+    "agent_skill_learning_units.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_learning_cycle_repair_evidence_20260801T140000Z/route_stores/agent_skill_learning_units.jsonl",
+      "record_count": 82,
+      "sha256": "624a5881b167dede1cf8a928ddc4b9f4f797f5176988691020ac4bc98b5bbb49",
+      "unique_ids": 82,
+      "duplicate_count": 0
+    },
+    "evaluation_units.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_learning_cycle_repair_evidence_20260801T140000Z/route_stores/evaluation_units.jsonl",
+      "record_count": 18,
+      "sha256": "573df76486424e28cc4d6826aa5db92ee012e275f34b7b974d8820ba9ba6b9c5",
+      "unique_ids": 18,
+      "duplicate_count": 0
+    },
+    "route_holds.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_learning_cycle_repair_evidence_20260801T140000Z/route_stores/route_holds.jsonl",
+      "record_count": 9,
+      "sha256": "fd31ba59ea6de5db3b0ad191457926b01a63f5d71bccfc68888fd383bc75d467",
+      "unique_ids": 9,
+      "duplicate_count": 0
+    },
+    "slot32_learning_units.jsonl": {
+      "path": "aims_workspace/agent_architecture_status/p1_learning_cycle_repair_evidence_20260801T140000Z/route_stores/slot32_learning_units.jsonl",
+      "record_count": 33,
+      "sha256": "7eb795baaebec24ef8d8806964d46753e9ed52ef15c23b72d46d21338f9560b0",
+      "unique_ids": 33,
+      "duplicate_count": 0
+    }
+  }
+}

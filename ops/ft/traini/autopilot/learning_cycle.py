@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .engineering_contract_learning_unit_extractor import extract_engineering_units
+from .job_filter_repair_unit_extractor import extract_job_filter_repair_unit
 from .learning_unit_route_classifier import classify_unit
 from .learning_unit_store import LearningUnitStore
 from .route_store import persist_route_decisions
@@ -48,6 +49,10 @@ def run_learning_cycle(records: Iterable[Any], evidence_root: Path, *, cycle_id:
             continue
         processed += 1
         units = extract_engineering_units(record)
+        if not units:
+            fallback = extract_job_filter_repair_unit(record)
+            if fallback is not None:
+                units = [fallback]
         source_row = {"source_id": source_id, "source_hash": source_hash, "cycle_id": cycle_id, "units_found": len(units)}
         with source_ledger.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(source_row, sort_keys=True) + "\n")
