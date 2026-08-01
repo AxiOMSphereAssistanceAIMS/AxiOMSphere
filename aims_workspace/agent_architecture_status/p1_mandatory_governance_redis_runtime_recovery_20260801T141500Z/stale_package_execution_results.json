@@ -1,0 +1,8 @@
+{
+  "packages": 8,
+  "dispositioned": 8,
+  "deleted": 0,
+  "successful_completion_fabricated": 0,
+  "terminal_records_created": 8,
+  "decision": "HOLD_STALE_NO_LIVE_PID"
+}

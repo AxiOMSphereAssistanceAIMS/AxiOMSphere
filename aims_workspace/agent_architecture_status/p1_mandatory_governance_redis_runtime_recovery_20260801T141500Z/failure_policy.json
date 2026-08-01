@@ -1,0 +1,6 @@
+{
+  "bounded_retry": true,
+  "training": false,
+  "redis_runtime_injection": "PENDING",
+  "repairman_handoff": "PENDING"
+}

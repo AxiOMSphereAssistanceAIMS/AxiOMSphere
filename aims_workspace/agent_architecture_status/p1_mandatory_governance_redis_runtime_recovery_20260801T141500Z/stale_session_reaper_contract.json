@@ -1,0 +1,17 @@
+{
+  "requires": [
+    "manifest_incomplete",
+    "no_live_pid",
+    "no_parent",
+    "no_active_worktree_lock",
+    "no_active_lease",
+    "older_than_threshold"
+  ],
+  "allowed_outcomes": [
+    "STALE_INCOMPLETE_NO_LIVE_PROCESS",
+    "STALE_EVIDENCE_PRESERVED",
+    "STALE_REQUIRES_MANUAL_REVIEW"
+  ],
+  "deletion_allowed": false,
+  "success_fabrication_allowed": false
+}

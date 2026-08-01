@@ -1,0 +1,5 @@
+{
+  "mandatory_global_mode": false,
+  "rollout_status": "BLOCKED_ACTIVE_UNGOVERNED_WRITERS",
+  "reason": "21 active candidates on main/shared contexts; no blind stop authorized"
+}

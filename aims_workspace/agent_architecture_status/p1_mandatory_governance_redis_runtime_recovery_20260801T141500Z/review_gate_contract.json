@@ -1,0 +1,6 @@
+{
+  "independent_reviewer_required": true,
+  "self_review_allowed": false,
+  "controlled_merge_required": true,
+  "implementation_status": "CONTRACT_TESTED_NOT_GLOBAL"
+}

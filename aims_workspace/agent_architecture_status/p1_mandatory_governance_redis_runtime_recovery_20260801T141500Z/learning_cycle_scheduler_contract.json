@@ -1,0 +1,10 @@
+{
+  "owner": "redis-scheduler",
+  "worker": "axiomsphere-traini-worker",
+  "training_execution_allowed": false,
+  "promotion_allowed": false,
+  "registry_change_allowed": false,
+  "slot_update_allowed": false,
+  "model_load_allowed": false,
+  "runtime_proof": "NOT_EXECUTED_IN_THIS_SLICE"
+}

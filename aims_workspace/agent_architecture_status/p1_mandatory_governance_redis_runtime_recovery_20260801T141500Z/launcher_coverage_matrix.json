@@ -1,0 +1,6 @@
+{
+  "codex_wrapper": "PREFLIGHT_CONNECTED_OPT_IN",
+  "claude_wrapper": "PREFLIGHT_CONNECTED_OPT_IN",
+  "repairman_launcher": "PREFLIGHT_CONNECTED_OPT_IN",
+  "legacy_writers": "NOT_COVERED"
+}
