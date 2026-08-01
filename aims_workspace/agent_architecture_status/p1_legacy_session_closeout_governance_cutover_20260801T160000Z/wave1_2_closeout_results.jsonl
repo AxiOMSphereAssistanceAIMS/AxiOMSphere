@@ -1,0 +1,8 @@
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:41:59.916245+00:00", "pgid": 300379, "signals": ["SIGINT"], "started_at": "2026-08-01T11:41:57.912012+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:01.921934+00:00", "pgid": 300380, "signals": ["NOT_RUNNING"], "started_at": "2026-08-01T11:41:59.917740+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:03.928947+00:00", "pgid": 1171714, "signals": ["SIGINT"], "started_at": "2026-08-01T11:42:01.923709+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:06.113100+00:00", "pgid": 1207339, "signals": ["SIGINT"], "started_at": "2026-08-01T11:42:03.931178+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:08.310482+00:00", "pgid": 1622275, "signals": ["SIGINT"], "started_at": "2026-08-01T11:42:06.209693+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:10.512717+00:00", "pgid": 1622276, "signals": ["NOT_RUNNING"], "started_at": "2026-08-01T11:42:08.409380+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:12.810510+00:00", "pgid": 2984589, "signals": ["SIGINT"], "started_at": "2026-08-01T11:42:10.614685+00:00"}
+{"after": "EXITED", "before": "", "ended_at": "2026-08-01T11:42:15.012916+00:00", "pgid": 4075286, "signals": ["SIGINT"], "started_at": "2026-08-01T11:42:12.814250+00:00"}

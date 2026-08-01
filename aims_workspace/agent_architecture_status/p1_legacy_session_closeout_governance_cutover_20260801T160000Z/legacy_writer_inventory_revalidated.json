@@ -1,0 +1,90 @@
+{
+  "count": 10,
+  "current_audit_group_excluded": [
+    32039,
+    32040,
+    41752
+  ],
+  "rows": [
+    {
+      "pid": 31160,
+      "ppid": 31155,
+      "pgid": 31155,
+      "stat": "S+",
+      "command": "python3 /home/axi_omi_sphere/aims-workspace/ops/scripts/codex_logi_session_wrapper.py --launcher-path /home/axi_omi_sphere/.local/bin/codex-aims-account1 --workspace /home/axi_omi_sphere/aims-workspace --codex-bin /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -- -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "captured_at": "2026-08-01T11:41:30.114610+00:00"
+    },
+    {
+      "pid": 300379,
+      "ppid": 2628,
+      "pgid": 300379,
+      "stat": "Ss",
+      "command": "script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260730T082153Z_299650_edada016/transcript.md -c /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "captured_at": "2026-08-01T11:41:30.114711+00:00"
+    },
+    {
+      "pid": 300380,
+      "ppid": 300379,
+      "pgid": 300380,
+      "stat": "Ssl+",
+      "command": "/home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "captured_at": "2026-08-01T11:41:30.114721+00:00"
+    },
+    {
+      "pid": 1171723,
+      "ppid": 2628,
+      "pgid": 1171714,
+      "stat": "S",
+      "command": "script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260725T070436Z_1171718_acb411b2/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "captured_at": "2026-08-01T11:41:30.114783+00:00"
+    },
+    {
+      "pid": 1207359,
+      "ppid": 2628,
+      "pgid": 1207339,
+      "stat": "S",
+      "command": "script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260725T071610Z_1207345_013fc479/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "captured_at": "2026-08-01T11:41:30.114797+00:00"
+    },
+    {
+      "pid": 1622275,
+      "ppid": 2628,
+      "pgid": 1622275,
+      "stat": "Ss",
+      "command": "script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/codex_sessions/logi_codex_20260729T112138Z_1621653_b25d0d8d/transcript.md -c /home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "captured_at": "2026-08-01T11:41:30.114880+00:00"
+    },
+    {
+      "pid": 1622276,
+      "ppid": 1622275,
+      "pgid": 1622276,
+      "stat": "Ssl+",
+      "command": "/home/axi_omi_sphere/.nvm/versions/node/v22.22.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-arm64/vendor/aarch64-unknown-linux-musl/bin/codex -C /home/axi_omi_sphere/aims-workspace --ask-for-approval never --sandbox danger-full-access",
+      "captured_at": "2026-08-01T11:41:30.114886+00:00"
+    },
+    {
+      "pid": 2984594,
+      "ppid": 2984589,
+      "pgid": 2984589,
+      "stat": "S+",
+      "command": "python3 /home/axi_omi_sphere/aims-workspace/ops/scripts/claude_logi_session_wrapper.py --launcher-path /home/axi_omi_sphere/.local/bin/claude-aims-subscription --workspace /home/axi_omi_sphere/aims-workspace --claude-bin /home/axi_omi_sphere/.local/bin/claude --session-kind claude_code_subscription_danger_full -- --dangerously-skip-permissions",
+      "captured_at": "2026-08-01T11:41:30.115055+00:00"
+    },
+    {
+      "pid": 2984600,
+      "ppid": 2984594,
+      "pgid": 2984589,
+      "stat": "S+",
+      "command": "script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260801T113224Z_2984594_f66585b3/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "captured_at": "2026-08-01T11:41:30.115066+00:00"
+    },
+    {
+      "pid": 4075302,
+      "ppid": 2628,
+      "pgid": 4075286,
+      "stat": "S",
+      "command": "script -q -e -a /home/axi_omi_sphere/aims-workspace/aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260731T125302Z_4075291_275c36ab/transcript.md -c /home/axi_omi_sphere/.local/bin/claude --dangerously-skip-permissions",
+      "captured_at": "2026-08-01T11:41:30.115240+00:00"
+    }
+  ]
+}

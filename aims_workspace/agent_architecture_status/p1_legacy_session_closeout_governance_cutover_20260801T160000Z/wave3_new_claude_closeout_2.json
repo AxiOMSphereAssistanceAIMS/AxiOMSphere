@@ -1,0 +1,8 @@
+{
+  "pgid": 3015217,
+  "before": "",
+  "signals": [
+    "SIGINT"
+  ],
+  "after": "EXITED"
+}

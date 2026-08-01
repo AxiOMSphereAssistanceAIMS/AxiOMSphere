@@ -1,0 +1,33 @@
+{
+  "session_id": "logi_claude_20260801T114343Z_3015222_9aeac43b",
+  "source_path": "aims_workspace/logi/raw_material/claude_sessions/logi_claude_20260801T114343Z_3015222_9aeac43b",
+  "files": [
+    {
+      "name": "command.txt",
+      "size": 70,
+      "sha256": "b406569d1a1ca1946e1adbd777445b546101ac353f01721e8f967c90ee052c6d"
+    },
+    {
+      "name": "env_redacted.json",
+      "size": 2492,
+      "sha256": "2b6eeafe20ddc3efdd8c226d76a7e3d4f1acc488347d37eae3e88679f4c6840f"
+    },
+    {
+      "name": "metadata.json",
+      "size": 965,
+      "sha256": "68b5f0405447462b657e5b4b3d66352932b066935f9f1479d6b77f6b8d11bf04"
+    },
+    {
+      "name": "session_report.md",
+      "size": 688,
+      "sha256": "362192e05a9b189c4f9793e66b9730f66cccf6898612ced24abbc8fb4c9d8b52"
+    },
+    {
+      "name": "transcript.md",
+      "size": 4096,
+      "sha256": "df94b7fa5a141864cc7f8024e8dda78f2596b6e494c5a5147b30d96f7d03a179"
+    }
+  ],
+  "task_context_available": false,
+  "transcript_copied": false
+}

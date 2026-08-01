@@ -18,7 +18,7 @@ export REPAIRMAN_REGISTER_AUDITOR_FEEDBACK=true
 
 # Autonomous mutation is fail-closed when governance is required.  The
 # preflight runs before any Logi/Repairman child process is started.
-if [ "${AIMS_REQUIRE_GOVERNED_MUTATION:-0}" = "1" ]; then
+if [ "${AIMS_REQUIRE_GOVERNED_MUTATION:-0}" = "1" ] || [ -f "/tmp/aims-governance-mandatory" ]; then
   python3 - "$ROOT" <<'PY'
 import os, sys
 from pathlib import Path

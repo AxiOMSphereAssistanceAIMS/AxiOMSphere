@@ -1,0 +1,9 @@
+{
+  "claude_wrapper_return_code": 78,
+  "codex_wrapper_return_code": 78,
+  "denial_reasons": [
+    "DIRECT_MAIN_BRANCH_DENIED",
+    "SHARED_MAIN_WORKTREE_DENIED",
+    "LEASE_MISSING"
+  ]
+}

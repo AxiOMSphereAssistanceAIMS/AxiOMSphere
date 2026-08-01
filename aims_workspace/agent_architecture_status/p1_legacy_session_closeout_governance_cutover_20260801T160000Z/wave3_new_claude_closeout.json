@@ -1,0 +1,9 @@
+{
+  "pgid": 3011302,
+  "before": "",
+  "signals": [
+    "SIGINT"
+  ],
+  "state_manifest": "aims_workspace/agent_architecture_status/p1_legacy_session_closeout_governance_cutover_20260801T160000Z/legacy_state_packages/logi_claude_20260801T114230Z_3011311_3248b5af/manifest.json",
+  "after": "EXITED"
+}

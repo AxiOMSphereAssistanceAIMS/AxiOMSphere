@@ -1,0 +1,8 @@
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 300379, "raw_deleted": false, "signals": ["SIGINT"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 300380, "raw_deleted": false, "signals": ["NOT_RUNNING"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 1171714, "raw_deleted": false, "signals": ["SIGINT"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 1207339, "raw_deleted": false, "signals": ["SIGINT"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 1622275, "raw_deleted": false, "signals": ["SIGINT"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 1622276, "raw_deleted": false, "signals": ["NOT_RUNNING"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 2984589, "raw_deleted": false, "signals": ["SIGINT"], "terminal_success_verified": false}
+{"after": "EXITED", "disposition": "OPERATOR_TERMINATED_STATE_PRESERVED", "pgid": 4075286, "raw_deleted": false, "signals": ["SIGINT"], "terminal_success_verified": false}

@@ -1,0 +1,7 @@
+{
+  "closeout_mode": true,
+  "runtime_marker": "/tmp/aims-governance-mandatory",
+  "new_ungoverned_launches": "DENIED",
+  "support_helpers": "EXEMPT",
+  "existing_current_writer": "PRESERVED"
+}

@@ -1,0 +1,6 @@
+{
+  "new_launch_freeze_enabled": true,
+  "global_mandatory_governance": false,
+  "reason": "current audit writer remains active",
+  "direct_main_preflight": "PASS"
+}

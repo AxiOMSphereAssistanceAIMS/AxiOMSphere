@@ -1,0 +1,27 @@
+{
+  "wave1": [],
+  "wave2": [
+    31155,
+    300379,
+    300380,
+    1622275,
+    1622276
+  ],
+  "wave3": [
+    1171714,
+    1207339,
+    2984589,
+    2984589,
+    4075286
+  ],
+  "wave4": [],
+  "signal_sequence": [
+    "SIGINT",
+    "bounded_wait_5s",
+    "SIGTERM",
+    "bounded_wait_5s",
+    "SIGKILL_only_if_alive"
+  ],
+  "support_helpers_untouched": true,
+  "current_audit_process_untouched": true
+}

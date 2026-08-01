@@ -42,9 +42,11 @@ def main():
     if not workspace.exists():
         print(f"ERROR: workspace does not exist: {workspace}", file=sys.stderr)
         return 2
-    if os.environ.get("AIMS_REQUIRE_GOVERNED_MUTATION") == "1" or args.governance_task_id:
-        if str(workspace) not in sys.path:
-            sys.path.insert(0, str(workspace))
+    mandatory = os.environ.get("AIMS_REQUIRE_GOVERNED_MUTATION") == "1" or pathlib.Path("/tmp/aims-governance-mandatory").exists()
+    if mandatory or args.governance_task_id:
+        repo_root = pathlib.Path(__file__).resolve().parents[2]
+        if str(repo_root) not in sys.path:
+            sys.path.insert(0, str(repo_root))
         from ops.self_learning.governed_mutation_preflight import mutation_preflight
         preflight = mutation_preflight(
             workspace,
