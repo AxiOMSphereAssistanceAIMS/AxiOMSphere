@@ -1357,6 +1357,9 @@ def materialize_admission_candidates(pair_pool_path: Path, candidate_root: Path)
         provenance = row.get("provenance") if isinstance(row.get("provenance"), dict) else {}
         affinity = row.get("model_affinity") if isinstance(row.get("model_affinity"), dict) else {}
         score = _candidate_admission_score(row)
+        from ops.ft.traini.autopilot.independent_clearance_service import clear_candidate
+
+        independent_clearance = clear_candidate(row)
         manifest = {
             "candidate_id": pair_id,
             "source_lesson_id": str(provenance.get("record_id") or pair_id),
@@ -1365,10 +1368,13 @@ def materialize_admission_candidates(pair_pool_path: Path, candidate_root: Path)
             "target_pool": row.get("target_pool"),
             "mode": row.get("mode"),
             "material_type": row.get("material_type"),
-                "model_affinity": affinity,
-                "codex_cli_audit": row.get("codex_cli_audit") if isinstance(row.get("codex_cli_audit"), dict) else {},
-                "raw_material_only": False,
-                "direct_training_allowed": score["decision"] == "APPROVED"
+            "model_affinity": affinity,
+            "codex_cli_audit": row.get("codex_cli_audit") if isinstance(row.get("codex_cli_audit"), dict) else {},
+            "clearance_required": True,
+            "independent_clearance": independent_clearance,
+            "raw_material_only": False,
+            "direct_training_allowed": score["decision"] == "APPROVED"
+                and independent_clearance["decision"] == "ADMIT"
                 and isinstance(row.get("codex_cli_audit"), dict)
                 and row.get("codex_cli_audit", {}).get("status") == "PASS",
                 "provenance": provenance,

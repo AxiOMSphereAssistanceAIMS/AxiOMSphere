@@ -1,0 +1,14 @@
+{
+  "implementation": "ops/ft/traini/autopilot/independent_clearance_service.py",
+  "materialization": "ops/ft/traini/autopilot/raw_material_pair_preparation.py::materialize_admission_candidates",
+  "admission_policy": "ops/ft/traini/autopilot/dataset_admission_policy.py",
+  "new_candidate_manifests_require_clearance": true,
+  "clearance_decision_required_for_direct_training": true,
+  "candidate_mutation_by_clearance": false,
+  "self_approval_denied": true,
+  "legacy_manual_manifests": "backward-compatible unless clearance_required=true",
+  "targeted_tests": "46 passed",
+  "training_started": false,
+  "registry_mutated": false,
+  "slot_binding_mutated": false
+}
