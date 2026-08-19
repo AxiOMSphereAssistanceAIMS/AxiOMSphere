@@ -1,0 +1,1 @@
+{"schema":"aims.production.lifecycle.session_handoff.v1","verdict":"PRODUCTION_LIFECYCLE_FOUNDATIONAL_ARCHITECTURE_CERTIFIED","runtime":"loaded_and_healthy","routes":"operational","publication":"PUBLICATION_READY_AFTER_PRODUCTION_CERTIFICATION_NOT_EXECUTED","production_mutation":false,"next_action_id":"EXECUTE_SEPARATE_GOVERNED_PUBLICATION_WHEN_REQUESTED"}

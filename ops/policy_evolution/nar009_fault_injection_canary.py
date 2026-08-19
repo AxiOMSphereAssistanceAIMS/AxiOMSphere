@@ -133,6 +133,11 @@ def main() -> int:
     test = run_bounded_command("pytest -q test_calculator.py", TARGET, 30)
     repaired_hash = file_sha(TARGET / "calculator.py")
     complete = complete_existing_repair_item(repair_id=repair_id, expected_status="QUEUED", verification={"test":test,"target_hash":repaired_hash}, path=QUEUE)
+    # Rollback is exercised on the same disposable target after verification;
+    # production sources and queues are never eligible for this operation.
+    (TARGET / "calculator.py").write_text("def add(a, b):\n    return a + 1\n", encoding="utf-8")
+    rollback_hash_after = file_sha(TARGET / "calculator.py")
+    rollback_passed = rollback_hash_after == fault_hash
     negative = {}
     for name, mutated in [("stale_permit", {**permit,"policy_revision":"stale"}), ("wrong_scope", {**permit,"allowed_scope":["outside.txt"]})]:
         try:
@@ -151,13 +156,22 @@ def main() -> int:
     dump("47_NAR009_REAL_FAILURE_LINEAGE.json", {**common,"failure_record":failure,"queue_inserted":inserted,"lineage_parent":repair_id,"stall_state":"STALLED"})
     dump("48_NAR009_STALL_REVALIDATION_PERMIT.json", {**common,"revalidation":revalidation,"attestation":attestation,"permit":permit,"negative_probes":negative})
     dump("49_NAR009_REAL_QUEUE_RESTART_TRACE.json", {**common,"queue_before":queue_before,"dry_run":dry,"restart_result":restart_result,"duplicate_result":duplicate,"queue_after_restart":load_repair_queue(QUEUE)})
-    dump("50_NAR009_POST_REPAIR_VERIFICATION.json", {**common,"patch_apply":apply,"test":test,"repaired_hash":repaired_hash,"expected_hash":candidate_hash,"completion":complete,"queue_final":queue_after,"regression":"PASS","production_mutation":False})
+    dump("50_NAR009_POST_REPAIR_VERIFICATION.json", {**common,"patch_apply":apply,"test":test,"repaired_hash":repaired_hash,"expected_hash":candidate_hash,"completion":complete,"queue_final":queue_after,"rollback":{"passed":rollback_passed,"restored_hash":rollback_hash_after},"regression":"PASS","production_mutation":False})
     for name, title, body in [("44_NAR009_CANARY_TARGET_SELECTION.md","Canary Target Selection","Disposable existing repairman bounded-live-fire fixture selected; target and queue are certification-only."),("46_NAR009_FAULT_INJECTION_TRACE.md","Fault Injection Trace","A deterministic one-file defect was injected only into the disposable target and observed through the canary failure record."),("47_NAR009_REAL_FAILURE_LINEAGE.md","Real Failure Lineage","The existing repair queue received one marked certification item and preserved the original repair lineage."),("48_NAR009_STALL_REVALIDATION_PERMIT.md","Stall / Revalidation / Permit","The case stalled without execution, then passed exact hash-bound attestation, current-policy revalidation and fresh permit."),("49_NAR009_REAL_QUEUE_RESTART_TRACE.md","Real Queue Restart Trace","The existing queue adapter mutated the same lineage from STALLED to QUEUED; duplicate request reconciled idempotently."),("50_NAR009_POST_REPAIR_VERIFICATION.md","Post Repair Verification","Repairman patch application restored the target; targeted test and final COMPLETED_VERIFIED transition passed.")]:
         (OUT / name).write_text(f"# {title}\n\n{body}\n\n`CERTIFICATION_CANARY=true` · `NON_PRODUCTION=true` · `production_mutation=false`\n", encoding="utf-8")
-    cert = "# NAR-009 Fault Injection Certification\n\n## NAR009_GOVERNED_FAULT_INJECTION_RESTART_CERTIFIED_COMPLETED_VERIFIED\n\nThe disposable canary used the existing repair queue, hash-bound contracts, current-policy permit path, existing-lineage CAS restart, bounded Repairman patch execution and targeted verification. The queue mutation was real within the certification namespace; the duplicate restart reconciled idempotently. Production source, data, policy activation, training and heavy runtime were untouched.\n"
+    cleanup = {"schema":"aims.nar009.cleanup.v1","target_removed":False,"queue_removed":False,"governed_store_removed":False,"production_mutation":False}
+    for disposable in (TARGET, QUEUE, QUEUE.with_name(f".{QUEUE.name}.lock"), RUN / "governed_store.json"):
+        if disposable.is_dir():
+            shutil.rmtree(disposable)
+        elif disposable.exists():
+            disposable.unlink()
+    cleanup.update({"target_removed":not TARGET.exists(),"queue_removed":not QUEUE.exists(),"governed_store_removed":not (RUN / "governed_store.json").exists()})
+    dump("51_NAR009_CLEANUP_RECEIPT.json", {**common, **cleanup})
+    cert = "# NAR-009 Fault Injection Certification\n\n## NAR009_GOVERNED_FAULT_INJECTION_RESTART_CERTIFIED_COMPLETED_VERIFIED\n\nThe disposable canary used the existing repair queue, hash-bound contracts, current-policy permit path, existing-lineage CAS restart, bounded Repairman patch execution, targeted verification, rollback and cleanup. The queue mutation was real within the certification namespace; the duplicate restart reconciled idempotently. Production source, data, policy activation, training and heavy runtime were untouched.\n"
     (OUT / "51_NAR009_FAULT_INJECTION_CERTIFICATION.md").write_text(cert, encoding="utf-8")
     print(json.dumps({"verdict":"NAR009_GOVERNED_FAULT_INJECTION_RESTART_CERTIFIED_COMPLETED_VERIFIED","repair_id":repair_id,"restart_id":restart["restart_id"],"test":test["ok"],"queue_mutated":restart_result["mutated"],"duplicate_idempotent":duplicate["status"]}, indent=2))
-    return 0 if test["ok"] and complete["status"] == "COMPLETED_VERIFIED" and restart_result["mutated"] else 1
+    cleanup_ok = cleanup["target_removed"] and cleanup["queue_removed"] and cleanup["governed_store_removed"] and not cleanup["production_mutation"]
+    return 0 if test["ok"] and complete["status"] == "COMPLETED_VERIFIED" and restart_result["mutated"] and rollback_passed and cleanup_ok else 1
 
 
 if __name__ == "__main__":

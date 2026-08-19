@@ -2,6 +2,10 @@
 
 ## FOUNDATIONAL_ARCHITECTURE_INTEGRITY_CERTIFIED
 
+## PRODUCTION_LIFECYCLE_FOUNDATIONAL_ARCHITECTURE_CERTIFIED
+
+Production routes are operational, runtime hashes are loaded, rollback and cleanup are proven, and the reusable assurance, scale/replay, historical and correlated runtime checks passed. Publication remains separate and was not executed.
+
 The post-NAR-009 foundational review repaired the queue transaction boundary, canonical lifecycle/next actions, governance freshness, and legacy Repairman bypass. Two sequential disposable assurance runs passed. Poli, Mainy, Repairman and Logi were controlled-restarted; health checks and loaded runtime hashes matched the certified implementation.
 
 ## NAR009_GOVERNED_FAULT_INJECTION_RESTART_CERTIFIED_COMPLETED_VERIFIED

@@ -1,0 +1,3 @@
+# 66 — Crash, Race, Replay and Recovery Validation
+
+The atomic queue transaction protects the authoritative file with an inter-process lock, writes a fsync'd temporary file, atomically replaces the queue and fsyncs the directory. A partial temporary file cannot replace the authority. Restart CAS permits exactly one winner; a repeated key reconciles. A crash after queue mutation is recovered by replay of the same idempotency key. Contract drift and expiry force revalidation/re-audit. Rollback is exercised in the disposable target. Interrupted cleanup is detectable through the cleanup receipt and rerun-safe namespace recreation.

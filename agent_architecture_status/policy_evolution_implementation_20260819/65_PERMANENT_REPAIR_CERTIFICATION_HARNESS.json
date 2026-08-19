@@ -1,0 +1,1 @@
+{"schema":"aims.production.assurance_harness.v1","verdict":"PASS","runs":2,"same_canonical_path":true,"rollback":true,"duplicate_reconciliation":true,"cleanup":true,"production_backlog_pollution":false,"rerunnable":true}

@@ -1,9 +1,11 @@
 FOUNDATIONAL ARCHITECTURE TEST RESULTS
 ======================================
-Focused governance, queue, state, checklist and legacy-retirement suite: 23 passed.
+Focused governance, queue, state, checklist, assurance and legacy-retirement suite: 24 passed.
 Python compilation: PASS.
 Queue concurrency challenge: PASS; one restart winner, one idempotent reconciliation.
-NAR-009 reusable assurance harness: PASS on two sequential disposable runs.
+NAR-009 reusable assurance harness: PASS on two sequential disposable runs with rollback and cleanup receipts.
+Historical replay: 28/28 cases classified; genuine policy gaps: 0.
+Scale/replay probe: 10 stalled cases, duplicate-heavy CAS, 100 evidence references per case: PASS.
 Production mutation: FALSE.
 Policy activation: FALSE.
 Runtime reload: PASS; Poli/Mainy/Repairman/Logi controlled restart completed, health PASS, user units active.
