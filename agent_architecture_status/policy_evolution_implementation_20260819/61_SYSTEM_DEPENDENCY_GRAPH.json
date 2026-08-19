@@ -1,0 +1,24 @@
+{
+  "artifact": "61_SYSTEM_DEPENDENCY_GRAPH",
+  "schema": "aims.foundational.dependency_graph.v1",
+  "canonical_authorities": {
+    "governance_events": "GovernedExecutionStore",
+    "repair_execution_lineage": "ops.agents.failure_to_repair.repair_queue",
+    "hash_bound_contracts": "ops.policy_evolution.contracts",
+    "semantic_lifecycle": "ops.policy_evolution.state_model",
+    "policy_gap_capture": "ops.policy_evolution.integration.capture_policy_gap"
+  },
+  "edges": [
+    {"source":"failure_event","target":"logi_causal_lifecycle","authority":"Logi causal store","identity":"failure_id+correlation_root_id","classification":"canonical"},
+    {"source":"diagnosis","target":"change_proposal","authority":"repair case ledger","identity":"repair_case_id+source_hash","classification":"canonical"},
+    {"source":"change_proposal","target":"auditor_attestation","authority":"Auditor","identity":"proposal_hash+candidate_tree_hash+candidate_diff_hash+evidence_manifest_hash","classification":"canonical"},
+    {"source":"attestation+current_policy","target":"execution_permit","authority":"Poli","identity":"proposal_hash+attestation_hash+policy_revision+policy_hash+scope","classification":"canonical"},
+    {"source":"execution_permit","target":"repair_queue","authority":"existing repair queue","identity":"repair_id+lineage_parent+idempotency_key","recovery":"interprocess lock+CAS+atomic replace","classification":"canonical"},
+    {"source":"repair_queue","target":"repairman","authority":"Repairman execution boundary","identity":"permit_hash+permit_nonce","failure":"fail closed","classification":"canonical"},
+    {"source":"stalled_case","target":"revalidation","authority":"policy contracts","identity":"repair_case_id+old_proposal_hash+current_policy_revision","classification":"canonical"},
+    {"source":"stalled_case","target":"policy_gap_capture","authority":"Logi","identity":"case_id+correlation_root_id+policy_revision+policy_hash","classification":"permanent"},
+    {"source":"legacy_allow_deny","target":"current_policy","authority":"none for execution","identity":"migration review","classification":"transitional_read_only"},
+    {"source":"legacy_repair_backend","target":"governed_backend","authority":"none","identity":"explicit retirement error","classification":"retired"}
+  ],
+  "production_mutation": false
+}

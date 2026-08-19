@@ -1,0 +1,3 @@
+# 68 — Retention and Cleanup Model
+
+Raw failure, proposal, attestation, permit, approval, revalidation, restart and completion evidence are immutable lineage records owned by the relevant subsystem and retained for governance/audit requirements. Completed cases may be archived only after their completion evidence and hashes are preserved. Obsolete cases remain explainable with a terminal reason. Canary targets, queue files and temporary worktrees are disposable and are recreated per harness run; cleanup evidence records the namespace and production-mutation=false. Training/raw-material handoff is opt-in and never implied by repair completion.
