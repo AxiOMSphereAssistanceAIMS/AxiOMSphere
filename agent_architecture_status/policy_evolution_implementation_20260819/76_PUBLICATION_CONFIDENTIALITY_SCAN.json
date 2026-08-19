@@ -1,0 +1,1 @@
+{"schema":"aims.public.confidentiality_scan.v1","verdict":"PASS","scanned":["README.md","docs/ARCHITECTURE.md","docs/EVIDENCE_GOVERNED_REPAIR.md","CHANGELOG.md","website/src/data/public-content.ts"],"findings":[],"public_safe":true}
