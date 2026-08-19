@@ -1,13 +1,13 @@
 {
   "schema": "aims.public_documentation.session_handoff.v1",
-  "verdict": "PUBLICATION_HOLD_PRODUCTION_LIFECYCLE_NOT_CLOSED",
-  "github": "PUBLICATION_FORBIDDEN",
-  "website": "PUBLICATION_FORBIDDEN",
+  "verdict": "PUBLICATION_NOT_EXECUTED_PRODUCTION_LIFECYCLE_PENDING",
+  "github": "NOT_EXECUTED",
+  "website": "NOT_EXECUTED",
   "confidentiality": "PASS",
   "claims_mapped": true,
   "production_policy_changed": false,
   "production_mutation": false,
-  "next_action_id": "CLOSE_PREPRODUCTION_TO_PRODUCTION_LIFECYCLE_BEFORE_PUBLICATION",
+  "next_action_id": "CLOSE_PREPRODUCTION_TO_PRODUCTION_LIFECYCLE_THEN_EXECUTE_PUBLICATION",
   "owner": "Release/Architecture",
   "queued_next_task": "/home/axi_omi_sphere/Downloads/AIMS_TASK_FOUNDATIONAL_ARCHITECTURE_INTEGRITY_BEFORE_PUBLIC_RELEASE_20260819.txt"
 }
