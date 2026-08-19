@@ -5,11 +5,11 @@ export const audienceStatement =
   "For project, operations, engineering, asset integrity and information-management teams working in complex, document-intensive environments."
 
 export const projectStatus = {
-  label: "Current applied capability · development-stage product",
+  label: "Current project status · development-stage product",
   detail:
-    "AxiOMSphere is validating privacy-first workflows that help specialists develop, review and coordinate connected AIMS work products and supporting documents.",
+    "AxiOMSphere is advancing a human-governed platform for corporate documentation, engineering knowledge and operational readiness.",
   roadmapNote:
-    "The current product foundation is being extended through a staged, evidence-led roadmap.",
+    "Published project stages are shown with their current status only.",
 } as const
 
 export const demoShowcase = {
@@ -62,14 +62,6 @@ export interface CapabilityCard {
 }
 
 export const capabilityCards: CapabilityCard[] = [
-  {
-    id: "card-evidence-governed-repair",
-    title: "Recover work with evidence-governed repair",
-    status: "Certified control capability",
-    support:
-      "Evaluate the exact repair proposal, independent review, tests and risk before authorizing a fresh permit for a controlled restart of the existing repair lineage.",
-    covers: ["Auditor attestation", "current-policy authorization", "duplicate-safe restart", "verified recovery"],
-  },
   {
     id: "card-1",
     title: "Build stronger corporate documents",
@@ -153,11 +145,11 @@ export interface RoadmapMilestone {
   title: string
   statusLabel: string
   statusType: MilestoneStatusType
-  description: string
+  result?: string
 }
 
 export const roadmapSectionTitle =
-  "A focused product today, with a governed path toward broader organisational capability"
+  "Project stages — current status"
 
 export const roadmapMilestones: RoadmapMilestone[] = [
   {
@@ -165,47 +157,36 @@ export const roadmapMilestones: RoadmapMilestone[] = [
     title: "Current applied capability",
     statusLabel: "Available foundation",
     statusType: "current",
-    description:
-      "AIMS work-product drafting, review, registration and evidence retention, validated in internal development scenarios with source information kept within a private infrastructure boundary.",
   },
   {
     id: "M2",
     title: "Coordinated knowledge layer",
     statusLabel: "In development",
     statusType: "in-development",
-    description:
-      "Learning from validated outputs, framework-aligned evaluation and coordinated task contracts to improve the consistency and usefulness of future document work.",
   },
   {
     id: "M3",
     title: "Infrastructure resilience",
-    statusLabel: "In development",
-    statusType: "in-development",
-    description:
-      "Monitoring, evidence-governed repair and recovery with bounded behaviour, traceable outcomes and human oversight. The permanent runtime route and reusable non-production assurance canary are certified; policy evolution remains separately governed.",
+    statusLabel: "Certified foundation",
+    statusType: "current",
+    result: "The current foundation is certified for governed development use.",
   },
   {
     id: "M4",
     title: "Orchestration at scale",
     statusLabel: "Planned direction",
     statusType: "planned",
-    description:
-      "Connected AIMS work products and change-impact tracing across the workflows that support complex projects.",
   },
   {
     id: "M5",
     title: "Controlled external pilot",
     statusLabel: "Future milestone",
     statusType: "planned",
-    description:
-      "A scoped, time-bounded pilot with a qualified industrial partner, subject to readiness evidence from the earlier milestones.",
   },
   {
     id: "M6",
     title: "Long-term platform vision",
     statusLabel: "Vision",
     statusType: "long-term",
-    description:
-      "Multi-project orchestration and a governed knowledge layer supporting specialised delivery with qualified human oversight.",
   },
 ]

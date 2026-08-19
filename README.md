@@ -93,12 +93,6 @@ AxiOMSphere is built around a clear operating principle: AI should strengthen pr
 - **Evidence oriented** — outputs are prepared for review, challenge and accountable acceptance.
 - **Purpose specific** — the platform focuses on defined corporate and engineering workflows rather than acting as a generic chatbot.
 
-## Evidence-governed repair
-
-AIMS now documents a governed repair lifecycle: stalled work is investigated, tied to an exact proposal, independently audited, tested and risk-assessed before current-policy authorization and a fresh permit. Controlled restarts preserve the existing repair lineage and prevent duplicate repair cases. [Read the evidence-governed repair architecture](docs/EVIDENCE_GOVERNED_REPAIR.md).
-
-Policy evolution is separate: Logi captures proven policy gaps and prepares governed proposals; it does not change policy autonomously. Policy activation does not automatically restart historical backlog work.
-
 ## Product vision
 
 Our vision is a connected environment in which corporate requirements, engineering knowledge, project deliverables and operational experience can be developed into reliable working documents — and then remain available as governed knowledge for the teams responsible for safe, consistent and effective operations.
