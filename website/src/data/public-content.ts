@@ -45,10 +45,9 @@ export const roadmapMilestones: RoadmapMilestone[] = [
   {
     id: "M3",
     title: "Controlled Issue Correction and Autonomous Operational Recovery",
-    statusLabel: "Planned Capability",
-    statusType: "planned",
-    description:
-      "AxiOMSphere is planned to support two distinct recovery paths. For AIMS work products and engineering outputs, the platform is intended to identify missing inputs, document deficiencies, alignment gaps, rejected recommendations and issues requiring rework and repeat verification, while acceptance of technical corrections remains with the accountable specialist. For failures within AxiOMSphere itself, the platform is intended to detect interrupted workflows, unavailable required tools or resources, failed task handovers, incomplete processing results and other execution failures, and to restore its own operation autonomously within approved operating rules and safety boundaries. Each recovery event must be recorded, verified and retained as traceable evidence so that recurring failures can inform future improvement and system resilience.",
+    statusLabel: "Certified foundation",
+    statusType: "current",
+    description: "The current foundation is certified for governed development use.",
   },
   {
     id: "M4",
