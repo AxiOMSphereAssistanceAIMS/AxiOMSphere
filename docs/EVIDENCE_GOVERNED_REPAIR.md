@@ -19,10 +19,17 @@ The Auditor attestation is bound to the exact proposal, source/candidate hashes,
 
 Policy evolution is a separate branch:
 
-```text
-genuine policy gap → Logi capture → change proposal → Auditor → Owner design
-→ candidate shadow → Owner application → installed-not-active
-→ Owner activation → active policy
+```mermaid
+flowchart LR
+  A[Genuine policy gap] --> B[Logi capture]
+  B --> C[Policy change proposal]
+  C --> D[Auditor review]
+  D --> E[Owner design approval]
+  E --> F[Candidate shadow]
+  F --> G[Owner application]
+  G --> H[Installed not active]
+  H --> I[Owner activation]
+  I --> J[Active policy]
 ```
 
 Policy activation is not automatic backlog restart. Historical and stalled repairs require fresh revalidation and a new permit before a controlled restart.

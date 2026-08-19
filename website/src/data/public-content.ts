@@ -182,7 +182,7 @@ export const roadmapMilestones: RoadmapMilestone[] = [
     statusLabel: "In development",
     statusType: "in-development",
     description:
-      "Monitoring, evidence-governed repair and recovery with bounded behaviour, traceable outcomes and human oversight. Controlled restart is certified in a non-production canary; policy evolution remains separately governed.",
+      "Monitoring, evidence-governed repair and recovery with bounded behaviour, traceable outcomes and human oversight. The permanent runtime route and reusable non-production assurance canary are certified; policy evolution remains separately governed.",
   },
   {
     id: "M4",

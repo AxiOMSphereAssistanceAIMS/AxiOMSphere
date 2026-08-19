@@ -22,3 +22,7 @@ All notable public-facing documentation changes are recorded here. This file doe
 - Updated project, pipeline and agent status documentation. Production remains
   armed and safely waiting for 750 pairs for one exact model revision; no
   training or promotion was started.
+## 2026-08-19 — Production lifecycle certification
+
+- Certified the permanent evidence-governed repair lifecycle across runtime routes: canonical authorities, exact identity lineage, fresh permits, same-lineage restart, queue CAS/reconciliation, rollback, reusable assurance, cleanup, observability and retention.
+- Recorded that publication is a separate governed action; no runtime process or production route depends on public documentation publication.

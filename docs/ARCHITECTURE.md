@@ -122,6 +122,11 @@ capability was verified through a disposable non-production fault-injection
 canary using the existing queue and same-lineage restart path, ending in
 `COMPLETED_VERIFIED`.
 
+The permanent runtime route is certified independently of publication. Runtime
+health, loaded implementation hashes, rollback, cleanup and recovery checks
+passed; publication is a separate documentation lifecycle and does not control
+repair authorization or process continuity.
+
 Repair still requires an exact proposal, independent Auditor attestation,
 current-policy authorization, a fresh permit and targeted verification. Logi can
 detect and prepare a governed policy-gap proposal, but cannot change Policy.
