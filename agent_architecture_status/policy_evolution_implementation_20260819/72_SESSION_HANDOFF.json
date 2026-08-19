@@ -12,6 +12,7 @@
     "repair_queue": "e1535eecc4cd4d01f37e64d391697821b9386ad455ef8aeb25109549df7b3cd8",
     "state_model": "1df62f75f993331935e36f994d0dee95dff42c484dc46ced4ab7937dcb77d0ad"
   },
-  "public_documentation": "may describe permanent architecture after runtime reload evidence",
-  "queued_next_task": "/home/axi_omi_sphere/Downloads/AIMS_TASK_FINAL_CONSOLIDATION_GITHUB_WEBSITE_PUBLICATION_20260819.txt"
+  "public_documentation": "HOLD: no publication until pre-production-to-production lifecycle is closed",
+  "publication_gate": "CLOSE_PREPRODUCTION_TO_PRODUCTION_LIFECYCLE_BEFORE_PUBLICATION",
+  "queued_next_task": "CLOSE_PREPRODUCTION_TO_PRODUCTION_LIFECYCLE"
 }
